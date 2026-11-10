@@ -75,7 +75,9 @@ class PaymentFlowSmokeTest extends TestCase
     public function test_manual_payment_creates_unpaid_subscription(): void
     {
         // Arrange
-        Storage::fake('local');
+        // HasUploader escribe en config('filesystems.default'), que en este
+        // repo es el disco 'public' con root '.' (raiz del repo): fakearlo.
+        Storage::fake(config('filesystems.default'));
 
         $plan = Plan::factory()->create();
         $landlord = $this->createLandlord();
