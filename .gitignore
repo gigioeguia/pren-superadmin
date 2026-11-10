@@ -17,3 +17,6 @@ yarn-error.log
 /.idea
 /.vscode
 storage/debugbar/
+
+# Análisis local (no versionado)
+/.analisis
