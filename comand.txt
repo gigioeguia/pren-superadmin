@@ -1,0 +1,31 @@
+###Super Admin -> Soporte tecnico
+superadmin@acnoo.com / superadmin 
+superadmin@gmail.com / superadmin
+
+###Administrador general -> gestiona condominios, usuarios y configuración
+admin@acnoo.com / admin
+admin@gmail.com / admin
+
+###Presidente del condominio: administra cuotas, gastos, avisos y áreas comunes.
+erika.cruz@gmail.com 1234567890
+
+
+    ###Miembro del comité: consulta información y participa en decisiones.
+##Tesorero: administra cuotas, gastos, consulta información y participa en decisiones
+##Secretario A: administra avisos y áreas comunes, consulta información y participa en decisiones
+##Secretario B: administra avisos y áreas comunes, consulta información y participa en decisiones
+
+###Propietario: revisa pagos, avisos y datos de su unidad.
+landlord@acnoo.com / landlord
+
+Residente o inquilino: consulta avisos y reporta incidencias.
+
+
+Landlord
+
+
+
+
+
+
+Personal de mantenimiento o seguridad: atiende tareas e incidencias asignadas.

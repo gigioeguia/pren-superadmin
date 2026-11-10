@@ -1,0 +1,50 @@
+.maan-section{
+    padding: rem(60px) 0;
+
+    @include lg {
+        padding: rem(120px) 0;
+    }
+}
+
+.maan-section-title {
+    margin-bottom: var(--gutter-20);
+    
+    @include lg {
+        margin-bottom: var(--gutter-50);
+    }
+
+    .title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--gutter-10);
+        margin-top: rem(-5px);
+        
+        @include md {
+            margin-top: -0.625rem;
+        }
+    }
+
+    .subtitle {
+        display: block;
+        color: var(--clr-yellow);
+        font-weight: var(--fw-600);
+        margin-bottom: var(--gutter-10);
+        margin-top: -0.5rem;
+    }
+
+    p {
+        font-family: var(--lato-sss);
+        color: var(--clr-black-4);
+        margin-top: var(--gutter-20);
+        font-weight: var(--fw-500);
+    }
+}
+
+.woodland-main-section{
+    padding-left: 290px;
+    transition: all .3s;
+}
+.woodland-section-container{
+    padding: 30px;
+}

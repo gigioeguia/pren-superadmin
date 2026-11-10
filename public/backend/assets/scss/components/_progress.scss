@@ -1,0 +1,61 @@
+.add-property-progress{
+    ul{
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    li{
+        display: flex;
+        align-items: center;
+        font-family: 'Manrope';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 19px;
+        text-transform: capitalize;
+        color: #919699;
+        position: relative;
+        padding-right: 15px;
+        &:after {
+            content: " >";
+            position: absolute;
+            right: 0;
+            top: 2px;
+        }
+        span{
+            display: block;
+            height: 20px;
+            width: 20px;
+            min-width: 20px;
+            border-radius: 50%;
+            background: rgba(145, 150, 153, 0.8);
+            text-align: center;
+            color: #fff;
+            font-family: 'Manrope';
+            font-style: normal;
+            font-weight: 600;
+            font-size: 14px;
+            line-height: 19px;
+            text-transform: capitalize;
+            color: #FFFFFF;
+            margin-right: 7px;
+        }
+        &.active{
+            color: #1F1F1F;
+            span{
+                background: #00A551;
+            }
+        }
+    }
+}
+.inner-title-nine{
+    h6{
+        font-family: 'Manrope';
+        font-weight: 500;
+        font-size: 18px;
+    }
+}
+.w-1100{
+    max-width: 1040px;
+}

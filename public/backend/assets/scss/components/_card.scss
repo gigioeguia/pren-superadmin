@@ -1,0 +1,182 @@
+.woodland-analytics-info-box-wrapper{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+}
+.woodland-analytics-info-box{
+    padding: 30px;
+    background: var(--yellow-gradient);
+    box-shadow: 0px 10px 24px rgba(255, 173, 54, 0.3);
+    border-radius: 12px;
+    p{
+        color: #fff;
+        font-weight: 500;
+        font-size: 20px;
+        line-height: 24px;
+    }
+    .middle-info{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 40px 0;
+        h5{
+            font-weight: 700;
+            font-size: 40px;
+            line-height: 40px;
+            color: #fff;
+            span{
+                color: #fff;
+            }
+        }
+        img{
+            max-width: 40px;
+            min-width: 40px;
+        }
+    }
+    .footer-info{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    &:nth-child(2){
+        background: var(--cyan-gradient);
+    }
+    &:nth-child(3){
+        background: var(--blue-gradient);
+    }
+    &:nth-child(4){
+        background: var(--pink-gradient);
+    }
+}
+.upload-img-card{
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: #FFFFFF;
+    border: 1px solid rgba(157, 157, 157, 0.5);
+    border-radius: 10px;
+    margin-bottom: 25px;
+    .upload-img{
+        min-width: 80px;
+        position: relative;
+        margin-right: 20px;
+        img{
+            height: 80px;
+            width: 80px;
+            min-width: 80px;
+            border-radius: 50%;
+            border: 1px solid #DEDEDE;
+        }
+        .icons{
+            height: 30px;
+            width: 30px;
+            background: var(--clr-main);
+            color: #fff;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+            display: block;
+            position: absolute;
+            bottom: 0px;
+            right: -5px;
+        }
+    }
+    .img-bg{
+        height: 80px !important;
+        width: 80px !important;
+        border-radius: 50%;
+    }
+}
+
+.application-view-items{
+    background: #fff;
+    box-shadow: 0px 0px 1px rgba(12, 26, 75, 0.24), 0px 1px 8px -1px rgba(71, 50, 50, 0.05);
+    border-radius: 12px;
+    padding: 30px;
+    height: 100%;
+    .small-title{
+        font-weight: 600;
+        font-size: 16px;
+        line-height: 24px;
+        color: #1F1F1F;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #D9DADA;
+    }
+    .package-list{
+        margin-top: 20px;
+        span:first-child{
+            color: #1F1F1F;
+        }
+    }
+}
+.download-pdf-items{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #FFFFFF;
+    box-shadow: 0px 0px 1px rgba(12, 26, 75, 0.24), 0px 1px 8px -1px rgba(71, 50, 50, 0.05);
+    border-radius: 6px;
+    padding: 12px 15px;
+    img{
+        height: 35px;
+    }
+    .download-content{
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        strong{
+            font-weight: 400;
+            font-size: 16px;
+            line-height: 19px;
+            color: #1F1F1F;
+            display: block;
+        }
+        small{
+            font-weight: 400;
+            font-size: 12px;
+            line-height: 14px;
+            color: #919699;
+            display: block;
+        }
+    }
+    .download-icons{
+        width: 38px;
+        height: 38px;
+        background: rgba(0, 165, 81, 0.1);
+        color: #00A551;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 38px;
+    }
+}
+.download-note{
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 19px;
+    color: #919699;
+    margin-top: 15px;
+    b{
+        color: #1F1F1F;
+    }
+}
+@media(max-width:1400px){
+    .woodland-analytics-info-box{
+        padding: 15px;
+    }
+    .woodland-analytics-info-box .middle-info img{
+        height: 30px;
+        width: 30px;
+    }
+    .woodland-analytics-info-box .middle-info h5{
+        font-size: 25px;
+    }
+    .woodland-analytics-info-box .middle-info{
+        margin: 20px 0;
+    }
+    .woodland-analytics-info-box p{
+        font-size: 16px;
+    }
+}
+.w-100{
+    width: 100px;
+}

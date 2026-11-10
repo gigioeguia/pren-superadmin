@@ -1,0 +1,16 @@
+.woodladn-pagination-wrapper{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+}
+.woodland-pagination{
+    .page-link{
+        box-shadow: none;
+        color: #7E7E7E;
+    }
+    .page-link:hover{
+        background: var(--main-gradient);
+        color: #fff;
+    }
+}

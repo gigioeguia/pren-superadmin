@@ -1,0 +1,40 @@
+.swup-progress-bar {
+    height: 4px;
+    background-color: blue;
+}
+
+.transition-fade {
+    transition: 0.4s;
+    opacity: 1;
+}
+
+html.is-animating .transition-fade {
+    opacity: 0;
+}
+
+@keyframes top-image-bounce {
+    0% {
+        transform: translateY(-8px);
+    }
+
+    50% {
+        transform: translateY(12px);
+    }
+
+    100% {
+        transform: translateY(-8px);
+    }
+}
+
+/* Shine */
+@-webkit-keyframes shine {
+    100% {
+        left: 125%;
+    }
+}
+
+@keyframes shine {
+    100% {
+        left: 125%;
+    }
+}

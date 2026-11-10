@@ -1,0 +1,34 @@
+/*
+Template Name: Template Name
+Author       : Author Name
+Version      : 1.0
+*/
+
+/*==============================================================================
+[Table of contents]
+===================
+  01. Theme default CSS
+  02. Header Area
+  03. Banner Area
+==============================================================================*/
+/*----------------------------------------*/
+/*  01. Theme default CSS
+/*----------------------------------------*/
+@import 'abstracts/index';
+@import 'base/index';
+@import 'utilities/index';
+@import 'components/index';
+@import 'layout/index';
+// @include xl {
+//   .container {
+//     max-width: 1320px;
+//   }
+
+//   .gx-30 {
+//     --bs-gutter-x: 30px;
+//   }
+// }
+
+@import 'core/index';
+@import 'pages/index';
+

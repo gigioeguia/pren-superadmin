@@ -1,0 +1,104 @@
+/* erro css start */
+.moda-error-section{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+.moda-error-wraper{
+    display: block;
+    text-align: center;
+    .moda-error-thumb{
+        margin-bottom: 100px;
+        img{
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+    }
+}
+
+.back-btn{
+    max-width: 250px;
+    text-align: center;
+    padding:12px 20px;
+    margin: 0 auto;
+    background: #fff;
+    border: 1px dashed #C2C2C2;
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: #373737;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    span{
+        display: inline-block;
+        margin-left: 10px;
+        font-size: 27px;
+    }
+    &:hover, &:focus{
+        background: $acc;
+        color: #fff !important;
+        i{
+            color: #fff;
+        }
+    }
+    &.back-primary-btn{
+        background: $acc;
+        color: #fff;
+        margin: 0;
+        &:hover, &:focus{
+            background: #fff;
+            color: $acc;
+        }
+    }
+}
+.wizard-tab-form{
+    display: none;
+}
+.add-property-progress{
+    .step{
+        &.finish{
+            color: #1F1F1F;
+            span{
+                background: #00A551;
+            }
+        }
+    }
+}
+.check-btn{
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    margin: 0;
+    input{
+        display: none;
+    }
+    .checkmark{
+        font-family: "Manrope";
+        font-style: normal;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 22px;
+        text-transform: capitalize;
+        border-radius: 4px;
+        padding: 5px 10px;
+        border: 1px solid #919699;
+        color: #919699 !important;
+        display: inline-block;
+    }
+    input:checked ~ .checkmark{
+        color: #FFFFFF !important;
+        background: #00A551;
+        border-color: #00A551;
+      }
+
+}
+.dropdown.active{
+    >ul{
+        display: block;
+    }
+}
+
+ /* erro css end */

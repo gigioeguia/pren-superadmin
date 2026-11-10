@@ -1,0 +1,33 @@
+<div class="modal fade" id="withdraw-reject-modal">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content woodland-modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ __('why are you reject Payment Request?') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="personal-info">
+                    <form action="" method="post" enctype="multipart/form-data"
+                        class="add-brand-form pt-0 ajaxform_instant_reload rejectForm">
+                        @csrf
+
+                        <div class="row">
+                            <div class="mt-3">
+                                <label class="custom-top-label">{{ __('Enter Reason') }}</label>
+                                <textarea rows="2" name="reason" class="form-control" placeholder="{{ __('Enter Reason') }}"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="offcanvas-footer mt-3 d-flex justify-content-center align-items-center gap-2">
+                            <button type="button" data-bs-dismiss="modal"
+                                class="cancel-btn btn btn-outline-danger px-4 fw-bold" data-bs-dismiss="offcanvas"
+                                aria-label="Close">{{ __('Cancel') }}
+                            </button>
+                            <button class="modal-btn" type="submit">{{ __('Submit') }}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,72 @@
+/*--------------------------------------
+	- Color
+----------------------------------------*/
+.color {
+  color: $global-color;
+}
+
+@include color(black, $black);
+@include color(white, $white);
+@include color(white-3, var(--clr-white-3));
+@include color(yellow, $yellow);
+
+
+// @include gradient-color(themeoo-pink-blue-gr, to left, var(--clr-light-pink), var(--clr-blue-400));
+
+
+//.bg-fb{
+//  background: $fb !important;
+//}
+//
+//.bg-tw{
+//  background: $tw !important;
+//}
+//
+//.bg-yt{
+//  background: $yt !important;
+//}
+//
+//.bg-in{
+//  background: $in !important;
+//}
+
+// Brand Background Color
+//.fb-bg {
+//	color: $white;
+//	background: $fb;
+//}
+//
+//.tw-bg {
+//	color: $white;
+//	background: $twitter;
+//}
+//
+//.yt-bg {
+//	color: $white;
+//	background: $youtube;
+//}
+//
+//.in-bg {
+//	color: $white;
+//	background: #FD6533;
+//}
+//
+//.pin-bg {
+//	color: $white;
+//	background: $pin;
+//}
+//
+//.g-bg {
+//	color: $white;
+//	background: #FD6533;
+//}
+//
+//.insta-bg {
+//	color: $white;
+//	background: $insta;
+//}
+//
+//.snap-bg {
+//	color: $white;
+//	background: $snapchat;
+//}

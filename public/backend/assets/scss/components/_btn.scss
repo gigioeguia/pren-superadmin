@@ -1,0 +1,144 @@
+/*--------------------------------------
+	- Button
+----------------------------------------*/
+.action-btn{
+    border-radius: 4px;
+	padding: 4px 8px;
+	text-align: center;
+	font-size: 12px;
+}
+.bg-light-green{
+	background: rgba(0, 165, 81, 0.1)  !important;
+	color: var(--clr-main) !important;
+}
+.bg-light-red{
+	color: #F23B3D !important;
+	background: rgba(242, 59, 61, 0.1) !important;
+}
+.bg-light-orange{
+	color: #F89117 !important;
+	background: rgba(248, 145, 23, 0.1) !important;
+}
+.theme-btn{
+	background: var(--main-gradient);
+	border: none;
+	outline: none;
+	box-shadow: none !important;
+	text-align: center;
+	font-weight: 500;
+	font-size: 20px;
+	line-height: 22px;
+	padding: 14px 30px;
+	min-width: 200px;
+	color: #fff !important;
+	border-radius: 6px;
+}
+.border-btn{
+	background: #fff;
+	border: 1px solid #FF7C92 !important;
+	color: #FF7C92 !important;
+}
+.green-border{
+	border: 1px solid var(--clr-main) !important;
+	color: var(--clr-main) !important;
+	margin-left: 10px;
+	font-size: 16px;
+	padding: 3px 10px;
+}
+.modal-btn{
+	font-weight: 500;
+	font-size: 16px;
+	line-height: 22px;
+	background: #00A551;
+	border-radius: 6px;
+	padding: 8px 15px;
+	color: #fff !important;
+	i{
+		margin-right: 7px;
+	}
+}
+.tag-btn{
+	font-family: 'Manrope';
+	font-style: normal;
+	font-weight: 500;
+	font-size: 16px;
+	line-height: 22px;
+	text-transform: capitalize;
+	border-radius: 4px;
+	padding: 5px 10px;
+	border: 1px solid #919699;
+	color: #919699 !important;
+	display: inline-block;
+	&.active{
+		color: #FFFFFF !important;
+		background: #00A551;
+		border-color: #00A551;
+	}
+}
+.select-all{
+	color: #00A551;
+	font-weight: 500;
+	font-size: 16px;
+}
+.request-text  {
+	color: #FF900C;
+	background: none;
+}
+.reject-text {
+	color: #F23B3D;
+	background: none;
+}
+.approve-text{
+	color: #00A551;
+	background: none;
+}
+.sm-btn-modal{
+	background: linear-gradient(270deg, #0EBB63 0%, #0DEF81 100%);
+	border-radius: 8px;
+	padding: 7px 17px;
+	color: #fff !important;
+}
+.buy-now-btn{
+	background: rgba(8, 128, 127, 0.1);
+	border-radius: 6px;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 26px;
+	color: #00A551;
+	max-width: 190px;
+	width: 100%;
+	display: block;
+	margin: 0 auto;
+	margin-top: 30px;
+	&:hover, &.active{
+		background: linear-gradient(270deg, #0EBB63 0%, #0DEF81 100%);
+		box-shadow: 0px 11px 27px -2px rgba(14, 188, 100, 0.3);
+		color: #fff !important;
+	}
+}
+.download-receipt-btn{
+	background: #FFFFFF;
+	border: 1px solid #00A551;
+	border-radius: 6px;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 26px;
+	color: #00A551;
+	max-width: 190px;
+	width: 100%;
+	display: block;
+	margin: 0 auto;
+	margin-top: 30px;
+	text-align: center;
+	padding: 7px 20px;
+	&:hover, &.active{
+		background: linear-gradient(270deg, #0EBB63 0%, #0DEF81 100%);
+		box-shadow: 0px 11px 27px -2px rgba(14, 188, 100, 0.3);
+		color: #fff !important;
+	}
+}
+@media(max-width:575px){
+	.theme-btn{
+		min-width: 100px;
+	}
+}
