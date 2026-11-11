@@ -265,7 +265,7 @@ Implementado en rama `spec/trait-acnoo-fase0-impl` (apilada sobre `-draft`).
 
 ### Inventario P5 (completado antes de la adopción)
 
-Extracción mecánica de los 169 cuerpos (script de brace-matching sobre los 55 controladores) + cross-check rutas↔métodos con autoload. Resultado: **52 controladores adoptan** el trait, **3 excluidos** (su único método no encaja en el esqueleto y queda como override: `Admin\AcnooSupportController` — filter sin paginate, lista `get()`; `Admin\NotificationController` y `Landlord\NotificationController` — filter `get()` con JSON incondicional), **10 overrides** en adoptantes y **5 supresiones de `status`**. Migrados: 169 − 13 overrides = **156**.
+Extracción mecánica de los 169 cuerpos (script de brace-matching sobre los 55 controladores) + cross-check rutas↔métodos con autoload. Resultado: **52 controladores adoptan** el trait, **3 excluidos** (su único método no encaja en el esqueleto y queda como override: `Admin\AcnooSupportController` — filter sin paginate, lista `get()`; `Admin\NotificationController` y `Landlord\NotificationController` — filter `get()` con JSON incondicional), **11 overrides** en adoptantes y **5 supresiones de `status`**. Migrados: 169 − 14 = **155** (verificado: verbatim-check 98 Admin + 57 Landlord).
 
 **Admin (36):**
 
@@ -337,7 +337,7 @@ Extracción mecánica de los 169 cuerpos (script de brace-matching sobre los 55 
 | # | Punto | Detalle |
 |---|-------|---------|
 | D1 | Rutas muertas vs trait | 6 rutas apuntan hoy a métodos inexistentes (5×`status`: UserController y AcnooIncome/Expense de ambas capas; 1×`acnooFilter`: `Landlord\AcnooSupportController`, que no adopta). Los 5 adoptantes suprimen `status` con `use HasAcnooActions { status as protected; }` — la ruta sigue muerta (500 al invocarla) igual que hoy. Sin la supresión, el trait **reviviría** las rutas = cambio de comportamiento. |
-| D2 | F2 = 52, no 55 | 3 controladores excluidos (inventario). El DoD "55/55" se cumple como 52 adoptando + 3 excluidos documentados con su único método como override. |
+| D2 | F2 = 52, no 55 | 3 controladores excluidos (inventario). El DoD "55/55" se cumple como 52 adoptando + 3 excluidos documentados con su único método como override. (Corrección sobre el borrador: los overrides en adoptantes son 11, no 10 — faltaba contar `Landlord\AcnooTenantController::deleteAll`; total restante 14 = 11 + 3.) |
 | D3 | `input('per_page', N)` ≡ `?? N` | Los filtros de reportes leen per_page con `input('per_page', N)`; el trait usa `$request->per_page ?? acnooPerPage()`. Difieren únicamente si `per_page` se envía explícitamente como `null`. |
 | D4 | `redirect()->back()` ≡ `redirect(url()->previous())` | RentInvitation usa `back()`; ambos producen 302 a la URL previa. |
 | D5 | deleteAll 2-fase → intercalado | Client/Feature (admin) borran la media de todas las filas y luego `each->delete()`; el trait intercala media+delete por fila vía `deletingAcnooRow`. Mismo estado final y misma respuesta; cambia solo el orden interno de operaciones (relevante únicamente si un listener de eventos leyera archivos). |
