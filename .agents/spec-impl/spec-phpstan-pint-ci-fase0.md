@@ -1,7 +1,7 @@
 ---
 id: spec-phpstan-pint-ci-fase0
 titulo: "PHPStan (Larastan) nivel 5 + Pint + CI"
-estado: Revisado
+estado: Aprobado
 fecha: 2026-11-10
 origen: .analisis/plan/plan-accion.md (Fase 0 / 0.2) — DT-A4
 cobertura: Análisis estático nivel 5 con baseline, estilo Pint y pipeline CI de 4 jobs (tests, phpstan, pint, frontend build) sobre la suite smoke existente
@@ -214,3 +214,5 @@ Auditoría según skill `revisar-spec`: frontmatter 6/6, prefijos F oficiales co
 | H5 | Snippet YAML §4 parcial sin aclarar que es ilustrativo | bajo | Anotado como fragmento ilustrativo |
 
 **Decisión:** 0 hallazgos altos, 1 medio y 4 bajos (todos resueltos en esta revisión) → estado pasa a `Revisado`. Pendiente de `Aprobado` por el decisor.
+
+**Aprobación (2026-11-11):** el decisor aprueba el spec tras revisión sin hallazgos altos. Listo para implementar en `spec/phpstan-pint-ci-fase0-impl`; las decisiones pendientes de §8 se resuelven en implementación o post-merge.
