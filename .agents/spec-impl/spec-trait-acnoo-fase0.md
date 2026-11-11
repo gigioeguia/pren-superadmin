@@ -382,3 +382,7 @@ Hallazgo (medio): "Failed deletes leave missing media — en el camino row-by-ro
 ### Respuesta al review — docs contradictorios en los slices (2026-11-11)
 
 Hallazgo (medio): "AGENTS.md still says there is no shared trait, and .agents/README.md still lists only the previous implementation spec". Correcto para los PRs 1/2 aislados: la actualización de docs vivía en el PR 3, dejando ventana contradictoria entre merges. Resuelto re-asignando cada doc al punto más temprano en que es cierto (ver tabla D8): índice de `.agents/README.md` → PR 1 (el spec existe desde entonces; además corrige un gap preexistente — el índice tampoco listaba `spec-phpstan-pint-ci-fase0.md`), `AGENTS.md` intermedio → PR 2 (momento en que 34 controladores Admin sirven del trait; wording exacto para ese estado), `AGENTS.md` final (52/55, 11 overrides) → PR 3.
+
+### Respuesta al review — assert débil en G2 (2026-11-11)
+
+Hallazgo (medio): "Wrong redirect target passes — `assertRedirect()` sin argumentos solo verifica que hubo 302, no el destino". Corregido en PR 1: G2 fija la URL previa conocida con `from('/admin/amenities')` y exige el destino exacto con `assertRedirect('/admin/amenities')` (de 1 a 2 aserciones). En verde pre y post adopción.
