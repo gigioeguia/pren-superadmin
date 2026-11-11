@@ -5,12 +5,16 @@ namespace App\Http\Controllers\Admin;
 use App\Exports\AdminSubscriptionReportExport;
 use App\Http\Controllers\Controller;
 use App\Models\PlanSubscribe;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooSubscriptionReportController extends Controller
 {
+    use HasAcnooActions;
+
     public function __construct()
     {
         $this->middleware('permission:subscriptions-read')->only('index');
@@ -23,7 +27,14 @@ class AcnooSubscriptionReportController extends Controller
         return view('admin.reports.subscriptions.index', compact('subscriptions'));
     }
 
-    public function acnooFilter(Request $request)
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
+    {
+        return PlanSubscribe::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
     {
         $subscriptionQuery = PlanSubscribe::with(['user:id,name', 'plan:id,subscriptionName', 'gateway:id,name']);
 
@@ -50,25 +61,31 @@ class AcnooSubscriptionReportController extends Controller
             });
         }
 
-        $perPage = $request->input('per_page', 10);
-        $subscriptions = $subscriptionQuery->latest()->paginate($perPage);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.reports.subscriptions.datas', compact('subscriptions'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
+        return $subscriptionQuery->latest();
     }
 
-    public function exportExcel()
+    protected function acnooView(): string
     {
-        return Excel::download(new AdminSubscriptionReportExport, 'subscription-reports.xlsx');
+        return 'admin.reports.subscriptions.datas';
     }
 
-    public function exportCsv()
+    protected function acnooViewData(LengthAwarePaginator $rows): array
     {
-        return Excel::download(new AdminSubscriptionReportExport, 'subscription-reports.csv');
+        return ['subscriptions' => $rows];
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new AdminSubscriptionReportExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'subscription-reports';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'subscription-reports';
     }
 }

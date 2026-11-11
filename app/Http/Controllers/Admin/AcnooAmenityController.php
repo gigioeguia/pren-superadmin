@@ -5,10 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Amenity;
 use App\Models\User;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class AcnooAmenityController extends Controller
 {
+    use HasAcnooActions;
+
     public function __construct()
     {
         $this->middleware('permission:amenities-read')->only('index');
@@ -23,30 +28,6 @@ class AcnooAmenityController extends Controller
         $landlords = User::whereRole('landlord')->latest()->get();
 
         return view('admin.amenities.index', compact('amenities', 'landlords'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $amenities = Amenity::with('landlord:id,name')
-            ->when(request('search'), function ($q) {
-                $search = request('search');
-                $q->where(function ($q) use ($search) {
-                    $q->where('name', 'like', '%'.$search.'%');
-                    $q->orWhereHas('landlord', function ($landlordQuery) use ($search) {
-                        $landlordQuery->where('name', 'like', '%'.$search.'%');
-                    });
-                });
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.amenities.datas', compact('amenities'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function store(Request $request)
@@ -83,16 +64,6 @@ class AcnooAmenityController extends Controller
         ]);
     }
 
-    public function status(Request $request, string $id)
-    {
-        $amenity = Amenity::findOrFail($id);
-        $amenity->update(['status' => $request->status]);
-
-        return response()->json([
-            'message' => 'Amenity',
-        ]);
-    }
-
     public function destroy(string $id)
     {
         Amenity::where('id', $id)->delete();
@@ -103,13 +74,50 @@ class AcnooAmenityController extends Controller
         ]);
     }
 
-    public function deleteAll(Request $request)
-    {
-        Amenity::whereIn('id', $request->ids)->delete();
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json([
-            'message' => 'Selected Amenity Deleted Successfully',
-            'redirect' => route('admin.amenities.index'),
-        ]);
+    protected function acnooModel(): string
+    {
+        return Amenity::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
+    {
+        return Amenity::with('landlord:id,name')
+            ->when(request('search'), function ($q) {
+                $search = request('search');
+                $q->where(function ($q) use ($search) {
+                    $q->where('name', 'like', '%'.$search.'%');
+                    $q->orWhereHas('landlord', function ($landlordQuery) use ($search) {
+                        $landlordQuery->where('name', 'like', '%'.$search.'%');
+                    });
+                });
+            })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'admin.amenities.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['amenities' => $rows];
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'admin.amenities.index';
+    }
+
+    protected function acnooStatusMessage(): string
+    {
+        return 'Amenity';
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return 'Selected Amenity Deleted Successfully';
     }
 }

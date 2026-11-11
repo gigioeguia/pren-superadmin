@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\Testimonial;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class AcnooTestimonialController extends Controller
 {
+    use HasAcnooActions;
     use HasUploader;
 
     public function index(Request $request)
@@ -17,27 +21,6 @@ class AcnooTestimonialController extends Controller
         $testimonials = Testimonial::latest()->paginate(10);
 
         return view('admin.testimonials.index', compact('testimonials'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $testimonials = Testimonial::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('client_name', 'like', '%'.request('search').'%')
-                    ->orWhere('work_at', 'like', '%'.request('search').'%')
-                    ->orWhere('star', 'like', '%'.request('search').'%');
-            });
-        })
-            ->latest()
-            ->paginate($request->per_page ?? 10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.testimonials.datas', compact('testimonials'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function create()
@@ -104,21 +87,54 @@ class AcnooTestimonialController extends Controller
         ]);
     }
 
-    public function deleteAll(Request $request)
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
     {
-        $testimonials = Testimonial::whereIn('id', $request->ids)->get();
+        return Testimonial::class;
+    }
 
-        foreach ($testimonials as $testimonial) {
-            if (file_exists($testimonial->client_image)) {
-                Storage::delete($testimonial->client_image);
-            }
+    protected function acnooQuery(Request $request): Builder
+    {
+        return Testimonial::when(request('search'), function ($q) {
+            $q->where(function ($q) {
+                $q->where('client_name', 'like', '%'.request('search').'%')
+                    ->orWhere('work_at', 'like', '%'.request('search').'%')
+                    ->orWhere('star', 'like', '%'.request('search').'%');
+            });
+        })
+            ->latest();
+    }
 
-            $testimonial->delete();
+    protected function acnooView(): string
+    {
+        return 'admin.testimonials.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['testimonials' => $rows];
+    }
+
+    protected function acnooDeletesRowByRow(): bool
+    {
+        return true;
+    }
+
+    protected function deletingAcnooRow($row): void
+    {
+        if (file_exists($row->client_image)) {
+            Storage::delete($row->client_image);
         }
+    }
 
-        return response()->json([
-            'message' => __('Selected Testimonial deleted successfully'),
-            'redirect' => route('admin.testimonials.index'),
-        ]);
+    protected function acnooRedirectRoute(): string
+    {
+        return 'admin.testimonials.index';
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return __('Selected Testimonial deleted successfully');
     }
 }

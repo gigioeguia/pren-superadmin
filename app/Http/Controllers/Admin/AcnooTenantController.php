@@ -8,14 +8,17 @@ use App\Http\Controllers\Controller;
 use App\Models\Rent;
 use App\Models\User;
 use App\Models\UserDetail;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooTenantController extends Controller
 {
+    use HasAcnooActions;
     use HasUploader;
 
     public function __construct()
@@ -49,47 +52,6 @@ class AcnooTenantController extends Controller
             ->paginate(10);
 
         return view('admin.tenants.index', compact('tenants'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $tenants = User::with(['user_details', 'rents'])->when($request->status, function ($query) use ($request) {
-            if ($request->status == 'active') {
-                $query->whereHas('rents', function ($rentsQuery) {
-                    $rentsQuery->where('status', 'active');
-                });
-            } elseif ($request->status == 'expired') {
-                $query->whereHas('rents', function ($rentsQuery) {
-                    $rentsQuery->where('status', 'expired');
-                })->whereDoesntHave('rents', function ($rentsQuery) {
-                    $rentsQuery->where('status', 'active');
-                });
-            }
-        }, function ($query) {
-            $query->whereDoesntHave('rents');
-        })
-            ->when(request('search'), function ($q) {
-                $q->where(function ($q) {
-                    $search = request('search');
-                    $q->where('name', 'like', '%'.$search.'%')
-                        ->orwhere('email', 'like', '%'.$search.'%')
-                        ->orwhere('unique_id', 'like', '%'.$search.'%')
-                        ->orWhere('profile_type', 'like', '%'.$search.'%')
-                        ->orWhereHas('user_details', function ($query) use ($search) {
-                            $query->where('gender', 'like', '%'.$search.'%');
-                        });
-                });
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.tenants.datas', compact('tenants'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function create()
@@ -397,13 +359,72 @@ class AcnooTenantController extends Controller
         }
     }
 
-    public function exportExcel(Request $request)
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
     {
-        return Excel::download(new AdminTenantExport($request->status), 'tenant.xlsx');
+        return User::class;
     }
 
-    public function exportCsv(Request $request)
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new AdminTenantExport($request->status), 'tenants.csv');
+        return User::with(['user_details', 'rents'])->when($request->status, function ($query) use ($request) {
+            if ($request->status == 'active') {
+                $query->whereHas('rents', function ($rentsQuery) {
+                    $rentsQuery->where('status', 'active');
+                });
+            } elseif ($request->status == 'expired') {
+                $query->whereHas('rents', function ($rentsQuery) {
+                    $rentsQuery->where('status', 'expired');
+                })->whereDoesntHave('rents', function ($rentsQuery) {
+                    $rentsQuery->where('status', 'active');
+                });
+            }
+        }, function ($query) {
+            $query->whereDoesntHave('rents');
+        })
+            ->when(request('search'), function ($q) {
+                $q->where(function ($q) {
+                    $search = request('search');
+                    $q->where('name', 'like', '%'.$search.'%')
+                        ->orwhere('email', 'like', '%'.$search.'%')
+                        ->orwhere('unique_id', 'like', '%'.$search.'%')
+                        ->orWhere('profile_type', 'like', '%'.$search.'%')
+                        ->orWhereHas('user_details', function ($query) use ($search) {
+                            $query->where('gender', 'like', '%'.$search.'%');
+                        });
+                });
+            })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'admin.tenants.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['tenants' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new AdminTenantExport($request->status);
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'tenant';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'tenants';
     }
 }

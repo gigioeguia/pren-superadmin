@@ -6,12 +6,18 @@ use App\Exports\AdminExpensesExport;
 use App\Http\Controllers\Controller;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
+use App\Traits\HasAcnooActions;
 use Carbon\Carbon;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooExpenseController extends Controller
 {
+    use HasAcnooActions {
+        status as protected;
+    }
+
     public function __construct()
     {
         $this->middleware('permission:expenses-read')->only('index');
@@ -164,23 +170,52 @@ class AcnooExpenseController extends Controller
         ]);
     }
 
-    public function deleteAll(Request $request)
-    {
-        Expense::whereIn('id', $request->ids)->delete();
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json([
-            'message' => 'Selected expense deleted successfully',
-            'redirect' => route('admin.expenses.index'),
-        ]);
+    protected function acnooModel(): string
+    {
+        return Expense::class;
     }
 
-    public function exportExcel()
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new AdminExpensesExport, 'admin-expenses.xlsx');
+        return Expense::with('category:id,name')
+            ->whereNull('landlord_id')
+            ->latest();
     }
 
-    public function exportCsv()
+    protected function acnooView(): string
     {
-        return Excel::download(new AdminExpensesExport, 'admin-expenses.csv');
+        return 'admin.expenses.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['expenses' => $rows];
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return 'Selected expense deleted successfully';
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'admin.expenses.index';
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new AdminExpensesExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'admin-expenses';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'admin-expenses';
     }
 }

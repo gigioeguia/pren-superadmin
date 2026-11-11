@@ -6,12 +6,16 @@ use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\Blog;
 use App\Models\Comment;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class AcnooBlogController extends Controller
 {
+    use HasAcnooActions;
     use HasUploader;
 
     public function index(Request $request)
@@ -19,25 +23,6 @@ class AcnooBlogController extends Controller
         $blogs = Blog::latest()->paginate(20);
 
         return view('admin.blogs.index', compact('blogs'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $blogs = Blog::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('title', 'like', '%'.request('search').'%');
-            });
-        })
-            ->latest()
-            ->paginate($request->per_page ?? 10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.blogs.datas', compact('blogs'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function create()
@@ -111,37 +96,65 @@ class AcnooBlogController extends Controller
         ]);
     }
 
-    public function status(Request $request, $id)
-    {
-        $blog_status = Blog::findOrFail($id);
-        $blog_status->update(['status' => $request->status]);
-
-        return response()->json(['message' => 'Blog']);
-    }
-
-    public function deleteAll(Request $request)
-    {
-        $blogs = Blog::whereIn('id', $request->ids)->get();
-
-        foreach ($blogs as $blog) {
-            if (file_exists($blog->image)) {
-                Storage::delete($blog->image);
-            }
-
-            $blog->delete();
-        }
-
-        return response()->json([
-            'message' => __('Selected Blog deleted successfully'),
-            'redirect' => route('admin.blogs.index'),
-        ]);
-    }
-
     public function filterComment($id)
     {
         $blog = Blog::findOrFail($id);
         $comments = Comment::with('blog:id')->whereStatus(1)->where('blog_id', $blog->id)->latest()->paginate(10);
 
         return view('admin.blogs.comments.index', compact('comments'));
+    }
+
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
+    {
+        return Blog::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
+    {
+        return Blog::when(request('search'), function ($q) {
+            $q->where(function ($q) {
+                $q->where('title', 'like', '%'.request('search').'%');
+            });
+        })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'admin.blogs.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['blogs' => $rows];
+    }
+
+    protected function acnooDeletesRowByRow(): bool
+    {
+        return true;
+    }
+
+    protected function deletingAcnooRow($row): void
+    {
+        if (file_exists($row->image)) {
+            Storage::delete($row->image);
+        }
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'admin.blogs.index';
+    }
+
+    protected function acnooStatusMessage(): string
+    {
+        return 'Blog';
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return __('Selected Blog deleted successfully');
     }
 }

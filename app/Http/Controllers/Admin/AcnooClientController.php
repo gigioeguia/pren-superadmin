@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\Client;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class AcnooClientController extends Controller
 {
+    use HasAcnooActions;
     use HasUploader;
 
     public function index(Request $request)
@@ -17,25 +21,6 @@ class AcnooClientController extends Controller
         $clients = Client::latest()->paginate(10);
 
         return view('admin.clients.index', compact('clients'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $clients = Client::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('title', 'like', '%'.request('search').'%');
-            });
-        })
-            ->latest()
-            ->paginate($request->per_page ?? 10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.clients.datas', compact('clients'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function create()
@@ -97,28 +82,57 @@ class AcnooClientController extends Controller
         ]);
     }
 
-    public function status(Request $request, $id)
-    {
-        $client = Client::findOrFail($id);
-        $client->update(['status' => $request->status]);
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json(['message' => 'Client ']);
+    protected function acnooModel(): string
+    {
+        return Client::class;
     }
 
-    public function deleteAll(Request $request)
+    protected function acnooQuery(Request $request): Builder
     {
-        $clients = Client::whereIn('id', $request->ids)->get();
-        foreach ($clients as $client) {
-            if (file_exists($client->image)) {
-                Storage::delete($client->image);
-            }
+        return Client::when(request('search'), function ($q) {
+            $q->where(function ($q) {
+                $q->where('title', 'like', '%'.request('search').'%');
+            });
+        })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'admin.clients.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['clients' => $rows];
+    }
+
+    protected function acnooDeletesRowByRow(): bool
+    {
+        return true;
+    }
+
+    protected function deletingAcnooRow($row): void
+    {
+        if (file_exists($row->image)) {
+            Storage::delete($row->image);
         }
+    }
 
-        $clients->each->delete();
+    protected function acnooRedirectRoute(): string
+    {
+        return 'admin.clients.index';
+    }
 
-        return response()->json([
-            'message' => __('Selected Client deleted successfully'),
-            'redirect' => route('admin.clients.index'),
-        ]);
+    protected function acnooStatusMessage(): string
+    {
+        return 'Client ';
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return __('Selected Client deleted successfully');
     }
 }

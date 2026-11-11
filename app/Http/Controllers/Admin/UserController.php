@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +15,9 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
+    use HasAcnooActions {
+        status as protected;
+    }
     use HasUploader;
 
     public function __construct()
@@ -27,28 +33,6 @@ class UserController extends Controller
         $users = User::whereNotIn('role', ['superadmin', 'staff', 'landlord', 'tenant'])->latest()->paginate(20);
 
         return view('admin.users.index', compact('users'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $users = User::whereNotIn('role', ['superadmin', 'staff', 'shop-owner'])->when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('name', 'like', '%'.request('search').'%')
-                    ->orWhere('email', 'like', '%'.request('search').'%')
-                    ->orWhere('role', 'like', '%'.request('search').'%')
-                    ->orWhere('phone', 'like', '%'.request('search').'%');
-            });
-        })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.users.datas', compact('users'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function create()
@@ -147,13 +131,48 @@ class UserController extends Controller
         ]);
     }
 
-    public function deleteAll(Request $request)
-    {
-        User::whereIn('id', $request->ids)->delete();
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json([
-            'message' => __('Selected Staff deleted successfully'),
-            'redirect' => route('admin.users.index'),
-        ]);
+    protected function acnooModel(): string
+    {
+        return User::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
+    {
+        return User::whereNotIn('role', ['superadmin', 'staff', 'shop-owner'])->when(request('search'), function ($q) {
+            $q->where(function ($q) {
+                $q->where('name', 'like', '%'.request('search').'%')
+                    ->orWhere('email', 'like', '%'.request('search').'%')
+                    ->orWhere('role', 'like', '%'.request('search').'%')
+                    ->orWhere('phone', 'like', '%'.request('search').'%');
+            });
+        })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'admin.users.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['users' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return __('Selected Staff deleted successfully');
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'admin.users.index';
     }
 }

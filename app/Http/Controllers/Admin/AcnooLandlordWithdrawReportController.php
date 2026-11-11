@@ -5,12 +5,16 @@ namespace App\Http\Controllers\Admin;
 use App\Exports\AdminLandlordWithdrawReportExport;
 use App\Http\Controllers\Controller;
 use App\Models\Withdraw;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooLandlordWithdrawReportController extends Controller
 {
+    use HasAcnooActions;
+
     public function __construct()
     {
         $this->middleware('permission:reports-read')->only('index', 'show');
@@ -23,7 +27,22 @@ class AcnooLandlordWithdrawReportController extends Controller
         return view('admin.reports.withdrawals.index', compact('withdraws'));
     }
 
-    public function acnooFilter(Request $request)
+    public function show(string $id)
+    {
+
+        $withdraw = Withdraw::with(['user:id,name,phone,email', 'user.user_details:user_id,address_info'])->findOrFail($id);
+
+        return view('admin.reports.withdrawals.invoice', compact('withdraw'));
+    }
+
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
+    {
+        return Withdraw::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
     {
 
         $withdrawQuery = Withdraw::with(['account_info:id,infos', 'user:id,name']);
@@ -50,33 +69,36 @@ class AcnooLandlordWithdrawReportController extends Controller
             });
         }
 
-        $perPage = $request->input('per_page', 20);
-        $withdraws = $withdrawQuery->latest()->paginate($perPage);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.reports.withdrawals.datas', compact('withdraws'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
+        return $withdrawQuery->latest();
     }
 
-    public function show(string $id)
+    protected function acnooView(): string
     {
-
-        $withdraw = Withdraw::with(['user:id,name,phone,email', 'user.user_details:user_id,address_info'])->findOrFail($id);
-
-        return view('admin.reports.withdrawals.invoice', compact('withdraw'));
+        return 'admin.reports.withdrawals.datas';
     }
 
-    public function exportExcel()
+    protected function acnooViewData(LengthAwarePaginator $rows): array
     {
-        return Excel::download(new AdminLandlordWithdrawReportExport, 'landlord-withdraw-report.xlsx');
+        return ['withdraws' => $rows];
     }
 
-    public function exportCsv()
+    protected function acnooPerPage(): int
     {
-        return Excel::download(new AdminLandlordWithdrawReportExport, 'landlord-withdraw-report.csv');
+        return 20;
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new AdminLandlordWithdrawReportExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'landlord-withdraw-report';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'landlord-withdraw-report';
     }
 }

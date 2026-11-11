@@ -4,30 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class AcnooCommentController extends Controller
 {
-    public function acnooFilter(Request $request)
-    {
-        $comments = Comment::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('name', 'like', '%'.request('search').'%')
-                    ->orWhere('email', 'like', '%'.request('search').'%')
-                    ->orWhere('comment', 'like', '%'.request('search').'%');
-            });
-        })
-            ->latest()
-            ->paginate($request->per_page ?? 10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.blogs.comments.datas', compact('comments'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
-    }
+    use HasAcnooActions;
 
     public function destroy($id)
     {
@@ -39,13 +23,42 @@ class AcnooCommentController extends Controller
         ]);
     }
 
-    public function deleteAll(Request $request)
-    {
-        Comment::whereIn('id', $request->ids)->delete();
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json([
-            'message' => __('Selected Comments deleted successfully'),
-            'redirect' => route('admin.blogs.index'),
-        ]);
+    protected function acnooModel(): string
+    {
+        return Comment::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
+    {
+        return Comment::when(request('search'), function ($q) {
+            $q->where(function ($q) {
+                $q->where('name', 'like', '%'.request('search').'%')
+                    ->orWhere('email', 'like', '%'.request('search').'%')
+                    ->orWhere('comment', 'like', '%'.request('search').'%');
+            });
+        })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'admin.blogs.comments.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['comments' => $rows];
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'admin.blogs.index';
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return __('Selected Comments deleted successfully');
     }
 }

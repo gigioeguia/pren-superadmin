@@ -4,10 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\RefundReason;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class AcnooRefundReasonController extends Controller
 {
+    use HasAcnooActions;
+
     public function __construct()
     {
         $this->middleware('permission:refund_reasons-read')->only('index');
@@ -21,26 +26,6 @@ class AcnooRefundReasonController extends Controller
         $reasons = RefundReason::latest()->paginate(10);
 
         return view('admin.refund-reason.index', compact('reasons'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $reasons = RefundReason::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $search = request('search');
-                $q->where('reason', 'like', '%'.$search.'%');
-            });
-        })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.refund-reason.datas', compact('reasons'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function store(Request $request)
@@ -73,16 +58,6 @@ class AcnooRefundReasonController extends Controller
         ]);
     }
 
-    public function status(Request $request, string $id)
-    {
-        $reason = RefundReason::findOrFail($id);
-        $reason->update(['status' => $request->status]);
-
-        return response()->json([
-            'message' => 'Refund Reason',
-        ]);
-    }
-
     public function destroy(string $id)
     {
         $reason = RefundReason::findOrFail($id);
@@ -94,13 +69,51 @@ class AcnooRefundReasonController extends Controller
         ]);
     }
 
-    public function deleteAll(Request $request)
-    {
-        RefundReason::whereIn('id', $request->ids)->delete();
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json([
-            'message' => 'Selected reason deleted successfully',
-            'redirect' => route('admin.refund-reason.index'),
-        ]);
+    protected function acnooModel(): string
+    {
+        return RefundReason::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
+    {
+        return RefundReason::when(request('search'), function ($q) {
+            $q->where(function ($q) {
+                $search = request('search');
+                $q->where('reason', 'like', '%'.$search.'%');
+            });
+        })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'admin.refund-reason.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['reasons' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'admin.refund-reason.index';
+    }
+
+    protected function acnooStatusMessage(): string
+    {
+        return 'Refund Reason';
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return 'Selected reason deleted successfully';
     }
 }

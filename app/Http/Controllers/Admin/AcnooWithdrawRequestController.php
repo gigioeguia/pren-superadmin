@@ -7,12 +7,16 @@ use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Withdraw;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooWithdrawRequestController extends Controller
 {
+    use HasAcnooActions;
+
     public function __construct()
     {
         $this->middleware('permission:withdraw-request-read')->only('index');
@@ -24,33 +28,6 @@ class AcnooWithdrawRequestController extends Controller
         $withdraws = Withdraw::with(['account_info:id,method_id', 'account_info.withdraw_method:id,name,charge_type', 'user:id,name'])->latest()->paginate(20);
 
         return view('admin.withdrawals.index', compact('withdraws'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $withdraws = Withdraw::with(['account_info:id,method_id', 'account_info.withdraw_method:id,name,charge_type', 'user:id,name'])
-            ->when(request('search'), function ($q) {
-                $q->where('amount', 'like', '%'.request('search').'%')
-                    ->orWhere('charge', 'like', '%'.request('search').'%')
-                    ->orWhere('status', 'like', '%'.request('search').'%');
-
-                $q->orWhereHas('user', function ($q) {
-                    $q->where('name', 'like', '%'.request('search').'%');
-                });
-            })
-            ->when($request->id, function ($query) use ($request) {
-                $query->where('id', $request->id);
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if (request()->ajax()) {
-            return response()->json([
-                'data' => view('admin.withdrawals.datas', compact('withdraws'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function show(string $id)
@@ -140,13 +117,58 @@ class AcnooWithdrawRequestController extends Controller
         }
     }
 
-    public function exportExcel()
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
     {
-        return Excel::download(new AdminWithdrawRequestExport, 'withdraw-request.xlsx');
+        return Withdraw::class;
     }
 
-    public function exportCsv()
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new AdminWithdrawRequestExport, 'withdraw-request.csv');
+        return Withdraw::with(['account_info:id,method_id', 'account_info.withdraw_method:id,name,charge_type', 'user:id,name'])
+            ->when(request('search'), function ($q) {
+                $q->where('amount', 'like', '%'.request('search').'%')
+                    ->orWhere('charge', 'like', '%'.request('search').'%')
+                    ->orWhere('status', 'like', '%'.request('search').'%');
+
+                $q->orWhereHas('user', function ($q) {
+                    $q->where('name', 'like', '%'.request('search').'%');
+                });
+            })
+            ->when($request->id, function ($query) use ($request) {
+                $query->where('id', $request->id);
+            })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'admin.withdrawals.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['withdraws' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new AdminWithdrawRequestExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'withdraw-request';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'withdraw-request';
     }
 }
