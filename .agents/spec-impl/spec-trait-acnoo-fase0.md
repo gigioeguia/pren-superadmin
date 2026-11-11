@@ -1,7 +1,7 @@
 ---
 id: spec-trait-acnoo-fase0
 titulo: "Trait único HasAcnooActions para acnooFilter/deleteAll/status/exportExcel/exportCsv"
-estado: Revisado
+estado: Aprobado
 fecha: 2026-11-11
 origen: .analisis/plan/plan-accion.md (Fase 0 / 0.3) — DT-C3
 cobertura: Extracción de 169 métodos duplicados (55 acnooFilter + 33 deleteAll + 19 status + 62 exports) en 55 controladores Admin/Landlord a app/Traits/HasAcnooActions.php con comportamiento observable idéntico
@@ -254,3 +254,5 @@ Auditoría según skill `revisar-spec`: frontmatter 6/6, prefijos G/H/F oficiale
 | H5 | §8 citaba "la suite cubre 52 endpoints críticos" — la cifra de 0.1 es 44/52; verificado además que ningún test smoke toca estos 55×5 endpoints | bajo | Corregido |
 
 **Decisión:** 0 hallazgos altos, 1 medio y 4 bajos (todos resueltos en esta revisión) → estado pasa a `Revisado`. Pendiente de `Aprobado` por el decisor.
+
+**Aprobación (2026-11-11):** el decisor aprueba el spec tras revisión sin hallazgos altos. Listo para implementar en `spec/trait-acnoo-fase0-impl` (apilada sobre `-draft`); las decisiones pendientes de §8 se resuelven en implementación.
