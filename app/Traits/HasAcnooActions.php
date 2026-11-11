@@ -54,6 +54,15 @@ trait HasAcnooActions
     // caracterizado por H3).
     public function deleteAll(Request $request)
     {
+        // DEUDA CONOCIDA (DT-M10, fix en Fase 2 junto al scoping): la limpieza
+        // de media (deletingAcnooRow) corre ANTES del delete de la fila —
+        // patrón preexistente preservado 1:1 de los controladores originales.
+        // Si el delete de la fila falla (FK/concurrencia), la fila queda viva
+        // con su media ya borrada. El fix correcto captura los paths ANTES del
+        // delete y limpia DESPUÉS — no reordenar sin más: las relaciones con
+        // cascadeOnDelete (propertyDetail, units) desaparecen tras el delete y
+        // la limpieza dejaría de encontrarlas. Es un rediseño del contrato del
+        // hook, no un swap de dos líneas.
         if ($this->acnooDeletesRowByRow()) {
             $this->acnooModel()::whereIn('id', $request->ids)->get()
                 ->each(function (Model $row) {
