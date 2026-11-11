@@ -29,6 +29,13 @@ trait HasAcnooActions
         return redirect(url()->previous());
     }
 
+    // NOTA DE SEGURIDAD — Seg-5 (hallazgo 5 de .analisis/seguridad.md): lookup
+    // SIN ownership scoping, preservado 1:1 de las copias originales por
+    // contrato del spec-trait-acnoo-fase0 (§5 preservación estricta; el fix
+    // está en OUT → Fase 2, plan-accion 2.1, con Policies). El fix se aplicará
+    // aquí una sola vez; el test H3 (@group characterization) está diseñado
+    // para romper cuando llegue. No añadir scoping sin diseñar la separación
+    // Admin (sin scope) / Landlord (scoped) — un cambio global rompería admin.
     public function status(Request $request, string $id)
     {
         $this->acnooModel()::findOrFail($id)->update(['status' => $request->status]);
@@ -42,6 +49,9 @@ trait HasAcnooActions
         return response()->json($payload);
     }
 
+    // NOTA DE SEGURIDAD — Seg-5: whereIn SIN ownership scoping, ídem status()
+    // arriba (preexistente en las 33+19 copias; fix en Fase 2, plan-accion 2.1;
+    // caracterizado por H3).
     public function deleteAll(Request $request)
     {
         if ($this->acnooDeletesRowByRow()) {
