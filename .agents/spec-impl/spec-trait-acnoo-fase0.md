@@ -172,7 +172,7 @@ Fijadas, no negociables salvo volver el spec a `Borrador`:
 | F3 | phpstan nivel 5 verde | baseline ajustado | `composer analyse` | exit 0; baseline 709 → N (solo entradas unmatched removidas, diff en el PR) |
 | F4 | estilo verde | — | `composer lint` | exit 0 |
 | F5 | rutas intactas | — | `git diff origin/main -- routes/` | vacío (152 referencias sin cambio) |
-| F6 | CI + suite | PR abierto | run de CI (4 jobs) | verde; suite completa (60 + 12) < 30 s |
+| F6 | CI + suite | PR abierto | run de CI (4 jobs) | verde; suite completa (74 total) < 30 s |
 
 ### Tests de caracterización
 
@@ -190,7 +190,7 @@ Fijadas, no negociables salvo volver el spec a `Borrador`:
 - [ ] F1: 0 definiciones propias de los 5 métodos fuera del trait, salvo overrides enumerados en notas de implementación con motivo.
 - [ ] G1–G8 y H1–H2 en verde: mensajes (incluidos los rotos), `per_page`, JSON shapes y redirects preservados.
 - [ ] H3–H4 en verde hoy, marcados `@group characterization` con comentario "expected to fail after Phase 2 / 3.6" (patrón de la suite smoke).
-- [ ] Suite completa (60 smoke + 12 nuevas) verde en local y en los 4 jobs de CI; F6 < 30 s.
+- [ ] Suite completa (60 smoke + 12 de comportamiento + 2 estructurales = 74) verde en local y en los 4 jobs de CI; F6 < 30 s.
 - [ ] F3: `composer analyse` exit 0; baseline reducido solo con entradas unmatched; conteo 709 → N y diff documentados en el PR.
 - [ ] F4: `composer lint` exit 0.
 - [ ] F5: `git diff origin/main -- routes/` vacío.
@@ -360,3 +360,11 @@ El diff total de la implementación es de **265,678 caracteres**, por encima del
 | 3 | `spec/trait-acnoo-fase0-impl` → `impl-2` | adopción Landlord (18) + docs + D6/D7 | 87k |
 
 Merge en orden 1→2→3 con **merge commit** (no squash): preserva los commits atómicos del plan de §5 y mantiene el diff incremental de cada PR tras el retarget automático de base al borrarse la rama anterior (con squash, el merge-base se perdería y el PR siguiente volvería a mostrar el diff completo, excediendo otra vez el límite). Justificación frente a workflow-ramas ("merge commit solo si el PR tiene commits atómicos relevantes a preservar"): se cumple — cada PR lleva exactamente los commits atómicos del spec.
+
+### Respuesta al review del PR 1 (2026-11-11)
+
+Hallazgo (medio): "Shared actions remain unused — the controllers do not use HasAcnooActions, so the smoke tests exercise the old implementations rather than the trait". **Correcto para el PR 1 aislado**: por el diseño apilado (D8), ese slice introduce trait + tests sin adopción — el trait queda sin uso y los tests fijan el comportamiento de las copias locales hasta que los PR 2/3 aterrizan. Resolución:
+
+1. **Docblocks corregidos (PR 1)**: los tests G/H ahora declaran explícitamente que en ese punto fijan el comportamiento de las copias locales y que la continuidad en verde tras la adopción es la prueba de preservación.
+2. **Pruebas estructurales (PR 2 y PR 3)**: `test_routed_actions_are_provided_by_the_trait` verifica por reflection que los controladores representativos usan `HasAcnooActions` y que sus ficheros ya no definen los métodos enrutados (Admin: Amenity 3 + Property 5; Landlord: Amenity 3 + Property 4, comprobando además que su `deleteAll` **sigue** local por ser override documentado). Con esto la centralización no es solo un grep del PR: está cubierta por la suite.
+3. Los mismos endpoints, tras la adopción, son servidos por el trait (verificado: suite en verde en los tres estados del stack — 72 en PR 1, 73 en PR 2, 74 en PR 3).

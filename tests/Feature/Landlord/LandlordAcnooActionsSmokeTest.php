@@ -2,13 +2,17 @@
 
 namespace Tests\Feature\Landlord;
 
+use App\Http\Controllers\Landlord\AcnooAmenityController;
+use App\Http\Controllers\Landlord\PropertyController;
 use App\Models\Amenity;
 use App\Models\PlanSubscribe;
 use App\Models\Property;
 use App\Models\PropertyDetail;
 use App\Models\User;
+use App\Traits\HasAcnooActions;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use ReflectionClass;
 use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
 
@@ -132,5 +136,37 @@ class LandlordAcnooActionsSmokeTest extends TestCase
         // Assert — documenta la ruta cruzada: el filter borra
         $response->assertOk();
         $this->assertDatabaseMissing('properties', ['id' => $property->id]);
+    }
+
+    public function test_routed_actions_are_provided_by_the_trait(): void
+    {
+        // Arrange — verificación estructural (respuesta al review del PR 1):
+        // tras la adopción Landlord, los métodos enrutados salen del trait y
+        // el override documentado (§12) sigue definido localmente.
+        $fromTrait = [
+            AcnooAmenityController::class => ['acnooFilter', 'deleteAll', 'status'],
+            PropertyController::class => ['acnooFilter', 'status', 'exportExcel', 'exportCsv'],
+        ];
+
+        // Act & Assert
+        foreach ($fromTrait as $controller => $actions) {
+            $this->assertContains(HasAcnooActions::class, class_uses_recursive($controller));
+
+            $file = file_get_contents((new ReflectionClass($controller))->getFileName());
+            foreach ($actions as $action) {
+                $this->assertStringNotContainsString(
+                    "function {$action}(",
+                    $file,
+                    "{$controller} debe servir {$action} desde HasAcnooActions, no como copia local."
+                );
+            }
+        }
+
+        $propertyController = file_get_contents((new ReflectionClass(PropertyController::class))->getFileName());
+        $this->assertStringContainsString(
+            'function deleteAll(',
+            $propertyController,
+            'Landlord\PropertyController::deleteAll es un override documentado (§12): debe seguir local.'
+        );
     }
 }
