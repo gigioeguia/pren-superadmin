@@ -7,12 +7,16 @@ use App\Http\Controllers\Controller;
 use App\Models\UserMethod;
 use App\Models\Withdraw;
 use App\Models\WithdrawMethod;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooWithdrawController extends Controller
 {
+    use HasAcnooActions;
+
     public function index()
     {
         $withdraws = Withdraw::with('account_info.withdraw_method:id,name,charge_type')
@@ -21,35 +25,6 @@ class AcnooWithdrawController extends Controller
             ->paginate(10);
 
         return view('landlord.withdraw-request.index', compact('withdraws'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $withdraws = Withdraw::with(['account_info.withdraw_method:id,name'])
-            ->where('user_id', auth()->id())
-            ->when(request('search'), function ($q) {
-                $search = request('search');
-
-                $q->where('amount', 'like', '%'.$search.'%')
-                    ->orWhere('charge', 'like', '%'.$search.'%')
-                    ->orWhere('status', 'like', '%'.$search.'%')
-                    ->orWhereHas('account_info.withdraw_method', function ($q) use ($search) {
-                        $q->where('name', 'like', '%'.$search.'%');
-                    })
-                    ->orWhereHas('account_info', function ($q) use ($search) {
-                        $q->where('infos->bank_name', 'like', '%'.$search.'%');
-                    });
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('landlord.withdraw-request.datas', compact('withdraws'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function store(Request $request)
@@ -132,13 +107,60 @@ class AcnooWithdrawController extends Controller
         return view('landlord.withdraw-request.invoice', compact('withdraw'));
     }
 
-    public function exportExcel()
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
     {
-        return Excel::download(new LandlordWithdrawMethodExport, 'landlord-withdraw-method.xlsx');
+        return Withdraw::class;
     }
 
-    public function exportCsv()
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new LandlordWithdrawMethodExport, 'landlord-withdraw-method.csv');
+        return Withdraw::with(['account_info.withdraw_method:id,name'])
+            ->where('user_id', auth()->id())
+            ->when(request('search'), function ($q) {
+                $search = request('search');
+
+                $q->where('amount', 'like', '%'.$search.'%')
+                    ->orWhere('charge', 'like', '%'.$search.'%')
+                    ->orWhere('status', 'like', '%'.$search.'%')
+                    ->orWhereHas('account_info.withdraw_method', function ($q) use ($search) {
+                        $q->where('name', 'like', '%'.$search.'%');
+                    })
+                    ->orWhereHas('account_info', function ($q) use ($search) {
+                        $q->where('infos->bank_name', 'like', '%'.$search.'%');
+                    });
+            })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'landlord.withdraw-request.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['withdraws' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new LandlordWithdrawMethodExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'landlord-withdraw-method';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'landlord-withdraw-method';
     }
 }

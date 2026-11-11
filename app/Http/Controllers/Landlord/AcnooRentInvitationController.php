@@ -13,13 +13,16 @@ use App\Models\Rent;
 use App\Models\SecurityDeposit;
 use App\Models\Unit;
 use App\Models\User;
+use App\Traits\HasAcnooActions;
 use Carbon\Carbon;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooRentInvitationController extends Controller
 {
+    use HasAcnooActions;
     use HasUploader;
 
     public function index(Request $request)
@@ -64,49 +67,6 @@ class AcnooRentInvitationController extends Controller
             ->paginate(10);
 
         return view('landlord.rents.index', compact('rents', 'tenants', 'properties'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $rents = Rent::select('id', 'monthly_rent', 'utility_bill', 'total_amount', 'start_date', 'end_date', 'status', 'landlord_id', 'tenant_id', 'property_id')
-            ->with([
-                'tenant:id,name,unique_id',
-                'landlord:id,name',
-                'property:id,address_info,rent_info',
-                'property.propertyDetail:property_id,property_info,property_type',
-                'security_deposit',
-            ])
-            ->where('landlord_id', auth()->id())
-            ->when($request->input('search'), function ($query, $search) {
-                $query->where(function ($query) use ($search) {
-
-                    $query->whereHas('tenant', function ($query) use ($search) {
-                        $query->where('unique_id', 'like', '%'.$search.'%')
-                            ->orWhere('name', 'like', '%'.$search.'%');
-                    })
-
-                        ->orWhereHas('property.propertyDetail', function ($query) use ($search) {
-                            $query->where('property_type', 'like', '%'.$search.'%')
-                                ->orWhere('property_info->property_title', 'like', '%'.$search.'%');
-                        })
-
-                        ->orWhereHas('security_deposit', function ($query) use ($search) {
-                            $query->where('deposit_amount', 'like', '%'.$search.'%');
-                        })
-
-                        ->orWhere('monthly_rent', 'like', '%'.$search.'%');
-                });
-            })
-            ->latest()
-            ->paginate($request->input('per_page', 20));
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('landlord.rents.datas', compact('rents'))->render(),
-            ]);
-        }
-
-        return redirect()->back();
     }
 
     public function getUnit(Request $request)
@@ -322,13 +282,74 @@ class AcnooRentInvitationController extends Controller
         }
     }
 
-    public function exportExcel()
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
     {
-        return Excel::download(new LandlordRentInvitationExport, 'landlord-rent-invitation.xlsx');
+        return Rent::class;
     }
 
-    public function exportCsv()
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new LandlordRentInvitationExport, 'landlord-rent-invitation.csv');
+        return Rent::select('id', 'monthly_rent', 'utility_bill', 'total_amount', 'start_date', 'end_date', 'status', 'landlord_id', 'tenant_id', 'property_id')
+            ->with([
+                'tenant:id,name,unique_id',
+                'landlord:id,name',
+                'property:id,address_info,rent_info',
+                'property.propertyDetail:property_id,property_info,property_type',
+                'security_deposit',
+            ])
+            ->where('landlord_id', auth()->id())
+            ->when($request->input('search'), function ($query, $search) {
+                $query->where(function ($query) use ($search) {
+
+                    $query->whereHas('tenant', function ($query) use ($search) {
+                        $query->where('unique_id', 'like', '%'.$search.'%')
+                            ->orWhere('name', 'like', '%'.$search.'%');
+                    })
+
+                        ->orWhereHas('property.propertyDetail', function ($query) use ($search) {
+                            $query->where('property_type', 'like', '%'.$search.'%')
+                                ->orWhere('property_info->property_title', 'like', '%'.$search.'%');
+                        })
+
+                        ->orWhereHas('security_deposit', function ($query) use ($search) {
+                            $query->where('deposit_amount', 'like', '%'.$search.'%');
+                        })
+
+                        ->orWhere('monthly_rent', 'like', '%'.$search.'%');
+                });
+            })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'landlord.rents.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['rents' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new LandlordRentInvitationExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'landlord-rent-invitation';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'landlord-rent-invitation';
     }
 }

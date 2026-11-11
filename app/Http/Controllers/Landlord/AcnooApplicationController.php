@@ -8,12 +8,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\Property;
 use App\Models\SecurityDeposit;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooApplicationController extends Controller
 {
+    use HasAcnooActions;
     use HasUploader;
 
     public function index()
@@ -22,41 +25,6 @@ class AcnooApplicationController extends Controller
         $applications = Application::with(['tenant:id,name', 'property:id,puid', 'property.propertyDetail:property_id,property_info', 'unit:id,unit_name'])->whereIn('property_id', $property)->latest()->paginate(10);
 
         return view('landlord.application.index', compact('applications'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $property = Property::where('landlord_id', auth()->id())->get('id');
-
-        $applications = Application::with(['tenant:id,name', 'property:id,puid', 'property.propertyDetail:property_id,property_info', 'unit:id,unit_name'])
-            ->whereIn('property_id', $property)
-            ->when(request('search'), function ($q) {
-                $q->where(function ($q) {
-                    $search = request('search');
-                    $q->whereHas('tenant', function ($query) use ($search) {
-                        $query->where('name', 'like', '%'.$search.'%');
-                    })
-                        ->orWhereHas('property', function ($query) use ($search) {
-                            $query->where('puid', 'like', '%'.$search.'%');
-                        })
-                        ->orWhereHas('unit', function ($query) use ($search) {
-                            $query->where('unit_name', 'like', '%'.$search.'%');
-                        })
-                        ->orWhereHas('property.propertyDetail', function ($query) use ($search) {
-                            $query->where('property_info->property_title', 'like', '%'.$search.'%');
-                        });
-                });
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('landlord.application.datas', compact('applications'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function show(string $id)
@@ -175,13 +143,66 @@ class AcnooApplicationController extends Controller
         }
     }
 
-    public function exportExcel()
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
     {
-        return Excel::download(new LandlordApplicationExport, 'landlord-applications.xlsx');
+        return Application::class;
     }
 
-    public function exportCsv()
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new LandlordApplicationExport, 'landlord-applications.csv');
+        $property = Property::where('landlord_id', auth()->id())->get('id');
+
+        return Application::with(['tenant:id,name', 'property:id,puid', 'property.propertyDetail:property_id,property_info', 'unit:id,unit_name'])
+            ->whereIn('property_id', $property)
+            ->when(request('search'), function ($q) {
+                $q->where(function ($q) {
+                    $search = request('search');
+                    $q->whereHas('tenant', function ($query) use ($search) {
+                        $query->where('name', 'like', '%'.$search.'%');
+                    })
+                        ->orWhereHas('property', function ($query) use ($search) {
+                            $query->where('puid', 'like', '%'.$search.'%');
+                        })
+                        ->orWhereHas('unit', function ($query) use ($search) {
+                            $query->where('unit_name', 'like', '%'.$search.'%');
+                        })
+                        ->orWhereHas('property.propertyDetail', function ($query) use ($search) {
+                            $query->where('property_info->property_title', 'like', '%'.$search.'%');
+                        });
+                });
+            })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'landlord.application.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['applications' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new LandlordApplicationExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'landlord-applications';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'landlord-applications';
     }
 }

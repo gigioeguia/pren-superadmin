@@ -168,11 +168,11 @@ Fijadas, no negociables salvo volver el spec a `Borrador`:
 | ID | Escenario | Dado | Cuando | Entonces |
 |----|-----------|------|--------|----------|
 | F1 | 0 duplicados restantes | adopción completa | `grep -rE 'function (acnooFilter\|deleteAll\|status\|exportExcel\|exportCsv)\(' app/Http/Controllers` | 0 resultados, salvo los overrides documentados (si los hay, exactamente los enumerados en notas) — el trait vive en `app/Traits/`, fuera del scope del grep |
-| F2 | 55/55 adoptan | adopción completa | `grep -rl 'App\Traits\HasAcnooActions' app/Http/Controllers \| wc -l` | 55 |
+| F2 | adoptantes | adopción completa | `grep -rl 'use App.Traits.HasAcnooActions' app/Http/Controllers \| wc -l` | 52 (34 Admin + 18 Landlord; 3 excluidos — D2) |
 | F3 | phpstan nivel 5 verde | baseline ajustado | `composer analyse` | exit 0; baseline 709 → N (solo entradas unmatched removidas, diff en el PR) |
 | F4 | estilo verde | — | `composer lint` | exit 0 |
 | F5 | rutas intactas | — | `git diff origin/main -- routes/` | vacío (152 referencias sin cambio) |
-| F6 | CI + suite | PR abierto | run de CI (4 jobs) | verde; suite completa (60 + 12) < 30 s |
+| F6 | CI + suite | PR abierto | run de CI (4 jobs) | verde; suite completa (74 total) < 30 s |
 
 ### Tests de caracterización
 
@@ -190,7 +190,7 @@ Fijadas, no negociables salvo volver el spec a `Borrador`:
 - [ ] F1: 0 definiciones propias de los 5 métodos fuera del trait, salvo overrides enumerados en notas de implementación con motivo.
 - [ ] G1–G8 y H1–H2 en verde: mensajes (incluidos los rotos), `per_page`, JSON shapes y redirects preservados.
 - [ ] H3–H4 en verde hoy, marcados `@group characterization` con comentario "expected to fail after Phase 2 / 3.6" (patrón de la suite smoke).
-- [ ] Suite completa (60 smoke + 12 nuevas) verde en local y en los 4 jobs de CI; F6 < 30 s.
+- [ ] Suite completa (60 smoke + 12 de comportamiento + 2 estructurales = 74) verde en local y en los 4 jobs de CI; F6 < 30 s.
 - [ ] F3: `composer analyse` exit 0; baseline reducido solo con entradas unmatched; conteo 709 → N y diff documentados en el PR.
 - [ ] F4: `composer lint` exit 0.
 - [ ] F5: `git diff origin/main -- routes/` vacío.
@@ -265,7 +265,7 @@ Implementado en rama `spec/trait-acnoo-fase0-impl` (apilada sobre `-draft`).
 
 ### Inventario P5 (completado antes de la adopción)
 
-Extracción mecánica de los 169 cuerpos (script de brace-matching sobre los 55 controladores) + cross-check rutas↔métodos con autoload. Resultado: **52 controladores adoptan** el trait, **3 excluidos** (su único método no encaja en el esqueleto y queda como override: `Admin\AcnooSupportController` — filter sin paginate, lista `get()`; `Admin\NotificationController` y `Landlord\NotificationController` — filter `get()` con JSON incondicional), **10 overrides** en adoptantes y **5 supresiones de `status`**. Migrados: 169 − 13 overrides = **156**.
+Extracción mecánica de los 169 cuerpos (script de brace-matching sobre los 55 controladores) + cross-check rutas↔métodos con autoload. Resultado: **52 controladores adoptan** el trait, **3 excluidos** (su único método no encaja en el esqueleto y queda como override: `Admin\AcnooSupportController` — filter sin paginate, lista `get()`; `Admin\NotificationController` y `Landlord\NotificationController` — filter `get()` con JSON incondicional), **11 overrides** en adoptantes y **5 supresiones de `status`**. Migrados: 169 − 14 = **155** (verificado: verbatim-check 98 Admin + 57 Landlord).
 
 **Admin (36):**
 
@@ -337,7 +337,52 @@ Extracción mecánica de los 169 cuerpos (script de brace-matching sobre los 55 
 | # | Punto | Detalle |
 |---|-------|---------|
 | D1 | Rutas muertas vs trait | 6 rutas apuntan hoy a métodos inexistentes (5×`status`: UserController y AcnooIncome/Expense de ambas capas; 1×`acnooFilter`: `Landlord\AcnooSupportController`, que no adopta). Los 5 adoptantes suprimen `status` con `use HasAcnooActions { status as protected; }` — la ruta sigue muerta (500 al invocarla) igual que hoy. Sin la supresión, el trait **reviviría** las rutas = cambio de comportamiento. |
-| D2 | F2 = 52, no 55 | 3 controladores excluidos (inventario). El DoD "55/55" se cumple como 52 adoptando + 3 excluidos documentados con su único método como override. |
+| D2 | F2 = 52, no 55 | 3 controladores excluidos (inventario). El DoD "55/55" se cumple como 52 adoptando + 3 excluidos documentados con su único método como override. (Corrección sobre el borrador: los overrides en adoptantes son 11, no 10 — faltaba contar `Landlord\AcnooTenantController::deleteAll`; total restante 14 = 11 + 3.) |
 | D3 | `input('per_page', N)` ≡ `?? N` | Los filtros de reportes leen per_page con `input('per_page', N)`; el trait usa `$request->per_page ?? acnooPerPage()`. Difieren únicamente si `per_page` se envía explícitamente como `null`. |
 | D4 | `redirect()->back()` ≡ `redirect(url()->previous())` | RentInvitation usa `back()`; ambos producen 302 a la URL previa. |
 | D5 | deleteAll 2-fase → intercalado | Client/Feature (admin) borran la media de todas las filas y luego `each->delete()`; el trait intercala media+delete por fila vía `deletingAcnooRow`. Mismo estado final y misma respuesta; cambia solo el orden interno de operaciones (relevante únicamente si un listener de eventos leyera archivos). |
+| D6 | `deletingAcnooRow($row)` sin tipo nativo | El trait pasa `Model` al hook; tipar el parámetro nativo cambiaría los mensajes de phpstan de los accesos (`Blog::$image` → `Model::$image`) rompiendo el baseline. Sin tipo, los accesos quedan sobre mixed (nivel 5 no los reporta) y el único ajuste del baseline fue el count de `Admin\PropertyController` `Property::$units` 3→2 (709 → 708). Nota: se exploró `@template TModel` en el trait para resolver el tipo concreto por contexto; phpstan no propaga `class-string<TModel>` a través de la llamada estática, se descartó (2 iteraciones, regla "sin magia"). |
+| D7 | MaintenanceReport: contadores recomputados | Los 4 contadores del `acnooFilter` original se calculaban tras el paginate; ahora se recomputan dentro de `acnooViewData` (payload idéntico, +1 query: el pluck de `$properties`). La línea recomputada usa `auth()->id()` (no `auth()->user()->id`) para no añadir una 3ª ocurrencia de un error congelado en el baseline. |
+
+### Decisiones pendientes de §8 (resueltas en implementación)
+
+1. **Test paramétrico sobre todas las rutas `*.filter`/`*.delete-all`: NO se añade.** Las 43 vistas `*.datas` requieren datos de seeders heterogéneos por entidad; el costo y el riesgo de falsos positivos superan el beneficio frente a la cobertura existente (G/H representativos + verbatim-check 155/155 + phpstan nivel 5).
+2. **H4 con property del propio landlord: confirmado suficiente.** H3 documenta el ownership (Seg-5) por separado; H4 aísla el bug de rutas (Seg-15) usando solo datos propios, de modo que cada test rompa por exactamente una razón en su fase.
+
+### Desviación de proceso D8: 1 PR → 3 PRs apilados
+
+El diff total de la implementación es de **265,678 caracteres**, por encima del límite de review de GitHub (**150,000**). La entrega se divide en 3 PRs apilados siguiendo el propio plan de commits atómicos de §5:
+
+| PR | Rama head → base | Contenido | Diff |
+|----|------------------|-----------|------|
+| 1 | `spec/trait-acnoo-fase0-impl-1` → `main` | ciclo del spec (Borrador→Aprobado) + trait + tests G/H + `tests/README.md` + índice de specs en `.agents/README.md` | 52k |
+| 2 | `spec/trait-acnoo-fase0-impl-2` → `impl-1` | adopción Admin (34) + baseline 709→708 + `AGENTS.md` intermedio (Admin ya sirve del trait) | 137k |
+| 3 | `spec/trait-acnoo-fase0-impl` → `impl-2` | adopción Landlord (18) + `AGENTS.md` final (52/55) + D6/D7 | 96k |
+
+Merge en orden 1→2→3 con **merge commit** (no squash): preserva los commits atómicos del plan de §5 y mantiene el diff incremental de cada PR tras el retarget automático de base al borrarse la rama anterior (con squash, el merge-base se perdería y el PR siguiente volvería a mostrar el diff completo, excediendo otra vez el límite). Justificación frente a workflow-ramas ("merge commit solo si el PR tiene commits atómicos relevantes a preservar"): se cumple — cada PR lleva exactamente los commits atómicos del spec.
+
+### Respuesta al review del PR 1 (2026-11-11)
+
+Hallazgo (medio): "Shared actions remain unused — the controllers do not use HasAcnooActions, so the smoke tests exercise the old implementations rather than the trait". **Correcto para el PR 1 aislado**: por el diseño apilado (D8), ese slice introduce trait + tests sin adopción — el trait queda sin uso y los tests fijan el comportamiento de las copias locales hasta que los PR 2/3 aterrizan. Resolución:
+
+1. **Docblocks corregidos (PR 1)**: los tests G/H ahora declaran explícitamente que en ese punto fijan el comportamiento de las copias locales y que la continuidad en verde tras la adopción es la prueba de preservación.
+2. **Pruebas estructurales (PR 2 y PR 3)**: `test_routed_actions_are_provided_by_the_trait` verifica por reflection que los controladores representativos usan `HasAcnooActions` y que sus ficheros ya no definen los métodos enrutados (Admin: Amenity 3 + Property 5; Landlord: Amenity 3 + Property 4, comprobando además que su `deleteAll` **sigue** local por ser override documentado). Con esto la centralización no es solo un grep del PR: está cubierta por la suite.
+3. Los mismos endpoints, tras la adopción, son servidos por el trait (verificado: suite en verde en los tres estados del stack — 72 en PR 1, 73 en PR 2, 74 en PR 3).
+
+### Respuesta al review — hallazgo crítico Seg-5 (diferido por el decisor)
+
+Hallazgo (crítico): "Landlords can alter others' records — status() usa findOrFail sin scope y deleteAll() usa whereIn sin scope". **El IDOR es real pero preexistente**: las 33+19 copias originales tenían exactamente el mismo código unscoped (verificado en el inventario P5), y este spec lo preserva 1:1 por contrato (§5 preservación estricta; §2-OUT: "scoping/ownership en deleteAll/status → Fase 2"). Es el hallazgo 5 de `seguridad.md`, caracterizado por H3 — diseñado para romper de forma detectable cuando el fix llegue.
+
+**Decisión del decisor (2026-11-11): diferir a Fase 2** (plan-accion 2.1, con Policies). Motivos: (a) el plan ordena las fases por urgencia y dependencia — Fase 1 (críticos Seg-1..8) va antes; (b) un fix correcto no es un cambio global: el trait sirve a Admin (sin scope, correcto) y Landlord (scoped, pendiente), y cada controlador landlord scopea distinto (`landlord_id`, `user_id`, `whereHas('rent')`) — el mecanismo (hook de scoping vs Policies) es la decisión central del spec de Fase 2, y adelantarlo aquí arriesga rework; (c) la concentración en el trait es precisamente lo que hará el fix trivial y único. Mitigación en este PR: notas de seguridad en las líneas citadas del trait (`status()`/`deleteAll()`) advirtiendo además contra un scoping global que rompería la capa Admin.
+
+### Deuda conocida del trait: DT-M10 (detectada en review, diferida a Fase 2)
+
+Hallazgo (medio): "Failed deletes leave missing media — en el camino row-by-row, `deletingAcnooRow` borra la media antes que la fila; si el delete de la fila falla (FK/concurrencia), la fila queda viva con su media ya borrada". Patrón **preexistente** (todos los originales borraban media antes que la fila — el propio review lo cita) y por tanto preservado 1:1 por contrato. El fix correcto **no es** invertir el orden sin más: las relaciones con `cascadeOnDelete` (`propertyDetail`, `units`) desaparecen tras el delete y la limpieza dejaría de encontrarlas — requiere capturar los paths ANTES del delete y limpiar DESPUÉS, un rediseño del contrato del hook que se ejecutará junto al rework de scoping de Fase 2 (nuevo ítem 2.6 del plan-accion, DT-M10 en deuda-tecnica.md). Nota con la advertencia de la trampa de cascada añadida en el trait, junto al camino row-by-row.
+
+### Respuesta al review — docs contradictorios en los slices (2026-11-11)
+
+Hallazgo (medio): "AGENTS.md still says there is no shared trait, and .agents/README.md still lists only the previous implementation spec". Correcto para los PRs 1/2 aislados: la actualización de docs vivía en el PR 3, dejando ventana contradictoria entre merges. Resuelto re-asignando cada doc al punto más temprano en que es cierto (ver tabla D8): índice de `.agents/README.md` → PR 1 (el spec existe desde entonces; además corrige un gap preexistente — el índice tampoco listaba `spec-phpstan-pint-ci-fase0.md`), `AGENTS.md` intermedio → PR 2 (momento en que 34 controladores Admin sirven del trait; wording exacto para ese estado), `AGENTS.md` final (52/55, 11 overrides) → PR 3.
+
+### Respuesta al review — assert débil en G2 (2026-11-11)
+
+Hallazgo (medio): "Wrong redirect target passes — `assertRedirect()` sin argumentos solo verifica que hubo 302, no el destino". Corregido en PR 1: G2 fija la URL previa conocida con `from('/admin/amenities')` y exige el destino exacto con `assertRedirect('/admin/amenities')` (de 1 a 2 aserciones). En verde pre y post adopción.

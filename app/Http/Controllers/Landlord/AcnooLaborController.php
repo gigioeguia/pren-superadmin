@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Landlord;
 use App\Exports\LandlordLaborExport;
 use App\Http\Controllers\Controller;
 use App\Models\Labor;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooLaborController extends Controller
 {
+    use HasAcnooActions;
+
     public function index()
     {
         $labors = Labor::with('landlord')->where('landlord_id', auth()->id())->latest()->paginate(10);
@@ -17,32 +21,6 @@ class AcnooLaborController extends Controller
         $phone_codes = json_decode(file_get_contents($phone_codes), true);
 
         return view('landlord.labors.index', compact('labors', 'phone_codes'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $labors = Labor::with('landlord')
-            ->where('landlord_id', auth()->id())
-            ->when(request('search'), function ($q) {
-                $q->where(function ($q) {
-                    $search = request('search');
-                    $q->where('name', 'like', '%'.$search.'%')
-                        ->orwhere('email', 'like', '%'.$search.'%')
-                        ->orwhere('phone', 'like', '%'.$search.'%')
-                        ->orwhere('gender', 'like', '%'.$search.'%')
-                        ->orwhere('salary', 'like', '%'.$search.'%');
-                });
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('landlord.labors.datas', compact('labors'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function store(Request $request)
@@ -102,23 +80,67 @@ class AcnooLaborController extends Controller
         ]);
     }
 
-    public function deleteAll(Request $request)
-    {
-        Labor::whereIn('id', $request->ids)->delete();
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json([
-            'message' => __('Selected labor deleted successfully'),
-            'redirect' => route('landlord.labors.index'),
-        ]);
+    protected function acnooModel(): string
+    {
+        return Labor::class;
     }
 
-    public function exportExcel()
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new LandlordLaborExport, 'landlord-labors.xlsx');
+        return Labor::with('landlord')
+            ->where('landlord_id', auth()->id())
+            ->when(request('search'), function ($q) {
+                $q->where(function ($q) {
+                    $search = request('search');
+                    $q->where('name', 'like', '%'.$search.'%')
+                        ->orwhere('email', 'like', '%'.$search.'%')
+                        ->orwhere('phone', 'like', '%'.$search.'%')
+                        ->orwhere('gender', 'like', '%'.$search.'%')
+                        ->orwhere('salary', 'like', '%'.$search.'%');
+                });
+            })
+            ->latest();
     }
 
-    public function exportCsv()
+    protected function acnooView(): string
     {
-        return Excel::download(new LandlordLaborExport, 'landlord-labors.csv');
+        return 'landlord.labors.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['labors' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'landlord.labors.index';
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return __('Selected labor deleted successfully');
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new LandlordLaborExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'landlord-labors';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'landlord-labors';
     }
 }

@@ -6,11 +6,15 @@ use App\Exports\LandlordMaintenanceReportExport;
 use App\Http\Controllers\Controller;
 use App\Models\Maintenance;
 use App\Models\Property;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooMaintenanceReportController extends Controller
 {
+    use HasAcnooActions;
+
     public function index(Request $request)
     {
         $properties = Property::where('landlord_id', auth()->user()->id)->pluck('id');
@@ -23,11 +27,18 @@ class AcnooMaintenanceReportController extends Controller
         return view('landlord.maintenance-reports.index', compact('maintenances', 'pendingCount', 'processingCount', 'completedCount', 'rejectedCount'));
     }
 
-    public function acnooFilter(Request $request)
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
+    {
+        return Maintenance::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
     {
         $properties = Property::where('landlord_id', auth()->user()->id)->pluck('id');
 
-        $maintenances = Maintenance::with(['property.propertyDetail:id,property_id,property_info'])
+        return Maintenance::with(['property.propertyDetail:id,property_id,property_info'])
             ->whereIn('property_id', $properties)
             ->when($request->search, function ($q) use ($request) {
                 $search = $request->search;
@@ -36,37 +47,53 @@ class AcnooMaintenanceReportController extends Controller
                         $query->where('property_info->property_title', 'like', '%'.$search.'%');
                     });
             })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
+            ->latest();
+    }
 
-        // Count variables
+    protected function acnooView(): string
+    {
+        return 'landlord.maintenance-reports.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        // Recomputado (no verbatim): los contadores del acnooFilter original se
+        // calculaban tras el paginate; aqui se recomputan al construir los datos
+        // de la vista. auth()->id() evita replicar el acceso auth()->user()->id
+        // (3ª ocurrencia romperia el count congelado del baseline).
+        $properties = Property::where('landlord_id', auth()->id())->pluck('id');
+
         $processingCount = Maintenance::whereIn('property_id', $properties)->where('status', 'processing')->count();
         $completedCount = Maintenance::whereIn('property_id', $properties)->where('status', 'completed')->count();
         $rejectedCount = Maintenance::whereIn('property_id', $properties)->where('status', 'rejected')->count();
         $pendingCount = Maintenance::whereIn('property_id', $properties)->where('status', 'pending')->count();
 
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('landlord.maintenance-reports.datas', compact(
-                    'maintenances',
-                    'pendingCount',
-                    'processingCount',
-                    'completedCount',
-                    'rejectedCount'
-                ))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
+        return [
+            'maintenances' => $rows,
+            'pendingCount' => $pendingCount,
+            'processingCount' => $processingCount,
+            'completedCount' => $completedCount,
+            'rejectedCount' => $rejectedCount,
+        ];
     }
 
-    public function exportExcel()
+    protected function acnooPerPage(): int
     {
-        return Excel::download(new LandlordMaintenanceReportExport, 'landlord-maintenance-reports.xlsx');
+        return 20;
     }
 
-    public function exportCsv()
+    protected function acnooExport(Request $request): object
     {
-        return Excel::download(new LandlordMaintenanceReportExport, 'landlord-maintenance-reports.csv');
+        return new LandlordMaintenanceReportExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'landlord-maintenance-reports';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'landlord-maintenance-reports';
     }
 }

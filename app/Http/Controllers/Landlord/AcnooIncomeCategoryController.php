@@ -4,36 +4,21 @@ namespace App\Http\Controllers\Landlord;
 
 use App\Http\Controllers\Controller;
 use App\Models\IncomeCategory;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class AcnooIncomeCategoryController extends Controller
 {
+    use HasAcnooActions;
+
     public function index()
     {
         $income_categories = IncomeCategory::with('landlord')->where('landlord_id', auth()->id())->latest()->paginate(10);
 
         return view('landlord.income-categories.index', compact('income_categories'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $income_categories = IncomeCategory::with('landlord')->where('landlord_id', auth()->id())->when(request('search'), function ($q) use ($request) {
-            $q->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%'.$request->search.'%')
-                    ->orWhere('description', 'like', '%'.$request->search.'%');
-            });
-        })
-            ->latest()
-            ->paginate($request->per_page ?? 10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('landlord.income-categories.datas', compact('income_categories'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function store(Request $request)
@@ -97,23 +82,46 @@ class AcnooIncomeCategoryController extends Controller
         ]);
     }
 
-    public function deleteAll(Request $request)
-    {
-        IncomeCategory::whereIn('id', $request->ids)->delete();
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json([
-            'message' => __('Selected Income Category Deleted Successfully'),
-            'redirect' => route('landlord.income-categories.index'),
-        ]);
+    protected function acnooModel(): string
+    {
+        return IncomeCategory::class;
     }
 
-    public function status(Request $request, string $id)
+    protected function acnooQuery(Request $request): Builder
     {
-        $category = IncomeCategory::findOrFail($id);
-        $category->update(['status' => $request->status]);
+        return IncomeCategory::with('landlord')->where('landlord_id', auth()->id())->when(request('search'), function ($q) use ($request) {
+            $q->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('description', 'like', '%'.$request->search.'%');
+            });
+        })
+            ->latest();
+    }
 
-        return response()->json([
-            'message' => 'Income Category',
-        ]);
+    protected function acnooView(): string
+    {
+        return 'landlord.income-categories.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['income_categories' => $rows];
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'landlord.income-categories.index';
+    }
+
+    protected function acnooStatusMessage(): string
+    {
+        return 'Income Category';
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return __('Selected Income Category Deleted Successfully');
     }
 }
