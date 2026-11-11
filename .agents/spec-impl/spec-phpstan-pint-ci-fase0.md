@@ -1,7 +1,7 @@
 ---
 id: spec-phpstan-pint-ci-fase0
 titulo: "PHPStan (Larastan) nivel 5 + Pint + CI"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-10
 origen: .analisis/plan/plan-accion.md (Fase 0 / 0.2) — DT-A4
 cobertura: Análisis estático nivel 5 con baseline, estilo Pint y pipeline CI de 4 jobs (tests, phpstan, pint, frontend build) sobre la suite smoke existente
@@ -145,20 +145,20 @@ Ninguno: este spec añade tooling, no documenta bugs de aplicación.
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `composer require --dev nunomaduro/larastan:^2.0` en `composer.json` (lock actualizado).
-- [ ] `phpstan.neon.dist` con level 5, paths `app/`, `phpVersion: 80200`.
-- [ ] `phpstan-baseline.neon` commiteado, con **conteo de errores congelados documentado** en el PR (p. ej. "N errores, M ficheros").
-- [ ] F1 verificado: `vendor/bin/phpstan analyse` exit 0 local.
-- [ ] F2 verificado manualmente: error de tipo inyectado → phpstan falla; se retira el error.
-- [ ] `pint.json` con preset laravel y primera pasada aplicada en **commit mecánico aislado** (sin cambios de lógica en el diff).
-- [ ] F5 verificado: `vendor/bin/pint --test` exit 0.
-- [ ] `.github/workflows/ci.yml` con los 4 jobs disparando en push a `main` y PRs.
-- [ ] Job `tests` incluye MySQL 8 service, el marcador `vendor/autoload1.php` y exporta `DB_HOST/DB_USERNAME/DB_PASSWORD`.
-- [ ] CI en verde en un PR de prueba con los 4 jobs (evidencia: link al run). El propio PR de implementación sirve: GitHub Actions ejecuta el workflow del PR que lo introduce.
-- [ ] Suite smoke completa (60 tests) pasa dentro del job `tests` en CI.
-- [ ] `composer analyse` / `composer lint` / `composer lint:fix` funcionan como atajos.
-- [ ] `AGENTS.md` (sección Tooling) documenta los comandos y la regla del baseline.
-- [ ] Recomendación de branch protection ("require CI green before merge") anotada para post-merge en settings de GitHub.
+- [x] `composer require --dev nunomaduro/larastan:^2.0` en `composer.json` (lock actualizado).
+- [x] `phpstan.neon.dist` con level 5, paths `app/`, `phpVersion: 80200`.
+- [x] `phpstan-baseline.neon` commiteado, con **conteo de errores congelados documentado** en el PR (p. ej. "N errores, M ficheros").
+- [x] F1 verificado: `vendor/bin/phpstan analyse` exit 0 local.
+- [x] F2 verificado manualmente: error de tipo inyectado → phpstan falla; se retira el error.
+- [x] `pint.json` con preset laravel y primera pasada aplicada en **commit mecánico aislado** (sin cambios de lógica en el diff).
+- [x] F5 verificado: `vendor/bin/pint --test` exit 0.
+- [x] `.github/workflows/ci.yml` con los 4 jobs disparando en push a `main` y PRs.
+- [x] Job `tests` incluye MySQL 8 service, el marcador `vendor/autoload1.php` y exporta `DB_HOST/DB_USERNAME/DB_PASSWORD`.
+- [x] CI en verde en un PR de prueba con los 4 jobs (evidencia: link al run). El propio PR de implementación sirve: GitHub Actions ejecuta el workflow del PR que lo introduce.
+- [x] Suite smoke completa (60 tests) pasa dentro del job `tests` en CI.
+- [x] `composer analyse` / `composer lint` / `composer lint:fix` funcionan como atajos.
+- [x] `AGENTS.md` (sección Tooling) documenta los comandos y la regla del baseline.
+- [x] Recomendación de branch protection ("require CI green before merge") anotada para post-merge en settings de GitHub.
 
 ---
 
@@ -242,3 +242,7 @@ Implementado en rama `spec/phpstan-pint-ci-fase0-impl` (apilada sobre `-draft`).
 ### Pendiente de verificación en el PR (F7–F13)
 
 Los 4 jobs del workflow se verifican al abrir el PR (GitHub Actions ejecuta el workflow del PR que lo introduce): `tests` (MySQL service + marcador + 60 tests), `static-analysis`, `style` y `frontend-build`. Post-merge recomendado: **branch protection** (require status checks) en settings de GitHub — fuera del alcance del repo.
+
+### Cierre (2026-11-11)
+
+Estado → `Implementado`: PR #5 mergeado en `main` (merge `66aca38`) tras CI en verde — **F7–F13 verificados con evidencia de GitHub Actions**: run **CI #1** sobre el PR #5 ("completed successfully", 53 s) y run **CI #2** sobre el push `66aca38` a `main` ("completed successfully", 50 s); suite 60/60 dentro del job `tests` (re-verificada localmente tras el merge: 14.2 s). DoD §7 tachado completo (**14/14**) tras verificación ítem por ítem. Criterio de salida de Fase 0 ("CI en verde") cumplido. Pendiente post-merge: activar **branch protection** (require status checks) en settings de GitHub.
