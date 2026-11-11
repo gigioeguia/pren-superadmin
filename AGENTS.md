@@ -8,17 +8,17 @@ Laravel 10.50 / PHP 8.2 SaaS for property rental management (roles: `superadmin`
 
 ```bash
 composer install
-npm install
+npm install                       # allowScripts en package.json auto-aprueba el postinstall de esbuild (no removerlo: sin el binario, npm run dev/build fallan)
 php artisan key:generate
 php artisan storage:link          # public/storage symlink is NOT committed
 php artisan migrate --seed        # runs 24 seeders in order (see DatabaseSeeder)
-php artisan test                  # ⚠ only ExampleTest stubs exist — no real coverage
+php artisan test                  # smoke suite (59 cases) over dbrentpro_test — see tests/README.md
 npm run dev                       # vite (resources/css/app.css, resources/js/app.js)
 npm run build
 php artisan serve                 # local dev server
 ```
 
-Run a single test: `php artisan test --filter=ExampleTest`
+Run a single test: `php artisan test tests/Feature/Auth/WebLoginSmokeTest.php`
 
 ## Routes (non-standard — 6 files, loaded in `app/Providers/RouteServiceProvider.php`)
 
