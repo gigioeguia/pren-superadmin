@@ -1,7 +1,7 @@
 ---
 id: spec-tests-smoke-fase0
 titulo: "Tests Smoke — Fase 0 / 0.1"
-estado: Borrador
+estado: Implementado
 fecha: 2026-11-10
 origen: .analisis/plan/plan-accion.md (Fase 0 / 0.1) — DT-C1
 cobertura: Catálogo completo (59 tests) sobre flujos críticos (auth web/API, pagos, guards, rutas Artisan)
@@ -325,3 +325,7 @@ documentar desviaciones aquí). Ver `tests/README.md` para ejecución y cobertur
 ### DoD §8 — verificado y tachado (2026-11-11)
 
 Re-verificación con evidencia fresca antes de marcar los checkboxes: suite 60/60 en 15.5 s; conteo por dominio 6+8+5+10+10+10+4+4+2 = 59 casos exactos; 7 tests `@group characterization` en 4 ficheros con comentario de fase esperada; `dbrentpro` intacta durante el run (users 3→3) mientras la suite trabaja sobre `dbrentpro_test` (53 tablas); cobertura 44/52 = 84.6 % documentada en `tests/README.md`.
+
+### Cierre (2026-11-11)
+
+Estado → `Implementado` (transición añadida a `spec-conventions.md`): implementado vía PR #1 por autorización explícita del autor —sin pasar por `Revisado`/`Aprobado`—, DoD §8 verificado y tachado, desviaciones D1–D6 documentadas arriba. Este documento se conserva como **referencia viva**: es el catálogo que cita `tests/README.md` y la guía para actualizar los 7 tests de caracterización (§7) cuando los fixes de Fase 1–2 los rompan intencionalmente.
