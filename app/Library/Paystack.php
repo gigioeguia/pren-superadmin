@@ -43,6 +43,7 @@ class Paystack
             $gateway = Gateway::where('status', 1)->findOrFail($Info['gateway_id']);
             $promotion = Session::get('promotion');
             $product = Session::get('product');
+
             return view('payments.paystack', compact('Info', 'gateway'));
         }
         abort(404);
@@ -56,9 +57,11 @@ class Paystack
         // Checking Minimum/Maximum amount
         if ($gateway->min_amount > $amount) {
             session()->put('payment_msg', __('The minimum transaction amount is :amount', ['amount' => currency_format($gateway->min_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         } elseif ($gateway->max_amount < $amount) {
             session()->put('payment_msg', __('The maximum transaction amount is :amount', ['amount' => currency_format($gateway->max_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         }
 
@@ -99,25 +102,25 @@ class Paystack
 
     public function status(Request $request)
     {
-        if (!Session::has('paystack_credentials')) {
+        if (! Session::has('paystack_credentials')) {
             return abort(404);
         }
 
         $info = Session::get('paystack_credentials');
         $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://api.paystack.co/transaction/verify/" . $request->ref_id,
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://api.paystack.co/transaction/verify/'.$request->ref_id,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
+            CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_TIMEOUT => 30,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "GET",
-            CURLOPT_HTTPHEADER => array(
-                "Authorization: Bearer " . $info['secret_key'] . "",
-                "Cache-Control: no-cache",
-            ),
-        ));
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Bearer '.$info['secret_key'].'',
+                'Cache-Control: no-cache',
+            ],
+        ]);
 
         $response = curl_exec($curl);
 
@@ -128,6 +131,7 @@ class Paystack
             Session::forget('paystack_credentials');
             $data['payment_status'] = 0;
             Session::put('payment_info', $data);
+
             return redirect(Paystack::redirect_if_payment_faild());
         } else {
             $data = json_decode($response);
@@ -138,7 +142,7 @@ class Paystack
                 abort_unless($amount == $info['amount'], 404);
 
                 $pay_data['payment_id'] = $ref_id;
-                $pay_data['payment_method'] = "paystack";
+                $pay_data['payment_method'] = 'paystack';
                 $pay_data['gateway_id'] = $info['gateway_id'];
                 $pay_data['amount'] = $info['main_amount'];
                 $pay_data['charge'] = $info['charge'];
@@ -167,26 +171,26 @@ class Paystack
         $reference = $cred['payment_id'];
         try {
             $curl = curl_init();
-            curl_setopt_array($curl, array(
-                CURLOPT_URL => "https://api.paystack.co/transaction/verify/" . $reference,
+            curl_setopt_array($curl, [
+                CURLOPT_URL => 'https://api.paystack.co/transaction/verify/'.$reference,
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => "",
+                CURLOPT_ENCODING => '',
                 CURLOPT_MAXREDIRS => 10,
                 CURLOPT_TIMEOUT => 30,
                 CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => "GET",
-                CURLOPT_HTTPHEADER => array(
-                    "Authorization: Bearer " . $secret_key,
-                    "Cache-Control: no-cache",
-                ),
-            ));
+                CURLOPT_CUSTOMREQUEST => 'GET',
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer '.$secret_key,
+                    'Cache-Control: no-cache',
+                ],
+            ]);
 
             $response = curl_exec($curl);
             $err = curl_error($curl);
             curl_close($curl);
             $arr = json_decode($response, true);
             if (array_key_exists('data', $arr)) {
-                return $arr['data']['status'] === "success" ? 1 : 0;
+                return $arr['data']['status'] === 'success' ? 1 : 0;
             }
         } catch (Throwable $th) {
             return 0;

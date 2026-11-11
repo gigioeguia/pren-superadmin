@@ -14,11 +14,11 @@ class AcnooFacilitiesController extends Controller
     public function index(Request $request)
     {
         $query = Facility::where('landlord_id', auth()->id())
-                        ->where('status', 1)
-                        ->when($request->search, function($q) use ($request) {
-                            $q->where('name', 'like', '%'. $request->search. '%');
-                        })
-                        ->latest();
+            ->where('status', 1)
+            ->when($request->search, function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->search.'%');
+            })
+            ->latest();
         if ($request->has('no_paginate') && $request->no_paginate == true) {
             $facilities = $query->select('id', 'name')->get();
             $responseData = [
@@ -31,7 +31,7 @@ class AcnooFacilitiesController extends Controller
 
         return response()->json([
             'message' => 'Data fetched successfully',
-            'data' => $responseData
+            'data' => $responseData,
         ]);
     }
 
@@ -42,16 +42,15 @@ class AcnooFacilitiesController extends Controller
             'status' => 'nullable|in:0,1',
         ]);
 
-        $data =  Facility::create($request->except('landlord_id') + [
-            'landlord_id' => auth()->id()
+        $data = Facility::create($request->except('landlord_id') + [
+            'landlord_id' => auth()->id(),
         ]);
 
         return response()->json([
             'message' => 'Data store successfully',
-            'data' => $data
+            'data' => $data,
         ]);
     }
-
 
     public function update(Request $request, string $id)
     {
@@ -63,12 +62,12 @@ class AcnooFacilitiesController extends Controller
         $facility = Facility::findOrFail($id);
 
         $facility->update($request->except('landlord_id') + [
-            'landlord_id' => auth()->id()
+            'landlord_id' => auth()->id(),
         ]);
 
         return response()->json([
             'message' => 'Data update successfully',
-            'data' => $facility
+            'data' => $facility,
         ]);
     }
 

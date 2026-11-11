@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Rent;
 use App\Models\Review;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 
 class AcnooReviewController extends Controller
 {
@@ -17,22 +17,22 @@ class AcnooReviewController extends Controller
             'comment' => 'nullable|string',
         ]);
         $rent = Rent::where('property_id', $request->property_id)
-                    ->where('tenant_id', auth()->id())
-                    ->first();
-        if (!$rent) {
+            ->where('tenant_id', auth()->id())
+            ->first();
+        if (! $rent) {
             return response()->json([
                 'message' => 'You are not allowed to review this property because you have no rent record.',
-            ], 403); 
+            ], 403);
         }
 
         $data = Review::create($request->except('tenant_id') + [
             'rent_id' => $rent->id,
-            'tenant_id' => auth()->user()->id
+            'tenant_id' => auth()->user()->id,
         ]);
 
         return response()->json([
             'message' => 'Review store successfully',
-            'data' => $data
+            'data' => $data,
         ]);
     }
 
@@ -47,12 +47,12 @@ class AcnooReviewController extends Controller
         $review = Review::findOrFail($id);
 
         $review->update($request->except('tenant_id') + [
-            'tenant_id' => auth()->user()->id
+            'tenant_id' => auth()->user()->id,
         ]);
 
         return response()->json([
             'message' => 'Review updated successfully',
-            'data' => $review
+            'data' => $review,
         ]);
     }
 }

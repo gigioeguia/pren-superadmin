@@ -13,7 +13,7 @@ class AcnooPrivacyPolicyController extends Controller
 
         return response()->json([
             'message' => 'Data fetched successfully',
-            'data' => $privacy_policy
+            'data' => $privacy_policy,
         ]);
     }
 }

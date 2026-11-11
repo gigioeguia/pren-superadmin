@@ -21,7 +21,7 @@ return new class extends Migration
             $table->foreignId('tenant_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('property_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('reason_id')->nullable()->constrained('refund_reasons')->nullOnDelete();
-            $table->double('amount', 10,2)->default(0.00);
+            $table->double('amount', 10, 2)->default(0.00);
             $table->string('status')->default('unpaid'); // unpaid || paid ||  rejected
             $table->text('refund_reason')->nullable();
             $table->string('attachment')->nullable();

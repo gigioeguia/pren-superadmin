@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class LandlordWithdraw extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id','withdraw_method_id','amount','is_paid','status','reject_cause','currency'];
+
+    protected $fillable = ['user_id', 'withdraw_method_id', 'amount', 'is_paid', 'status', 'reject_cause', 'currency'];
 
     public function user()
     {

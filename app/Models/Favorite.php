@@ -13,16 +13,17 @@ class Favorite extends Model
         'property_id',
         'tenant_id',
         'status',
-   ];
+    ];
 
+    public function tenant()
+    {
 
-   public function tenant() {
+        return $this->belongsTo(User::class);
+    }
 
-    return $this->belongsTo(User::class);
-   }
+    public function property()
+    {
 
-   public function property() {
-
-    return $this->belongsTo(Property::class);
-   }
+        return $this->belongsTo(Property::class);
+    }
 }

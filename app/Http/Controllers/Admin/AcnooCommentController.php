@@ -8,14 +8,13 @@ use Illuminate\Http\Request;
 
 class AcnooCommentController extends Controller
 {
-
     public function acnooFilter(Request $request)
     {
         $comments = Comment::when(request('search'), function ($q) {
             $q->where(function ($q) {
-                $q->where('name', 'like', '%' . request('search') . '%')
-                ->orWhere('email', 'like', '%' . request('search') . '%')
-                ->orWhere('comment', 'like', '%' . request('search') . '%');
+                $q->where('name', 'like', '%'.request('search').'%')
+                    ->orWhere('email', 'like', '%'.request('search').'%')
+                    ->orWhere('comment', 'like', '%'.request('search').'%');
             });
         })
             ->latest()
@@ -23,7 +22,7 @@ class AcnooCommentController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.blogs.comments.datas', compact('comments'))->render()
+                'data' => view('admin.blogs.comments.datas', compact('comments'))->render(),
             ]);
         }
 
@@ -33,18 +32,20 @@ class AcnooCommentController extends Controller
     public function destroy($id)
     {
         Comment::where('id', $id)->delete();
+
         return response()->json([
             'message' => __('Comment deleted successfully.'),
-            'redirect' => route('admin.blogs.index')
+            'redirect' => route('admin.blogs.index'),
         ]);
     }
 
     public function deleteAll(Request $request)
     {
         Comment::whereIn('id', $request->ids)->delete();
+
         return response()->json([
             'message' => __('Selected Comments deleted successfully'),
-            'redirect' => route('admin.blogs.index')
+            'redirect' => route('admin.blogs.index'),
         ]);
     }
 }

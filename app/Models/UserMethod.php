@@ -17,7 +17,7 @@ class UserMethod extends Model
 
     use HasFactory;
 
-    function withdraw_method()
+    public function withdraw_method()
     {
         return $this->belongsTo(WithdrawMethod::class, 'method_id');
     }

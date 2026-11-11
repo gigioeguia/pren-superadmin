@@ -8,7 +8,6 @@ use Maatwebsite\Excel\Concerns\FromView;
 
 class AdminLandlordExport implements FromView
 {
-
     protected $request;
 
     public function __construct($request)
@@ -36,7 +35,7 @@ class AdminLandlordExport implements FromView
             ->get();
 
         return view('admin.landlords.excel-csv', [
-            'landlords' => $landlords
+            'landlords' => $landlords,
         ]);
     }
 }

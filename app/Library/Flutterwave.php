@@ -10,7 +10,6 @@ use Throwable;
 
 class Flutterwave
 {
-
     public static function redirect_if_payment_success()
     {
         if (Session::has('fund_callback')) {
@@ -34,6 +33,7 @@ class Flutterwave
         if (Session::get('without_auth')) {
             return url('payment/flutterwave');
         }
+
         return url('payment/flutterwave');
     }
 
@@ -45,9 +45,11 @@ class Flutterwave
         // Checking Minimum/Maximum amount
         if ($gateway->min_amount > $amount) {
             session()->put('payment_msg', __('The minimum transaction amount is :amount', ['amount' => currency_format($gateway->min_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         } elseif ($gateway->max_amount < $amount) {
             session()->put('payment_msg', __('The maximum transaction amount is :amount', ['amount' => currency_format($gateway->max_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         }
 
@@ -96,26 +98,26 @@ class Flutterwave
 
         try {
             $params = [
-                "tx_ref" => Str::random(10),
-                "currency" => $data['currency'],
-                "amount" => $amount,
-                "payment_options" => $data['payment_options'],
-                "redirect_url" => Flutterwave::fallback(),
-                "customer" => [
-                    "email" => $data['email'],
-                    "phonenumber" => $data['phone'],
-                    "name" => $data['name'],
+                'tx_ref' => Str::random(10),
+                'currency' => $data['currency'],
+                'amount' => $amount,
+                'payment_options' => $data['payment_options'],
+                'redirect_url' => Flutterwave::fallback(),
+                'customer' => [
+                    'email' => $data['email'],
+                    'phonenumber' => $data['phone'],
+                    'name' => $data['name'],
                 ],
-                "customizations" => [
-                    "title" => $data['billName'],
-                    "description" => "",
-                    "logo" => $logo,
+                'customizations' => [
+                    'title' => $data['billName'],
+                    'description' => '',
+                    'logo' => $logo,
                 ],
             ];
 
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
-                'Authorization' => 'Bearer ' . $data['secret_key'],
+                'Authorization' => 'Bearer '.$data['secret_key'],
             ])->post($url, $params);
 
             if (isset($response['status']) && $response['status'] == 'success') {
@@ -125,12 +127,14 @@ class Flutterwave
                     $url : redirect($url);
             } else {
                 Session::forget('flutterwave_credentials');
+
                 return request()->expectsJson() ?
                     Flutterwave::redirect_if_payment_faild() :
                     redirect(Flutterwave::redirect_if_payment_faild());
             }
         } catch (Throwable $th) {
             Session::forget('flutterwave_credentials');
+
             return request()->expectsJson() ?
                 Flutterwave::redirect_if_payment_faild() :
                 redirect(Flutterwave::redirect_if_payment_faild());
@@ -139,7 +143,7 @@ class Flutterwave
 
     public function status()
     {
-        if (!Session::has('flutterwave_credentials')) {
+        if (! Session::has('flutterwave_credentials')) {
             return abort(404);
         }
         $response = Request()->all();
@@ -152,7 +156,7 @@ class Flutterwave
         if ($status == 1) {
 
             $data['payment_id'] = $payment_id;
-            $data['payment_method'] = "flutterwave";
+            $data['payment_method'] = 'flutterwave';
             $data['gateway_id'] = $info['gateway_id'];
 
             $data['amount'] = $info['main_amount'];
@@ -183,26 +187,27 @@ class Flutterwave
         $payment_id = $cred['payment_id'];
         try {
             $curl = curl_init();
-            curl_setopt_array($curl, array(
-                CURLOPT_URL => "https://api.flutterwave.com/v3/transactions/" . $payment_id . "/verify",
+            curl_setopt_array($curl, [
+                CURLOPT_URL => 'https://api.flutterwave.com/v3/transactions/'.$payment_id.'/verify',
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => "",
+                CURLOPT_ENCODING => '',
                 CURLOPT_MAXREDIRS => 10,
                 CURLOPT_TIMEOUT => 0,
                 CURLOPT_FOLLOWLOCATION => true,
                 CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => "GET",
-                CURLOPT_HTTPHEADER => array(
-                    "Content-Type: application/json",
-                    "Authorization: Bearer " . $secret_key,
-                ),
-            ));
+                CURLOPT_CUSTOMREQUEST => 'GET',
+                CURLOPT_HTTPHEADER => [
+                    'Content-Type: application/json',
+                    'Authorization: Bearer '.$secret_key,
+                ],
+            ]);
 
             $response = curl_exec($curl);
 
             curl_close($curl);
             $arr = json_decode($response, true);
-            return $arr['status'] === "success" ? 1 : 0;
+
+            return $arr['status'] === 'success' ? 1 : 0;
         } catch (Throwable $th) {
             return 0;
         }

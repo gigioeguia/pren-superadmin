@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Notification;
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
@@ -19,6 +19,7 @@ class NotificationController extends Controller
             ->whereDate('created_at', today())
             ->latest()
             ->get();
+
         return view('admin.notifications.index', compact('notifications'));
     }
 
@@ -43,29 +44,30 @@ class NotificationController extends Controller
             ->get();
 
         return response()->json([
-            'data' => view('admin.notifications.datas', compact('notifications'))->render()
+            'data' => view('admin.notifications.datas', compact('notifications'))->render(),
         ]);
     }
 
-   public function mtView(string $id)
-        {
-            $notify = Notification::find($id);
-            if ($notify) {
-                $notify->read_at = now();
-                $notify->save();
+    public function mtView(string $id)
+    {
+        $notify = Notification::find($id);
+        if ($notify) {
+            $notify->read_at = now();
+            $notify->save();
 
-                $user = auth()->user();
-                $data = $notify->data;
+            $user = auth()->user();
+            $data = $notify->data;
 
-                if (in_array($user->role, ['superadmin', 'admin'])) {
-                    if (!empty($data['admin_url'])) {
-                        return redirect($data['admin_url']);
-                    } else {
-                        return back()->with('error', __('No link available for this notification.'));
-                    }
+            if (in_array($user->role, ['superadmin', 'admin'])) {
+                if (! empty($data['admin_url'])) {
+                    return redirect($data['admin_url']);
+                } else {
+                    return back()->with('error', __('No link available for this notification.'));
                 }
-                // fallback
-                return redirect('/');
+            }
+
+            // fallback
+            return redirect('/');
 
             return back()->with('error', __('Permission denied.'));
         }
@@ -74,6 +76,7 @@ class NotificationController extends Controller
     public function mtReadAll()
     {
         auth()->user()->unreadNotifications()->update(['read_at' => now()]);
+
         return back();
     }
 }

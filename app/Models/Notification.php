@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Notification extends Model
 {
     use HasFactory;
+
     /**
      * The table associated with the model.
      *

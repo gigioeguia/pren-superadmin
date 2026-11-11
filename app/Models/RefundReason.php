@@ -8,6 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class RefundReason extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = ['reason', 'status'];
 }

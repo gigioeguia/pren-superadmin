@@ -33,6 +33,7 @@ class Thawani
         if (Session::get('without_auth')) {
             return url('payment/thawani');
         }
+
         return url('payment/thawani');
     }
 
@@ -44,9 +45,11 @@ class Thawani
         // Checking Minimum/Maximum amount
         if ($gateway->min_amount > $amount) {
             session()->put('payment_msg', __('The minimum transaction amount is :amount', ['amount' => currency_format($gateway->min_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         } elseif ($gateway->max_amount < $amount) {
             session()->put('payment_msg', __('The maximum transaction amount is :amount', ['amount' => currency_format($gateway->max_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         }
 
@@ -86,21 +89,21 @@ class Thawani
         }
         $curl = curl_init();
         curl_setopt_array($curl, [
-            CURLOPT_URL => "https://uatcheckout.thawani.om/api/v1/checkout/session",
+            CURLOPT_URL => 'https://uatcheckout.thawani.om/api/v1/checkout/session',
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
+            CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_TIMEOUT => 30,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_CUSTOMREQUEST => 'POST',
             CURLOPT_HTTPHEADER => [
-                "Content-Type: application/json",
-                "thawani-api-key: " . $data['secret_key'],
+                'Content-Type: application/json',
+                'thawani-api-key: '.$data['secret_key'],
             ],
-            CURLOPT_POSTFIELDS => '{"client_reference_id": ' . strtotime(Carbon::now()) . ',
-            "products": [' . $productJson . '],
-            "success_url": "' . Thawani::fallback() . '",
-            "cancel_url": "' . Thawani::redirect_if_payment_faild() . '"}',
+            CURLOPT_POSTFIELDS => '{"client_reference_id": '.strtotime(Carbon::now()).',
+            "products": ['.$productJson.'],
+            "success_url": "'.Thawani::fallback().'",
+            "cancel_url": "'.Thawani::redirect_if_payment_faild().'"}',
         ]);
         $response = curl_exec($curl);
         $err = curl_error($curl);
@@ -112,9 +115,9 @@ class Thawani
             $session_id = $response['data']['session_id'];
             $data['response'] = $response;
             if ($mode == true) {
-                $url = "https://uatcheckout.thawani.om/pay/" . $session_id . "?key=" . $array['publishable_key'];
+                $url = 'https://uatcheckout.thawani.om/pay/'.$session_id.'?key='.$array['publishable_key'];
             } else {
-                $url = "https://checkout.thawani.om/pay/" . $session_id . "?key=" . $array['publishable_key'];
+                $url = 'https://checkout.thawani.om/pay/'.$session_id.'?key='.$array['publishable_key'];
             }
             Session::put('thawani_credentials', $data);
         } else {
@@ -131,7 +134,7 @@ class Thawani
 
     public function status(Request $request)
     {
-        if (!Session::has('thawani_credentials')) {
+        if (! Session::has('thawani_credentials')) {
             return abort(404);
         }
         $info = Session::get('thawani_credentials');
@@ -143,7 +146,7 @@ class Thawani
 
         if (array_key_exists('success', $responseArr) && $responseArr['success'] == true) {
             $data['payment_id'] = $responseArr['data'][0]['payment_id'];
-            $data['payment_method'] = "thawani";
+            $data['payment_method'] = 'thawani';
             $data['gateway_id'] = $info['gateway_id'];
 
             $data['amount'] = $info['main_amount'];
@@ -180,15 +183,15 @@ class Thawani
         curl_setopt_array($curl, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
+            CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_TIMEOUT => 30,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "GET",
-            CURLOPT_POSTFIELDS => "",
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_POSTFIELDS => '',
             CURLOPT_HTTPHEADER => [
-                "Content-Type: application/json",
-                "thawani-api-key: " . $api_key,
+                'Content-Type: application/json',
+                'thawani-api-key: '.$api_key,
             ],
         ]);
 
@@ -222,15 +225,15 @@ class Thawani
             curl_setopt_array($curl, [
                 CURLOPT_URL => $url,
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => "",
+                CURLOPT_ENCODING => '',
                 CURLOPT_MAXREDIRS => 10,
                 CURLOPT_TIMEOUT => 30,
                 CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => "GET",
-                CURLOPT_POSTFIELDS => "",
+                CURLOPT_CUSTOMREQUEST => 'GET',
+                CURLOPT_POSTFIELDS => '',
                 CURLOPT_HTTPHEADER => [
-                    "Content-Type: application/json",
-                    "thawani-api-key: " . $api_key,
+                    'Content-Type: application/json',
+                    'thawani-api-key: '.$api_key,
                 ],
             ]);
 

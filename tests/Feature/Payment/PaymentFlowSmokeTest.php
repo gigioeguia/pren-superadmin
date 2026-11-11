@@ -2,12 +2,20 @@
 
 namespace Tests\Feature\Payment;
 
+use App\Library\Billplz;
+use App\Library\FedaPayGateway;
+use App\Library\Flutterwave;
+use App\Library\Instamojo;
+use App\Library\Mollie;
+use App\Library\TapPayment;
+use App\Library\Thawani;
+use App\Library\Toyyibpay;
 use App\Models\Gateway;
 use App\Models\Plan;
-use App\Models\PlanSubscribe;
+use App\Models\Property;
+use App\Models\PropertyDetail;
 use App\Models\SecurityDeposit;
 use App\Models\Transaction;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -48,7 +56,7 @@ class PaymentFlowSmokeTest extends TestCase
         // Arrange
         // online_payment usa $plan->property->propertyDetail (no null-safe)
         $deposit = SecurityDeposit::factory()->create([
-            'property_id' => \App\Models\Property::factory()->has(\App\Models\PropertyDetail::factory()),
+            'property_id' => Property::factory()->has(PropertyDetail::factory()),
         ]);
         Gateway::factory()->create();
 
@@ -208,14 +216,14 @@ class PaymentFlowSmokeTest extends TestCase
     {
         // Arrange
         $endpoints = [
-            '/payment/mollie' => \App\Library\Mollie::class,
-            '/payment/flutterwave' => \App\Library\Flutterwave::class,
-            '/payment/thawani' => \App\Library\Thawani::class,
-            '/payment/instamojo' => \App\Library\Instamojo::class,
-            '/payment/toyyibpay' => \App\Library\Toyyibpay::class,
-            '/payment/billplz' => \App\Library\Billplz::class,
-            '/fedapay/status' => \App\Library\FedaPayGateway::class,
-            '/tap-payment/status' => \App\Library\TapPayment::class,
+            '/payment/mollie' => Mollie::class,
+            '/payment/flutterwave' => Flutterwave::class,
+            '/payment/thawani' => Thawani::class,
+            '/payment/instamojo' => Instamojo::class,
+            '/payment/toyyibpay' => Toyyibpay::class,
+            '/payment/billplz' => Billplz::class,
+            '/fedapay/status' => FedaPayGateway::class,
+            '/tap-payment/status' => TapPayment::class,
         ];
 
         foreach ($endpoints as $class) {

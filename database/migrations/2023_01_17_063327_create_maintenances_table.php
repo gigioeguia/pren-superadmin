@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('title')->nullable();
             $table->foreignId('property_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('tenant_id')->constrained("users")->cascadeOnDelete(); // Tenant Id
+            $table->foreignId('tenant_id')->constrained('users')->cascadeOnDelete(); // Tenant Id
             $table->foreignId('labor_id')->nullable()->constrained()->nullOnDelete(); // Assigned Labor
             $table->double('total_costing')->default(0); // Assigned Labor
             $table->text('description')->nullable();

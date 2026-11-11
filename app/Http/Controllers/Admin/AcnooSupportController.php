@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\User;
-use App\Models\Support;
 use App\Helpers\HasUploader;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Support;
+use App\Models\User;
+use Illuminate\Http\Request;
 
 class AcnooSupportController extends Controller
 {
@@ -65,7 +65,7 @@ class AcnooSupportController extends Controller
                     'sender_id' => $message->sender_id,
                     'receiver_id' => $message->receiver_id,
                     'time' => $message->created_at->format('g:i A'),
-                    'file' =>  $message->file ? asset($message->file) : NULL,
+                    'file' => $message->file ? asset($message->file) : null,
                     'ext' => $message->file_info['ext'] ?? '',
                 ];
             });
@@ -126,7 +126,7 @@ class AcnooSupportController extends Controller
 
         return response()->json([
             'message' => 'Message sent successfully',
-            'redirect' => route('admin.supports.index')
+            'redirect' => route('admin.supports.index'),
         ]);
     }
 
@@ -150,14 +150,14 @@ class AcnooSupportController extends Controller
             ->when(request('search'), function ($q) {
                 $q->where(function ($q) {
                     $search = request('search');
-                    $q->where('name', 'like', '%' . $search . '%');
+                    $q->where('name', 'like', '%'.$search.'%');
                 });
             })
             ->latest()->get();
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.supports.users', compact('landlords'))->render()
+                'data' => view('admin.supports.users', compact('landlords'))->render(),
             ]);
         }
 

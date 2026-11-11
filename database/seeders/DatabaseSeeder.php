@@ -8,7 +8,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run()
     {
-        $this->call(array(
+        $this->call([
             PermissionSeeder::class,
             CurrencySeeder::class,
             GatewaySeeder::class,
@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
             IncomeSeeder::class,
             ExpenseSeeder::class,
             HighlightSeeder::class,
-            LanguageSeeder::class
-        ));
+            LanguageSeeder::class,
+        ]);
     }
 }

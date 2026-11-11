@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Expense;
-use Illuminate\Http\Request;
-use App\Models\ExpenseCategory;
 use App\Exports\AdminExpensesExport;
 use App\Http\Controllers\Controller;
+use App\Models\Expense;
+use App\Models\ExpenseCategory;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooExpenseController extends Controller
@@ -24,6 +25,7 @@ class AcnooExpenseController extends Controller
         $expense_categories = ExpenseCategory::whereStatus(1)->whereNull('landlord_id')->latest()->get();
         $expenses = Expense::with('category:id,name')->whereNull('landlord_id')->latest()->paginate(10);
         $total_expense = Expense::whereNull('landlord_id')->sum('amount');
+
         return view('admin.expenses.index', compact('expenses', 'expense_categories', 'total_expense'));
     }
 
@@ -34,13 +36,13 @@ class AcnooExpenseController extends Controller
 
         if ($request->filled('search')) {
             $expenses->where(function ($query) use ($request) {
-                $query->where('amount', 'like', '%' . $request->search . '%')
-                    ->orWhere('expense_for', 'like', '%' . $request->search . '%')
-                    ->orWhere('payment_type', 'like', '%' . $request->search . '%')
-                    ->orWhere('reference_no', 'like', '%' . $request->search . '%')
-                    ->orWhere('expense_date', 'like', '%' . $request->search . '%')
+                $query->where('amount', 'like', '%'.$request->search.'%')
+                    ->orWhere('expense_for', 'like', '%'.$request->search.'%')
+                    ->orWhere('payment_type', 'like', '%'.$request->search.'%')
+                    ->orWhere('reference_no', 'like', '%'.$request->search.'%')
+                    ->orWhere('expense_date', 'like', '%'.$request->search.'%')
                     ->orWhereHas('category', function ($query) use ($request) {
-                        $query->where('name', 'like', '%' . $request->search . '%');
+                        $query->where('name', 'like', '%'.$request->search.'%');
                     });
             });
         }
@@ -48,27 +50,27 @@ class AcnooExpenseController extends Controller
         if ($request->filled('custom_days') && $request->custom_days !== 'custom_date' && $request->custom_days !== 'all') {
             switch ($request->custom_days) {
                 case 'today':
-                    $expenses->whereDate('expense_date', \Carbon\Carbon::today());
+                    $expenses->whereDate('expense_date', Carbon::today());
                     break;
                 case 'yesterday':
-                    $expenses->whereDate('expense_date', \Carbon\Carbon::yesterday());
+                    $expenses->whereDate('expense_date', Carbon::yesterday());
                     break;
                 case 'last_seven_days':
-                    $expenses->whereBetween('expense_date', [\Carbon\Carbon::now()->subDays(6)->startOfDay(), \Carbon\Carbon::now()->endOfDay()]);
+                    $expenses->whereBetween('expense_date', [Carbon::now()->subDays(6)->startOfDay(), Carbon::now()->endOfDay()]);
                     break;
                 case 'last_thirty_days':
-                    $expenses->whereBetween('expense_date', [\Carbon\Carbon::now()->subDays(29)->startOfDay(), \Carbon\Carbon::now()->endOfDay()]);
+                    $expenses->whereBetween('expense_date', [Carbon::now()->subDays(29)->startOfDay(), Carbon::now()->endOfDay()]);
                     break;
                 case 'current_month':
-                    $expenses->whereMonth('expense_date', \Carbon\Carbon::now()->month)
-                        ->whereYear('expense_date', \Carbon\Carbon::now()->year);
+                    $expenses->whereMonth('expense_date', Carbon::now()->month)
+                        ->whereYear('expense_date', Carbon::now()->year);
                     break;
                 case 'last_month':
-                    $expenses->whereMonth('expense_date', \Carbon\Carbon::now()->subMonth()->month)
-                        ->whereYear('expense_date', \Carbon\Carbon::now()->subMonth()->year);
+                    $expenses->whereMonth('expense_date', Carbon::now()->subMonth()->month)
+                        ->whereYear('expense_date', Carbon::now()->subMonth()->year);
                     break;
                 case 'current_year':
-                    $expenses->whereYear('expense_date', \Carbon\Carbon::now()->year);
+                    $expenses->whereYear('expense_date', Carbon::now()->year);
                     break;
             }
         }
@@ -86,7 +88,7 @@ class AcnooExpenseController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'data' => view('admin.expenses.datas', compact('expenses'))->render(),
-                'total_expense' => currency_format($total_expense)
+                'total_expense' => currency_format($total_expense),
             ]);
         }
 
@@ -117,7 +119,7 @@ class AcnooExpenseController extends Controller
 
         return response()->json([
             'message' => __('Expense created successfully.'),
-            'redirect' => route('admin.expenses.index')
+            'redirect' => route('admin.expenses.index'),
         ]);
     }
 
@@ -147,7 +149,7 @@ class AcnooExpenseController extends Controller
 
         return response()->json([
             'message' => __('Expense updated successfully.'),
-            'redirect' => route('admin.expenses.index')
+            'redirect' => route('admin.expenses.index'),
         ]);
     }
 

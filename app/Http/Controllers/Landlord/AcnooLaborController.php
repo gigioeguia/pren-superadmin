@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Landlord;
 
 use App\Exports\LandlordLaborExport;
+use App\Http\Controllers\Controller;
 use App\Models\Labor;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooLaborController extends Controller
@@ -26,11 +26,11 @@ class AcnooLaborController extends Controller
             ->when(request('search'), function ($q) {
                 $q->where(function ($q) {
                     $search = request('search');
-                    $q->where('name', 'like', '%' . $search . '%')
-                        ->orwhere('email', 'like', '%' . $search . '%')
-                        ->orwhere('phone', 'like', '%' . $search . '%')
-                        ->orwhere('gender', 'like', '%' . $search . '%')
-                        ->orwhere('salary', 'like', '%' . $search . '%');
+                    $q->where('name', 'like', '%'.$search.'%')
+                        ->orwhere('email', 'like', '%'.$search.'%')
+                        ->orwhere('phone', 'like', '%'.$search.'%')
+                        ->orwhere('gender', 'like', '%'.$search.'%')
+                        ->orwhere('salary', 'like', '%'.$search.'%');
                 });
             })
             ->latest()
@@ -38,13 +38,12 @@ class AcnooLaborController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('landlord.labors.datas', compact('labors'))->render()
+                'data' => view('landlord.labors.datas', compact('labors'))->render(),
             ]);
         }
 
         return redirect(url()->previous());
     }
-
 
     public function store(Request $request)
     {
@@ -56,16 +55,16 @@ class AcnooLaborController extends Controller
             'gender' => 'nullable|in:Male,Female,other',
         ]);
 
-       $labor = Labor::create($request->except('landlord_id', 'phone') + [
+        $labor = Labor::create($request->except('landlord_id', 'phone') + [
             'landlord_id' => auth()->id(),
-            'phone' => $request->phone
+            'phone' => $request->phone,
         ]);
 
-        sendNotification($labor->landlord->id, notify_users([$labor->landlord->id]), landlord_url: route('landlord.labors.index', ['id' => $labor->id]),  landlord_msg: __('You have created a new labor.'));
+        sendNotification($labor->landlord->id, notify_users([$labor->landlord->id]), landlord_url: route('landlord.labors.index', ['id' => $labor->id]), landlord_msg: __('You have created a new labor.'));
 
         return response()->json([
             'message' => 'Labor save successfully',
-            'redirect' => route('landlord.labors.index')
+            'redirect' => route('landlord.labors.index'),
         ]);
     }
 
@@ -73,7 +72,7 @@ class AcnooLaborController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:labors,email,' . $id,
+            'email' => 'required|email|unique:labors,email,'.$id,
             'phone' => 'required',
             'salary' => 'required|numeric|min:0',
             'gender' => 'nullable|in:Male,Female,other',
@@ -83,12 +82,12 @@ class AcnooLaborController extends Controller
 
         $labor->update($request->except('landlord_id', 'phone') + [
             'landlord_id' => auth()->id(),
-            'phone' => $request->phone
+            'phone' => $request->phone,
         ]);
 
         return response()->json([
             'message' => 'Labor update successfully',
-            'redirect' => route('landlord.labors.index')
+            'redirect' => route('landlord.labors.index'),
         ]);
     }
 
@@ -96,9 +95,10 @@ class AcnooLaborController extends Controller
     {
         $labor = Labor::findOrFail($id);
         $labor->delete();
+
         return response()->json([
-            'message'   => __('Labor deleted successfully'),
-            'redirect'  => route('landlord.labors.index')
+            'message' => __('Labor deleted successfully'),
+            'redirect' => route('landlord.labors.index'),
         ]);
     }
 
@@ -107,8 +107,8 @@ class AcnooLaborController extends Controller
         Labor::whereIn('id', $request->ids)->delete();
 
         return response()->json([
-            'message'   => __('Selected labor deleted successfully'),
-            'redirect'  => route('landlord.labors.index')
+            'message' => __('Selected labor deleted successfully'),
+            'redirect' => route('landlord.labors.index'),
         ]);
     }
 

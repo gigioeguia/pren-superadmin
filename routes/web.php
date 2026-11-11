@@ -44,4 +44,4 @@ Route::group([
     Route::get('/fedapay/status', 'FedaPayGateway@status')->name('fedapay.status');
 });
 
-require __DIR__ . '/maintenance.php';
+require __DIR__.'/maintenance.php';

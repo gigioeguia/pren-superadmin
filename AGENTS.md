@@ -80,7 +80,11 @@ Run a single test: `php artisan test tests/Feature/Auth/WebLoginSmokeTest.php`
 
 ## Tooling
 
-No CI, no PHPStan/Pint config, no pre-commit hooks. `laravel/pint` is installed but unconfigured. `.editorconfig` exists.
+- **PHPStan (Larastan 2.x)**: `composer analyse` — level 5, paths `app/`, target PHP 8.2 (`phpVersion: 80200`), incluye `phpstan-baseline.neon` con 709 errores legacy congelados.
+- **Baseline rule**: the baseline is single-use. Regenerating it to make a PR pass is forbidden; only with documented justification + diff review of the file in the PR. New/modified code errors must fail.
+- **Pint (preset laravel)**: `composer lint` (test mode, CI-enforced) / `composer lint:fix` (auto-fix). Config in `pint.json`.
+- **CI**: `.github/workflows/ci.yml` — 4 jobs on push to `main` + PRs: `tests` (MySQL 8 service over `dbrentpro_test`), `static-analysis` (phpstan), `style` (pint), `frontend-build` (npm ci + build). Note: the `tests` job must recreate the `vendor/autoload1.php` marker after `composer install`.
+- `.editorconfig` exists. No pre-commit hooks (CI is the gate).
 
 ## Agent conventions (`.agents/`)
 

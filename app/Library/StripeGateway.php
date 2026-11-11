@@ -2,9 +2,9 @@
 
 namespace App\Library;
 
-use Stripe\Stripe;
 use App\Models\Gateway;
 use Illuminate\Support\Facades\Session;
+use Stripe\Stripe;
 
 class StripeGateway
 {
@@ -34,9 +34,11 @@ class StripeGateway
         // Checking Minimum/Maximum amount
         if ($gateway->min_amount > $amount) {
             session()->put('payment_msg', __('The minimum transaction amount is :amount', ['amount' => currency_format($gateway->min_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         } elseif ($gateway->max_amount < $amount) {
             session()->put('payment_msg', __('The maximum transaction amount is :amount', ['amount' => currency_format($gateway->max_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         }
 
@@ -45,21 +47,21 @@ class StripeGateway
         $amount = $array['pay_amount'] * 100; // Amount In Cents
 
         $session = \Stripe\Checkout\Session::create([
-            'line_items'  => [
+            'line_items' => [
                 [
                     'price_data' => [
-                        'currency'     => $array['currency'] ?? 'USD',
+                        'currency' => $array['currency'] ?? 'USD',
                         'product_data' => [
-                            "name" => $array['billName'],
+                            'name' => $array['billName'],
                         ],
-                        'unit_amount'  => $amount,
+                        'unit_amount' => $amount,
                     ],
                     'quantity' => 1,
                 ],
             ],
             'mode' => 'payment',
             'success_url' => route('payment.success'),
-            'cancel_url'  => route('payment.failed'),
+            'cancel_url' => route('payment.failed'),
         ]);
 
         return redirect()->away($session->url);

@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\HasUploader;
+use App\Http\Controllers\Controller;
+use App\Models\Gateway;
 use App\Models\Plan;
 use App\Models\PlanSubscribe;
-use App\Models\Gateway;
 use App\Models\RentPayment;
-use App\Helpers\HasUploader;
-use Illuminate\Http\Request;
 use App\Models\SecurityDeposit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
+use Illuminate\Support\ViewErrorBag;
 
 class AcnooSecurityDepositController extends Controller
 {
@@ -37,7 +38,7 @@ class AcnooSecurityDepositController extends Controller
 
         return response()->json([
             'message' => __('Data fetched successfully.'),
-            'data' => $security_deposit
+            'data' => $security_deposit,
         ]);
     }
 
@@ -45,16 +46,16 @@ class AcnooSecurityDepositController extends Controller
     {
         $security_deposit = SecurityDeposit::with(['property:id,security_deposit,utility_deposit,rent_info', 'property.propertyDetail:property_id,property_info', 'landlord:id,name,phone,email', 'landlord.user_details:user_id,address_info', 'tenant:id,name,phone,email', 'tenant.user_details:user_id,address_info'])->findOrFail($id);
 
-        $errors = session()->get('errors', new \Illuminate\Support\ViewErrorBag);
+        $errors = session()->get('errors', new ViewErrorBag);
         $html = view('api-invoice.security-deposit', compact('security_deposit', 'errors'))->render();
 
         return response()->json([
             'message' => 'Data fetched successfully.',
             'data' => [
                 'id' => $security_deposit->id,
-                'total_amount' => $security_deposit->total_amount
+                'total_amount' => $security_deposit->total_amount,
             ],
-            'html' => $html
+            'html' => $html,
         ]);
     }
 
@@ -106,6 +107,7 @@ class AcnooSecurityDepositController extends Controller
                     DB::commit();
 
                     session()->forget('user_id');
+
                     return response()->json([
                         'message' => 'New subscription purchased requested.',
                     ]);
@@ -118,7 +120,7 @@ class AcnooSecurityDepositController extends Controller
                         'payment_date' => today(),
                         'status' => 'pending',
                         'gateway_id' => $gateway->id,
-                        'payment_data' => $payment_data
+                        'payment_data' => $payment_data,
 
                     ]);
                 } elseif ($request->payment_type == 'rent_payment') {
@@ -128,7 +130,7 @@ class AcnooSecurityDepositController extends Controller
                         'payment_date' => today(),
                         'payment_status' => 'pending',
                         'gateway_id' => $gateway->id,
-                        'payment_data' => $payment_data
+                        'payment_data' => $payment_data,
 
                     ]);
                 }
@@ -140,6 +142,7 @@ class AcnooSecurityDepositController extends Controller
                 ]);
             } catch (\Exception $e) {
                 DB::rollback();
+
                 return response()->json([
                     'message' => 'Payment failed',
                 ], 500);

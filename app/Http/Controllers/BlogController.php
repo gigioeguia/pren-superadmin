@@ -24,7 +24,7 @@ class BlogController extends Controller
         $recent_blogs = Blog::with('user:id,name')->select('id', 'title', 'slug', 'image', 'user_id', 'created_at', 'updated_at')->whereStatus(1)->latest()->limit(3)->get();
         $comments = Comment::with('blog:id')->whereStatus(1)->where('blog_id', $blog->id)->latest()->limit(3)->get();
 
-        return view('web.blog.show', compact('page_data','blog', 'recent_blogs','comments'));
+        return view('web.blog.show', compact('page_data', 'blog', 'recent_blogs', 'comments'));
     }
 
     public function store(Request $request)
@@ -40,11 +40,10 @@ class BlogController extends Controller
         ]);
 
         return response()->json([
-            'message'   => __('Your Comment Submitted successfully'),
-            'redirect'  => route('blogs.show', $request->blog_slug)
+            'message' => __('Your Comment Submitted successfully'),
+            'redirect' => route('blogs.show', $request->blog_slug),
         ]);
     }
-
 
     public function filterBlogsByTag(Request $request)
     {
@@ -56,7 +55,7 @@ class BlogController extends Controller
             ->paginate(4);
 
         return response()->json([
-            'blogs' => $filtered_blogs
+            'blogs' => $filtered_blogs,
         ]);
     }
 }

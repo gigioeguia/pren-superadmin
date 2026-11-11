@@ -10,7 +10,7 @@ class SetLocale
     public function handle(Request $request, Closure $next)
     {
         if (request()->is('/') || request()->is('login')) {
-            if (!file_exists(storage_path('installed'))) {
+            if (! file_exists(storage_path('installed'))) {
                 return redirect('install');
             }
         }
@@ -19,13 +19,9 @@ class SetLocale
             $locale = $request->get('lang');
             app()->setLocale($locale);
             session(['locale' => $locale]);
-        }
-
-        elseif (session()->has('locale')) {
+        } elseif (session()->has('locale')) {
             app()->setLocale(session('locale'));
-        }
-
-        else {
+        } else {
             app()->setLocale(config('app.locale'));
         }
 

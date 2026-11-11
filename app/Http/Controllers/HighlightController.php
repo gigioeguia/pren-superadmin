@@ -10,6 +10,7 @@ class HighlightController extends Controller
     {
         $page_data = get_option('manage-pages');
         $highlight = Highlight::where('slug', $slug)->firstOrFail();
+
         return view('web.components.show-highlight', compact('page_data', 'highlight'));
     }
 }

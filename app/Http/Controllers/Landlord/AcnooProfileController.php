@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Landlord;
 
-use App\Models\User;
 use App\Helpers\HasUploader;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -33,7 +33,7 @@ class AcnooProfileController extends Controller
             'email' => 'required|email',
             'phone' => 'nullable|array',
             'profile_type' => 'nullable|string:255',
-            'email' => 'nullable|email|unique:users,email,' . $id,
+            'email' => 'nullable|email|unique:users,email,'.$id,
             'image' => 'nullable|image|mimes:jpeg,png,gif,svg|max:1024',
             'mykad.front_image' => 'nullable|image|mimes:jpeg,png,gif,svg|max:1024',
             'mykad.back_image' => 'nullable|image|mimes:jpeg,png,gif,svg|max:1024',
@@ -57,7 +57,7 @@ class AcnooProfileController extends Controller
             }
 
             if ($request->hasFile('image')) {
-                if (!empty($user->image)) {
+                if (! empty($user->image)) {
                     $oldImagePath = dirname($user->image);
                     Storage::deleteDirectory($oldImagePath);
                 }
@@ -74,11 +74,11 @@ class AcnooProfileController extends Controller
                 'email' => $request->email,
                 'phone' => $request->input('phone'),
                 'profile_type' => $request->profile_type,
-                'password' => $request->password ? Hash::make($request->password) : $user->password
+                'password' => $request->password ? Hash::make($request->password) : $user->password,
             ]);
 
             if ($request->hasFile('mykad.front_image')) {
-                if (!empty($user->user_details->mykad['front_image'])) {
+                if (! empty($user->user_details->mykad['front_image'])) {
                     $oldFrontImagePath = dirname($user->user_details->mykad['front_image']);
                     Storage::deleteDirectory($oldFrontImagePath);
                 }
@@ -88,7 +88,7 @@ class AcnooProfileController extends Controller
             }
 
             if ($request->hasFile('mykad.back_image')) {
-                if (!empty($user->user_details->mykad['back_image'])) {
+                if (! empty($user->user_details->mykad['back_image'])) {
                     $oldBackImagePath = dirname($user->user_details->mykad['back_image']);
                     Storage::deleteDirectory($oldBackImagePath);
                 }
@@ -100,7 +100,7 @@ class AcnooProfileController extends Controller
             // Before updating user details, ensure it exists
             $userDetails = $user->user_details;
 
-            if (!$userDetails) {
+            if (! $userDetails) {
                 $userDetails = $user->user_details()->create([
                     'user_id' => $user->id,
                     'gender' => $request->gender,
@@ -129,10 +129,11 @@ class AcnooProfileController extends Controller
 
             return response()->json([
                 'message' => 'Profile update successfully',
-                'redirect' => route('landlord.profile.index')
+                'redirect' => route('landlord.profile.index'),
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'message' => __('Profile updated failed.'),
                 'error' => $e->getMessage(),

@@ -14,7 +14,7 @@ class Testimonial extends Model
         'client_name',
         'client_image',
         'work_at',
-        'text'
+        'text',
     ];
 
     protected $casts = [

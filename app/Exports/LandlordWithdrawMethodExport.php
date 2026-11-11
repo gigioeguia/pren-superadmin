@@ -13,7 +13,7 @@ class LandlordWithdrawMethodExport implements FromView
         $withdraws = Withdraw::with('account_info.withdraw_method:id,name,charge_type')->where('user_id', auth()->id())->latest()->get();
 
         return view('landlord.withdraw-request.excel-csv', [
-            'withdraws' => $withdraws
+            'withdraws' => $withdraws,
         ]);
     }
 }

@@ -15,15 +15,15 @@ class AcnooClientController extends Controller
     public function index(Request $request)
     {
         $clients = Client::latest()->paginate(10);
+
         return view('admin.clients.index', compact('clients'));
     }
-
 
     public function acnooFilter(Request $request)
     {
         $clients = Client::when(request('search'), function ($q) {
             $q->where(function ($q) {
-                $q->where('title', 'like', '%' . request('search') . '%');
+                $q->where('title', 'like', '%'.request('search').'%');
             });
         })
             ->latest()
@@ -31,7 +31,7 @@ class AcnooClientController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.clients.datas', compact('clients'))->render()
+                'data' => view('admin.clients.datas', compact('clients'))->render(),
             ]);
         }
 
@@ -52,12 +52,12 @@ class AcnooClientController extends Controller
         ]);
 
         Client::create($request->except('image') + [
-            'image' => $request->image ? $this->upload($request, 'image') : NULL
+            'image' => $request->image ? $this->upload($request, 'image') : null,
         ]);
 
         return response()->json([
             'message' => __('Client created successfully'),
-            'redirect' => route('admin.clients.index')
+            'redirect' => route('admin.clients.index'),
         ]);
     }
 
@@ -80,7 +80,7 @@ class AcnooClientController extends Controller
 
         return response()->json([
             'message' => __('Client updated successfully'),
-            'redirect' => route('admin.clients.index')
+            'redirect' => route('admin.clients.index'),
         ]);
     }
 
@@ -92,8 +92,8 @@ class AcnooClientController extends Controller
         $client->delete();
 
         return response()->json([
-            'message'   => __('Client deleted successfully'),
-            'redirect'  => route('admin.clients.index')
+            'message' => __('Client deleted successfully'),
+            'redirect' => route('admin.clients.index'),
         ]);
     }
 
@@ -101,9 +101,9 @@ class AcnooClientController extends Controller
     {
         $client = Client::findOrFail($id);
         $client->update(['status' => $request->status]);
+
         return response()->json(['message' => 'Client ']);
     }
-
 
     public function deleteAll(Request $request)
     {
@@ -118,7 +118,7 @@ class AcnooClientController extends Controller
 
         return response()->json([
             'message' => __('Selected Client deleted successfully'),
-            'redirect' => route('admin.clients.index')
+            'redirect' => route('admin.clients.index'),
         ]);
     }
 }

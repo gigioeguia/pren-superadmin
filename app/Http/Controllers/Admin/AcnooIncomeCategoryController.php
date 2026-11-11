@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
-use App\Models\IncomeCategory;
-use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
+use App\Models\IncomeCategory;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class AcnooIncomeCategoryController extends Controller
 {
@@ -20,6 +20,7 @@ class AcnooIncomeCategoryController extends Controller
     public function index()
     {
         $income_categories = IncomeCategory::whereNull('landlord_id')->latest()->paginate(10);
+
         return view('admin.income-categories.index', compact('income_categories'));
     }
 
@@ -28,8 +29,8 @@ class AcnooIncomeCategoryController extends Controller
         $income_categories = IncomeCategory::whereNull('landlord_id')
             ->when(request('search'), function ($q) use ($request) {
                 $q->where(function ($q) use ($request) {
-                    $q->where('name', 'like', '%' . $request->search . '%')
-                        ->orWhere('description', 'like', '%' . $request->search . '%');
+                    $q->where('name', 'like', '%'.$request->search.'%')
+                        ->orWhere('description', 'like', '%'.$request->search.'%');
                 });
             })
             ->latest()
@@ -37,9 +38,10 @@ class AcnooIncomeCategoryController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.income-categories.datas', compact('income_categories'))->render()
+                'data' => view('admin.income-categories.datas', compact('income_categories'))->render(),
             ]);
         }
+
         return redirect(url()->previous());
     }
 
@@ -54,17 +56,16 @@ class AcnooIncomeCategoryController extends Controller
                     return $query->whereNull('landlord_id');
                 }),
             ],
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         IncomeCategory::create($request->all());
 
         return response()->json([
             'message' => __('Income Category saved successfully.'),
-            'redirect' => route('admin.income-categories.index')
+            'redirect' => route('admin.income-categories.index'),
         ]);
     }
-
 
     public function update(Request $request, string $id)
     {
@@ -86,7 +87,7 @@ class AcnooIncomeCategoryController extends Controller
 
         return response()->json([
             'message' => __('Income Category updated successfully.'),
-            'redirect' => route('admin.income-categories.index')
+            'redirect' => route('admin.income-categories.index'),
         ]);
     }
 
@@ -97,7 +98,7 @@ class AcnooIncomeCategoryController extends Controller
 
         return response()->json([
             'message' => 'Income Category Deleted Successfully',
-            'redirect' => route('admin.income-categories.index')
+            'redirect' => route('admin.income-categories.index'),
         ]);
     }
 
@@ -107,7 +108,7 @@ class AcnooIncomeCategoryController extends Controller
 
         return response()->json([
             'message' => 'Selected Income Category Deleted Successfully',
-            'redirect' => route('admin.income-categories.index')
+            'redirect' => route('admin.income-categories.index'),
         ]);
     }
 
@@ -115,6 +116,7 @@ class AcnooIncomeCategoryController extends Controller
     {
         $category = IncomeCategory::findOrFail($id);
         $category->update(['status' => $request->status]);
+
         return response()->json([
             'message' => 'Income Category',
         ]);

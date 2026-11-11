@@ -216,3 +216,29 @@ Auditoría según skill `revisar-spec`: frontmatter 6/6, prefijos F oficiales co
 **Decisión:** 0 hallazgos altos, 1 medio y 4 bajos (todos resueltos en esta revisión) → estado pasa a `Revisado`. Pendiente de `Aprobado` por el decisor.
 
 **Aprobación (2026-11-11):** el decisor aprueba el spec tras revisión sin hallazgos altos. Listo para implementar en `spec/phpstan-pint-ci-fase0-impl`; las decisiones pendientes de §8 se resuelven en implementación o post-merge.
+
+---
+
+## 12. Notas de implementación (2026-11-11)
+
+Implementado en rama `spec/phpstan-pint-ci-fase0-impl` (apilada sobre `-draft`).
+
+### Desviación menor
+
+| # | Punto | Detalle |
+|---|-------|---------|
+| D1 | Composer scripts | Prefijo `php vendor/bin/...` en `analyse`/`lint`/`lint:fix`: el vendor heredado de este entorno no tiene bit de ejecución en bins antiguos (`pint`, `phpunit`). Un `composer install` fresco (CI incluida) sí pone los bits, pero el prefijo lo hace robusto en cualquier entorno. |
+
+### Evidencia local (F1–F6)
+
+- **F1**: `composer analyse` → `[OK] No errors`, exit 0.
+- **F2**: sonda temporal con error de tipo → `Found 1 error` (`app/PhpstanProbe.php:11`), exit 1; sonda retirada.
+- **F3**: baseline con **709 errores en 394 entradas** sobre los 247 ficheros de `app/`; análisis en verde, errores nuevos fallan (F2).
+- **F4**: `phpVersion: 80200` aceptado por la configuración sin error.
+- **F5**: `composer lint` → exit 0 (`{"result":"pass"}`).
+- **F6**: sonda mal formateada → pint aplica 6 fixers (`single_quote`, `no_unused_imports`, etc.); sonda retirada.
+- Suite smoke **60/60 (14.2 s)** tras la primera pasada completa de Pint (~370 ficheros, commit mecánico `style:`), confirmando que el reformateo no rompe nada.
+
+### Pendiente de verificación en el PR (F7–F13)
+
+Los 4 jobs del workflow se verifican al abrir el PR (GitHub Actions ejecuta el workflow del PR que lo introduce): `tests` (MySQL service + marcador + 60 tests), `static-analysis`, `style` y `frontend-build`. Post-merge recomendado: **branch protection** (require status checks) en settings de GitHub — fuera del alcance del repo.

@@ -49,7 +49,7 @@ class WebSignupSmokeTest extends TestCase
     {
         $_ENV['MAIL_USERNAME'] = self::MAIL_USERNAME;
         $_SERVER['MAIL_USERNAME'] = self::MAIL_USERNAME;
-        putenv('MAIL_USERNAME=' . self::MAIL_USERNAME);
+        putenv('MAIL_USERNAME='.self::MAIL_USERNAME);
     }
 
     public function test_signup_with_otp_off_creates_landlord_and_logs_in(): void

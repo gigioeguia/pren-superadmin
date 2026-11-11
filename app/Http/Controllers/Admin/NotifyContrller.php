@@ -22,12 +22,14 @@ class NotifyContrller extends Controller
         $notify = Notification::find($id);
         $notify->read_at = now();
         $notify->save();
+
         return redirect($notify->data['url'] ?? '/');
     }
 
     public function mtReadAll()
     {
         auth()->user()->unreadNotifications()->update(['read_at' => now()]);
+
         return back();
     }
 }

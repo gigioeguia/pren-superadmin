@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Carbon\Carbon;
-use App\Models\Rent;
 use App\Models\Option;
+use App\Models\Rent;
 use App\Models\RentPayment;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class RentPaymentGenerate extends Command
@@ -29,7 +29,7 @@ class RentPaymentGenerate extends Command
      */
     public function handle()
     {
-        $month = strtolower(Carbon::now()->format('F')); 
+        $month = strtolower(Carbon::now()->format('F'));
         $year = Carbon::now()->year;
 
         $this->info("Generating rent payments for {$month} {$year}...");
@@ -56,16 +56,17 @@ class RentPaymentGenerate extends Command
         $rents = Rent::whereNotIn('id', $paid_rents)
             ->where(function ($q) {
                 $q->where('status', 'active')
-                  ->orWhere(function ($q) {
-                      $q->where('status', 'expired')
-                        ->whereDate('start_date', '<=', Carbon::today())
-                        ->whereDate('end_date', '>=', Carbon::today());
-                  });
+                    ->orWhere(function ($q) {
+                        $q->where('status', 'expired')
+                            ->whereDate('start_date', '<=', Carbon::today())
+                            ->whereDate('end_date', '>=', Carbon::today());
+                    });
             })
             ->get();
 
         if ($rents->isEmpty()) {
             $this->info('No rents found for payment generation.');
+
             return;
         }
 
@@ -81,7 +82,7 @@ class RentPaymentGenerate extends Command
                 'rent_month' => $month,
                 'rent_year' => $year,
                 'payment_status' => 'unpaid',
-                'invoice_no' => "PAYSLIP" . str_pad($key + $invoice_no + 1, 2, '0', STR_PAD_LEFT),
+                'invoice_no' => 'PAYSLIP'.str_pad($key + $invoice_no + 1, 2, '0', STR_PAD_LEFT),
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -91,6 +92,4 @@ class RentPaymentGenerate extends Command
 
         $this->info('Rent payments generated successfully!');
     }
-
 }
-

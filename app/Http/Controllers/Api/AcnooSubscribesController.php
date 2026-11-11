@@ -9,7 +9,7 @@ class AcnooSubscribesController extends Controller
 {
     public function index()
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return response()->json([
                 'message' => __('Unauthorized access.'),
             ], 401);
@@ -19,7 +19,7 @@ class AcnooSubscribesController extends Controller
 
         return response()->json([
             'message' => __('Data fetched successfully.'),
-            'data' => $subscribes
+            'data' => $subscribes,
         ]);
     }
 }

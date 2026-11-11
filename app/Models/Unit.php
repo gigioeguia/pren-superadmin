@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Unit extends Model
 {
@@ -69,5 +69,4 @@ class Unit extends Model
         'late_fee' => 'double',
         'late_fee_after_days' => 'integer',
     ];
-
 }

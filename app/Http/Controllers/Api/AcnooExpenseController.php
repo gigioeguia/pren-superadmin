@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-
+use App\Http\Controllers\Controller;
 use App\Models\Expense;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 
 class AcnooExpenseController extends Controller
 {
@@ -17,10 +16,10 @@ class AcnooExpenseController extends Controller
                 $query->where('expense_category_id', request('expense_category_id'));
             })
             ->when(request('search'), function ($query) {
-                $query->where('expanseFor', 'like', '%' . request('search') . '%')
-                    ->orWhere('amount', 'like', '%' . request('search') . '%')
+                $query->where('expanseFor', 'like', '%'.request('search').'%')
+                    ->orWhere('amount', 'like', '%'.request('search').'%')
                     ->orWhereHas('category', function ($query) {
-                        $query->where('name', 'like', '%' . request('search') . '%');
+                        $query->where('name', 'like', '%'.request('search').'%');
                     });
             })
             ->latest()
@@ -45,7 +44,7 @@ class AcnooExpenseController extends Controller
         ]);
 
         $data = Expense::create($request->except('landlord_id') + [
-            'landlord_id' => auth()->id()
+            'landlord_id' => auth()->id(),
         ]);
 
         return response()->json([
@@ -70,7 +69,7 @@ class AcnooExpenseController extends Controller
         $expense = Expense::findOrFail($id);
 
         $expense->update($request->except('landlord_id') + [
-            'landlord_id' => auth()->id()
+            'landlord_id' => auth()->id(),
         ]);
 
         return response()->json([

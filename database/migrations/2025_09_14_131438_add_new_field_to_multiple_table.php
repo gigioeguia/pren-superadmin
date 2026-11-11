@@ -41,7 +41,7 @@ return new class extends Migration
         });
 
         Schema::table('rent_payments', function (Blueprint $table) {
-              $table->double('late_fee')->default(0)->after('total_amount');
+            $table->double('late_fee')->default(0)->after('total_amount');
         });
 
         Schema::table('facilities', function (Blueprint $table) {
@@ -87,7 +87,7 @@ return new class extends Migration
             $table->dropColumn(['min_amount', 'max_amount']);
         });
 
-         Schema::table('rent_payments', function (Blueprint $table) {
+        Schema::table('rent_payments', function (Blueprint $table) {
             $table->dropColumn('late_fee');
         });
 

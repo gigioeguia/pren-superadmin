@@ -16,7 +16,7 @@ class Feature extends Model
         'status',
     ];
 
-     protected $casts = [
+    protected $casts = [
         'status' => 'integer',
     ];
 }

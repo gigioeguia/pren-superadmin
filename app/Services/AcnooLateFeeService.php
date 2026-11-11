@@ -1,17 +1,18 @@
 <?php
+
 namespace App\Services;
 
-use Carbon\Carbon;
 use App\Models\RentPayment;
+use Carbon\Carbon;
 
 class AcnooLateFeeService
 {
-   public function applyLateFee(RentPayment $payment)
+    public function applyLateFee(RentPayment $payment)
     {
         $rent = $payment->rent;
         $property = $rent->property;
 
-        if (!$property || $payment->late_fee > 0 || $payment->payment_status === 'paid') {
+        if (! $property || $payment->late_fee > 0 || $payment->payment_status === 'paid') {
             return; // Skip if not applicable
         }
 

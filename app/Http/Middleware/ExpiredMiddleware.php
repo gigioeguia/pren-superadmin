@@ -2,10 +2,11 @@
 
 namespace App\Http\Middleware;
 
-use Closure;
-use App\Models\User;
 use App\Models\Labor;
 use App\Models\Property;
+use App\Models\User;
+use Closure;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,16 +16,15 @@ class ExpiredMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
-     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     * @param  Closure(Request): (\Illuminate\Http\Response|RedirectResponse)  $next
+     * @return \Illuminate\Http\Response|RedirectResponse
      */
     public function handle(Request $request, Closure $next): Response
     {
         // Check if the plan has expired
         $plan_subscribe = plan_data();
 
-        if (!$plan_subscribe || !$plan_subscribe->will_expire || $plan_subscribe->will_expire < now()) {
+        if (! $plan_subscribe || ! $plan_subscribe->will_expire || $plan_subscribe->will_expire < now()) {
             $message = __('Your plan has expired. Please subscribe to a new plan. You can only view data when your plan has expired.');
 
             $disabledRoutes = [
@@ -113,8 +113,8 @@ class ExpiredMiddleware
             $property_count = Property::where('landlord_id', $user_id)->count();
             if ($plan->number_of_property !== -1 && $property_count >= $plan->number_of_property) {
                 return $request->wantsJson()
-                    ? response()->json(__('Your property addition limit has been reached. Your current limit is ' . $plan->number_of_property), 406)
-                    : redirect(route('landlord.subscriptions.index'))->with('error', __('Property limit exceeded. Your current limit is ' . $plan->number_of_property));
+                    ? response()->json(__('Your property addition limit has been reached. Your current limit is '.$plan->number_of_property), 406)
+                    : redirect(route('landlord.subscriptions.index'))->with('error', __('Property limit exceeded. Your current limit is '.$plan->number_of_property));
             }
         }
 
@@ -123,8 +123,8 @@ class ExpiredMiddleware
             $labor_count = Labor::where('landlord_id', $user_id)->count();
             if ($plan->number_of_labor !== -1 && $labor_count >= $plan->number_of_labor) {
                 return $request->wantsJson()
-                    ? response()->json(__('Your labor addition limit has been reached. Your current limit is ' . $plan->number_of_labor), 406)
-                    : redirect(route('landlord.subscriptions.index'))->with('error', __('Labor limit exceeded. Your current limit is ' . $plan->number_of_labor));
+                    ? response()->json(__('Your labor addition limit has been reached. Your current limit is '.$plan->number_of_labor), 406)
+                    : redirect(route('landlord.subscriptions.index'))->with('error', __('Labor limit exceeded. Your current limit is '.$plan->number_of_labor));
             }
         }
 
@@ -133,8 +133,8 @@ class ExpiredMiddleware
             $tenant_count = User::where([['landlord_id', $user_id], ['role', 'tenant']])->count();
             if ($plan->number_of_tenant !== -1 && $tenant_count >= $plan->number_of_tenant) {
                 return $request->wantsJson()
-                    ? response()->json(__('Your tenant addition limit has been reached. Your current limit is ' . $plan->number_of_tenant), 406)
-                    : redirect(route('landlord.tenants.index'))->with('error', __('Tenant limit exceeded. Your current limit is ' . $plan->number_of_tenant));
+                    ? response()->json(__('Your tenant addition limit has been reached. Your current limit is '.$plan->number_of_tenant), 406)
+                    : redirect(route('landlord.tenants.index'))->with('error', __('Tenant limit exceeded. Your current limit is '.$plan->number_of_tenant));
             }
         }
 

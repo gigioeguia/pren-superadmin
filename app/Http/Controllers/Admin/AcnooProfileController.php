@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Helpers\HasUploader;
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class AcnooProfileController extends Controller
@@ -25,6 +25,7 @@ class AcnooProfileController extends Controller
         $user = User::with('user_details')->where('id', Auth::user()->id)->first();
         $phone_codes = base_path('lang/phone_code.json');
         $phone_codes = json_decode(file_get_contents($phone_codes), true);
+
         return view('admin.profile.profile', compact('user', 'phone_codes'));
     }
 
@@ -66,10 +67,11 @@ class AcnooProfileController extends Controller
 
             return response()->json([
                 'message' => 'Profile update successfully',
-                'redirect' => route('admin.profile.index')
+                'redirect' => route('admin.profile.index'),
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'message' => __('Profile updated failed.'),
                 'error' => $e->getMessage(),

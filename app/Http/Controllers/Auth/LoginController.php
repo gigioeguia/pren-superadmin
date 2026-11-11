@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Auth;
 
-use Illuminate\Http\Request;
-use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
-
+use Spatie\Permission\Models\Role;
 
 class LoginController extends Controller
 {
@@ -28,7 +28,7 @@ class LoginController extends Controller
             $request->session()->regenerate();
 
             $user = auth()->user();
-            
+
             $redirect_url = url('/');
 
             if ($user->role === 'landlord') {
@@ -36,20 +36,21 @@ class LoginController extends Controller
 
             } elseif ($user->role === 'tenant') {
                 Auth::logout();
+
                 return response()->json([
                     'message' => __('You cannot log in as a tenant.'),
                 ], 403);
 
-            } else{
+            } else {
                 $role = Role::where('name', $user->role)->first();
                 $first_permission = $role->permissions->pluck('name')->first();
                 $page = explode('-', $first_permission, 2)[0];
-                $routeName = 'admin.' . $page;
+                $routeName = 'admin.'.$page;
 
                 // Para recursos como roles, usar la ruta de listado si existe.
                 if (
-                    !\Illuminate\Support\Facades\Route::has($routeName) &&
-                    \Illuminate\Support\Facades\Route::has($routeName . '.index')
+                    ! Route::has($routeName) &&
+                    Route::has($routeName.'.index')
                 ) {
                     $routeName .= '.index';
                 }
@@ -68,7 +69,6 @@ class LoginController extends Controller
             'message' => __('Invalid Email or Password!'),
         ], 401);
     }
-
 
     public function logout()
     {

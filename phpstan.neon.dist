@@ -1,0 +1,11 @@
+includes:
+    - vendor/nunomaduro/larastan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    level: 5
+    paths:
+        - app
+    # El analisis targetea PHP 8.2 (contrato de composer.json), aunque el
+    # CLI local/CI sea superior. Evita falsos resultados por version de runtime.
+    phpVersion: 80200

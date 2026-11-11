@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\User;
 use App\Helpers\HasUploader;
-use Illuminate\Http\Request;
-use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -17,7 +17,7 @@ class UserController extends Controller
     public function __construct()
     {
         $this->middleware('permission:users-read')->only('index');
-        $this->middleware('permission:users-create')->only('create','store');
+        $this->middleware('permission:users-create')->only('create', 'store');
         $this->middleware('permission:users-update')->only('edit', 'update');
         $this->middleware('permission:users-delete')->only('destroy', 'deleteAll');
     }
@@ -25,6 +25,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $users = User::whereNotIn('role', ['superadmin', 'staff', 'landlord', 'tenant'])->latest()->paginate(20);
+
         return view('admin.users.index', compact('users'));
     }
 
@@ -32,10 +33,10 @@ class UserController extends Controller
     {
         $users = User::whereNotIn('role', ['superadmin', 'staff', 'shop-owner'])->when(request('search'), function ($q) {
             $q->where(function ($q) {
-                $q->where('name', 'like', '%' . request('search') . '%')
-                    ->orWhere('email', 'like', '%' . request('search') . '%')
-                    ->orWhere('role', 'like', '%' . request('search') . '%')
-                    ->orWhere('phone', 'like', '%' . request('search') . '%');
+                $q->where('name', 'like', '%'.request('search').'%')
+                    ->orWhere('email', 'like', '%'.request('search').'%')
+                    ->orWhere('role', 'like', '%'.request('search').'%')
+                    ->orWhere('phone', 'like', '%'.request('search').'%');
             });
         })
             ->latest()
@@ -43,7 +44,7 @@ class UserController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.users.datas', compact('users'))->render()
+                'data' => view('admin.users.datas', compact('users'))->render(),
             ]);
         }
 
@@ -55,6 +56,7 @@ class UserController extends Controller
         $roles = Role::whereNotIn('name', ['superadmin', 'staff', 'landlord', 'tenant'])->latest()->get();
         $phone_codes = base_path('lang/phone_code.json');
         $phone_codes = json_decode(file_get_contents($phone_codes), true);
+
         return view('admin.users.create', compact('roles', 'phone_codes'));
     }
 
@@ -78,11 +80,11 @@ class UserController extends Controller
         $role = Role::where('name', $request->role)->first();
         $user->roles()->sync($role->id);
 
-        sendNotification($user->id, notify_users([$user->id]), admin_url: route('admin.users.index', ['id' => $user->id]),  admin_msg:__('New staff has been added'));
+        sendNotification($user->id, notify_users([$user->id]), admin_url: route('admin.users.index', ['id' => $user->id]), admin_msg: __('New staff has been added'));
 
         return response()->json([
-            'message' => __(ucfirst($request->role) . ' created successfully'),
-            'redirect' => route('admin.users.index', ['users' => $request->role])
+            'message' => __(ucfirst($request->role).' created successfully'),
+            'redirect' => route('admin.users.index', ['users' => $request->role]),
         ]);
     }
 
@@ -109,7 +111,7 @@ class UserController extends Controller
             'mobile_code' => 'nullable|string',
             'country' => 'nullable|string',
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id,
             'password' => 'nullable|string|confirmed',
             'image' => 'nullable|image',
         ]);
@@ -123,7 +125,7 @@ class UserController extends Controller
 
         return response()->json([
             'message' => __('Staff updated successfully'),
-            'redirect' => route('admin.users.index')
+            'redirect' => route('admin.users.index'),
         ]);
     }
 
@@ -138,18 +140,20 @@ class UserController extends Controller
         }
 
         $user->delete();
+
         return response()->json([
             'message' => __('Staff deleted successfully'),
-            'redirect' => route('admin.users.index')
+            'redirect' => route('admin.users.index'),
         ]);
     }
 
     public function deleteAll(Request $request)
     {
         User::whereIn('id', $request->ids)->delete();
+
         return response()->json([
             'message' => __('Selected Staff deleted successfully'),
-            'redirect' => route('admin.users.index')
+            'redirect' => route('admin.users.index'),
         ]);
     }
 }

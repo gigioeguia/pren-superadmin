@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Database\Seeders;
 
 use App\Models\User;
@@ -110,7 +109,7 @@ class PermissionSeeder extends Seeder
                 'about-us' => 'r,u',
                 'profile' => 'r,u',
                 'languages' => 'r,c,u,d',
-            ]
+            ],
         ];
 
         foreach ($rolesStructure as $key => $modules) {
@@ -121,7 +120,7 @@ class PermissionSeeder extends Seeder
             ]);
             $permissions = [];
 
-            $this->command->info('Creating Role ' . strtoupper($key));
+            $this->command->info('Creating Role '.strtoupper($key));
 
             // Reading role permission modules
             foreach ($modules as $module => $value) {
@@ -131,11 +130,11 @@ class PermissionSeeder extends Seeder
                     $permissionValue = $this->permissionMap()->get($perm);
 
                     $permissions[] = Permission::firstOrCreate([
-                        'name' => $module . '-' . $permissionValue,
+                        'name' => $module.'-'.$permissionValue,
                         'guard_name' => 'web',
                     ])->id;
 
-                    $this->command->info('Creating Permission to ' . $permissionValue . ' for ' . $module);
+                    $this->command->info('Creating Permission to '.$permissionValue.' for '.$module);
                 }
             }
 
@@ -149,9 +148,9 @@ class PermissionSeeder extends Seeder
                 'role' => $generated_role,
                 'name' => ucwords(str_replace('_', ' ', $key)),
                 'password' => bcrypt($generated_role),
-                'email' => $generated_role . '@acnoo.com',
-                'plan_subscribe_id' => $generated_role == 'landlord' ? 1 : NULL,
-                'will_expire' => $generated_role == 'landlord' ? now()->addDays(30) : NULL,
+                'email' => $generated_role.'@acnoo.com',
+                'plan_subscribe_id' => $generated_role == 'landlord' ? 1 : null,
+                'will_expire' => $generated_role == 'landlord' ? now()->addDays(30) : null,
                 'email_verified_at' => now(),
             ]);
 

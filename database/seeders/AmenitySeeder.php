@@ -13,28 +13,28 @@ class AmenitySeeder extends Seeder
             [
                 'landlord_id' => 3,
                 'name' => 'Air-Cond',
-                'status' => 1
+                'status' => 1,
             ],
             [
                 'landlord_id' => 3,
                 'name' => 'Cooking Allowed',
-                'status' => 1
+                'status' => 1,
             ],
             [
                 'landlord_id' => 3,
                 'name' => 'Near KTM/LRT',
-                'status' => 1
+                'status' => 1,
             ],
             [
                 'landlord_id' => 3,
                 'name' => 'Washing Machine',
-                'status' => 1
+                'status' => 1,
             ],
             [
                 'landlord_id' => 3,
                 'name' => 'Internet',
-                'status' => 1
-            ]
+                'status' => 1,
+            ],
         ];
 
         Amenity::insert($amenities);

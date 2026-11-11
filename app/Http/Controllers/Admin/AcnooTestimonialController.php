@@ -15,6 +15,7 @@ class AcnooTestimonialController extends Controller
     public function index(Request $request)
     {
         $testimonials = Testimonial::latest()->paginate(10);
+
         return view('admin.testimonials.index', compact('testimonials'));
     }
 
@@ -22,9 +23,9 @@ class AcnooTestimonialController extends Controller
     {
         $testimonials = Testimonial::when(request('search'), function ($q) {
             $q->where(function ($q) {
-                $q->where('client_name', 'like', '%' . request('search') . '%')
-                    ->orWhere('work_at', 'like', '%' . request('search') . '%')
-                    ->orWhere('star', 'like', '%' . request('search') . '%');
+                $q->where('client_name', 'like', '%'.request('search').'%')
+                    ->orWhere('work_at', 'like', '%'.request('search').'%')
+                    ->orWhere('star', 'like', '%'.request('search').'%');
             });
         })
             ->latest()
@@ -32,7 +33,7 @@ class AcnooTestimonialController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.testimonials.datas', compact('testimonials'))->render()
+                'data' => view('admin.testimonials.datas', compact('testimonials'))->render(),
             ]);
         }
 
@@ -55,12 +56,12 @@ class AcnooTestimonialController extends Controller
         ]);
 
         Testimonial::create($request->except('client_image') + [
-            'client_image' => $request->client_image ? $this->upload($request, 'client_image') : NULL
+            'client_image' => $request->client_image ? $this->upload($request, 'client_image') : null,
         ]);
 
         return response()->json([
             'message' => __('Testimonial created successfully'),
-            'redirect' => route('admin.testimonials.index')
+            'redirect' => route('admin.testimonials.index'),
         ]);
     }
 
@@ -85,7 +86,7 @@ class AcnooTestimonialController extends Controller
 
         return response()->json([
             'message' => __('Testimonial updated successfully'),
-            'redirect' => route('admin.testimonials.index')
+            'redirect' => route('admin.testimonials.index'),
         ]);
     }
 
@@ -98,8 +99,8 @@ class AcnooTestimonialController extends Controller
         $testimonial->delete();
 
         return response()->json([
-            'message'   => __('Testimonial Deleted successfully'),
-            'redirect'  => route('admin.testimonials.index')
+            'message' => __('Testimonial Deleted successfully'),
+            'redirect' => route('admin.testimonials.index'),
         ]);
     }
 
@@ -117,7 +118,7 @@ class AcnooTestimonialController extends Controller
 
         return response()->json([
             'message' => __('Selected Testimonial deleted successfully'),
-            'redirect' => route('admin.testimonials.index')
+            'redirect' => route('admin.testimonials.index'),
         ]);
     }
 }

@@ -13,7 +13,7 @@ class AcnooRefundReasonController extends Controller
 
         return response()->json([
             'message' => 'Refund Reason List',
-            'data' => $refund_reason
+            'data' => $refund_reason,
         ]);
     }
 }

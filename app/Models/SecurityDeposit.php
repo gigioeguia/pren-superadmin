@@ -29,17 +29,20 @@ class SecurityDeposit extends Model
         'note',
     ];
 
-    public function landlord() {
+    public function landlord()
+    {
 
         return $this->belongsTo(User::class, 'landlord_id');
     }
 
-    public function tenant() {
+    public function tenant()
+    {
 
         return $this->belongsTo(User::class, 'tenant_id');
     }
 
-    public function property() {
+    public function property()
+    {
 
         return $this->belongsTo(Property::class);
     }
@@ -49,13 +52,14 @@ class SecurityDeposit extends Model
         return $this->belongsTo(Unit::class, 'unit_id');
     }
 
-
-    public function gateway() {
+    public function gateway()
+    {
 
         return $this->belongsTo(Gateway::class);
     }
 
-    public function rent() {
+    public function rent()
+    {
         return $this->belongsTo(Rent::class);
     }
 
@@ -68,7 +72,6 @@ class SecurityDeposit extends Model
             $model->invoice_no = str_pad($id, 5, '0', STR_PAD_LEFT);
         });
     }
-
 
     protected $casts = [
         'payment_data' => 'json',

@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Models\Plan;
-use App\Models\User;
-use App\Mail\WelcomeMail;
-use Illuminate\Http\Request;
-use App\Models\PlanSubscribe;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Mail\WelcomeMail;
+use App\Models\Plan;
+use App\Models\PlanSubscribe;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
@@ -23,7 +23,7 @@ class SignupController extends Controller
             'email' => 'required|email',
         ]);
 
-        if (!env('MAIL_USERNAME')) {
+        if (! env('MAIL_USERNAME')) {
             return response()->json([
                 'message' => __('Mail service is not configured. Please contact your administrator.'),
             ], 406);
@@ -51,16 +51,15 @@ class SignupController extends Controller
                 'name' => $request->name,
             ];
 
-
             if ($otpStatus === 'off') {
 
-                $user = User::updateOrCreate( ['email' => $request->email], $request->except('password') + [
-                        'remember_token' => null,
-                        'role' => 'landlord',
-                        'email_verified_at' => now(),
-                        'password' => Hash::make($request->password),
-                        'is_setupped' => 1
-                    ]
+                $user = User::updateOrCreate(['email' => $request->email], $request->except('password') + [
+                    'remember_token' => null,
+                    'role' => 'landlord',
+                    'email_verified_at' => now(),
+                    'password' => Hash::make($request->password),
+                    'is_setupped' => 1,
+                ]
                 );
 
                 session()->put('user_id', $user->id);
@@ -74,7 +73,7 @@ class SignupController extends Controller
                     'message' => 'Account created successfully.',
                     'redirect' => route('payments-gateways.index', [
                         'plan_id' => $request->plan_id,
-                        'landlord_id' => $user->id
+                        'landlord_id' => $user->id,
                     ]),
                 ]);
             }
@@ -83,12 +82,12 @@ class SignupController extends Controller
             $expire = now()->addSeconds($expireSeconds);
 
             $user = User::updateOrCreate(['email' => $request->email], $request->except('password') + [
-                    'remember_token' => $code,
-                    'role' => 'landlord',
-                    'email_verified_at' => $expire,
-                    'password' => Hash::make($request->password),
-                    'is_setupped' => 1
-                ]
+                'remember_token' => $code,
+                'role' => 'landlord',
+                'email_verified_at' => $expire,
+                'password' => Hash::make($request->password),
+                'is_setupped' => 1,
+            ]
             );
 
             session()->put('user_id', $user->id);
@@ -136,9 +135,9 @@ class SignupController extends Controller
         if (empty($time)) {
             return $defaultFromEnv * 60;
         }
+
         return $durationType === 'minute' ? $time * 60 : (int) $time;
     }
-
 
     public function submitOtp(Request $request)
     {
@@ -149,7 +148,7 @@ class SignupController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'error' => __('User not found'),
             ], 404);
@@ -161,18 +160,18 @@ class SignupController extends Controller
                 Auth::login($user);
 
                 $user->update([
-                    'remember_token' => NULL,
+                    'remember_token' => null,
                     'email_verified_at' => now(),
                 ]);
 
             } else {
                 return response()->json([
-                    'error' => __('The verification otp has been expired.')
+                    'error' => __('The verification otp has been expired.'),
                 ], 410);
             }
         } else {
             return response()->json([
-                'error' => __('Invalid otp.')
+                'error' => __('Invalid otp.'),
             ], 400);
         }
 
@@ -209,8 +208,7 @@ class SignupController extends Controller
 
                 $message = __('OTP verified successfully. Free plan activated!');
                 $redirect_url = route('landlord.dashboard');
-            }
-            else {
+            } else {
                 $message = __('Your account is verified. Proceed to payment.');
                 $redirect_url = route('payments-gateways.index', [
                     'plan_id' => $plan->id,
@@ -227,7 +225,6 @@ class SignupController extends Controller
             'redirect' => $redirect_url,
         ]);
     }
-
 
     public function otpResend(Request $request)
     {

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Helpers\HasUploader;
-use App\Models\User;
-use App\Models\Support;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Support;
+use App\Models\User;
+use Illuminate\Http\Request;
 
 class AcnooSupportController extends Controller
 {
@@ -22,7 +22,7 @@ class AcnooSupportController extends Controller
 
         return response()->json([
             'message' => 'Data fetched successfully',
-            'data' => $messages
+            'data' => $messages,
         ]);
     }
 
@@ -30,7 +30,7 @@ class AcnooSupportController extends Controller
     {
         $request->validate([
             'message' => 'nullable|string',
-            'file' => 'nullable|file'
+            'file' => 'nullable|file',
         ]);
 
         $admin = User::where('role', 'superadmin')->first();
@@ -50,17 +50,17 @@ class AcnooSupportController extends Controller
         $data = Support::create($request->except('file', 'parent_id') + [
             'sender_id' => auth()->id(),
             'receiver_id' => $admin->id,
-            'parent_id' =>  $existingMessage ? $existingMessage->id : NULL,
-            'file' => $filePath ?? NULL,
+            'parent_id' => $existingMessage ? $existingMessage->id : null,
+            'file' => $filePath ?? null,
             'file_info' => [
-                'ext' => $fileExtension ?? NULL,
-                'size' => $fileSize ?? NULL
+                'ext' => $fileExtension ?? null,
+                'size' => $fileSize ?? null,
             ],
         ]);
 
         return response()->json([
             'message' => 'Message send successfully',
-            'data' => $data
+            'data' => $data,
         ]);
     }
 }

@@ -32,6 +32,7 @@ class Mollie
         if (Session::get('without_auth')) {
             return url('payment/mollie');
         }
+
         return url('payment/mollie');
     }
 
@@ -43,9 +44,11 @@ class Mollie
         // Checking Minimum/Maximum amount
         if ($gateway->min_amount > $amount) {
             session()->put('payment_msg', __('The minimum transaction amount is :amount', ['amount' => currency_format($gateway->min_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         } elseif ($gateway->max_amount < $amount) {
             session()->put('payment_msg', __('The maximum transaction amount is :amount', ['amount' => currency_format($gateway->max_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         }
 
@@ -73,15 +76,15 @@ class Mollie
         }
         Session::put('mollie_credentials', $data);
         try {
-            $mollie = new MollieApiClient();
+            $mollie = new MollieApiClient;
             $mollie->setApiKey($array['api_key']);
             $payment = $mollie->payments->create([
-                "amount" => [
-                    "currency" => strtoupper($currency),
-                    "value" => $amount,
+                'amount' => [
+                    'currency' => strtoupper($currency),
+                    'value' => $amount,
                 ],
-                "description" => $billName,
-                "redirectUrl" => Mollie::fallback(),
+                'description' => $billName,
+                'redirectUrl' => Mollie::fallback(),
             ]);
 
             Session::put('pay_id', $payment->id);
@@ -90,6 +93,7 @@ class Mollie
                 $payment->getCheckoutUrl() : redirect($payment->getCheckoutUrl());
         } catch (\Exception $e) {
             throw $e;
+
             return request()->expectsJson() ? Mollie::redirect_if_payment_faild() : redirect(Mollie::redirect_if_payment_faild());
         }
     }
@@ -99,14 +103,14 @@ class Mollie
         if (Session::has('pay_id') && Session::has('mollie_credentials')) {
             $info = Session::get('mollie_credentials');
 
-            $mollie = new MollieApiClient();
+            $mollie = new MollieApiClient;
             $mollie->setApiKey($info['api_key']);
             $pay_id = Session::get('pay_id');
             $payment = $mollie->payments->get($pay_id);
 
             if ($payment->isPaid()) {
                 $data['payment_id'] = Session::get('pay_id');
-                $data['payment_method'] = "mollie";
+                $data['payment_method'] = 'mollie';
                 $data['gateway_id'] = $info['gateway_id'];
                 $data['payment_type'] = $info['payment_type'];
                 $data['amount'] = $info['main_amount'];
@@ -124,6 +128,7 @@ class Mollie
 
             Session::forget('pay_id');
             Session::forget('mollie_credentials');
+
             return request()->expectsJson() ? Mollie::redirect_if_payment_faild() : redirect(Mollie::redirect_if_payment_faild());
         }
         abort(404);

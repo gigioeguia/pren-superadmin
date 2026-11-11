@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Comment extends Model
 {
     use HasFactory;
+
     protected $fillable = ['name', 'email', 'comment', 'blog_id'];
 
     public function blog(): BelongsTo
@@ -19,6 +20,6 @@ class Comment extends Model
     protected $casts = [
         'blog_id' => 'integer',
         'comment_id' => 'integer',
-        'status' => 'integer'
+        'status' => 'integer',
     ];
 }

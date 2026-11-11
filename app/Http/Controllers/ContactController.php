@@ -10,7 +10,8 @@ class ContactController extends Controller
     public function index()
     {
         $page_data = get_option('manage-pages');
-        return view('web.contact.index',compact('page_data'));
+
+        return view('web.contact.index', compact('page_data'));
     }
 
     public function store(Request $request)
@@ -26,8 +27,8 @@ class ContactController extends Controller
         Message::create($request->all());
 
         return response()->json([
-            'message'   => __('Your Message Submitted successfully'),
-            'redirect'  => route('contact.index')
+            'message' => __('Your Message Submitted successfully'),
+            'redirect' => route('contact.index'),
         ]);
     }
 }

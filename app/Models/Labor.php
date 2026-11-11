@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Labor extends Model
 {
     use HasFactory;
-    protected $fillable =['landlord_id','name','email','phone','gender','salary','status'];
+
+    protected $fillable = ['landlord_id', 'name', 'email', 'phone', 'gender', 'salary', 'status'];
 
     protected $casts = [
         'salary' => 'double',
@@ -18,7 +19,7 @@ class Labor extends Model
 
     public function landlord()
     {
-        return $this->belongsTo(User::class,'landlord_id');
+        return $this->belongsTo(User::class, 'landlord_id');
     }
 
     // public function maintenanceCost()

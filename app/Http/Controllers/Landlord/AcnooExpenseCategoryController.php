@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Landlord;
 
-use Illuminate\Http\Request;
-use App\Models\ExpenseCategory;
 use App\Http\Controllers\Controller;
+use App\Models\ExpenseCategory;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class AcnooExpenseCategoryController extends Controller
@@ -12,6 +12,7 @@ class AcnooExpenseCategoryController extends Controller
     public function index()
     {
         $expense_categories = ExpenseCategory::with('landlord')->where('landlord_id', auth()->id())->latest()->paginate(10);
+
         return view('landlord.expense-categories.index', compact('expense_categories'));
     }
 
@@ -19,8 +20,8 @@ class AcnooExpenseCategoryController extends Controller
     {
         $expense_categories = ExpenseCategory::with('landlord')->where('landlord_id', auth()->id())->when(request('search'), function ($q) use ($request) {
             $q->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('description', 'like', '%' . $request->search . '%');
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('description', 'like', '%'.$request->search.'%');
             });
         })
             ->latest()
@@ -28,9 +29,10 @@ class AcnooExpenseCategoryController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('landlord.expense-categories.datas', compact('expense_categories'))->render()
+                'data' => view('landlord.expense-categories.datas', compact('expense_categories'))->render(),
             ]);
         }
+
         return redirect(url()->previous());
     }
 
@@ -49,12 +51,12 @@ class AcnooExpenseCategoryController extends Controller
         ]);
 
         ExpenseCategory::create($request->except('landlord_id') + [
-            'landlord_id' => auth()->id()
+            'landlord_id' => auth()->id(),
         ]);
 
         return response()->json([
             'message' => __('Expense Category saved successfully.'),
-            'redirect' => route('landlord.expense-categories.index')
+            'redirect' => route('landlord.expense-categories.index'),
         ]);
     }
 
@@ -75,12 +77,12 @@ class AcnooExpenseCategoryController extends Controller
         ]);
 
         $category->update($request->except('landlord_id') + [
-            'landlord_id' => auth()->id()
+            'landlord_id' => auth()->id(),
         ]);
 
         return response()->json([
             'message' => __('Expense Category updated successfully.'),
-            'redirect' => route('landlord.expense-categories.index')
+            'redirect' => route('landlord.expense-categories.index'),
         ]);
     }
 
@@ -88,6 +90,7 @@ class AcnooExpenseCategoryController extends Controller
     {
         $category = ExpenseCategory::findOrFail($id);
         $category->update(['status' => $request->status]);
+
         return response()->json([
             'message' => 'Expense Category',
         ]);
@@ -100,7 +103,7 @@ class AcnooExpenseCategoryController extends Controller
 
         return response()->json([
             'message' => __('Expense Category Deleted Successfully'),
-            'redirect' => route('landlord.expense-categories.index')
+            'redirect' => route('landlord.expense-categories.index'),
         ]);
     }
 
@@ -110,7 +113,7 @@ class AcnooExpenseCategoryController extends Controller
 
         return response()->json([
             'message' => __('Selected Expense Category Deleted Successfully'),
-            'redirect' => route('landlord.expense-categories.index')
+            'redirect' => route('landlord.expense-categories.index'),
         ]);
     }
 }

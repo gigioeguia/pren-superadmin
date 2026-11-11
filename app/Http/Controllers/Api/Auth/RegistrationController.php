@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
-use App\Models\Plan;
-use App\Models\User;
+use App\Http\Controllers\Controller;
 use App\Mail\WelcomeMail;
-use Illuminate\Http\Request;
+use App\Models\Plan;
 use App\Models\PlanSubscribe;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
@@ -23,7 +23,7 @@ class RegistrationController extends Controller
             'name' => 'required|string|max:255',
             'password' => 'required|min:6|max:100',
             'email' => 'required|email',
-            'role' => 'required|string'
+            'role' => 'required|string',
         ]);
 
         DB::beginTransaction();
@@ -75,7 +75,6 @@ class RegistrationController extends Controller
                 ]
             );
 
-
             if ($otpStatus === 'off') {
 
                 // assign free plan
@@ -106,7 +105,7 @@ class RegistrationController extends Controller
 
                 DB::commit();
 
-                Cache::forget('plan-data-' . $user->id);
+                Cache::forget('plan-data-'.$user->id);
 
                 Auth::login($user);
 
@@ -118,7 +117,6 @@ class RegistrationController extends Controller
                     'token' => $token,
                 ]);
             }
-
 
             if (env('QUEUE_MAIL')) {
                 Mail::to($request->email)->queue(new WelcomeMail($data));
@@ -154,7 +152,7 @@ class RegistrationController extends Controller
 
             DB::commit();
 
-            Cache::forget('plan-data-' . $user->id);
+            Cache::forget('plan-data-'.$user->id);
 
             sendNotification(
                 $user->id,
@@ -182,7 +180,6 @@ class RegistrationController extends Controller
         }
     }
 
-
     public function getOtpTimeInSeconds()
     {
         $otpSettings = get_option('email-varification') ?? [];
@@ -201,6 +198,7 @@ class RegistrationController extends Controller
         if (empty($time)) {
             return $defaultFromEnv * 60;
         }
+
         return $durationType === 'minute' ? $time * 60 : (int) $time;
     }
 
@@ -213,7 +211,7 @@ class RegistrationController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'status' => 404,
                 'message' => __('User not found'),
@@ -226,7 +224,7 @@ class RegistrationController extends Controller
                 Auth::login($user);
 
                 $user->update([
-                    'remember_token' => NULL,
+                    'remember_token' => null,
                     'email_verified_at' => now(),
                 ]);
 
@@ -234,16 +232,16 @@ class RegistrationController extends Controller
                     'message' => 'Logged In successfully!',
                     'id' => $user->id,
                     'role' => $user->role,
-                    'token' =>  $user->createToken('createToken')->plainTextToken
+                    'token' => $user->createToken('createToken')->plainTextToken,
                 ]);
             } else {
                 return response()->json([
-                    'error' => __('The verification otp has been expired.')
+                    'error' => __('The verification otp has been expired.'),
                 ], 410);
             }
         } else {
             return response()->json([
-                'error' => __('Invalid otp.')
+                'error' => __('Invalid otp.'),
             ], 400);
         }
     }

@@ -2,11 +2,11 @@
 
 namespace App\Library;
 
-use Throwable;
 use App\Models\Gateway;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
+use Throwable;
 
 class Toyyibpay
 {
@@ -33,6 +33,7 @@ class Toyyibpay
         if (Session::get('without_auth')) {
             return url('payment/toyyibpay');
         }
+
         return url('payment/toyyibpay');
     }
 
@@ -44,9 +45,11 @@ class Toyyibpay
         // Checking Minimum/Maximum amount
         if ($gateway->min_amount > $amount) {
             session()->put('payment_msg', __('The minimum transaction amount is :amount', ['amount' => currency_format($gateway->min_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         } elseif ($gateway->max_amount < $amount) {
             session()->put('payment_msg', __('The maximum transaction amount is :amount', ['amount' => currency_format($gateway->max_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         }
 
@@ -87,17 +90,17 @@ class Toyyibpay
             $url = 'https://dev.toyyibpay.com/';
         }
 
-        $data = array(
+        $data = [
             'userSecretKey' => $array['user_secret_key'],
             'categoryCode' => $array['cateogry_code'],
             'billName' => $billName,
-            'billDescription' => "Thank you for order",
+            'billDescription' => 'Thank you for order',
             'billPriceSetting' => 1,
             'billPayorInfo' => 1,
             'billAmount' => $amount * 100,
             'billReturnUrl' => Toyyibpay::fallback(),
             'billCallbackUrl' => Toyyibpay::fallback(),
-            'billExternalReferenceNo' => Str::random(5) . rand(100, 200),
+            'billExternalReferenceNo' => Str::random(5).rand(100, 200),
             'billTo' => $name,
             'billEmail' => $email,
             'billPhone' => $array['phone'],
@@ -105,15 +108,16 @@ class Toyyibpay
             'billSplitPaymentArgs' => '',
             'billPaymentChannel' => '2',
             'billDisplayMerchant' => 1,
-            'billContentEmail' => "",
+            'billContentEmail' => '',
             'billChargeToCustomer' => 2,
-        );
-        $f_url = $url . 'index.php/api/createBill';
+        ];
+        $f_url = $url.'index.php/api/createBill';
 
         try {
             $response = Http::asForm()->post($f_url, $data);
             $billcode = $response[0]['BillCode'];
-            $url = $url . $billcode;
+            $url = $url.$billcode;
+
             return request()->expectsJson() ? $url : redirect($url);
         } catch (Throwable $th) {
             return request()->expectsJson() ?
@@ -124,7 +128,7 @@ class Toyyibpay
 
     public function status()
     {
-        if (!Session::has('toyyibpay_credentials')) {
+        if (! Session::has('toyyibpay_credentials')) {
             return abort(404);
         }
         $response = Request()->all();
@@ -135,7 +139,7 @@ class Toyyibpay
 
         if ($status == 1) {
             $data['payment_id'] = $payment_id;
-            $data['payment_method'] = "toyyibpay";
+            $data['payment_method'] = 'toyyibpay';
             $data['gateway_id'] = $info['gateway_id'];
 
             $data['amount'] = $info['main_amount'];

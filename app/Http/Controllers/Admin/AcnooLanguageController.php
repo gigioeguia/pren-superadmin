@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Language;
 use App\Helpers\HasUploader;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
+use App\Models\Language;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class AcnooLanguageController extends Controller
 {
@@ -30,8 +30,8 @@ class AcnooLanguageController extends Controller
         $languages = Language::orderBy('order', 'asc')
             ->when($request->search, function ($q) use ($request) {
                 $q->where(function ($q) use ($request) {
-                    $q->where('name', 'like', '%' . $request->search . '%')
-                        ->orWhere('code', 'like', '%' . $request->search . '%');
+                    $q->where('name', 'like', '%'.$request->search.'%')
+                        ->orWhere('code', 'like', '%'.$request->search.'%');
                 });
             })
             ->latest()
@@ -39,7 +39,7 @@ class AcnooLanguageController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.languages.datas', compact('languages'))->render()
+                'data' => view('admin.languages.datas', compact('languages'))->render(),
             ]);
         }
 
@@ -50,13 +50,13 @@ class AcnooLanguageController extends Controller
     {
         $request->validate([
             'order' => 'required|integer|min:1',
-            'name'  => 'required|string|max:100',
-            'code'  => 'required|string|max:20|unique:languages,code',
+            'name' => 'required|string|max:100',
+            'code' => 'required|string|max:20|unique:languages,code',
             'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         Language::create($request->except('icon') + [
-            'icon' => $request->icon ? $this->upload($request, 'icon') : NULL
+            'icon' => $request->icon ? $this->upload($request, 'icon') : null,
         ]);
 
         Cache::forget('languages');
@@ -64,13 +64,13 @@ class AcnooLanguageController extends Controller
         $source = base_path('lang/en.json');
         $destination = base_path("lang/{$request->code}.json");
 
-        if (!File::exists($destination)) {
+        if (! File::exists($destination)) {
             File::copy($source, $destination);
         }
 
         return response()->json([
             'message' => __('Laguage created successfully'),
-            'redirect' => route('admin.languages.index')
+            'redirect' => route('admin.languages.index'),
         ]);
     }
 
@@ -79,7 +79,7 @@ class AcnooLanguageController extends Controller
         $lang = Language::where('code', $code)->firstOrFail();
         $path = base_path("lang/{$code}.json");
 
-        if (!File::exists($path)) {
+        if (! File::exists($path)) {
             abort(404, 'Language file not found');
         }
 
@@ -97,7 +97,7 @@ class AcnooLanguageController extends Controller
         // Convert to collection
         $collection = collect($translations)->map(function ($value, $key) {
             return [
-                'key'   => $key,
+                'key' => $key,
                 'value' => $value,
             ];
         })->values();
@@ -116,7 +116,7 @@ class AcnooLanguageController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.languages.translates.datas', compact('rows', 'lang'))->render()
+                'data' => view('admin.languages.translates.datas', compact('rows', 'lang'))->render(),
             ]);
         }
 
@@ -126,10 +126,10 @@ class AcnooLanguageController extends Controller
     public function update(Request $request, Language $language)
     {
         $request->validate([
-            'name'  => 'required|string|max:100',
-            'code'  => 'required|string|max:20|unique:languages,code,' . $language->id,
+            'name' => 'required|string|max:100',
+            'code' => 'required|string|max:20|unique:languages,code,'.$language->id,
             'order' => 'required|integer|min:1',
-            'icon'  => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         if ($language->code !== $request->code) {
@@ -149,7 +149,7 @@ class AcnooLanguageController extends Controller
 
         return response()->json([
             'message' => __('Language updated successfully'),
-            'redirect' => route('admin.languages.index')
+            'redirect' => route('admin.languages.index'),
         ]);
     }
 
@@ -157,7 +157,7 @@ class AcnooLanguageController extends Controller
     {
         if ($language->is_default) {
             return response()->json([
-                'message' => __('Default language cannot be deleted')
+                'message' => __('Default language cannot be deleted'),
             ], 403);
         }
 
@@ -176,8 +176,8 @@ class AcnooLanguageController extends Controller
         Cache::forget('languages');
 
         return response()->json([
-            'message'   => __('Language deleted successfully'),
-            'redirect'  => route('admin.languages.index')
+            'message' => __('Language deleted successfully'),
+            'redirect' => route('admin.languages.index'),
         ]);
     }
 
@@ -187,7 +187,7 @@ class AcnooLanguageController extends Controller
 
         if ($language->is_default) {
             return response()->json([
-                'message' => __('Default language status cannot be changed')
+                'message' => __('Default language status cannot be changed'),
             ], 403);
         }
 
@@ -214,7 +214,7 @@ class AcnooLanguageController extends Controller
         });
 
         return response()->json([
-            'message' => __('Default language updated successfully')
+            'message' => __('Default language updated successfully'),
         ]);
     }
 
@@ -239,7 +239,7 @@ class AcnooLanguageController extends Controller
 
         return response()->json([
             'message' => __('Selected Language deleted successfully'),
-            'redirect' => route('admin.languages.index')
+            'redirect' => route('admin.languages.index'),
         ]);
     }
 }

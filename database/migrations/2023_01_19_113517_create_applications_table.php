@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('applications', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->constrained("users")->cascadeOnDelete();
+            $table->foreignId('tenant_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('property_id')->constrained()->cascadeOnDelete();
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();

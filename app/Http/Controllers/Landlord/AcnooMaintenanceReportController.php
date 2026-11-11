@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers\Landlord;
 
-use App\Models\Property;
-use App\Models\Maintenance;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\LandlordMaintenanceReportExport;
+use App\Http\Controllers\Controller;
+use App\Models\Maintenance;
+use App\Models\Property;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooMaintenanceReportController extends Controller
 {
     public function index(Request $request)
     {
-        $properties  = Property::where('landlord_id', auth()->user()->id)->pluck('id');
+        $properties = Property::where('landlord_id', auth()->user()->id)->pluck('id');
         $maintenances = Maintenance::whereIn('property_id', $properties)->with('property.propertyDetail:property_id,property_info')->latest()->paginate(10);
         $processingCount = Maintenance::whereIn('property_id', $properties)->where('status', 'processing')->count();
         $completedCount = Maintenance::whereIn('property_id', $properties)->where('status', 'completed')->count();
@@ -31,9 +31,9 @@ class AcnooMaintenanceReportController extends Controller
             ->whereIn('property_id', $properties)
             ->when($request->search, function ($q) use ($request) {
                 $search = $request->search;
-                $q->where('total_costing', 'like', '%' . $search . '%')
+                $q->where('total_costing', 'like', '%'.$search.'%')
                     ->orWhereHas('property.propertyDetail', function ($query) use ($search) {
-                        $query->where('property_info->property_title', 'like', '%' . $search . '%');
+                        $query->where('property_info->property_title', 'like', '%'.$search.'%');
                     });
             })
             ->latest()
@@ -53,7 +53,7 @@ class AcnooMaintenanceReportController extends Controller
                     'processingCount',
                     'completedCount',
                     'rejectedCount'
-                ))->render()
+                ))->render(),
             ]);
         }
 

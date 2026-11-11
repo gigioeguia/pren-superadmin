@@ -7,7 +7,7 @@ use App\Models\PropertyDetail;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\PropertyDetail>
+ * @extends Factory<PropertyDetail>
  */
 class PropertyDetailFactory extends Factory
 {
@@ -16,7 +16,7 @@ class PropertyDetailFactory extends Factory
         return [
             'property_id' => Property::factory(),
             'property_info' => [
-                'property_title' => fake()->company() . ' Residence',
+                'property_title' => fake()->company().' Residence',
             ],
         ];
     }

@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Exports\AdminTransactionReportExport;
+use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -19,6 +19,7 @@ class AcnooTransactionReportController extends Controller
     public function index()
     {
         $transactions = Transaction::with('gateway:id,name')->latest()->paginate(10);
+
         return view('admin.reports.transactions.index', compact('transactions'));
     }
 
@@ -36,11 +37,11 @@ class AcnooTransactionReportController extends Controller
 
         if ($request->filled('search')) {
             $transactionQuery->where(function ($q) use ($request) {
-                $q->where('amount', 'like', '%' . $request->search . '%')
-                    ->orWhere('uid', 'like', '%' . $request->search . '%')
-                    ->orWhere('payment_type', 'like', '%' . $request->search . '%')
+                $q->where('amount', 'like', '%'.$request->search.'%')
+                    ->orWhere('uid', 'like', '%'.$request->search.'%')
+                    ->orWhere('payment_type', 'like', '%'.$request->search.'%')
                     ->orWhereHas('gateway', function ($q) use ($request) {
-                        $q->where('name', 'like', '%' . $request->search . '%');
+                        $q->where('name', 'like', '%'.$request->search.'%');
                     });
             });
         }
@@ -50,7 +51,7 @@ class AcnooTransactionReportController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.reports.transactions.datas', compact('transactions'))->render()
+                'data' => view('admin.reports.transactions.datas', compact('transactions'))->render(),
             ]);
         }
 

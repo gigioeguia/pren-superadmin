@@ -17,6 +17,7 @@ class AcnooBlogController extends Controller
     public function index(Request $request)
     {
         $blogs = Blog::latest()->paginate(20);
+
         return view('admin.blogs.index', compact('blogs'));
     }
 
@@ -24,7 +25,7 @@ class AcnooBlogController extends Controller
     {
         $blogs = Blog::when(request('search'), function ($q) {
             $q->where(function ($q) {
-                $q->where('title', 'like', '%' . request('search') . '%');
+                $q->where('title', 'like', '%'.request('search').'%');
             });
         })
             ->latest()
@@ -32,7 +33,7 @@ class AcnooBlogController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.blogs.datas', compact('blogs'))->render()
+                'data' => view('admin.blogs.datas', compact('blogs'))->render(),
             ]);
         }
 
@@ -47,13 +48,13 @@ class AcnooBlogController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title'             => 'required|unique:blogs,title',
-            'image'             => 'required|image|mimes:jpeg,png,jpg,gif,svg',
-            'status'            => 'boolean',
-            'descriptions'      => 'nullable|string',
-            'tags'              => 'nullable|array',
-            'meta.title'        => 'nullable|string',
-            'meta.description'  => 'nullable|string',
+            'title' => 'required|unique:blogs,title',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
+            'status' => 'boolean',
+            'descriptions' => 'nullable|string',
+            'tags' => 'nullable|array',
+            'meta.title' => 'nullable|string',
+            'meta.description' => 'nullable|string',
         ]);
 
         Blog::create($request->except('image') + [
@@ -62,8 +63,8 @@ class AcnooBlogController extends Controller
         ]);
 
         return response()->json([
-            'message'   => __('BLog created successfully'),
-            'redirect'  => route('admin.blogs.index')
+            'message' => __('BLog created successfully'),
+            'redirect' => route('admin.blogs.index'),
         ]);
     }
 
@@ -76,13 +77,13 @@ class AcnooBlogController extends Controller
     {
 
         $request->validate([
-            'title'             => 'required|unique:blogs,title,' . $blog->id,
-            'image'             => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
-            'status'            => 'boolean',
-            'descriptions'      => 'nullable|string',
-            'tags'              => 'nullable|array',
-            'meta.title'        => 'nullable|string',
-            'meta.description'  => 'nullable|string',
+            'title' => 'required|unique:blogs,title,'.$blog->id,
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
+            'status' => 'boolean',
+            'descriptions' => 'nullable|string',
+            'tags' => 'nullable|array',
+            'meta.title' => 'nullable|string',
+            'meta.description' => 'nullable|string',
         ]);
 
         $blog->update($request->except('image') + [
@@ -91,8 +92,8 @@ class AcnooBlogController extends Controller
         ]);
 
         return response()->json([
-            'message'   => __('BLog updated successfully'),
-            'redirect'  => route('admin.blogs.index')
+            'message' => __('BLog updated successfully'),
+            'redirect' => route('admin.blogs.index'),
         ]);
     }
 
@@ -106,7 +107,7 @@ class AcnooBlogController extends Controller
 
         return response()->json([
             'message' => __('Blog deleted successfully'),
-            'redirect' => route('admin.blogs.index')
+            'redirect' => route('admin.blogs.index'),
         ]);
     }
 
@@ -114,16 +115,16 @@ class AcnooBlogController extends Controller
     {
         $blog_status = Blog::findOrFail($id);
         $blog_status->update(['status' => $request->status]);
+
         return response()->json(['message' => 'Blog']);
     }
-
 
     public function deleteAll(Request $request)
     {
         $blogs = Blog::whereIn('id', $request->ids)->get();
 
-        foreach($blogs as $blog){
-            if(file_exists($blog->image)){
+        foreach ($blogs as $blog) {
+            if (file_exists($blog->image)) {
                 Storage::delete($blog->image);
             }
 
@@ -132,7 +133,7 @@ class AcnooBlogController extends Controller
 
         return response()->json([
             'message' => __('Selected Blog deleted successfully'),
-            'redirect' => route('admin.blogs.index')
+            'redirect' => route('admin.blogs.index'),
         ]);
     }
 
@@ -140,6 +141,7 @@ class AcnooBlogController extends Controller
     {
         $blog = Blog::findOrFail($id);
         $comments = Comment::with('blog:id')->whereStatus(1)->where('blog_id', $blog->id)->latest()->paginate(10);
+
         return view('admin.blogs.comments.index', compact('comments'));
     }
 }

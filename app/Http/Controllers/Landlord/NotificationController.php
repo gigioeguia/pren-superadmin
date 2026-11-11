@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Landlord;
 
-use App\Models\Notification;
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
@@ -39,7 +39,7 @@ class NotificationController extends Controller
             ->get();
 
         return response()->json([
-            'data' => view('landlord.notifications.datas', compact('notifications'))->render()
+            'data' => view('landlord.notifications.datas', compact('notifications'))->render(),
         ]);
     }
 
@@ -53,14 +53,15 @@ class NotificationController extends Controller
             $user = auth()->user();
             $data = $notify->data;
 
-             // Redirect based on user role
+            // Redirect based on user role
             if ($user->role === 'landlord') {
-                if (!empty($data['landlord_url'])) {
+                if (! empty($data['landlord_url'])) {
                     return redirect($data['landlord_url']);
                 } else {
                     return back()->with('error', __('No link available for this notification.'));
                 }
             }
+
             // fallback
             return redirect('/');
         }
@@ -68,10 +69,10 @@ class NotificationController extends Controller
         return back()->with('error', __('Permission denied.'));
     }
 
-
     public function mtReadAll()
     {
         auth()->user()->unreadNotifications()->update(['read_at' => now()]);
+
         return back();
     }
 }

@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Currency;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class CurrencySeeder extends Seeder
@@ -166,7 +165,7 @@ class CurrencySeeder extends Seeder
             ['name' => 'Viet Nam Dong', 'country_name' => 'Viet Nam', 'code' => 'VND', 'rate' => 25384, 'symbol' => '₫', 'position' => 'right', 'status' => 1, 'is_default' => 0],
             ['name' => 'Yemeni Rial', 'country_name' => 'Yemen, Republic of', 'code' => 'YER', 'rate' => 528.74, 'symbol' => '﷼', 'position' => 'right', 'status' => 1, 'is_default' => 0],
             ['name' => 'Zambia Kwacha', 'country_name' => 'Zambia', 'code' => 'ZMW', 'rate' => 27.324, 'symbol' => 'ZK', 'position' => 'right', 'status' => 1, 'is_default' => 0],
-            ['name' => 'Zimbabwe Gold', 'country_name' => 'Zimbabwe', 'code' => 'ZWG', 'rate' => 25.333, 'symbol' => 'ZWL', 'position' => 'right', 'status' => 1, 'is_default' => 0]
+            ['name' => 'Zimbabwe Gold', 'country_name' => 'Zimbabwe', 'code' => 'ZWG', 'rate' => 25.333, 'symbol' => 'ZWL', 'position' => 'right', 'status' => 1, 'is_default' => 0],
         ];
 
         Currency::insert($currencies);

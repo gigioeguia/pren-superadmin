@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Landlord;
 
-use App\Models\User;
-use App\Models\Support;
 use App\Helpers\HasUploader;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Support;
+use App\Models\User;
+use Illuminate\Http\Request;
 
 class AcnooSupportController extends Controller
 {
@@ -21,7 +21,6 @@ class AcnooSupportController extends Controller
         $messages = Support::with('sender:id,name,role,image')->where('sender_id', $userId)
             ->orWhere('receiver_id', $userId)
             ->orderBy('created_at', 'asc')->get();
-
 
         return view('landlord.supports.index', compact('messages', 'admin'));
     }
@@ -41,7 +40,7 @@ class AcnooSupportController extends Controller
     {
         $request->validate([
             'message' => 'nullable|string|required_without:file',
-            'file' => 'nullable|file'
+            'file' => 'nullable|file',
         ]);
 
         $admin = User::where('role', 'superadmin')->first();
@@ -50,7 +49,6 @@ class AcnooSupportController extends Controller
             ->where('receiver_id', $admin->id)
             ->whereNull('parent_id')
             ->first();
-
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
@@ -62,17 +60,17 @@ class AcnooSupportController extends Controller
         Support::create($request->except('file', 'parent_id') + [
             'sender_id' => auth()->id(),
             'receiver_id' => $admin->id,
-            'parent_id' => $existingMessage ? $existingMessage->id : NULL,
-            'file' => $filePath ?? NULL,
+            'parent_id' => $existingMessage ? $existingMessage->id : null,
+            'file' => $filePath ?? null,
             'file_info' => [
-                'ext' => $fileExtension ?? NULL,
-                'size' => $fileSize ?? NULL
+                'ext' => $fileExtension ?? null,
+                'size' => $fileSize ?? null,
             ],
         ]);
 
         return response()->json([
             'message' => 'Message sent successfully',
-            'redirect' => route('landlord.supports.index')
+            'redirect' => route('landlord.supports.index'),
         ]);
     }
 }

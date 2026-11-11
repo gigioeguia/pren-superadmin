@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\AdminLandlordWithdrawReportExport;
+use App\Http\Controllers\Controller;
 use App\Models\Withdraw;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\AdminLandlordWithdrawReportExport;
 use Illuminate\Support\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooLandlordWithdrawReportController extends Controller
 {
@@ -19,6 +19,7 @@ class AcnooLandlordWithdrawReportController extends Controller
     public function index()
     {
         $withdraws = Withdraw::with(['account_info:id,infos', 'user:id,name'])->latest()->paginate(10);
+
         return view('admin.reports.withdrawals.index', compact('withdraws'));
     }
 
@@ -37,14 +38,14 @@ class AcnooLandlordWithdrawReportController extends Controller
 
         if ($request->filled('search')) {
             $withdrawQuery->where(function ($q) use ($request) {
-                $q->where('amount', 'like', '%' . $request->search . '%')
-                    ->orWhere('charge', 'like', '%' . $request->search . '%')
-                    ->orWhere('status', 'like', '%' . $request->search . '%')
+                $q->where('amount', 'like', '%'.$request->search.'%')
+                    ->orWhere('charge', 'like', '%'.$request->search.'%')
+                    ->orWhere('status', 'like', '%'.$request->search.'%')
                     ->orWhereHas('user', function ($q) use ($request) {
-                        $q->where('name', 'like', '%' . $request->search . '%');
+                        $q->where('name', 'like', '%'.$request->search.'%');
                     })
                     ->orWhereHas('account_info', function ($q) use ($request) {
-                        $q->where('infos->bank_name', 'like', '%' . $request->search . '%');
+                        $q->where('infos->bank_name', 'like', '%'.$request->search.'%');
                     });
             });
         }
@@ -54,7 +55,7 @@ class AcnooLandlordWithdrawReportController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.reports.withdrawals.datas', compact('withdraws'))->render()
+                'data' => view('admin.reports.withdrawals.datas', compact('withdraws'))->render(),
             ]);
         }
 

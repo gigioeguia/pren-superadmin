@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\UserMethod;
-use Illuminate\Http\Request;
-use App\Models\WithdrawMethod;
 use App\Http\Controllers\Controller;
+use App\Models\UserMethod;
+use App\Models\WithdrawMethod;
+use Illuminate\Http\Request;
 
 class AcnooWithdrawMethodController extends Controller
 {
@@ -21,8 +21,8 @@ class AcnooWithdrawMethodController extends Controller
 
             $transformedMeta = collect($meta['label'] ?? [])->map(function ($label, $index) use ($meta) {
                 return [
-                    "label" => $label,
-                    "input" => $meta['input'][$index] ?? null,
+                    'label' => $label,
+                    'input' => $meta['input'][$index] ?? null,
                 ];
             });
 
@@ -34,7 +34,6 @@ class AcnooWithdrawMethodController extends Controller
                 'meta' => $transformedMeta,
             ];
         });
-
 
         return response()->json([
             'message' => 'Data fetched successfully',
@@ -49,7 +48,7 @@ class AcnooWithdrawMethodController extends Controller
         ]);
 
         $userMethod = UserMethod::create($request->except('user_id') + [
-            'user_id' => auth()->id()
+            'user_id' => auth()->id(),
         ]);
 
         return response()->json([
@@ -65,7 +64,7 @@ class AcnooWithdrawMethodController extends Controller
         return response()->json([
             'message' => __('Data fetched successfully.'),
             'balance' => auth()->user()->balance,
-            'data' => $method
+            'data' => $method,
         ]);
     }
 
@@ -77,7 +76,7 @@ class AcnooWithdrawMethodController extends Controller
 
         $method = UserMethod::findOrFail($id);
         $method->update($request->except('user_id') + [
-            'user_id' => auth()->id()
+            'user_id' => auth()->id(),
         ]);
 
         return response()->json([
@@ -91,7 +90,7 @@ class AcnooWithdrawMethodController extends Controller
         UserMethod::findOrFail($id)->delete();
 
         return response()->json([
-            'message' => __('Withdraw method deleted successfully.')
+            'message' => __('Withdraw method deleted successfully.'),
         ]);
     }
 
@@ -101,7 +100,7 @@ class AcnooWithdrawMethodController extends Controller
             ->where('user_id', auth()->id())
             ->get();
 
-        $methods  = $data->map(function ($userMethod) {
+        $methods = $data->map(function ($userMethod) {
             $withdrawMethod = $userMethod->withdraw_method;
 
             if ($withdrawMethod) {
@@ -109,8 +108,8 @@ class AcnooWithdrawMethodController extends Controller
 
                 $transformedMeta = collect($meta['label'] ?? [])->map(function ($label, $index) use ($meta) {
                     return [
-                        "label" => $label,
-                        "input" => $meta['input'][$index] ?? null,
+                        'label' => $label,
+                        'input' => $meta['input'][$index] ?? null,
                     ];
                 });
 

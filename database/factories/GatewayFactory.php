@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Tests\Stubs\StubGateway;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Gateway>
+ * @extends Factory<Gateway>
  */
 class GatewayFactory extends Factory
 {

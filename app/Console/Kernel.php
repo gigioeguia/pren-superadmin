@@ -10,13 +10,12 @@ class Kernel extends ConsoleKernel
     /**
      * Define the application's command schedule.
      *
-     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
      * @return void
      */
     protected function schedule(Schedule $schedule)
     {
-       $schedule->command('rent:apply-late-fee')->daily();
-       $schedule->command('rent:payment-generate')->monthlyOn(1, '00:00');
+        $schedule->command('rent:apply-late-fee')->daily();
+        $schedule->command('rent:payment-generate')->monthlyOn(1, '00:00');
 
     }
 

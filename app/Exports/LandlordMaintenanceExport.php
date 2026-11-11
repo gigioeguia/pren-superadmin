@@ -2,8 +2,8 @@
 
 namespace App\Exports;
 
-use App\Models\Property;
 use App\Models\Maintenance;
+use App\Models\Property;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 
@@ -15,7 +15,7 @@ class LandlordMaintenanceExport implements FromView
         $maintenances = Maintenance::with(['tenant:id,name,phone', 'labor:id,name', 'property'])->whereIn('property_id', $property)->latest()->get();
 
         return view('landlord.maintenance.excel-csv', [
-            'maintenances' => $maintenances
+            'maintenances' => $maintenances,
         ]);
     }
 }

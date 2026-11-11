@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
-use App\Models\User;
-use App\Mail\WelcomeMail;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Mail\WelcomeMail;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
 class SigninController extends Controller
@@ -23,11 +23,11 @@ class SigninController extends Controller
 
             if ($user->role != 'landlord' && $user->role != 'tenant') {
                 return response()->json([
-                    'message' => 'You can not login as ' . $user->role . ' from the app!'
+                    'message' => 'You can not login as '.$user->role.' from the app!',
                 ], 406);
             }
 
-            if ($user->remember_token && !$user->is_setupped) { // If user didn't verify email
+            if ($user->remember_token && ! $user->is_setupped) { // If user didn't verify email
 
                 $code = random_int(100000, 999999);
                 $expire = now()->addMinutes(env('OTP_VISIBILITY_TIME') ?? 3);
@@ -70,7 +70,7 @@ class SigninController extends Controller
             ]);
         } else {
             return response()->json([
-                'message' => 'Invalid email or password!'
+                'message' => 'Invalid email or password!',
             ], 401);
         }
     }
@@ -99,6 +99,7 @@ class SigninController extends Controller
 
             auth()->user()->currentAccessToken()->delete();
             $data['token'] = auth()->user()->createToken('createToken')->plainTextToken;
+
             return response()->json($data);
         } else {
             return response()->json([

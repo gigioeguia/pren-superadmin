@@ -21,6 +21,7 @@ class SettingController extends Controller
     public function index()
     {
         $general = Option::where('key', 'general')->first();
+
         return view('admin.settings.general', compact('general'));
     }
 
@@ -34,7 +35,7 @@ class SettingController extends Controller
             'app_url' => 'required|string',
             'logo' => 'nullable|image',
             'withdraw_payment_success_title' => 'required|string|max:25',
-            'withdraw_payment_success_message' => 'required|string|max:120'
+            'withdraw_payment_success_message' => 'required|string|max:120',
         ]);
 
         $general = Option::findOrFail($id);
@@ -44,13 +45,13 @@ class SettingController extends Controller
             'value' => $request->except('_token', '_method', 'logo', 'favicon', 'login_page_img') + [
                 'logo' => $request->logo ? $this->upload($request, 'logo', $general->value['logo'] ?? null) : $general->value['logo'] ?? null,
                 'favicon' => $request->favicon ? $this->upload($request, 'favicon', $general->value['favicon'] ?? null) : $general->value['favicon'] ?? null,
-                'login_page_img' => $request->login_page_img ? $this->upload($request, 'login_page_img', $general->value['login_page_img'] ?? null) : $general->value['login_page_img'] ?? null
-            ]
+                'login_page_img' => $request->login_page_img ? $this->upload($request, 'login_page_img', $general->value['login_page_img'] ?? null) : $general->value['login_page_img'] ?? null,
+            ],
         ]);
 
         return response()->json([
-            'message'   => __('General Setting updated successfully'),
-            'redirect'  => route('admin.settings.index')
+            'message' => __('General Setting updated successfully'),
+            'redirect' => route('admin.settings.index'),
         ]);
     }
 }

@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers\Landlord;
 
-use Carbon\Carbon;
-use App\Models\Rent;
-use App\Models\Unit;
-use App\Models\User;
-use App\Models\Option;
+use App\Exports\LandlordRentInvitationExport;
+use App\Helpers\HasUploader;
+use App\Http\Controllers\Controller;
 use App\Models\Amenity;
 use App\Models\Facility;
+use App\Models\Option;
 use App\Models\Property;
-use App\Helpers\HasUploader;
-use Illuminate\Http\Request;
+use App\Models\Rent;
 use App\Models\SecurityDeposit;
+use App\Models\Unit;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\LandlordRentInvitationExport;
 
 class AcnooRentInvitationController extends Controller
 {
@@ -34,19 +34,19 @@ class AcnooRentInvitationController extends Controller
                     $q->whereHas('units', function ($unitQuery) {
                         $unitQuery->where(function ($uq) {
                             $uq->whereDoesntHave('rent')
-                               ->orWhereHas('rent', function ($rq) {
-                                   $rq->whereNotIn('status', ['active', 'processing']);
-                               });
+                                ->orWhereHas('rent', function ($rq) {
+                                    $rq->whereNotIn('status', ['active', 'processing']);
+                                });
                         });
                     });
                 })
-                ->orWhere(function ($q) {
-                    // Property itself has rent (non-unit properties)
-                    $q->whereDoesntHave('rent')
-                      ->orWhereHas('rent', function ($rq) {
-                          $rq->whereNotIn('status', ['active', 'processing']);
-                      });
-                });
+                    ->orWhere(function ($q) {
+                        // Property itself has rent (non-unit properties)
+                        $q->whereDoesntHave('rent')
+                            ->orWhereHas('rent', function ($rq) {
+                                $rq->whereNotIn('status', ['active', 'processing']);
+                            });
+                    });
             })
             ->latest()
             ->get();
@@ -57,7 +57,7 @@ class AcnooRentInvitationController extends Controller
                 'property.propertyDetail:property_id,property_info,property_type',
                 'property.category:id,name',
                 'unit:id,unit_name',
-                'security_deposit:id,rent_id,deposit_amount'
+                'security_deposit:id,rent_id,deposit_amount',
             ])
             ->where('landlord_id', auth()->id())
             ->latest()
@@ -74,27 +74,27 @@ class AcnooRentInvitationController extends Controller
                 'landlord:id,name',
                 'property:id,address_info,rent_info',
                 'property.propertyDetail:property_id,property_info,property_type',
-                'security_deposit'
+                'security_deposit',
             ])
             ->where('landlord_id', auth()->id())
             ->when($request->input('search'), function ($query, $search) {
                 $query->where(function ($query) use ($search) {
 
                     $query->whereHas('tenant', function ($query) use ($search) {
-                        $query->where('unique_id', 'like', '%' . $search . '%')
-                            ->orWhere('name', 'like', '%' . $search . '%');
+                        $query->where('unique_id', 'like', '%'.$search.'%')
+                            ->orWhere('name', 'like', '%'.$search.'%');
                     })
 
                         ->orWhereHas('property.propertyDetail', function ($query) use ($search) {
-                            $query->where('property_type', 'like', '%' . $search . '%')
-                                ->orWhere('property_info->property_title', 'like', '%' . $search . '%');
+                            $query->where('property_type', 'like', '%'.$search.'%')
+                                ->orWhere('property_info->property_title', 'like', '%'.$search.'%');
                         })
 
                         ->orWhereHas('security_deposit', function ($query) use ($search) {
-                            $query->where('deposit_amount', 'like', '%' . $search . '%');
+                            $query->where('deposit_amount', 'like', '%'.$search.'%');
                         })
 
-                        ->orWhere('monthly_rent', 'like', '%' . $search . '%');
+                        ->orWhere('monthly_rent', 'like', '%'.$search.'%');
                 });
             })
             ->latest()
@@ -102,24 +102,25 @@ class AcnooRentInvitationController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('landlord.rents.datas', compact('rents'))->render()
+                'data' => view('landlord.rents.datas', compact('rents'))->render(),
             ]);
         }
 
         return redirect()->back();
     }
 
-    public function getUnit(Request $request) {
+    public function getUnit(Request $request)
+    {
         $unit = Unit::select('id', 'property_id', 'unit_name')
-                    ->where('property_id', $request->property_id)
-                    ->where(function ($query) {
-                        $query->whereDoesntHave('rent')
-                            ->orWhereHas('rent', function ($subQuery) {
-                                $subQuery->whereNotIn('status', ['active', 'processing']);
-                            });
-                    })
-                    ->latest()
-                    ->get();
+            ->where('property_id', $request->property_id)
+            ->where(function ($query) {
+                $query->whereDoesntHave('rent')
+                    ->orWhereHas('rent', function ($subQuery) {
+                        $subQuery->whereNotIn('status', ['active', 'processing']);
+                    });
+            })
+            ->latest()
+            ->get();
 
         return response()->json($unit);
 
@@ -139,42 +140,41 @@ class AcnooRentInvitationController extends Controller
 
         $property = Property::findOrFail($request->property_id);
 
-        //rental period validate
+        // rental period validate
         $start = Carbon::parse($request->start_date);
         $end = Carbon::parse($request->end_date);
         $rentalDays = $start->diffInDays($end);
 
-
         if ($request->unit_id) {
             $unit = Unit::where('property_id', $property->id)
-                        ->findOrFail($request->unit_id);
+                ->findOrFail($request->unit_id);
             $minValue = $unit->min_rental_value ?? null;
-            $minUnit  = $unit->min_rental_unit ?? null;
+            $minUnit = $unit->min_rental_unit ?? null;
 
-            $deposit_amount  = $unit->security_deposit ?? 0;
-            $rent_advance    = $unit->monthly_rent ?? 0;
+            $deposit_amount = $unit->security_deposit ?? 0;
+            $rent_advance = $unit->monthly_rent ?? 0;
             $utility_advance = $unit->utility_deposit ?? 0;
         } else {
             $minValue = $property->rent_info['min_rental_value'] ?? null;
-            $minUnit  = $property->rent_info['min_rental_unit'] ?? null;
+            $minUnit = $property->rent_info['min_rental_unit'] ?? null;
 
-            $deposit_amount  = $property->security_deposit ?? 0;
-            $rent_advance    = $property->rent_info['monthly_rent'] ?? 0;
+            $deposit_amount = $property->security_deposit ?? 0;
+            $rent_advance = $property->rent_info['monthly_rent'] ?? 0;
             $utility_advance = $property->utility_deposit ?? 0;
         }
 
         if ($minValue && $minUnit) {
-            $minDays = match($minUnit) {
-                'days'   => $minValue,
-                'weeks'  => $minValue * 7,
+            $minDays = match ($minUnit) {
+                'days' => $minValue,
+                'weeks' => $minValue * 7,
                 'months' => $minValue * 30,
-                'years'  => $minValue * 365,
-                default  => 0
+                'years' => $minValue * 365,
+                default => 0
             };
 
             if ($rentalDays < $minDays) {
                 return response()->json([
-                    'message' => "The rental period must be at least {$minValue} {$minUnit}."
+                    'message' => "The rental period must be at least {$minValue} {$minUnit}.",
                 ], 422);
             }
         }
@@ -184,10 +184,9 @@ class AcnooRentInvitationController extends Controller
         $amount = $chargeData['amount'] ?? 0;
         $type = $chargeData['type'] ?? 'fixed';
 
-
         // Rent total amount = rent + utility
         $rent_total_amount = $rent_advance + $utility_advance;
-        //Security total amount
+        // Security total amount
         $security_total_amount = $rent_advance + $utility_advance + $deposit_amount;
 
         // Security deposit + rent + utility for landlord balance
@@ -203,7 +202,7 @@ class AcnooRentInvitationController extends Controller
                 'utility_bill' => $utility_advance,
                 'monthly_rent' => $rent_advance,
                 'total_amount' => $rent_total_amount,
-                'landlord_agreement' => $request->landlord_agreement ? $this->upload($request, 'landlord_agreement') : NULL,
+                'landlord_agreement' => $request->landlord_agreement ? $this->upload($request, 'landlord_agreement') : null,
             ]);
 
             SecurityDeposit::create([
@@ -223,14 +222,15 @@ class AcnooRentInvitationController extends Controller
 
             DB::commit();
 
-            sendNotification($rent->id, notify_users([$rent->tenant->id, $rent->landlord->id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]),  admin_msg: __('Landlord create a new rent invitation'), landlord_msg: __('A new rent invitation has been sent to the tenant. Waiting for approval.'), tenant_msg: __('You have received a new rent invitation. Please review and approve.'));
+            sendNotification($rent->id, notify_users([$rent->tenant->id, $rent->landlord->id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]), admin_msg: __('Landlord create a new rent invitation'), landlord_msg: __('A new rent invitation has been sent to the tenant. Waiting for approval.'), tenant_msg: __('You have received a new rent invitation. Please review and approve.'));
 
             return response()->json([
                 'message' => 'Rent Invitation sent successfully',
-                'redirect' => route('landlord.rents.index')
+                'redirect' => route('landlord.rents.index'),
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json(['message' => 'Something went wrong'], 500);
         }
 
@@ -242,7 +242,7 @@ class AcnooRentInvitationController extends Controller
             'tenant:id,unique_id,name,phone,email',
             'property.propertyDetail',
             'security_deposit:id,rent_id,status',
-            'unit'
+            'unit',
         ])
             ->findOrFail($id);
 
@@ -270,7 +270,7 @@ class AcnooRentInvitationController extends Controller
 
             $security_deposit = SecurityDeposit::where('rent_id', $rent_approved->id)->first();
 
-            if (!$security_deposit) {
+            if (! $security_deposit) {
                 return response()->json(['message' => 'Security Deposit not found.'], 404);
             }
 
@@ -281,7 +281,7 @@ class AcnooRentInvitationController extends Controller
 
                 return response()->json([
                     'message' => 'Rent approved successfully',
-                    'redirect' => route('landlord.rents.index')
+                    'redirect' => route('landlord.rents.index'),
                 ]);
             } else {
                 return response()->json(['message' => 'Security Deposit is unpaid.'], 400);
@@ -311,11 +311,11 @@ class AcnooRentInvitationController extends Controller
                 'status' => 'cancelled',
             ]);
 
-            sendNotification($rent->id, notify_users([$rent->tenant->id, $rent->landlord->id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]),   landlord_msg: __('The tenant has cancelled the rent agreement.'), tenant_msg: __('You have successfully cancelled your rent agreement.'));
+            sendNotification($rent->id, notify_users([$rent->tenant->id, $rent->landlord->id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]), landlord_msg: __('The tenant has cancelled the rent agreement.'), tenant_msg: __('You have successfully cancelled your rent agreement.'));
 
             return response()->json([
                 'message' => 'Rent cancelled successfully',
-                'redirect' => route('landlord.rents.index')
+                'redirect' => route('landlord.rents.index'),
             ]);
         } else {
             return response()->json(['message' => 'Rent not found'], 404);

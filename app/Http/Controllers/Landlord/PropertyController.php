@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers\Landlord;
 
-use App\Models\Unit;
+use App\Exports\LandlordPropertiesExport;
+use App\Helpers\HasUploader;
+use App\Http\Controllers\Controller;
 use App\Models\Amenity;
 use App\Models\Category;
 use App\Models\Facility;
-use App\Models\Property;
 use App\Models\HouseType;
-use App\Helpers\HasUploader;
-use Illuminate\Http\Request;
+use App\Models\Property;
 use App\Models\PropertyDetail;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
-use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Facades\Storage;
-use App\Exports\LandlordPropertiesExport;
+use App\Models\Unit;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PropertyController extends Controller
 {
@@ -27,10 +27,10 @@ class PropertyController extends Controller
         $properties = Property::with([
             'category:id,name',
             'propertyDetail:id,property_id,property_info',
-            'units.rent'
+            'units.rent',
         ])
             ->where('landlord_id', auth()->id())
-            ->when(request('id'), function ($query)  {
+            ->when(request('id'), function ($query) {
                 $query->where('id', request('id'));
             })
             ->withCount([
@@ -39,12 +39,13 @@ class PropertyController extends Controller
                     $query->whereDoesntHave('rent', function ($q) {
                         $q->whereIn('status', ['active', 'processing']);
                     });
-                }
+                },
             ])
             ->latest()
             ->paginate(10);
 
         $categories = Category::all();
+
         return view('landlord.properties.index', compact('properties', 'categories'));
     }
 
@@ -58,7 +59,7 @@ class PropertyController extends Controller
                     $query->whereDoesntHave('rent', function ($q) {
                         $q->whereIn('status', ['active', 'processing']);
                     });
-                }
+                },
             ])
             ->when(request('category_id'), function ($q) {
                 $q->where('category_id', request('category_id'));
@@ -66,15 +67,15 @@ class PropertyController extends Controller
             ->when(request('search'), function ($q) {
                 $q->where(function ($q) {
                     $search = request('search');
-                    $q->where('building_name', 'like', '%' . $search . '%')
-                        ->orWhere('address_info->address', 'like', '%' . $search . '%')
-                        ->orWhere('puid', 'like', '%' . $search . '%')
-                        ->orWhere('rent_info->monthly_rent', 'like', '%' . $search . '%')
+                    $q->where('building_name', 'like', '%'.$search.'%')
+                        ->orWhere('address_info->address', 'like', '%'.$search.'%')
+                        ->orWhere('puid', 'like', '%'.$search.'%')
+                        ->orWhere('rent_info->monthly_rent', 'like', '%'.$search.'%')
                         ->orWhereHas('category', function ($query) use ($search) {
-                            $query->where('name', 'like', '%' . $search . '%');
+                            $query->where('name', 'like', '%'.$search.'%');
                         })
                         ->orWhereHas('propertyDetail', function ($query) use ($search) {
-                            $query->where('property_info->property_title', 'like', '%' . $search . '%');
+                            $query->where('property_info->property_title', 'like', '%'.$search.'%');
                         });
                 });
             })
@@ -83,7 +84,7 @@ class PropertyController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('landlord.properties.datas', compact('properties'))->render()
+                'data' => view('landlord.properties.datas', compact('properties'))->render(),
             ]);
         }
 
@@ -98,8 +99,8 @@ class PropertyController extends Controller
         $phone_codes = json_decode(file_get_contents($phone_codes), true);
         $categories = Category::all();
         $facilities = Facility::where('landlord_id', auth()->id())->get();
-        $amenities  = Amenity::where('landlord_id', auth()->id())->get();
-        $house_types  = HouseType::where('status', 1)->latest()->get();
+        $amenities = Amenity::where('landlord_id', auth()->id())->get();
+        $house_types = HouseType::where('status', 1)->latest()->get();
 
         return view('landlord.properties.create', compact('categories', 'facilities', 'amenities', 'countries', 'house_types', 'phone_codes'));
     }
@@ -110,7 +111,7 @@ class PropertyController extends Controller
         $property_count = Property::where('landlord_id', auth()->id())->count();
 
         if ($plan->number_of_property !== -1 && $property_count >= $plan->number_of_property) {
-            return response()->json(['message' => __('Your property addition limit has been reached. Your current limit is ' . $plan->number_of_property)], 406);
+            return response()->json(['message' => __('Your property addition limit has been reached. Your current limit is '.$plan->number_of_property)], 406);
         }
 
         $request->validate([
@@ -163,7 +164,7 @@ class PropertyController extends Controller
                 'late_fee' => $request->late_fee ?? 0,
                 'late_fee_after_days' => $request->late_fee_after_days ?? 0,
                 'cover_image' => $request->cover_image ? $this->multipleUpload($request, 'cover_image') : null,
-                'room_info' =>  $request->room_info,
+                'room_info' => $request->room_info,
                 'rent_info' => $request->rent_info,
                 'address_info' => $request->address_info,
                 'status' => 0,
@@ -205,7 +206,7 @@ class PropertyController extends Controller
                             'condition' => $unitData['condition'] ?? null,
                             'parking_lot' => $unitData['parking_lot'] ?? null,
                             'unit_size' => $unitData['unit_size'] ?? null,
-                            'facilities' =>  $unitData['facilities'] ?? null,
+                            'facilities' => $unitData['facilities'] ?? null,
                             'amenities' => $unitData['amenities'] ?? null,
                             'tenant_preference' => $unitData['tenant_preference'] ?? null,
                             'description' => $unitData['description'] ?? null,
@@ -242,6 +243,7 @@ class PropertyController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'message' => 'Something went wrong',
             ]);
@@ -265,9 +267,9 @@ class PropertyController extends Controller
                         $rent->where('status', 'active')
                             ->whereDate('start_date', '<=', Carbon::today())
                             ->whereDate('end_date', '>=', Carbon::today());
-                    }
+                    },
                 ]);
-            }
+            },
         ])
             ->where('landlord_id', auth()->id())
             ->findOrFail($id);
@@ -301,8 +303,8 @@ class PropertyController extends Controller
         $countries = json_decode(file_get_contents($countries), true);
         $categories = Category::all();
         $facilities = Facility::where('landlord_id', auth()->id())->get();
-        $amenities  = Amenity::where('landlord_id', auth()->id())->get();
-        $house_types  = HouseType::where('status', 1)->latest()->get();
+        $amenities = Amenity::where('landlord_id', auth()->id())->get();
+        $house_types = HouseType::where('status', 1)->latest()->get();
         $property = Property::with(['category:id,name', 'propertyDetail'])->findOrFail($id);
 
         return view('landlord.properties.edit', compact('categories', 'facilities', 'amenities', 'house_types', 'phone_codes', 'countries', 'property'));
@@ -352,7 +354,7 @@ class PropertyController extends Controller
 
             $property = Property::findOrFail($id);
 
-            //cover image
+            // cover image
             if ($request->cover_removed_images) {
                 $cover_prev_images = array_diff($property->cover_image ?? [], $request->cover_removed_images);
                 foreach ($request->cover_removed_images as $image) {
@@ -369,7 +371,6 @@ class PropertyController extends Controller
             $cover_new_images = $request->cover_image ? $this->multipleUpload($request, 'cover_image') : [];
 
             $cover_merged_images = array_merge($cover_prev_images, $cover_new_images);
-
 
             if ($request->hasFile('floorplan_image')) {
                 if ($property->propertyDetail->floorplan_image) {
@@ -392,7 +393,7 @@ class PropertyController extends Controller
                 'late_fee' => $request->late_fee ?? 0,
                 'late_fee_after_days' => $request->late_fee_after_days ?? 0,
                 'cover_image' => $cover_merged_images,
-                'room_info' =>  $request->room_info,
+                'room_info' => $request->room_info,
                 'rent_info' => $request->rent_info,
                 'address_info' => $request->address_info,
             ]);
@@ -414,19 +415,19 @@ class PropertyController extends Controller
             ]);
 
             $receivedUnitIds = collect($request->units)
-                                ->pluck('unit_id')
-                                ->filter()
-                                ->toArray();
+                ->pluck('unit_id')
+                ->filter()
+                ->toArray();
 
             $existingUnitIds = $property->units()->pluck('id')->toArray();
 
             $unitsToDeleteIds = array_diff($existingUnitIds, $receivedUnitIds);
 
-            if (!empty($unitsToDeleteIds)) {
+            if (! empty($unitsToDeleteIds)) {
                 $unitsToDelete = Unit::whereIn('id', $unitsToDeleteIds)->get(['id', 'images']);
 
                 foreach ($unitsToDelete as $u) {
-                    if (!empty($u->images) && is_array($u->images)) {
+                    if (! empty($u->images) && is_array($u->images)) {
                         foreach ($u->images as $imgPath) {
                             if ($imgPath && Storage::exists($imgPath)) {
                                 Storage::delete($imgPath);
@@ -438,24 +439,23 @@ class PropertyController extends Controller
                 Unit::whereIn('id', $unitsToDeleteIds)->delete();
             }
 
-
             if ($request->category_id == 6 && $request->has('units') && is_array($request->units)) {
                 $unitFiles = $request->file('units');
 
-                 foreach ($request->units as $index => $unitData) {
+                foreach ($request->units as $index => $unitData) {
                     if (empty($unitData['unit_id']) && empty($unitData['unit_name'])) {
                         continue;
                     }
 
-                    $unit = !empty($unitData['unit_id']) ? Unit::find($unitData['unit_id']) : new Unit();
-                    if (!$unit) {
-                        $unit = new Unit();
+                    $unit = ! empty($unitData['unit_id']) ? Unit::find($unitData['unit_id']) : new Unit;
+                    if (! $unit) {
+                        $unit = new Unit;
                     }
 
                     // existing images for this unit
                     $unit_prev_images = $unit->images ?? [];
 
-                    if (!empty($unitData['remove_images']) && is_array($unitData['remove_images'])) {
+                    if (! empty($unitData['remove_images']) && is_array($unitData['remove_images'])) {
                         $unit_prev_images = array_diff($unit->images ?? [], $unitData['remove_images']);
 
                         foreach ($unitData['remove_images'] as $image) {
@@ -475,7 +475,6 @@ class PropertyController extends Controller
                     }
 
                     $merged_images = array_merge($unit_prev_images, $new_images);
-
 
                     $unit->fill([
                         'property_id' => $property->id,
@@ -517,6 +516,7 @@ class PropertyController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'message' => 'Something went wrong',
             ], 500);
@@ -526,6 +526,7 @@ class PropertyController extends Controller
     public function successView(string $id)
     {
         $property = Property::with(['landlord', 'propertyDetail', 'units'])->findOrFail($id);
+
         return view('landlord.properties.property-success', compact('property'));
     }
 
@@ -533,6 +534,7 @@ class PropertyController extends Controller
     {
         $property = Property::findOrFail($id);
         $property->update(['status' => $request->status]);
+
         return response()->json(['message' => 'Property']);
     }
 
@@ -540,19 +542,19 @@ class PropertyController extends Controller
     {
         $property = Property::findOrFail($id);
 
-        if (!empty($property->cover_image)) {
+        if (! empty($property->cover_image)) {
             foreach ($property->cover_image as $image) {
                 $oldImagePath = dirname($image);
                 Storage::deleteDirectory($oldImagePath);
             }
         }
-        if (!empty($property->propertyDetail->floorplan_image)) {
+        if (! empty($property->propertyDetail->floorplan_image)) {
             $oldImagePath = dirname($property->propertyDetail->floorplan_image);
             Storage::deleteDirectory($oldImagePath);
         }
 
         foreach ($property->units as $unit) {
-            if (!empty($unit->images)) {
+            if (! empty($unit->images)) {
                 foreach ($unit->images as $image) {
                     if ($image && Storage::exists($image)) {
                         Storage::delete($image);
@@ -564,7 +566,7 @@ class PropertyController extends Controller
         if ($property->rent !== null) {
 
             return response()->json([
-                'message' => __('Your property is already rented by tenant. Cannot delete it until remove the tenant first')
+                'message' => __('Your property is already rented by tenant. Cannot delete it until remove the tenant first'),
             ], 400);
         }
 
@@ -572,7 +574,7 @@ class PropertyController extends Controller
 
         return response()->json([
             'message' => __('Property deleted successfully'),
-            'redirect' => route('landlord.properties.index')
+            'redirect' => route('landlord.properties.index'),
         ]);
     }
 
@@ -581,19 +583,19 @@ class PropertyController extends Controller
         $properties = Property::whereIn('id', $request->ids)->get();
 
         foreach ($properties as $property) {
-            if (!empty($property->cover_image)) {
+            if (! empty($property->cover_image)) {
                 foreach ($property->cover_image as $image) {
                     $oldImagePath = dirname($image);
                     Storage::deleteDirectory($oldImagePath);
                 }
             }
-            if (!empty($property->propertyDetail->floorplan_image)) {
+            if (! empty($property->propertyDetail->floorplan_image)) {
                 $oldImagePath = dirname($property->propertyDetail->floorplan_image);
                 Storage::deleteDirectory($oldImagePath);
             }
 
             foreach ($property->units as $unit) {
-                if (!empty($unit->images)) {
+                if (! empty($unit->images)) {
                     foreach ($unit->images as $image) {
                         if ($image && Storage::exists($image)) {
                             Storage::delete($image);
@@ -604,15 +606,16 @@ class PropertyController extends Controller
             if ($property->rent !== null) {
 
                 return response()->json([
-                    'message' => __('Your property is already rented by tenant. Cannot delete it until remove the tenant first')
+                    'message' => __('Your property is already rented by tenant. Cannot delete it until remove the tenant first'),
                 ], 400);
             }
 
             $property->delete();
         }
+
         return response()->json([
             'message' => __('Selected property deleted successfully'),
-            'redirect' => route('landlord.properties.index')
+            'redirect' => route('landlord.properties.index'),
         ]);
     }
 

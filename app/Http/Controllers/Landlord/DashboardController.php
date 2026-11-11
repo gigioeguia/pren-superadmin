@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Landlord;
 
-use App\Models\User;
-use App\Models\Property;
-use App\Models\Withdraw;
-use App\Models\Application;
-use App\Models\Maintenance;
-use Illuminate\Http\Request;
-use App\Models\Income;
-use App\Models\Expense;
-use Illuminate\Support\Carbon;
 use App\Http\Controllers\Controller;
+use App\Models\Application;
+use App\Models\Expense;
+use App\Models\Income;
+use App\Models\Maintenance;
+use App\Models\Property;
+use App\Models\User;
+use App\Models\Withdraw;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class DashboardController extends Controller
 {
@@ -117,7 +117,6 @@ class DashboardController extends Controller
         ]);
     }
 
-
     public function account_chart(Request $request)
     {
         $year = $request->input('year', date('Y'));
@@ -128,7 +127,6 @@ class DashboardController extends Controller
             ->groupBy('month')
             ->pluck('total_income', 'month')
             ->toArray();
-
 
         $expenseData = Expense::where('landlord_id', auth()->id())
             ->whereYear('expense_date', $year)

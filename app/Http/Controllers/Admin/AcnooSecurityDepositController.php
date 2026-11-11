@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\User;
-use App\Models\Transaction;
-use Illuminate\Http\Request;
-use App\Models\SecurityDeposit;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
-use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Facades\Storage;
 use App\Exports\AdminSecurityDepositExport;
+use App\Http\Controllers\Controller;
+use App\Models\SecurityDeposit;
+use App\Models\Transaction;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooSecurityDepositController extends Controller
 {
@@ -50,21 +50,21 @@ class AcnooSecurityDepositController extends Controller
             'rent.property:id,puid',
             'rent.property.propertyDetail:id,property_id,property_info',
         ])->when(request('search'), function ($q) {
-            $q->where('invoice_no', 'like', '%' . request('search') . '%')
-                ->orWhere('status', 'like', '%' . request('search') . '%')
-                ->orWhere('total_amount', 'like', '%' . request('search') . '%')
-                ->orWhere('utility_advance', 'like', '%' . request('search') . '%');
+            $q->where('invoice_no', 'like', '%'.request('search').'%')
+                ->orWhere('status', 'like', '%'.request('search').'%')
+                ->orWhere('total_amount', 'like', '%'.request('search').'%')
+                ->orWhere('utility_advance', 'like', '%'.request('search').'%');
 
             $q->orWhereHas('tenant', function ($q) {
-                $q->where('name', 'like', '%' . request('search') . '%');
+                $q->where('name', 'like', '%'.request('search').'%');
             });
 
             $q->orWhereHas('gateway', function ($q) {
-                $q->where('name', 'like', '%' . request('search') . '%');
+                $q->where('name', 'like', '%'.request('search').'%');
             });
 
             $q->orWhereHas('property.propertyDetail', function ($q) {
-                $q->where('property_info', 'like', '%' . request('search') . '%');
+                $q->where('property_info', 'like', '%'.request('search').'%');
             });
         })
             ->latest()
@@ -72,9 +72,10 @@ class AcnooSecurityDepositController extends Controller
 
         if (request()->ajax()) {
             return response()->json([
-                'data' => view('admin.security-deposits.datas', compact('security_deposits'))->render()
+                'data' => view('admin.security-deposits.datas', compact('security_deposits'))->render(),
             ]);
         }
+
         return redirect(url()->previous());
     }
 
@@ -85,7 +86,7 @@ class AcnooSecurityDepositController extends Controller
         // Check if attachment exists in notes
         $filePath = $security_deposit->payment_data['payment_receipt'] ?? null;
 
-        if (empty($filePath) || !Storage::exists($filePath)) {
+        if (empty($filePath) || ! Storage::exists($filePath)) {
             return redirect()->back()->with('error', 'File not found');
         }
 
@@ -119,7 +120,7 @@ class AcnooSecurityDepositController extends Controller
                 ]);
 
                 $security_deposit->update([
-                    'status' => 'paid'
+                    'status' => 'paid',
                 ]);
 
                 DB::commit();
@@ -127,7 +128,7 @@ class AcnooSecurityDepositController extends Controller
                 sendNotification(
                     $security_deposit->id,
                     notify_users([$security_deposit->landlord->id, $security_deposit->tenant->id]),
-                    admin_url:route('admin.security-deposits.index', ['id' => $security_deposit->id]),
+                    admin_url: route('admin.security-deposits.index', ['id' => $security_deposit->id]),
                     landlord_url: route('landlord.security-deposits.index', ['id' => $security_deposit->id]),
                     admin_msg: __('A security deposit has been approved.'),
                     landlord_msg: __('The tenant’s security deposit has been approved.'),
@@ -136,10 +137,11 @@ class AcnooSecurityDepositController extends Controller
 
                 return response()->json([
                     'message' => 'Security deposit approved',
-                    'redirect' => route('admin.security-deposits.index')
+                    'redirect' => route('admin.security-deposits.index'),
                 ]);
             } catch (\Throwable $th) {
                 DB::rollBack();
+
                 return response()->json([
                     'message' => $th->getMessage(),
                 ]);
@@ -147,7 +149,7 @@ class AcnooSecurityDepositController extends Controller
         } else {
             return response()->json([
                 'message' => 'The security deposit is still unpaid and cannot be approved at this time.',
-                'redirect' => route('admin.security-deposits.index')
+                'redirect' => route('admin.security-deposits.index'),
             ], 400);
         }
     }
@@ -157,14 +159,14 @@ class AcnooSecurityDepositController extends Controller
         $security_deposit = SecurityDeposit::findOrFail($id);
         $security_deposit->update([
             'note' => $request->note,
-            'status' => 'rejected'
+            'status' => 'rejected',
         ]);
 
         sendNotification($security_deposit->id, notify_users([$security_deposit->landlord->id, $security_deposit->tenant->id]), admin_url: route('admin.security-deposits.index', ['id' => $security_deposit->id]), landlord_url: route('landlord.security-deposits.index', ['id' => $security_deposit->id]), admin_msg: __('A security deposit has been rejected.'), landlord_msg: __('The tenant’s security deposit has been rejected.'), tenant_msg: __('Your security deposit has been rejected.'));
 
         return response()->json([
             'message' => 'Security deposit Rejected',
-            'redirect' => route('admin.security-deposits.index')
+            'redirect' => route('admin.security-deposits.index'),
         ]);
     }
 

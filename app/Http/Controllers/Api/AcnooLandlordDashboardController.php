@@ -2,23 +2,22 @@
 
 namespace App\Http\Controllers\Api;
 
-use Carbon\Carbon;
-use App\Models\Rent;
-use App\Models\User;
-use App\Models\Property;
-use App\Models\Withdraw;
+use App\Http\Controllers\Controller;
 use App\Models\Application;
-use App\Models\Maintenance;
-use App\Models\RentPayment;
-use App\Models\Income;
 use App\Models\Expense;
+use App\Models\Income;
+use App\Models\Maintenance;
+use App\Models\Property;
+use App\Models\Rent;
+use App\Models\RentPayment;
+use App\Models\User;
+use App\Models\Withdraw;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 
 class AcnooLandlordDashboardController extends Controller
 {
-
     public function index(Request $request)
     {
         $form_date = $request->form_date;
@@ -31,6 +30,7 @@ class AcnooLandlordDashboardController extends Controller
                 $query->whereDate('created_at', '>=', $form_date)
                     ->whereDate('created_at', '<=', $to_date);
             }
+
             return $query;
         };
 
@@ -79,6 +79,7 @@ class AcnooLandlordDashboardController extends Controller
                 $query->whereDate('created_at', '>=', $form_date)
                     ->whereDate('created_at', '<=', $to_date);
             }
+
             return $query;
         };
 
@@ -113,7 +114,6 @@ class AcnooLandlordDashboardController extends Controller
         ]);
     }
 
-
     public function account_chart(Request $request)
     {
         $currentDate = Carbon::now();
@@ -144,7 +144,7 @@ class AcnooLandlordDashboardController extends Controller
         }
 
         $income_data = DB::table('incomes')
-            ->select(DB::raw("DATE_FORMAT(income_date, '%Y-%m-%d') as date"), DB::raw("SUM(amount) as income_amount_data"))
+            ->select(DB::raw("DATE_FORMAT(income_date, '%Y-%m-%d') as date"), DB::raw('SUM(amount) as income_amount_data'))
             ->where('landlord_id', auth()->id())
             ->whereBetween('income_date', [$start, $end])
             ->groupBy('date')
@@ -153,7 +153,7 @@ class AcnooLandlordDashboardController extends Controller
             ->keyBy('date');
 
         $expense_data = DB::table('expenses')
-            ->select(DB::raw("DATE_FORMAT(expense_date, '%Y-%m-%d') as date"), DB::raw("SUM(amount) as income_amount_data"))
+            ->select(DB::raw("DATE_FORMAT(expense_date, '%Y-%m-%d') as date"), DB::raw('SUM(amount) as income_amount_data'))
             ->where('landlord_id', auth()->id())
             ->whereBetween('expense_date', [$start, $end])
             ->groupBy('date')

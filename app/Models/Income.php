@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-use App\Models\IncomeCategory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Income extends Model
 {
@@ -22,13 +21,13 @@ class Income extends Model
         'income_date',
     ];
 
-    public function category() : BelongsTo
+    public function category(): BelongsTo
     {
         return $this->belongsTo(IncomeCategory::class, 'income_category_id');
     }
 
-    public function landlord() : BelongsTo
+    public function landlord(): BelongsTo
     {
-        return $this->belongsTo(User::class,'landlord_id');
+        return $this->belongsTo(User::class, 'landlord_id');
     }
 }

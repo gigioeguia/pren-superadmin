@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
-use App\Models\IncomeCategory;
 use App\Http\Controllers\Controller;
+use App\Models\IncomeCategory;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class AcnooIncomeCategoryController extends Controller
@@ -13,7 +13,7 @@ class AcnooIncomeCategoryController extends Controller
     {
         $income_categories = IncomeCategory::where('business_id', auth()->user()->business_id)
             ->when(request('search'), function ($query) {
-                $query->where('name', 'like', '%' . request('search') . '%');
+                $query->where('name', 'like', '%'.request('search').'%');
             })
             ->latest();
 
@@ -40,9 +40,9 @@ class AcnooIncomeCategoryController extends Controller
                 'required',
                 Rule::unique('income_categories')->where(function ($query) {
                     return $query->where('landlord_id', auth()->id());
-                })
+                }),
             ],
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         $data = IncomeCategory::create($request->except('landlord_id') + [
@@ -64,13 +64,13 @@ class AcnooIncomeCategoryController extends Controller
                 'required',
                 Rule::unique('income_categories')->where(function ($query) {
                     return $query->where('landlord_id', auth()->id());
-                })
+                }),
             ],
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         $category->update($request->except('landlord_id') + [
-            'landlord_id' => auth()->id()
+            'landlord_id' => auth()->id(),
         ]);
 
         return response()->json([
@@ -83,6 +83,7 @@ class AcnooIncomeCategoryController extends Controller
     {
         $category = IncomeCategory::findOrFail($id);
         $category->delete();
+
         return response()->json([
             'message' => __('Data deleted successfully.'),
         ]);

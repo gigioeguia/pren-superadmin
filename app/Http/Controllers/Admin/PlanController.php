@@ -23,7 +23,8 @@ class PlanController extends Controller
     public function index()
     {
         $plans = Plan::latest()->paginate(20);
-        return view('admin.plans.index',  compact('plans'));
+
+        return view('admin.plans.index', compact('plans'));
     }
 
     public function create()
@@ -85,7 +86,7 @@ class PlanController extends Controller
 
         return response()->json([
             'message' => 'Plan Created Successfully',
-            'redirect' => route('admin.plans.index')
+            'redirect' => route('admin.plans.index'),
         ]);
     }
 
@@ -150,7 +151,7 @@ class PlanController extends Controller
 
         return response()->json([
             'message' => 'Plan Updated Successfully',
-            'redirect' => route('admin.plans.index')
+            'redirect' => route('admin.plans.index'),
         ]);
     }
 
@@ -163,8 +164,8 @@ class PlanController extends Controller
         $plan->delete();
 
         return response()->json([
-            'message'   => __('Plan deleted successfully'),
-            'redirect'  => route('admin.plans.index')
+            'message' => __('Plan deleted successfully'),
+            'redirect' => route('admin.plans.index'),
         ]);
     }
 }

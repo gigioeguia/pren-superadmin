@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('uid')->unique();
             $table->foreignId('paid_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('received_by')->nullable()->constrained("users")->nullOnDelete();
+            $table->foreignId('received_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('gateway_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('security_deposit_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('rent_payment_id')->nullable()->constrained()->nullOnDelete();

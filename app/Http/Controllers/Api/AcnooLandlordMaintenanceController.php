@@ -2,29 +2,29 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Property;
-use App\Models\Maintenance;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Maintenance;
+use App\Models\Property;
+use Illuminate\Http\Request;
 
 class AcnooLandlordMaintenanceController extends Controller
 {
     public function rejected(Request $request, string $id)
     {
         $request->validate([
-            'notes' => 'nullable|string'
+            'notes' => 'nullable|string',
         ]);
 
         $maintenance = Maintenance::findOrFail($id);
 
         $maintenance->update([
             'status' => 'rejected',
-            'notes' => $request->notes
+            'notes' => $request->notes,
         ]);
 
         return response()->json([
             'message' => 'Maintenance rejected successfully',
-            'data' => $maintenance
+            'data' => $maintenance,
         ]);
     }
 
@@ -48,7 +48,7 @@ class AcnooLandlordMaintenanceController extends Controller
 
         return response()->json([
             'message' => 'Maintenance processing successfully',
-            'data' => $maintenance
+            'data' => $maintenance,
         ]);
     }
 
@@ -66,17 +66,17 @@ class AcnooLandlordMaintenanceController extends Controller
             'status' => 'completed',
         ]);
 
-        sendNotification($maintenance->id, notify_users([$maintenance->tenant_id, $maintenance->property->landlord_id]), landlord_url: route('landlord.maintenances.index', ['id' => $maintenance->id]),  landlord_msg: __('You have completed a maintenance'), tenant_msg: __('The maintenance has been successfully completed'));
+        sendNotification($maintenance->id, notify_users([$maintenance->tenant_id, $maintenance->property->landlord_id]), landlord_url: route('landlord.maintenances.index', ['id' => $maintenance->id]), landlord_msg: __('You have completed a maintenance'), tenant_msg: __('The maintenance has been successfully completed'));
 
         return response()->json([
             'message' => 'Maintenance completed successfully',
-            'data' => $maintenance
+            'data' => $maintenance,
         ]);
     }
 
     public function reports(Request $request)
     {
-        $properties  = Property::where('landlord_id', auth()->user()->id)->pluck('id');
+        $properties = Property::where('landlord_id', auth()->user()->id)->pluck('id');
         $fromDate = $request->input('from_date');
         $toDate = $request->input('to_date');
         $propertyId = $request->input('property_id');
@@ -117,7 +117,7 @@ class AcnooLandlordMaintenanceController extends Controller
 
         return response()->json([
             'message' => 'Data fetched successfully',
-            'data' => $data
+            'data' => $data,
         ]);
     }
 }

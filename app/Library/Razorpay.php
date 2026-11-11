@@ -54,9 +54,11 @@ class Razorpay
         // Checking Minimum/Maximum amount
         if ($gateway->min_amount > $amount) {
             session()->put('payment_msg', __('The minimum transaction amount is :amount', ['amount' => currency_format($gateway->min_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         } elseif ($gateway->max_amount < $amount) {
             session()->put('payment_msg', __('The maximum transaction amount is :amount', ['amount' => currency_format($gateway->max_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         }
 
@@ -117,11 +119,11 @@ class Razorpay
         $api = new Api($razorpay_credentials['key_id'], $razorpay_credentials['key_secret']);
         $referance_id = Str::random(12);
         $order = $api->order->create(
-            array(
+            [
                 'receipt' => $referance_id,
                 'amount' => $amount * 100,
                 'currency' => $razorpay_credentials['currency'],
-            )
+            ]
         );
 
         // Return response on payment page
@@ -133,7 +135,7 @@ class Razorpay
             'currency' => $razorpay_credentials['currency'],
             'email' => $email,
             'contactNumber' => $phone,
-            'address' => "",
+            'address' => '',
             'description' => $billName,
         ];
 
@@ -155,9 +157,9 @@ class Razorpay
             // If Signature status is true We will save the payment response in our database
             // In this tutorial we send the response to Success page if payment successfully made
             if ($signatureStatus == true) {
-                //for success
+                // for success
                 $data['payment_id'] = Razorpay::$payment_id;
-                $data['payment_method'] = "razorpay";
+                $data['payment_method'] = 'razorpay';
                 $data['payment_type'] = $order_info['payment_type'];
                 $data['gateway_id'] = $order_info['gateway_id'];
                 $data['amount'] = $order_info['amount'];
@@ -169,6 +171,7 @@ class Razorpay
 
                 Session::put('payment_info', $data);
                 Session::forget('razorpay_credentials');
+
                 return request()->expectsJson() ?
                     Razorpay::redirect_if_payment_success() :
                     redirect(Razorpay::redirect_if_payment_success());
@@ -191,9 +194,10 @@ class Razorpay
             $razorpay_credentials = Session::get('razorpay_credentials');
             // Create an object of razorpay class
             $api = new Api($razorpay_credentials['key_id'], $razorpay_credentials['key_secret']);
-            $attributes = array('razorpay_signature' => $_signature, 'razorpay_payment_id' => $_paymentId, 'razorpay_order_id' => $_orderId);
+            $attributes = ['razorpay_signature' => $_signature, 'razorpay_payment_id' => $_paymentId, 'razorpay_order_id' => $_orderId];
             $order = $api->utility->verifyPaymentSignature($attributes);
             Razorpay::$payment_id = $_paymentId;
+
             return true;
         } catch (Exception $e) {
             // If Signature is not correct its give a excetption so we use try catch
@@ -210,7 +214,7 @@ class Razorpay
             $api = new Api($key, $secret);
             $payment = $api->payment->fetch($payment_id);
             if ($payment) {
-                return $payment['status'] === "captured" ? 1 : 0;
+                return $payment['status'] === 'captured' ? 1 : 0;
             }
         } catch (Throwable $th) {
             return 0;
