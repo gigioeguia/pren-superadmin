@@ -7,7 +7,7 @@ Reglas para escribir y mantener especificaciones. Aplican a todo spec bajo `.age
 Cada spec declara su estado en el frontmatter. Flujo permitido:
 
 ```
-Borrador → Revisado → Aprobado → Obsoleto
+Borrador → Revisado → Aprobado → Implementado → Obsoleto
 ```
 
 | Estado | Significado | Quién lo mueve |
@@ -15,9 +15,14 @@ Borrador → Revisado → Aprobado → Obsoleto
 | `Borrador` | En elaboración, puede cambiar estructuralmente | Autor |
 | `Revisado` | Contenido estable; revisado por pares/técnico | Revisor |
 | `Aprobado` | Listo para implementar; cambios solo por desviación | Decisor |
+| `Implementado` | Implementado con DoD verificado y tachado; se conserva como referencia (catálogo, caracterizaciones, desviaciones) | Implementador/Decisor al verificar el DoD |
 | `Obsoleto` | Reemplazado o descartado; mantener por historial | Cualquiera con nota de reemplazo |
 
 Un spec en `Aprobado` que se desvía en implementación vuelve a `Borrador` con nota del motivo.
+
+Un spec implementado por **autorización explícita** del autor/decisor, sin pasar por `Revisado`/`Aprobado`, puede pasar directamente a `Implementado` una vez verificado el DoD, dejando las desviaciones documentadas en el propio spec (fue el caso de `spec-tests-smoke-fase0`).
+
+`Obsoleto` es alcanzable desde cualquier estado, con nota de reemplazo o descarte.
 
 ## Frontmatter obligatorio
 
