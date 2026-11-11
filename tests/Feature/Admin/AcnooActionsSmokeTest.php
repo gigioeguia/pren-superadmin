@@ -12,10 +12,17 @@ use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
 
 /**
- * G1–G8 del spec-trait-acnoo-fase0: comportamiento observable de los métodos
- * de HasAcnooActions sobre controladores representativos (Amenity = camino
- * simple, Property = camino row-by-row con media). Debe permanecer en verde
- * antes y después de la adopción del trait.
+ * G1–G8 del spec-trait-acnoo-fase0: comportamiento observable de los endpoints
+ * de los 5 métodos duplicados, sobre controladores representativos (Amenity =
+ * camino simple, Property = camino row-by-row con media).
+ *
+ * Escritos ANTES de la adopción del trait (PR 1 del stack apilado, D8 del
+ * spec): en este punto fijan el comportamiento implementado por las copias
+ * locales de los controladores. Tras los PR 2/3 (adopción Admin/Landlord) los
+ * mismos endpoints son servidos por HasAcnooActions y estos tests deben seguir
+ * en verde — esa continuidad es la prueba de que el refactor preserva el
+ * comportamiento. La prueba estructural de que los métodos enrutados provienen
+ * del trait se añade junto con la adopción.
  *
  * @group smoke
  */

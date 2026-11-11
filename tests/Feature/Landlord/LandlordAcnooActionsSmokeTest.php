@@ -13,10 +13,16 @@ use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
 
 /**
- * H1–H4 del spec-trait-acnoo-fase0: comportamiento observable de los métodos
- * de HasAcnooActions en la capa landlord (Amenity como representante).
+ * H1–H4 del spec-trait-acnoo-fase0: comportamiento observable de los endpoints
+ * de los 5 métodos duplicados en la capa landlord (Amenity como representante).
  * H3 y H4 son caracterizaciones: documentan bugs conocidos que se espera
  * rompan en Fase 2 (Seg-5) y Fase 3.6 (Seg-15) respectivamente.
+ *
+ * Escritos ANTES de la adopción del trait (PR 1 del stack apilado, D8 del
+ * spec): en este punto fijan el comportamiento implementado por las copias
+ * locales. Tras el PR 3 (adopción Landlord) los mismos endpoints son servidos
+ * por HasAcnooActions y estos tests deben seguir en verde — esa continuidad es
+ * la prueba de que el refactor preserva el comportamiento.
  *
  * @group smoke
  */
