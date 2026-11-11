@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
-use App\Models\User;
-use App\Models\Api\Tenant;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ResetPasswordController extends Controller
 {
-    public function userResetPassword(Request $request) : JsonResponse
+    public function userResetPassword(Request $request): JsonResponse
     {
         $request->validate([
             'email' => 'required|exists:users,email',

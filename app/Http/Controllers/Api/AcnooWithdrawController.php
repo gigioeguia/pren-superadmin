@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Withdraw;
-use App\Models\UserMethod;
-use Illuminate\Http\Request;
-use App\Models\WithdrawMethod;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
+use App\Models\UserMethod;
+use App\Models\Withdraw;
+use App\Models\WithdrawMethod;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\ViewErrorBag;
 
 class AcnooWithdrawController extends Controller
 {
@@ -23,7 +24,7 @@ class AcnooWithdrawController extends Controller
 
         return response([
             'meassage' => 'Data fetched successfully',
-            'data' => $withdraws
+            'data' => $withdraws,
         ]);
     }
 
@@ -32,7 +33,7 @@ class AcnooWithdrawController extends Controller
         $request->validate([
             'user_method_id' => 'required|integer',
             'amount' => 'required|string',
-            'status' => 'nullable|string'
+            'status' => 'nullable|string',
         ]);
 
         $user = auth()->user();
@@ -53,13 +54,13 @@ class AcnooWithdrawController extends Controller
         // Check method min and max amount
         if ($request->amount < $method->min_amount) {
             return response()->json([
-                'message' => 'Withdraw amount must be at least ' . $method->min_amount
+                'message' => 'Withdraw amount must be at least '.$method->min_amount,
             ], 400);
         }
 
         if ($request->amount > $method->max_amount) {
             return response()->json([
-                'message' => 'Withdraw amount cannot exceed ' . $method->max_amount
+                'message' => 'Withdraw amount cannot exceed '.$method->max_amount,
             ], 400);
         }
 
@@ -79,24 +80,26 @@ class AcnooWithdrawController extends Controller
                     'balance' => $user->balance - $total_amount,
                 ]);
 
-                sendNotification($withdraw->id, notify_users([$withdraw->user->id]), landlord_url: route('landlord.withdraw.index', ['id' => $withdraw->id]),  admin_msg: __('A new withdrawal request has been submitted. Please review and process it.'), landlord_msg: __('Your withdrawal request has been submitted successfully. Awaiting approval.'));
+                sendNotification($withdraw->id, notify_users([$withdraw->user->id]), landlord_url: route('landlord.withdraw.index', ['id' => $withdraw->id]), admin_msg: __('A new withdrawal request has been submitted. Please review and process it.'), landlord_msg: __('Your withdrawal request has been submitted successfully. Awaiting approval.'));
 
                 DB::commit();
+
                 return response()->json([
                     'message' => 'Balance withdraw request send successfully',
-                    'data' => $withdraw
+                    'data' => $withdraw,
                 ]);
             } else {
                 return response()->json(
                     [
-                        'message' => 'Insufficient balance'
+                        'message' => 'Insufficient balance',
                     ],
                     400
                 );
             }
         } catch (\Exception $e) {
             DB::rollback();
-            return response()->json(['error' => 'Transaction failed: ' . $e->getMessage()], 500);
+
+            return response()->json(['error' => 'Transaction failed: '.$e->getMessage()], 500);
         }
     }
 
@@ -104,17 +107,16 @@ class AcnooWithdrawController extends Controller
     {
         $withdraw = Withdraw::with(['user:id,name,phone,email', 'user.user_details:user_id,address_info', 'account_info:id,method_id', 'account_info.withdraw_method:id,charge_type'])->findOrFail($id);
 
-        $errors = session()->get('errors', new \Illuminate\Support\ViewErrorBag);
+        $errors = session()->get('errors', new ViewErrorBag);
         $html = view('api-invoice.withdraw', compact('withdraw', 'errors'))->render();
-
 
         return response()->json([
             'message' => 'Data fetched successfully.',
             'data' => [
                 'id' => $withdraw->id,
-                'amount' => $withdraw->amount
+                'amount' => $withdraw->amount,
             ],
-            'html' => $html
+            'html' => $html,
         ]);
     }
 
@@ -125,7 +127,7 @@ class AcnooWithdrawController extends Controller
 
         return response()->json([
             'message' => 'Data fetched successfully',
-            'data' => $summary
+            'data' => $summary,
         ]);
     }
 }

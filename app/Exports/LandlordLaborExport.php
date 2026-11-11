@@ -11,8 +11,9 @@ class LandlordLaborExport implements FromView
     public function view(): View
     {
         $labors = Labor::with('landlord')->where('landlord_id', auth()->id())->latest()->get();
+
         return view('landlord.labors.excel-csv', [
-            'labors' => $labors
+            'labors' => $labors,
         ]);
     }
 }

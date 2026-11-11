@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class TenantApplication extends Model
 {
     use HasFactory;
-    protected $fillable = ['tenant_id','property_id','document_file','is_approve','rejected_cause','status'] ;
+
+    protected $fillable = ['tenant_id', 'property_id', 'document_file', 'is_approve', 'rejected_cause', 'status'];
 
     protected $casts = [
         'is_approve' => 'integer',

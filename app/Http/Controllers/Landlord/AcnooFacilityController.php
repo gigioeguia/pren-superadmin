@@ -11,6 +11,7 @@ class AcnooFacilityController extends Controller
     public function index()
     {
         $facilities = Facility::where('landlord_id', auth()->id())->latest()->paginate(10);
+
         return view('landlord.facilities.index', compact('facilities'));
     }
 
@@ -19,7 +20,7 @@ class AcnooFacilityController extends Controller
         $facilities = Facility::where('landlord_id', auth()->id())->when(request('search'), function ($q) {
             $q->where(function ($q) {
                 $search = request('search');
-                $q->where('name', 'like', '%' . $search . '%');
+                $q->where('name', 'like', '%'.$search.'%');
             });
         })
             ->latest()
@@ -27,7 +28,7 @@ class AcnooFacilityController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('landlord.facilities.datas', compact('facilities'))->render()
+                'data' => view('landlord.facilities.datas', compact('facilities'))->render(),
             ]);
         }
 
@@ -38,16 +39,16 @@ class AcnooFacilityController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'status' => 'nullable|in:0,1'
+            'status' => 'nullable|in:0,1',
         ]);
 
         Facility::create($request->except('landlord_id') + [
-            'landlord_id' => auth()->id()
+            'landlord_id' => auth()->id(),
         ]);
 
         return response()->json([
             'message' => 'Facility Created Successfully',
-            'redirect' => route('landlord.facilities.index')
+            'redirect' => route('landlord.facilities.index'),
         ]);
     }
 
@@ -55,7 +56,7 @@ class AcnooFacilityController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'status' => 'nullable|in:0,1'
+            'status' => 'nullable|in:0,1',
         ]);
 
         $facility = Facility::findOrFail($id);
@@ -64,7 +65,7 @@ class AcnooFacilityController extends Controller
 
         return response()->json([
             'message' => 'Facility Updated Successfully',
-            'redirect' => route('landlord.facilities.index')
+            'redirect' => route('landlord.facilities.index'),
         ]);
     }
 
@@ -72,6 +73,7 @@ class AcnooFacilityController extends Controller
     {
         $facility = Facility::findOrFail($id);
         $facility->update(['status' => $request->status]);
+
         return response()->json([
             'message' => 'Facility',
         ]);
@@ -83,7 +85,7 @@ class AcnooFacilityController extends Controller
 
         return response()->json([
             'message' => 'Facility Deleted Successfully',
-            'redirect' => route('landlord.facilities.index')
+            'redirect' => route('landlord.facilities.index'),
         ]);
     }
 
@@ -93,7 +95,7 @@ class AcnooFacilityController extends Controller
 
         return response()->json([
             'message' => 'Selected Facility Deleted Successfully',
-            'redirect' => route('landlord.facilities.index')
+            'redirect' => route('landlord.facilities.index'),
         ]);
     }
 }

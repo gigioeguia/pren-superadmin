@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 
 class TranslationController extends Controller
@@ -11,23 +11,23 @@ class TranslationController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'key'   => 'required|string',
+            'key' => 'required|string',
             'value' => 'required|string',
-            'lang_code'  => 'required|string',
+            'lang_code' => 'required|string',
         ]);
 
         $path = base_path("lang/{$request->lang_code}.json");
 
         $translations = json_decode(File::get($path), true);
 
-        if (!is_array($translations)) {
+        if (! is_array($translations)) {
             $translations = [];
         }
 
         if (array_key_exists($request->key, $translations)) {
             return response()->json([
                 'status' => false,
-                'message' => __('Key already exists')
+                'message' => __('Key already exists'),
             ], 422);
         }
 
@@ -45,14 +45,14 @@ class TranslationController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => __('Translation added successfully')
+            'message' => __('Translation added successfully'),
         ]);
     }
 
     public function update(Request $request, string $lang)
     {
         $request->validate([
-            'key'   => 'required|string',
+            'key' => 'required|string',
             'value' => 'required|string',
         ]);
 
@@ -69,7 +69,7 @@ class TranslationController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => __('Translation updated successfully')
+            'message' => __('Translation updated successfully'),
         ]);
     }
 
@@ -81,16 +81,16 @@ class TranslationController extends Controller
 
         $path = base_path("lang/{$lang}.json");
 
-        if (!File::exists($path)) {
+        if (! File::exists($path)) {
             return response()->json([
                 'status' => false,
-                'message' => __('Language file not found')
+                'message' => __('Language file not found'),
             ], 404);
         }
 
         $existing = json_decode(File::get($path), true);
 
-        if (!is_array($existing)) {
+        if (! is_array($existing)) {
             $existing = [];
         }
 
@@ -119,23 +119,23 @@ class TranslationController extends Controller
 
         $path = base_path("lang/{$lang}.json");
 
-        if (!File::exists($path)) {
+        if (! File::exists($path)) {
             return response()->json([
                 'status' => false,
-                'message' => __('Language file not found')
+                'message' => __('Language file not found'),
             ], 404);
         }
 
         $translations = json_decode(File::get($path), true);
 
-        if (!is_array($translations)) {
+        if (! is_array($translations)) {
             $translations = [];
         }
 
-        if (!array_key_exists($request->key, $translations)) {
+        if (! array_key_exists($request->key, $translations)) {
             return response()->json([
                 'status' => false,
-                'message' => __('Translation key not found')
+                'message' => __('Translation key not found'),
             ], 404);
         }
 
@@ -153,7 +153,7 @@ class TranslationController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => __('Translation deleted successfully')
+            'message' => __('Translation deleted successfully'),
         ]);
     }
 }

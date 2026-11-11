@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Option;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
 
 class AcnooTermConditionController extends Controller
@@ -18,6 +18,7 @@ class AcnooTermConditionController extends Controller
     public function index()
     {
         $term_condition = Option::where('key', 'term-condition')->first();
+
         return view('admin.term-condition.index', compact('term_condition'));
     }
 
@@ -25,14 +26,14 @@ class AcnooTermConditionController extends Controller
     {
         $request->validate([
             'term_title' => 'required|string',
-            'description' => 'required|string'
+            'description' => 'required|string',
         ]);
 
         $term_condition = Option::updateOrCreate(
             ['key' => 'term-condition'],
             ['value' => [
                 'term_title' => $request->term_title,
-                'description' => $request->description
+                'description' => $request->description,
             ]]
         );
 
@@ -41,8 +42,8 @@ class AcnooTermConditionController extends Controller
         }
 
         return response()->json([
-            'message'   => __('Term And Condition updated successfully'),
-            'redirect'  => route('admin.term-conditions.index')
+            'message' => __('Term And Condition updated successfully'),
+            'redirect' => route('admin.term-conditions.index'),
         ]);
     }
 }

@@ -1,9 +1,9 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Landlord;
+use Illuminate\Support\Facades\Route;
 
-//profile route ...
+// profile route ...
 Route::resource('profile', Landlord\AcnooProfileController::class)->only('index', 'update');
 
 Route::get('/', [Landlord\DashboardController::class, 'index'])->name('dashboard');

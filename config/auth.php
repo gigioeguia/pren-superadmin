@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\Api\Tenant;
+use App\Models\User;
+
 return [
 
     /*
@@ -44,7 +47,7 @@ return [
         'landlord' => [
             'driver' => 'session',
             'provider' => 'landlords',
-            'passwords' => 'landlords'
+            'passwords' => 'landlords',
         ],
         'api-landlord' => [
             'driver' => 'session',
@@ -81,24 +84,24 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\Models\User::class,
+            'model' => User::class,
         ],
-        'landlords' =>[
+        'landlords' => [
             'driver' => 'eloquent',
-            'model' => \App\Models\User::class,
+            'model' => User::class,
         ],
-        'api-landlords' =>[
+        'api-landlords' => [
             'driver' => 'eloquent',
-            'model' => \App\Models\Api\User::class,
+            'model' => App\Models\Api\User::class,
         ],
-        'tenants' =>[
+        'tenants' => [
             'driver' => 'eloquent',
-            'model' => \App\Models\Api\Tenant::class,
+            'model' => Tenant::class,
         ],
         'api' => [
-        'driver' => 'eloquent',
-        'model' => \App\Models\Api\User::class,
-],
+            'driver' => 'eloquent',
+            'model' => App\Models\Api\User::class,
+        ],
 
         // 'users' => [
         //     'driver' => 'database',

@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\User;
+use App\Exports\AdminRentPaymentExport;
+use App\Http\Controllers\Controller;
 use App\Models\RentPayment;
 use App\Models\Transaction;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\AdminRentPaymentExport;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooRentPaymentController extends Controller
 {
@@ -27,33 +27,33 @@ class AcnooRentPaymentController extends Controller
             'rent.tenant:id,name',
             'rent.property:id,puid',
             'rent.property.propertyDetail:id,property_id,property_info',
-            'gateway:id,name'
+            'gateway:id,name',
         ])
             ->latest()
             ->paginate(10);
+
         return view('admin.rent-payment.index', compact('rent_payments'));
     }
-
 
     public function acnooFilter(Request $request)
     {
         $rent_payments = RentPayment::with(['rent:id,tenant_id,property_id', 'rent.tenant:id,name', 'rent.property:id,puid', 'rent.property.propertyDetail:id,property_id,property_info', 'gateway:id,name'])
             ->when(request('search'), function ($q) {
-                $q->where('invoice_no', 'like', '%' . request('search') . '%')
-                    ->orWhere('monthly_rent', 'like', '%' . request('search') . '%')
-                    ->orWhere('utility_bill', 'like', '%' . request('search') . '%')
-                    ->orWhere('payment_status', 'like', '%' . request('search') . '%');
+                $q->where('invoice_no', 'like', '%'.request('search').'%')
+                    ->orWhere('monthly_rent', 'like', '%'.request('search').'%')
+                    ->orWhere('utility_bill', 'like', '%'.request('search').'%')
+                    ->orWhere('payment_status', 'like', '%'.request('search').'%');
 
                 $q->orWhereHas('rent.tenant', function ($q) {
-                    $q->where('name', 'like', '%' . request('search') . '%');
+                    $q->where('name', 'like', '%'.request('search').'%');
                 });
 
                 $q->orWhereHas('gateway', function ($q) {
-                    $q->where('name', 'like', '%' . request('search') . '%');
+                    $q->where('name', 'like', '%'.request('search').'%');
                 });
 
                 $q->orWhereHas('rent.property.propertyDetail', function ($q) {
-                    $q->where('property_info', 'like', '%' . request('search') . '%');
+                    $q->where('property_info', 'like', '%'.request('search').'%');
                 });
             })
             ->latest()
@@ -61,9 +61,10 @@ class AcnooRentPaymentController extends Controller
 
         if (request()->ajax()) {
             return response()->json([
-                'data' => view('admin.rent-payment.datas', compact('rent_payments'))->render()
+                'data' => view('admin.rent-payment.datas', compact('rent_payments'))->render(),
             ]);
         }
+
         return redirect(url()->previous());
     }
 
@@ -74,7 +75,7 @@ class AcnooRentPaymentController extends Controller
         // Check if attachment exists in notes
         $filePath = $rent_payment->payment_data['payment_receipt'] ?? null;
 
-        if (empty($filePath) || !Storage::exists($filePath)) {
+        if (empty($filePath) || ! Storage::exists($filePath)) {
             return redirect()->back()->with('error', 'File not found');
         }
 
@@ -103,11 +104,11 @@ class AcnooRentPaymentController extends Controller
             ]);
 
             $landlord->update([
-                'balance' => $landlord->balance + $rent_payment->total_amount
+                'balance' => $landlord->balance + $rent_payment->total_amount,
             ]);
 
             $rent_payment->update([
-                'payment_status' => 'paid'
+                'payment_status' => 'paid',
             ]);
 
             DB::commit();
@@ -124,10 +125,11 @@ class AcnooRentPaymentController extends Controller
 
             return response()->json([
                 'message' => 'Rent payment approved',
-                'redirect' => route('admin.rent-payments.index')
+                'redirect' => route('admin.rent-payments.index'),
             ]);
         } catch (\Throwable $e) {
             DB::rollback();
+
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -138,7 +140,7 @@ class AcnooRentPaymentController extends Controller
         $rent_payment = RentPayment::findOrFail($id);
         $rent_payment->update([
             'note' => $request->note,
-            'payment_status' => 'rejected'
+            'payment_status' => 'rejected',
         ]);
 
         sendNotification(
@@ -153,7 +155,7 @@ class AcnooRentPaymentController extends Controller
 
         return response()->json([
             'message' => 'Rent payment request Rejected',
-            'redirect' => route('admin.rent-payments.index')
+            'redirect' => route('admin.rent-payments.index'),
         ]);
     }
 

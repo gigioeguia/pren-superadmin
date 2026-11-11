@@ -14,13 +14,13 @@ class AcnooAboutUsController extends Controller
 
         $filtered = [
             'about_us_title' => $headings['about_us_title'] ?? null,
-            'about_desc'     => $headings['about_desc'] ?? null,
-            'about_image'    => $data['about_image'] ?? null,
+            'about_desc' => $headings['about_desc'] ?? null,
+            'about_image' => $data['about_image'] ?? null,
         ];
 
         return response()->json([
             'message' => 'About Us fetched successfully',
-            'data' => $filtered
+            'data' => $filtered,
         ]);
     }
 }

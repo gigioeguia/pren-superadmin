@@ -18,6 +18,6 @@ class IncomeCategory extends Model
 
     public function landlord()
     {
-        return $this->belongsTo(User::class,'landlord_id');
+        return $this->belongsTo(User::class, 'landlord_id');
     }
 }

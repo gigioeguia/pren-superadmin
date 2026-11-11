@@ -3,6 +3,7 @@
 namespace Tests\Feature\Public;
 
 use App\Models\Blog;
+use App\Models\Option;
 use App\Models\Plan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\CreatesUsers;
@@ -18,7 +19,7 @@ class PublicRoutesSmokeTest extends TestCase
 
         // layouts/web/partials/header accede a headings.header_btn_link sin ??,
         // por lo que toda vista publica requiere la Option manage-pages
-        \App\Models\Option::factory()->create([
+        Option::factory()->create([
             'key' => 'manage-pages',
             'value' => ['headings' => ['header_btn_link' => 'login']],
         ]);

@@ -18,7 +18,7 @@ class LandlordRentPaymentExport implements FromView
             ->latest()->get();
 
         return view('landlord.rent-payments.excel-csv', [
-            'rent_payments' => $rent_payments
+            'rent_payments' => $rent_payments,
         ]);
     }
 }

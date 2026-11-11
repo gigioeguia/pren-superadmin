@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
-use App\Models\ExpenseCategory;
 use App\Http\Controllers\Controller;
+use App\Models\ExpenseCategory;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class AcnooExpenseCategoryController extends Controller
@@ -13,7 +13,7 @@ class AcnooExpenseCategoryController extends Controller
     {
         $expense_categories = ExpenseCategory::where('landlord_id', auth()->id())
             ->when(request('search'), function ($query) {
-                $query->where('name', 'like', '%' . request('search') . '%');
+                $query->where('name', 'like', '%'.request('search').'%');
             })
             ->latest();
         if ($request->has('no_paginate') && $request->no_paginate == true) {
@@ -39,13 +39,13 @@ class AcnooExpenseCategoryController extends Controller
                 'required',
                 Rule::unique('expense_categories')->where(function ($query) {
                     return $query->where('landlord_id', auth()->id());
-                })
+                }),
             ],
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         $data = ExpenseCategory::create($request->except('landlord_id') + [
-            'landlord_id' => auth()->id()
+            'landlord_id' => auth()->id(),
         ]);
 
         return response()->json([
@@ -67,11 +67,11 @@ class AcnooExpenseCategoryController extends Controller
                         return $query->where('landlord_id', auth()->id());
                     }),
             ],
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         $category->update($request->except('landlord_id') + [
-            'landlord_id' => auth()->id()
+            'landlord_id' => auth()->id(),
         ]);
 
         return response()->json([
@@ -84,6 +84,7 @@ class AcnooExpenseCategoryController extends Controller
     {
         $category = ExpenseCategory::findOrFail($id);
         $category->delete();
+
         return response()->json([
             'message' => __('Data deleted successfully.'),
         ]);

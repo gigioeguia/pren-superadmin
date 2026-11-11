@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Option;
+use Database\Seeders\LanguageSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
@@ -10,9 +11,9 @@ Route::get('/update', function () {
 
     Artisan::call('migrate');
 
-    if (!$version) {
+    if (! $version) {
         Artisan::call('db:seed', [
-            '--class' => \Database\Seeders\LanguageSeeder::class,
+            '--class' => LanguageSeeder::class,
             '--force' => true,
         ]);
     }

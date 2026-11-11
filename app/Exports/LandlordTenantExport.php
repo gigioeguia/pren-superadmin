@@ -3,8 +3,8 @@
 namespace App\Exports;
 
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Concerns\FromView;
 
 class LandlordTenantExport implements FromView
@@ -32,8 +32,7 @@ class LandlordTenantExport implements FromView
             ->get();
 
         return view('landlord.tenants.excel-csv', [
-            'tenants' => $tenants
+            'tenants' => $tenants,
         ]);
     }
 }
-

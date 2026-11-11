@@ -25,7 +25,7 @@ class AcnooLaborController extends Controller
 
         return response()->json([
             'message' => 'Data fetched successfully',
-            'data' => $responseData
+            'data' => $responseData,
         ]);
     }
 
@@ -35,7 +35,7 @@ class AcnooLaborController extends Controller
         $labor_count = Labor::where('landlord_id', auth()->id())->count();
 
         if ($plan->number_of_labor !== -1 && $labor_count >= $plan->number_of_labor) {
-            return response()->json(['message' => __('Your Labor addition limit has been reached. Your current limit is ' . $plan->number_of_labor)], 406);
+            return response()->json(['message' => __('Your Labor addition limit has been reached. Your current limit is '.$plan->number_of_labor)], 406);
         }
 
         $request->validate([
@@ -50,14 +50,14 @@ class AcnooLaborController extends Controller
 
         $labor = Labor::create($request->except('landlord_id', 'phone') + [
             'landlord_id' => auth()->id(),
-            'phone' => $request->phone
+            'phone' => $request->phone,
         ]);
 
-        sendNotification($labor->landlord->id, notify_users([$labor->landlord->id]), landlord_url: route('landlord.labors.index', ['id' => $labor->id]),  landlord_msg: __('You have created a new labor.'));
+        sendNotification($labor->landlord->id, notify_users([$labor->landlord->id]), landlord_url: route('landlord.labors.index', ['id' => $labor->id]), landlord_msg: __('You have created a new labor.'));
 
         return response()->json([
             'message' => 'Labor created successfully',
-            'data' => $labor
+            'data' => $labor,
         ]);
     }
 
@@ -67,7 +67,7 @@ class AcnooLaborController extends Controller
 
         return response()->json([
             'message' => 'Data fetched successfully',
-            'data' => $labor
+            'data' => $labor,
         ]);
     }
 
@@ -75,7 +75,7 @@ class AcnooLaborController extends Controller
     {
         $request->validate([
             'name' => 'required|string',
-            'email' => 'required|email|unique:labors,email,' . $id,
+            'email' => 'required|email|unique:labors,email,'.$id,
             'phone' => 'nullable|array',
             'mobile_code' => 'nullable|string',
             'mobile_no' => 'nullable|string',
@@ -87,12 +87,12 @@ class AcnooLaborController extends Controller
 
         $labor->update($request->except('landlord_id', 'phone') + [
             'landlord_id' => auth()->id(),
-            'phone' => $request->phone
+            'phone' => $request->phone,
         ]);
 
         return response()->json([
             'message' => 'Labor updated successfully',
-            'data' => $labor
+            'data' => $labor,
         ]);
     }
 

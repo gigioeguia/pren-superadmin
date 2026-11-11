@@ -6,7 +6,6 @@ use App\Models\Property;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 
-
 class LandlordPropertiesExport implements FromView
 {
     public function view(): View
@@ -14,7 +13,7 @@ class LandlordPropertiesExport implements FromView
         $properties = Property::with([
             'category:id,name',
             'propertyDetail:id,property_id,property_info',
-            'units.rent'
+            'units.rent',
         ])
             ->where('landlord_id', auth()->id())
             ->when(request('id'), function ($query) {
@@ -26,13 +25,13 @@ class LandlordPropertiesExport implements FromView
                     $query->whereDoesntHave('rent', function ($q) {
                         $q->whereIn('status', ['active', 'processing']);
                     });
-                }
+                },
             ])
             ->latest()
             ->get();
 
         return view('landlord.properties.excel-csv', [
-            'properties' => $properties
+            'properties' => $properties,
         ]);
     }
 }

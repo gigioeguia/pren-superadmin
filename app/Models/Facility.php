@@ -8,14 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 class Facility extends Model
 {
     use HasFactory;
-    protected  $fillable = ['name', 'landlord_id', 'status'];
 
-    public function landlord() {
+    protected $fillable = ['name', 'landlord_id', 'status'];
 
-      return $this->belongsTo(User::class);
+    public function landlord()
+    {
+
+        return $this->belongsTo(User::class);
     }
 
     protected $casts = [
-        'status' => 'integer'
+        'status' => 'integer',
     ];
 }

@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Landlord;
 
 use App\Exports\LandlordUserMethodExport;
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserMethod;
-use Illuminate\Http\Request;
 use App\Models\WithdrawMethod;
-use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooWithdrawMethodController extends Controller
@@ -17,7 +17,6 @@ class AcnooWithdrawMethodController extends Controller
         $withdraw_methods = UserMethod::with('withdraw_method:id,name,charge,min_amount,charge_type,meta')->where('user_id', auth()->id())->paginate(10);
         $methods = WithdrawMethod::latest()->get();
         $user = User::where('id', auth()->user()->id)->first();
-        
 
         return view('landlord.withdraw-method.index', compact('withdraw_methods', 'methods', 'user'));
     }
@@ -27,9 +26,9 @@ class AcnooWithdrawMethodController extends Controller
         $withdraw_methods = UserMethod::with('withdraw_method:id,name')
             ->where('user_id', auth()->id())
             ->when(request('search'), function ($query) {
-                $query->where('account_no', 'like', '%' . request('search') . '%')
+                $query->where('account_no', 'like', '%'.request('search').'%')
                     ->orWhereHas('withdraw_method', function ($q) {
-                        $q->where('name', 'like', '%' . request('search') . '%');
+                        $q->where('name', 'like', '%'.request('search').'%');
                     });
             })
             ->latest()
@@ -54,7 +53,7 @@ class AcnooWithdrawMethodController extends Controller
 
         if ($method_exist) {
             return response()->json([
-                'message' => 'Withdraw method already exist'
+                'message' => 'Withdraw method already exist',
             ], 400);
         }
 
@@ -62,12 +61,12 @@ class AcnooWithdrawMethodController extends Controller
             'user_id' => auth()->id(),
             'method_id' => $request->method_id,
             'account_no' => $request->account_no,
-            'infos' => $request->input('infos')
+            'infos' => $request->input('infos'),
         ]);
 
         return response()->json([
             'message' => __('Withdraw method setup successfully.'),
-            'redirect' => route('landlord.withdraw-method.index')
+            'redirect' => route('landlord.withdraw-method.index'),
         ]);
     }
 
@@ -102,7 +101,7 @@ class AcnooWithdrawMethodController extends Controller
 
         return response()->json([
             'message' => __('Withdraw method updated successfully.'),
-            'redirect' => route('landlord.withdraw-method.index')
+            'redirect' => route('landlord.withdraw-method.index'),
         ]);
     }
 
@@ -110,9 +109,10 @@ class AcnooWithdrawMethodController extends Controller
     {
         $withdraw_method = UserMethod::findOrFail($id);
         $withdraw_method->delete();
+
         return response()->json([
-            'message'   => __('Withdraw Method Deleted Successfully'),
-            'redirect'  => route('landlord.withdraw-method.index')
+            'message' => __('Withdraw Method Deleted Successfully'),
+            'redirect' => route('landlord.withdraw-method.index'),
         ]);
     }
 
@@ -121,8 +121,8 @@ class AcnooWithdrawMethodController extends Controller
         UserMethod::whereIn('id', $request->ids)->delete();
 
         return response()->json([
-            'message'   => __('Selected Withdraw Method Deleted Successfully'),
-            'redirect'  => route('landlord.withdraw-method.index')
+            'message' => __('Selected Withdraw Method Deleted Successfully'),
+            'redirect' => route('landlord.withdraw-method.index'),
         ]);
     }
 

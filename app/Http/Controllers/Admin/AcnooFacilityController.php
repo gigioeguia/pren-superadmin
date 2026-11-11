@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\User;
-use App\Models\Facility;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Facility;
+use App\Models\User;
+use Illuminate\Http\Request;
 
 class AcnooFacilityController extends Controller
 {
@@ -21,18 +21,19 @@ class AcnooFacilityController extends Controller
     {
         $facilities = Facility::with('landlord:id,name')->latest()->paginate(10);
         $landlords = User::whereRole('landlord')->latest()->get();
+
         return view('admin.facilities.index', compact('facilities', 'landlords'));
     }
 
     public function acnooFilter(Request $request)
     {
         $facilities = Facility::with('landlord:id,name')
-          ->when(request('search'), function ($q) {
-              $search = request('search');
+            ->when(request('search'), function ($q) {
+                $search = request('search');
                 $q->where(function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%');
-                    $q->orWhereHas('landlord', function($landlordQuery) use ($search) {
-                        $landlordQuery->where('name', 'like', '%'. $search. '%');
+                    $q->where('name', 'like', '%'.$search.'%');
+                    $q->orWhereHas('landlord', function ($landlordQuery) use ($search) {
+                        $landlordQuery->where('name', 'like', '%'.$search.'%');
                     });
                 });
             })
@@ -41,7 +42,7 @@ class AcnooFacilityController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.facilities.datas', compact('facilities'))->render()
+                'data' => view('admin.facilities.datas', compact('facilities'))->render(),
             ]);
         }
 
@@ -53,14 +54,14 @@ class AcnooFacilityController extends Controller
         $request->validate([
             'landlord_id' => 'required|integer|exists:users,id',
             'name' => 'required|string|max:255',
-            'status' => 'nullable|in:0,1'
+            'status' => 'nullable|in:0,1',
         ]);
 
         Facility::create($request->all());
 
         return response()->json([
             'message' => 'Facility Created Successfully',
-            'redirect' => route('admin.facilities.index')
+            'redirect' => route('admin.facilities.index'),
         ]);
     }
 
@@ -69,7 +70,7 @@ class AcnooFacilityController extends Controller
         $request->validate([
             'landlord_id' => 'required|integer|exists:users,id',
             'name' => 'required|string|max:255',
-            'status' => 'nullable|in:0,1'
+            'status' => 'nullable|in:0,1',
         ]);
 
         $facility = Facility::findOrFail($id);
@@ -78,7 +79,7 @@ class AcnooFacilityController extends Controller
 
         return response()->json([
             'message' => 'Facility Updated Successfully',
-            'redirect' => route('admin.facilities.index')
+            'redirect' => route('admin.facilities.index'),
         ]);
     }
 
@@ -86,6 +87,7 @@ class AcnooFacilityController extends Controller
     {
         $facility = Facility::findOrFail($id);
         $facility->update(['status' => $request->status]);
+
         return response()->json([
             'message' => 'Facility',
         ]);
@@ -97,7 +99,7 @@ class AcnooFacilityController extends Controller
 
         return response()->json([
             'message' => 'Facility Deleted Successfully',
-            'redirect' => route('admin.facilities.index')
+            'redirect' => route('admin.facilities.index'),
         ]);
     }
 
@@ -107,7 +109,7 @@ class AcnooFacilityController extends Controller
 
         return response()->json([
             'message' => 'Selected Facility Deleted Successfully',
-            'redirect' => route('admin.facilities.index')
+            'redirect' => route('admin.facilities.index'),
         ]);
     }
 }

@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Exports\AdminExportIncome;
-use App\Models\Income;
-use Illuminate\Http\Request;
-use App\Models\IncomeCategory;
 use App\Http\Controllers\Controller;
+use App\Models\Income;
+use App\Models\IncomeCategory;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooIncomeController extends Controller
@@ -35,13 +36,13 @@ class AcnooIncomeController extends Controller
 
         if ($request->filled('search')) {
             $incomes->where(function ($query) use ($request) {
-                $query->where('amount', 'like', '%' . $request->search . '%')
-                    ->orWhere('income_for', 'like', '%' . $request->search . '%')
-                    ->orWhere('payment_type', 'like', '%' . $request->search . '%')
-                    ->orWhere('reference_no', 'like', '%' . $request->search . '%')
-                    ->orWhere('income_date', 'like', '%' . $request->search . '%')
+                $query->where('amount', 'like', '%'.$request->search.'%')
+                    ->orWhere('income_for', 'like', '%'.$request->search.'%')
+                    ->orWhere('payment_type', 'like', '%'.$request->search.'%')
+                    ->orWhere('reference_no', 'like', '%'.$request->search.'%')
+                    ->orWhere('income_date', 'like', '%'.$request->search.'%')
                     ->orWhereHas('category', function ($query) use ($request) {
-                        $query->where('name', 'like', '%' . $request->search . '%');
+                        $query->where('name', 'like', '%'.$request->search.'%');
                     });
             });
         }
@@ -49,27 +50,27 @@ class AcnooIncomeController extends Controller
         if ($request->filled('custom_days') && $request->custom_days !== 'custom_date' && $request->custom_days !== 'all') {
             switch ($request->custom_days) {
                 case 'today':
-                    $incomes->whereDate('income_date', \Carbon\Carbon::today());
+                    $incomes->whereDate('income_date', Carbon::today());
                     break;
                 case 'yesterday':
-                    $incomes->whereDate('income_date', \Carbon\Carbon::yesterday());
+                    $incomes->whereDate('income_date', Carbon::yesterday());
                     break;
                 case 'last_seven_days':
-                    $incomes->whereBetween('income_date', [\Carbon\Carbon::now()->subDays(6)->startOfDay(), \Carbon\Carbon::now()->endOfDay()]);
+                    $incomes->whereBetween('income_date', [Carbon::now()->subDays(6)->startOfDay(), Carbon::now()->endOfDay()]);
                     break;
                 case 'last_thirty_days':
-                    $incomes->whereBetween('income_date', [\Carbon\Carbon::now()->subDays(29)->startOfDay(), \Carbon\Carbon::now()->endOfDay()]);
+                    $incomes->whereBetween('income_date', [Carbon::now()->subDays(29)->startOfDay(), Carbon::now()->endOfDay()]);
                     break;
                 case 'current_month':
-                    $incomes->whereMonth('income_date', \Carbon\Carbon::now()->month)
-                        ->whereYear('income_date', \Carbon\Carbon::now()->year);
+                    $incomes->whereMonth('income_date', Carbon::now()->month)
+                        ->whereYear('income_date', Carbon::now()->year);
                     break;
                 case 'last_month':
-                    $incomes->whereMonth('income_date', \Carbon\Carbon::now()->subMonth()->month)
-                        ->whereYear('income_date', \Carbon\Carbon::now()->subMonth()->year);
+                    $incomes->whereMonth('income_date', Carbon::now()->subMonth()->month)
+                        ->whereYear('income_date', Carbon::now()->subMonth()->year);
                     break;
                 case 'current_year':
-                    $incomes->whereYear('income_date', \Carbon\Carbon::now()->year);
+                    $incomes->whereYear('income_date', Carbon::now()->year);
                     break;
             }
         }
@@ -87,7 +88,7 @@ class AcnooIncomeController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'data' => view('admin.incomes.datas', compact('incomes'))->render(),
-                'total_income' => currency_format($total_income)
+                'total_income' => currency_format($total_income),
             ]);
         }
 
@@ -118,7 +119,7 @@ class AcnooIncomeController extends Controller
 
         return response()->json([
             'message' => __('Income created successfully.'),
-            'redirect' => route('admin.incomes.index')
+            'redirect' => route('admin.incomes.index'),
         ]);
     }
 
@@ -146,10 +147,9 @@ class AcnooIncomeController extends Controller
             'income_category_id' => $request->income_category_id,
         ]);
 
-
         return response()->json([
             'message' => __('Income updated successfully.'),
-            'redirect' => route('admin.incomes.index')
+            'redirect' => route('admin.incomes.index'),
         ]);
     }
 

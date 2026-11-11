@@ -20,30 +20,35 @@ class RefundRequest extends Model
         'status',
         'refund_reason',
         'attachment',
-        'bank_info'
+        'bank_info',
     ];
 
-    public function deposit() {
+    public function deposit()
+    {
 
         return $this->belongsTo(SecurityDeposit::class);
     }
 
-    public function property() {
+    public function property()
+    {
 
         return $this->belongsTo(Property::class);
     }
 
-    public function landlord() {
+    public function landlord()
+    {
 
         return $this->belongsTo(User::class, 'landlord_id');
     }
 
-    public function tenant() {
+    public function tenant()
+    {
 
         return $this->belongsTo(User::class, 'tenant_id');
     }
 
-    public function refund_reson() {
+    public function refund_reson()
+    {
 
         return $this->belongsTo(RefundReason::class);
     }

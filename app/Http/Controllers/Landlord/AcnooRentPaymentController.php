@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Landlord;
 
 use App\Exports\LandlordRentPaymentExport;
+use App\Http\Controllers\Controller;
 use App\Models\RentPayment;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooRentPaymentController extends Controller
@@ -27,7 +27,7 @@ class AcnooRentPaymentController extends Controller
     public function acnooFilter(Request $request)
     {
         $landlord_id = auth()->id();
-        
+
         $rent_payments = RentPayment::with(['rent:id,tenant_id,property_id,landlord_id', 'rent.tenant:id,name', 'rent.property:id,puid', 'rent.property.propertyDetail:id,property_id,property_info'])
             ->whereHas('rent', function ($query) use ($landlord_id) {
                 $query->where('landlord_id', $landlord_id);
@@ -35,19 +35,19 @@ class AcnooRentPaymentController extends Controller
             ->when(request('search'), function ($q) {
                 $q->where(function ($q) {
                     $search = request('search');
-                    $q->where('payment_date', 'like', '%' . $search . '%')
-                        ->orwhere('total_amount', 'like', '%' . $search . '%')
-                        ->orwhere('invoice_no', 'like', '%' . $search . '%')
+                    $q->where('payment_date', 'like', '%'.$search.'%')
+                        ->orwhere('total_amount', 'like', '%'.$search.'%')
+                        ->orwhere('invoice_no', 'like', '%'.$search.'%')
                         ->orWhereHas('rent.tenant', function ($query) use ($search) {
-                            $query->where('name', 'like', '%' . $search . '%');
+                            $query->where('name', 'like', '%'.$search.'%');
                         })
 
                         ->orWhereHas('rent.property', function ($query) use ($search) {
-                            $query->where('puid', 'like', '%' . $search . '%');
+                            $query->where('puid', 'like', '%'.$search.'%');
                         })
 
                         ->orWhereHas('rent.property.propertyDetail', function ($query) use ($search) {
-                            $query->where('property_info->property_title', 'like', '%' . $search . '%');
+                            $query->where('property_info->property_title', 'like', '%'.$search.'%');
                         });
                 });
             })
@@ -56,7 +56,7 @@ class AcnooRentPaymentController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('landlord.rent-payments.datas', compact('rent_payments'))->render()
+                'data' => view('landlord.rent-payments.datas', compact('rent_payments'))->render(),
             ]);
         }
 

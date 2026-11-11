@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Session;
 
 class Instamojo
 {
-
     public static function redirect_if_payment_success()
     {
         if (Session::has('fund_callback')) {
@@ -32,6 +31,7 @@ class Instamojo
         if (Session::get('without_auth')) {
             return url('payment/instamojo');
         }
+
         return url('payment/instamojo');
     }
 
@@ -43,17 +43,19 @@ class Instamojo
         // Checking Minimum/Maximum amount
         if ($gateway->min_amount > $amount) {
             session()->put('payment_msg', __('The minimum transaction amount is :amount', ['amount' => currency_format($gateway->min_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         } elseif ($gateway->max_amount < $amount) {
             session()->put('payment_msg', __('The maximum transaction amount is :amount', ['amount' => currency_format($gateway->max_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         }
 
         $regex = "/^(0|91|\+91)?[789]\d{9}$/";
-        if ($array['phone'] == "") {
+        if ($array['phone'] == '') {
             return redirect()->back()->with('warning', 'Phone Number not given!')->with('type', 'alert-danger');
         }
-        if (!preg_match($regex, $array['phone'])) {
+        if (! preg_match($regex, $array['phone'])) {
             return redirect()->back()->with('warning', 'Phone Number not valid!')->with('type', 'alert-danger');
         }
 
@@ -114,22 +116,25 @@ class Instamojo
 
             if (isset($response['payment_request'])) {
                 $url = $response['payment_request']['longurl'];
+
                 return redirect($url);
             } else {
                 Session::flash('error', $response->reason());
                 Session::forget('instamojo_credentials');
+
                 return redirect(Instamojo::redirect_if_payment_faild());
             }
         } catch (\Throwable $th) {
             Session::flash('error', $th->getMessage());
             Session::forget('instamojo_credentials');
+
             return redirect(Instamojo::redirect_if_payment_faild());
         }
     }
 
     public function status()
     {
-        if (!Session::has('instamojo_credentials')) {
+        if (! Session::has('instamojo_credentials')) {
             return abort(404);
         }
         $response = Request()->all();
@@ -138,7 +143,7 @@ class Instamojo
 
         if ($response['payment_status'] == 'Credit') {
             $data['payment_id'] = $payment_id;
-            $data['payment_method'] = "instamojo";
+            $data['payment_method'] = 'instamojo';
             $data['gateway_id'] = $info['gateway_id'];
 
             $data['amount'] = $info['main_amount'];
@@ -154,6 +159,7 @@ class Instamojo
             $data['payment_status'] = 0;
             Session::put('payment_info', $data);
             Session::forget('instamojo_credentials');
+
             return redirect(Instamojo::redirect_if_payment_faild());
         }
     }
@@ -166,9 +172,9 @@ class Instamojo
         $auth_token = $creds['x_auth_token'];
 
         if ($is_test == 1) {
-            $url = 'https://test.instamojo.com/api/1.1/payments/' . $payment_id . '/';
+            $url = 'https://test.instamojo.com/api/1.1/payments/'.$payment_id.'/';
         } else {
-            $url = 'https://www.instamojo.com/api/1.1/payments/' . $payment_id . '/';
+            $url = 'https://www.instamojo.com/api/1.1/payments/'.$payment_id.'/';
         }
 
         try {
@@ -180,15 +186,16 @@ class Instamojo
             curl_setopt(
                 $ch,
                 CURLOPT_HTTPHEADER,
-                array(
-                    "Content-Type: application/json",
-                    "X-Api-Key:" . $api,
-                    "X-Auth-Token:" . $auth_token
-                )
+                [
+                    'Content-Type: application/json',
+                    'X-Api-Key:'.$api,
+                    'X-Auth-Token:'.$auth_token,
+                ]
             );
             $response = curl_exec($ch);
             curl_close($ch);
             $arr = json_decode($response, true);
+
             return $arr['success'] === true ? 1 : 0;
         } catch (\Throwable $th) {
             return 0;

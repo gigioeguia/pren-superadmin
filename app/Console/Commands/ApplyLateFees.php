@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\RentPayment;
-use Illuminate\Console\Command;
 use App\Services\AcnooLateFeeService;
+use Illuminate\Console\Command;
 
 class ApplyLateFees extends Command
 {
@@ -28,7 +28,7 @@ class ApplyLateFees extends Command
     public function handle()
     {
         $unpaidPayments = RentPayment::where('payment_status', 'unpaid')->get();
-        $service = new AcnooLateFeeService();
+        $service = new AcnooLateFeeService;
 
         foreach ($unpaidPayments as $payment) {
             $service->applyLateFee($payment);

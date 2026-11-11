@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\PlanSubscribe;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class PlanSubscribeSeeder extends Seeder
 {
@@ -13,9 +12,9 @@ class PlanSubscribeSeeder extends Seeder
      */
     public function run(): void
     {
-        $plan_subscribes = array(
-            array('user_id' => '3', 'plan_id' => '3', 'gateway_id' => 1, 'plan_name' => 'Economy', 'price' => '0', 'payment_status' => 'unpaid', 'duration' => '365', 'notes' => NULL, 'created_at' => now(), 'updated_at' => now()),
-        );
+        $plan_subscribes = [
+            ['user_id' => '3', 'plan_id' => '3', 'gateway_id' => 1, 'plan_name' => 'Economy', 'price' => '0', 'payment_status' => 'unpaid', 'duration' => '365', 'notes' => null, 'created_at' => now(), 'updated_at' => now()],
+        ];
 
         PlanSubscribe::insert($plan_subscribes);
     }

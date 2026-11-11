@@ -17,16 +17,15 @@ class Withdraw extends Model
         'status',
         'notes',
         'reason',
-        'invoice_no'
+        'invoice_no',
     ];
 
-
-    function account_info()
+    public function account_info()
     {
         return $this->belongsTo(UserMethod::class, 'user_method_id');
     }
 
-    function user()
+    public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
@@ -38,7 +37,6 @@ class Withdraw extends Model
             $model->save();
         });
     }
-
 
     protected $casts = [
         'amount' => 'double',

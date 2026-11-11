@@ -18,6 +18,7 @@ class ServiceChargeController extends Controller
     public function index()
     {
         $service_charge = Option::where('key', 'service-charge')->first();
+
         return view('admin.settings.service-charge.index', compact('service_charge'));
     }
 
@@ -33,14 +34,14 @@ class ServiceChargeController extends Controller
 
         $service_charge->update([
             'value' => $request->except('_token', '_method') + [
-                    'amount' => $request->amount,
-                    'type' => $request->type,
-                ]
+                'amount' => $request->amount,
+                'type' => $request->type,
+            ],
         ]);
 
         return response()->json([
-            'message'   => __('Service Charge updated successfully'),
-            'redirect'  => route('admin.service-charges.index')
+            'message' => __('Service Charge updated successfully'),
+            'redirect' => route('admin.service-charges.index'),
         ]);
     }
 }

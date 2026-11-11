@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\AdminTenantExport;
+use App\Helpers\HasUploader;
+use App\Http\Controllers\Controller;
 use App\Models\Rent;
 use App\Models\User;
 use App\Models\UserDetail;
-use App\Helpers\HasUploader;
 use Illuminate\Http\Request;
-use App\Exports\AdminTenantExport;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
-use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooTenantController extends Controller
 {
@@ -21,8 +21,8 @@ class AcnooTenantController extends Controller
     public function __construct()
     {
         $this->middleware('permission:tenants-read')->only('index');
-        $this->middleware('permission:tenants-create')->only('create','store');
-        $this->middleware('permission:tenants-update')->only('edit','update');
+        $this->middleware('permission:tenants-create')->only('create', 'store');
+        $this->middleware('permission:tenants-update')->only('edit', 'update');
         $this->middleware('permission:tenants-delete')->only('destroy', 'deleteAll');
     }
 
@@ -71,12 +71,12 @@ class AcnooTenantController extends Controller
             ->when(request('search'), function ($q) {
                 $q->where(function ($q) {
                     $search = request('search');
-                    $q->where('name', 'like', '%' . $search . '%')
-                        ->orwhere('email', 'like', '%' . $search . '%')
-                        ->orwhere('unique_id', 'like', '%' . $search . '%')
-                        ->orWhere('profile_type', 'like', '%' . $search . '%')
+                    $q->where('name', 'like', '%'.$search.'%')
+                        ->orwhere('email', 'like', '%'.$search.'%')
+                        ->orwhere('unique_id', 'like', '%'.$search.'%')
+                        ->orWhere('profile_type', 'like', '%'.$search.'%')
                         ->orWhereHas('user_details', function ($query) use ($search) {
-                            $query->where('gender', 'like', '%' . $search . '%');
+                            $query->where('gender', 'like', '%'.$search.'%');
                         });
                 });
             })
@@ -85,7 +85,7 @@ class AcnooTenantController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.tenants.datas', compact('tenants'))->render()
+                'data' => view('admin.tenants.datas', compact('tenants'))->render(),
             ]);
         }
 
@@ -98,6 +98,7 @@ class AcnooTenantController extends Controller
         $countries = json_decode(file_get_contents($countries), true);
         $phone_codes = base_path('lang/phone_code.json');
         $phone_codes = json_decode(file_get_contents($phone_codes), true);
+
         return view('admin.tenants.create', compact('countries', 'phone_codes'));
     }
 
@@ -116,7 +117,7 @@ class AcnooTenantController extends Controller
 
         DB::beginTransaction();
         try {
-            $user =  User::create([
+            $user = User::create([
                 'landlord_id' => auth()->user()->id,
                 'image' => $request->hasFile('image') ? $this->upload($request, 'image') : null,
                 'is_setupped' => 1,
@@ -125,10 +126,10 @@ class AcnooTenantController extends Controller
                 'role' => 'tenant',
                 'phone' => $request->input('phone'),
                 'password' => Hash::make($request->password),
-                'profile_type' => $request->profile_type
+                'profile_type' => $request->profile_type,
             ]);
 
-            $frontImage = $request->hasFile('mykad.front_image') ? $this->upload($request, 'mykad.front_image') :  null;
+            $frontImage = $request->hasFile('mykad.front_image') ? $this->upload($request, 'mykad.front_image') : null;
             $backImage = $request->hasFile('mykad.back_image') ? $this->upload($request, 'mykad.back_image') : null;
 
             UserDetail::create([
@@ -150,15 +151,16 @@ class AcnooTenantController extends Controller
 
             DB::commit();
 
-            sendNotification($user->id, notify_users([$user->id, $user->landlord->id]), admin_url: route('admin.tenants.index', ['id' => $user->id]), landlord_url: route('landlord.tenants.index', ['id' => $user->id]),  admin_msg: __('New tenant has been added'), tenant_msg: __('You account has been successfully created.'), landlord_msg: __('New tenant has been added.'));
+            sendNotification($user->id, notify_users([$user->id, $user->landlord->id]), admin_url: route('admin.tenants.index', ['id' => $user->id]), landlord_url: route('landlord.tenants.index', ['id' => $user->id]), admin_msg: __('New tenant has been added'), tenant_msg: __('You account has been successfully created.'), landlord_msg: __('New tenant has been added.'));
 
             return response()->json([
                 'message' => 'Tenant save successfully',
-                'redirect' => route('admin.tenants.index')
+                'redirect' => route('admin.tenants.index'),
 
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'message' => __('Tenant store failed.'),
                 'error' => $e->getMessage(),
@@ -198,6 +200,7 @@ class AcnooTenantController extends Controller
         $countries = json_decode(file_get_contents($countries), true);
         $phone_codes = base_path('lang/phone_code.json');
         $phone_codes = json_decode(file_get_contents($phone_codes), true);
+
         return view('admin.tenants.edit', compact('countries', 'tenant', 'phone_codes'));
     }
 
@@ -207,7 +210,7 @@ class AcnooTenantController extends Controller
             'phone' => 'nullable|array',
             'mobile_no' => 'nullable|string',
             'mobile_code' => 'nullable|string',
-            'email' => 'nullable|email|unique:users,email,' . $id,
+            'email' => 'nullable|email|unique:users,email,'.$id,
             'image' => 'nullable|image|mimes:jpeg,png,gif|max:10240',
             'mykad.front_image' => 'nullable|image|mimes:jpeg,png,gif|max:10240',
             'mykad.back_image' => 'nullable|image|mimes:jpeg,png,gif|max:10240',
@@ -220,7 +223,7 @@ class AcnooTenantController extends Controller
         try {
 
             if ($request->hasFile('image')) {
-                if (!empty($user->image)) {
+                if (! empty($user->image)) {
                     $oldImagePath = dirname($user->image);
                     Storage::deleteDirectory($oldImagePath);
                 }
@@ -238,11 +241,11 @@ class AcnooTenantController extends Controller
                 'role' => 'tenant',
                 'phone' => $request->input('phone'),
                 'password' => $request->password ? Hash::make($request->password) : $user->password,
-                'profile_type' => $request->profile_type
+                'profile_type' => $request->profile_type,
             ]);
 
             if ($request->hasFile('mykad.front_image')) {
-                if (!empty($user->user_details->mykad['front_image'])) {
+                if (! empty($user->user_details->mykad['front_image'])) {
                     $oldFrontImagePath = dirname($user->user_details->mykad['front_image']);
                     Storage::deleteDirectory($oldFrontImagePath);
                 }
@@ -252,7 +255,7 @@ class AcnooTenantController extends Controller
             }
 
             if ($request->hasFile('mykad.back_image')) {
-                if (!empty($user->user_details->mykad['back_image'])) {
+                if (! empty($user->user_details->mykad['back_image'])) {
                     $oldBackImagePath = dirname($user->user_details->mykad['back_image']);
                     Storage::deleteDirectory($oldBackImagePath);
                 }
@@ -282,11 +285,12 @@ class AcnooTenantController extends Controller
 
             return response()->json([
                 'message' => 'Tenant update successfully',
-                'redirect' => route('admin.tenants.index')
+                'redirect' => route('admin.tenants.index'),
             ]);
         } catch (\Exception $e) {
             return $e;
             DB::rollBack();
+
             return response()->json([
                 'message' => __('Tenant updated failed.'),
                 'error' => $e->getMessage(),
@@ -320,13 +324,14 @@ class AcnooTenantController extends Controller
             DB::commit();
 
             return response()->json([
-                'message'   => ('Tenant deleted successfully'),
-                'redirect'  => route('admin.tenants.index')
+                'message' => ('Tenant deleted successfully'),
+                'redirect' => route('admin.tenants.index'),
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
-                'message' => 'Something went wrong: ' . $e->getMessage()
+                'message' => 'Something went wrong: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -362,13 +367,14 @@ class AcnooTenantController extends Controller
             DB::commit();
 
             return response()->json([
-                'message'   => ('Selected tenant deleted successfully'),
-                'redirect'  => route('admin.tenants.index')
+                'message' => ('Selected tenant deleted successfully'),
+                'redirect' => route('admin.tenants.index'),
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
-                'message' => 'Something went wrong: ' . $e->getMessage()
+                'message' => 'Something went wrong: '.$e->getMessage(),
             ], 500);
         }
     }

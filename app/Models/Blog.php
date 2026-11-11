@@ -17,7 +17,7 @@ class Blog extends Model
         'user_id' => 'integer',
         'tags' => 'json',
         'meta' => 'json',
-        'status' => 'integer'
+        'status' => 'integer',
     ];
 
     public function user(): BelongsTo

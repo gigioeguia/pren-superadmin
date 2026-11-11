@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers\Auth;
 
-use Illuminate\View\View;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
 class NewPasswordController extends Controller
 {
-
     public function create(Request $request): View
     {
         return view('auth.reset-password', ['request' => $request]);
@@ -27,7 +26,6 @@ class NewPasswordController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required', 'confirmed', 'string'],
         ]);
-
 
         $response = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
@@ -46,7 +44,6 @@ class NewPasswordController extends Controller
                     : $this->sendResetLinkFailedResponse($request, $response);
     }
 
-
     protected function sendResetLinkResponse(Request $request, $response)
     {
         return $request->wantsJson()
@@ -63,7 +60,7 @@ class NewPasswordController extends Controller
         }
 
         return back()
-                ->withInput($request->only('email'))
-                ->withErrors(['email' => trans($response)]);
+            ->withInput($request->only('email'))
+            ->withErrors(['email' => trans($response)]);
     }
 }

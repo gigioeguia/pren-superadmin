@@ -17,6 +17,7 @@ class AcnooMessageController extends Controller
     public function index()
     {
         $messages = Message::latest()->paginate(10);
+
         return view('admin.message.index', compact('messages'));
     }
 
@@ -24,11 +25,11 @@ class AcnooMessageController extends Controller
     {
         $messages = Message::when(request('search'), function ($q) {
             $q->where(function ($q) {
-                $q->where('name', 'like', '%' . request('search') . '%')
-                    ->orWhere('phone', 'like', '%' . request('search') . '%')
-                    ->orWhere('email', 'like', '%' . request('search') . '%')
-                    ->orWhere('company_name', 'like', '%' . request('search') . '%')
-                    ->orWhere('message', 'like', '%' . request('search') . '%');
+                $q->where('name', 'like', '%'.request('search').'%')
+                    ->orWhere('phone', 'like', '%'.request('search').'%')
+                    ->orWhere('email', 'like', '%'.request('search').'%')
+                    ->orWhere('company_name', 'like', '%'.request('search').'%')
+                    ->orWhere('message', 'like', '%'.request('search').'%');
             });
         })
             ->latest()
@@ -36,7 +37,7 @@ class AcnooMessageController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.message.datas', compact('messages'))->render()
+                'data' => view('admin.message.datas', compact('messages'))->render(),
             ]);
         }
 
@@ -49,7 +50,7 @@ class AcnooMessageController extends Controller
 
         return response()->json([
             'message' => 'Message deleted successfully',
-            'redirect' => route('admin.messages.index')
+            'redirect' => route('admin.messages.index'),
         ]);
     }
 
@@ -59,7 +60,7 @@ class AcnooMessageController extends Controller
 
         return response()->json([
             'message' => 'Selected message deleted successfully',
-            'redirect' => route('admin.messages.index')
+            'redirect' => route('admin.messages.index'),
         ]);
     }
 }

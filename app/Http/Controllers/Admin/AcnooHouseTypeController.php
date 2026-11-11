@@ -19,23 +19,24 @@ class AcnooHouseTypeController extends Controller
     public function index()
     {
         $house_types = HouseType::latest()->paginate(10);
+
         return view('admin.house-types.index', compact('house_types'));
     }
 
     public function acnooFilter(Request $request)
     {
         $house_types = HouseType::when(request('search'), function ($q) {
-                $q->where(function ($q) {
-                    $search = request('search');
-                    $q->where('name', 'like', '%' . $search . '%');
-                });
-            })
+            $q->where(function ($q) {
+                $search = request('search');
+                $q->where('name', 'like', '%'.$search.'%');
+            });
+        })
             ->latest()
             ->paginate($request->per_page ?? 20);
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.house-types.datas', compact('house_types'))->render()
+                'data' => view('admin.house-types.datas', compact('house_types'))->render(),
             ]);
         }
 
@@ -45,21 +46,21 @@ class AcnooHouseTypeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255'
+            'name' => 'required|string|max:255',
         ]);
 
         HouseType::create($request->all());
 
         return response()->json([
             'message' => 'House Types Created successfully',
-            'redirect' => route('admin.house-types.index')
+            'redirect' => route('admin.house-types.index'),
         ]);
     }
 
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'name' => 'required|string|max:255'
+            'name' => 'required|string|max:255',
         ]);
 
         $reason = HouseType::findOrFail($id);
@@ -68,7 +69,7 @@ class AcnooHouseTypeController extends Controller
 
         return response()->json([
             'message' => 'House Types Updated successfully',
-            'redirect' => route('admin.house-types.index')
+            'redirect' => route('admin.house-types.index'),
         ]);
     }
 
@@ -76,6 +77,7 @@ class AcnooHouseTypeController extends Controller
     {
         $reason = HouseType::findOrFail($id);
         $reason->update(['status' => $request->status]);
+
         return response()->json([
             'message' => 'House Type',
         ]);
@@ -88,7 +90,7 @@ class AcnooHouseTypeController extends Controller
 
         return response()->json([
             'message' => 'House Types Deleted Successfully',
-            'redirect' => route('admin.house-types.index')
+            'redirect' => route('admin.house-types.index'),
         ]);
     }
 
@@ -98,7 +100,7 @@ class AcnooHouseTypeController extends Controller
 
         return response()->json([
             'message' => 'Selected House Types Deleted Successfully',
-            'redirect' => route('admin.house-types.index')
+            'redirect' => route('admin.house-types.index'),
         ]);
     }
 }

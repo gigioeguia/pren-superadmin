@@ -16,6 +16,7 @@ class AcnooHighlightController extends Controller
     public function index(Request $request)
     {
         $highlights = Highlight::latest()->paginate(20);
+
         return view('admin.highlights.index', compact('highlights'));
     }
 
@@ -23,8 +24,8 @@ class AcnooHighlightController extends Controller
     {
         $highlights = Highlight::when(request('search'), function ($q) {
             $q->where(function ($q) {
-                $q->where('short_title', 'like', '%' . request('search') . '%')
-                    ->orWhere('title', 'like', '%' . request('search') . '%');
+                $q->where('short_title', 'like', '%'.request('search').'%')
+                    ->orWhere('title', 'like', '%'.request('search').'%');
             });
         })
             ->latest()
@@ -32,7 +33,7 @@ class AcnooHighlightController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.highlights.datas', compact('highlights'))->render()
+                'data' => view('admin.highlights.datas', compact('highlights'))->render(),
             ]);
         }
 
@@ -47,10 +48,10 @@ class AcnooHighlightController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'short_title'       => 'required|max:55',
-            'title'             => 'required|unique:highlights,title',
-            'status'            => 'boolean',
-            'image'             => 'required|image|max:1024|mimes:jpeg,png,jpg,gif,svg',
+            'short_title' => 'required|max:55',
+            'title' => 'required|unique:highlights,title',
+            'status' => 'boolean',
+            'image' => 'required|image|max:1024|mimes:jpeg,png,jpg,gif,svg',
         ]);
 
         Highlight::create($request->except('image', 'title', 'slug') + [
@@ -60,25 +61,25 @@ class AcnooHighlightController extends Controller
         ]);
 
         return response()->json([
-            'message'   => __('Highlight created successfully'),
-            'redirect'  => route('admin.highlights.index')
+            'message' => __('Highlight created successfully'),
+            'redirect' => route('admin.highlights.index'),
         ]);
     }
 
-    public function edit(highlight $highlight)
+    public function edit(Highlight $highlight)
     {
         return view('admin.highlights.edit', compact('highlight'));
     }
 
-    public function update(Request $request, highlight $highlight)
+    public function update(Request $request, Highlight $highlight)
     {
 
         $request->validate([
-            'short_title'       => 'required|max:55',
-            'title'             => 'required|unique:highlights,title,' . $highlight->id,
-            'slug'              => 'required',
-            'status'            => 'boolean',
-            'image'             => 'image|max:1024|mimes:jpeg,png,jpg,gif,svg',
+            'short_title' => 'required|max:55',
+            'title' => 'required|unique:highlights,title,'.$highlight->id,
+            'slug' => 'required',
+            'status' => 'boolean',
+            'image' => 'image|max:1024|mimes:jpeg,png,jpg,gif,svg',
         ]);
 
         $highlight->update($request->except('image', 'title', 'slug') + [
@@ -88,12 +89,12 @@ class AcnooHighlightController extends Controller
         ]);
 
         return response()->json([
-            'message'   => __('Highlight updated successfully'),
-            'redirect'  => route('admin.highlights.index')
+            'message' => __('Highlight updated successfully'),
+            'redirect' => route('admin.highlights.index'),
         ]);
     }
 
-    public function destroy(highlight $highlight)
+    public function destroy(Highlight $highlight)
     {
         if (file_exists($highlight->image)) {
             Storage::delete($highlight->image);
@@ -103,7 +104,7 @@ class AcnooHighlightController extends Controller
 
         return response()->json([
             'message' => __('Highlight deleted successfully'),
-            'redirect' => route('admin.highlights.index')
+            'redirect' => route('admin.highlights.index'),
         ]);
     }
 
@@ -111,9 +112,9 @@ class AcnooHighlightController extends Controller
     {
         $highlight_status = Highlight::findOrFail($id);
         $highlight_status->update(['status' => $request->status]);
+
         return response()->json(['message' => 'Highlight']);
     }
-
 
     public function deleteAll(Request $request)
     {
@@ -129,7 +130,7 @@ class AcnooHighlightController extends Controller
 
         return response()->json([
             'message' => __('Selected highlight deleted successfully'),
-            'redirect' => route('admin.highlights.index')
+            'redirect' => route('admin.highlights.index'),
         ]);
     }
 }

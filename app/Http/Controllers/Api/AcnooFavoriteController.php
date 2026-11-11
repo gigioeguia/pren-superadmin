@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Favorite;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 
 class AcnooFavoriteController extends Controller
 {
@@ -22,7 +22,7 @@ class AcnooFavoriteController extends Controller
 
         return response()->json([
             'message' => 'Data fetched successfully',
-            'data' => $wishlists
+            'data' => $wishlists,
         ]);
     }
 
@@ -43,12 +43,12 @@ class AcnooFavoriteController extends Controller
         } else {
 
             $favorite = Favorite::create($request->except('tenant_id') + [
-                'tenant_id' => auth()->id()
+                'tenant_id' => auth()->id(),
             ]);
 
             return response()->json([
                 'message' => 'Wishlist added successfully',
-                'data' => $favorite
+                'data' => $favorite,
             ]);
         }
     }

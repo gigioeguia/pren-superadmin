@@ -12,7 +12,7 @@ class AcnooNotificationController extends Controller
 
         return response()->json([
             'message' => 'Data fetched successfully',
-            'data' => $notifications
+            'data' => $notifications,
         ]);
     }
 

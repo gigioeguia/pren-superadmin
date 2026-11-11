@@ -24,7 +24,6 @@ class UserDetail extends Model
         'vehicles_info',
     ];
 
-
     protected $casts = [
         'company_info' => 'json',
         'address_info' => 'json',

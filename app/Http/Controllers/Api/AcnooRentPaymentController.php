@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\RentPayment;
 use App\Http\Controllers\Controller;
+use App\Models\RentPayment;
+use Illuminate\Support\ViewErrorBag;
 
 class AcnooRentPaymentController extends Controller
 {
@@ -40,16 +41,15 @@ class AcnooRentPaymentController extends Controller
     {
         $rent_payment = RentPayment::with(['rent:id,tenant_id,landlord_id,property_id', 'rent.tenant:id,name,email,phone', 'rent.tenant.user_details:user_id,address_info', 'rent.landlord:id,name,email,phone', 'rent.landlord.user_details:user_id,address_info', 'rent.property:id,puid', 'rent.property.propertyDetail:id,property_id,property_info'])->findOrFail($id);
 
-        $errors = session()->get('errors', new \Illuminate\Support\ViewErrorBag);
+        $errors = session()->get('errors', new ViewErrorBag);
         $html = view('api-invoice.rent-payment', compact('rent_payment', 'errors'))->render();
-
 
         return response()->json([
             'message' => 'Data fetched successfully.',
             'data' => [
                 'id' => $rent_payment->id,
             ],
-            'html' => $html
+            'html' => $html,
         ]);
     }
 }

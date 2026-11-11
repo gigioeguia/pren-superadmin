@@ -15,15 +15,17 @@ class Support extends Model
         'parent_id',
         'message',
         'file',
-        'file_info'
+        'file_info',
     ];
 
-    public function sender() {
+    public function sender()
+    {
 
         return $this->belongsTo(User::class, 'sender_id');
     }
 
-    public function receiver() {
+    public function receiver()
+    {
 
         return $this->belongsTo(User::class, 'receiver_id');
     }
@@ -37,9 +39,9 @@ class Support extends Model
     {
         return $this->hasMany(Support::class, 'parent_id');
     }
+
     protected $casts = [
         'parent_id' => 'integer',
         'file_info' => 'json',
     ];
-
 }

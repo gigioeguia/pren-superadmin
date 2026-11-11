@@ -7,19 +7,19 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
 
     Route::controller(Api\UserController::class)->group(function () {
-        //facility all ..
+        // facility all ..
         Route::get('/facility', 'facilities');
-        //amenity all ..
+        // amenity all ..
         Route::get('/amenity', 'amenities');
     });
 
-    Route::post('/sign-up', [Api\Auth\RegistrationController::class, 'maanRegistration'])->name('sign-up');
-    Route::post('/submit-otp', [Api\Auth\RegistrationController::class, 'submitOtp'])->name('submit-otp');
-    Route::post('sign-in', [Api\Auth\SigninController::class, 'maanSignIn'])->name('sign-in');
+    Route::post('/sign-up', [Auth\RegistrationController::class, 'maanRegistration'])->name('sign-up');
+    Route::post('/submit-otp', [Auth\RegistrationController::class, 'submitOtp'])->name('submit-otp');
+    Route::post('sign-in', [Auth\SigninController::class, 'maanSignIn'])->name('sign-in');
 
-    Route::post('/send-reset-code', [Api\Auth\ForgotPasswordController::class, 'sendResetCode']);
-    Route::post('/resend-otp', [Api\Auth\ForgotPasswordController::class, 'resendOtp']);
-    Route::post('/user-password-reset', [Api\Auth\ResetPasswordController::class, 'userResetPassword']);
+    Route::post('/send-reset-code', [Auth\ForgotPasswordController::class, 'sendResetCode']);
+    Route::post('/resend-otp', [Auth\ForgotPasswordController::class, 'resendOtp']);
+    Route::post('/user-password-reset', [Auth\ResetPasswordController::class, 'userResetPassword']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::controller(Api\UserController::class)->group(function () {

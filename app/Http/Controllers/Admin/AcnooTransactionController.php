@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Exports\AdminTransactionExport;
+use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooTransactionController extends Controller
@@ -18,6 +18,7 @@ class AcnooTransactionController extends Controller
     public function index()
     {
         $transactions = Transaction::with('paidBy:id,name', 'gateway:id,name')->latest()->paginate(10);
+
         return view('admin.transactions.index', compact('transactions'));
     }
 
@@ -25,13 +26,13 @@ class AcnooTransactionController extends Controller
     {
         $transactions = Transaction::with('paidBy:id,name', 'gateway:id,name')
             ->when(request('search'), function ($q) {
-                $q->where('amount', 'like', '%' . request('search') . '%')
-                    ->orWhere('uid', 'like', '%' . request('search') . '%')
-                    ->orWhere('amount', 'like', '%' . request('search') . '%')
-                    ->orWhere('payment_type', 'like', '%' . request('search') . '%');
+                $q->where('amount', 'like', '%'.request('search').'%')
+                    ->orWhere('uid', 'like', '%'.request('search').'%')
+                    ->orWhere('amount', 'like', '%'.request('search').'%')
+                    ->orWhere('payment_type', 'like', '%'.request('search').'%');
 
                 $q->orWhereHas('gateway', function ($q) {
-                    $q->where('name', 'like', '%' . request('search') . '%');
+                    $q->where('name', 'like', '%'.request('search').'%');
                 });
             })
             ->latest()
@@ -39,9 +40,10 @@ class AcnooTransactionController extends Controller
 
         if (request()->ajax()) {
             return response()->json([
-                'data' => view('admin.transactions.datas', compact('transactions'))->render()
+                'data' => view('admin.transactions.datas', compact('transactions'))->render(),
             ]);
         }
+
         return redirect(url()->previous());
     }
 

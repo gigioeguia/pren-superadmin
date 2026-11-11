@@ -14,7 +14,7 @@ class AdminPropertiesExport implements FromView
             'category:id,name',
             'landlord:id,name',
             'propertyDetail:property_id,property_info',
-            'units.rent'
+            'units.rent',
         ])
             ->when(request('id'), function ($query) {
                 $query->where('id', request('id'));
@@ -25,13 +25,13 @@ class AdminPropertiesExport implements FromView
                     $query->whereDoesntHave('rent', function ($q) {
                         $q->whereIn('status', ['active', 'processing']);
                     });
-                }
+                },
             ])
             ->latest()
             ->get();
 
         return view('admin.properties.excel-csv', [
-            'properties' => $properties
+            'properties' => $properties,
         ]);
     }
 }

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Option;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use App\Http\Controllers\Controller;
 
 class AcnooReminderMessageController extends Controller
 {
@@ -20,6 +20,7 @@ class AcnooReminderMessageController extends Controller
     public function index()
     {
         $messages = Option::where('key', 'reminder-messages')->latest()->paginate(10);
+
         return view('admin.settings.reminder-message.index', compact('messages'));
     }
 
@@ -36,8 +37,8 @@ class AcnooReminderMessageController extends Controller
         ]);
 
         return response()->json([
-            'message'   => __('Reminder messages create successfully'),
-            'redirect'  => route('admin.reminder-messages.index')
+            'message' => __('Reminder messages create successfully'),
+            'redirect' => route('admin.reminder-messages.index'),
         ]);
     }
 
@@ -56,8 +57,8 @@ class AcnooReminderMessageController extends Controller
         ]);
 
         return response()->json([
-            'message'   => __('Reminder messages updated successfully'),
-            'redirect'  => route('admin.reminder-messages.index')
+            'message' => __('Reminder messages updated successfully'),
+            'redirect' => route('admin.reminder-messages.index'),
         ]);
     }
 
@@ -68,7 +69,7 @@ class AcnooReminderMessageController extends Controller
 
         return response()->json([
             'message' => __('Reminder messages deleted successfully'),
-            'redirect' => route('admin.reminder-messages.index')
+            'redirect' => route('admin.reminder-messages.index'),
         ]);
     }
 }

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Currency;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 
 class AcnooCurrencyController extends Controller
 {
@@ -19,6 +19,7 @@ class AcnooCurrencyController extends Controller
     public function index()
     {
         $currencies = Currency::orderBy('is_default', 'desc')->orderBy('status', 'desc')->paginate(20);
+
         return view('admin.currencies.index', compact('currencies'));
     }
 
@@ -26,10 +27,10 @@ class AcnooCurrencyController extends Controller
     {
         $currencies = Currency::orderBy('is_default', 'desc')->orderBy('status', 'desc')->when(request('search'), function ($q) {
             $q->where(function ($q) {
-                $q->where('name', 'like', '%' . request('search') . '%')
-                    ->orWhere('country_name', 'like', '%' . request('search') . '%')
-                    ->orWhere('code', 'like', '%' . request('search') . '%')
-                    ->orWhere('symbol', 'like', '%' . request('search') . '%');
+                $q->where('name', 'like', '%'.request('search').'%')
+                    ->orWhere('country_name', 'like', '%'.request('search').'%')
+                    ->orWhere('code', 'like', '%'.request('search').'%')
+                    ->orWhere('symbol', 'like', '%'.request('search').'%');
             });
         })
             ->latest()
@@ -37,7 +38,7 @@ class AcnooCurrencyController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.currencies.datas', compact('currencies'))->render()
+                'data' => view('admin.currencies.datas', compact('currencies'))->render(),
             ]);
         }
 
@@ -48,6 +49,7 @@ class AcnooCurrencyController extends Controller
     {
         $countries = base_path('lang/countrylist.json');
         $countries = json_decode(file_get_contents($countries), true);
+
         return view('admin.currencies.create', compact('countries'));
     }
 
@@ -67,8 +69,8 @@ class AcnooCurrencyController extends Controller
         Currency::create($request->all());
 
         return response()->json([
-            'message'   => __('Currency Created successfully'),
-            'redirect'  => route('admin.currencies.index')
+            'message' => __('Currency Created successfully'),
+            'redirect' => route('admin.currencies.index'),
         ]);
     }
 
@@ -76,15 +78,16 @@ class AcnooCurrencyController extends Controller
     {
         $countries = base_path('lang/countrylist.json');
         $countries = json_decode(file_get_contents($countries), true);
+
         return view('admin.currencies.edit', compact('currency', 'countries'));
     }
 
     public function update(Request $request, Currency $currency)
     {
         $request->validate([
-            'name' => 'required|string|unique:currencies,name,' . $currency->id,
+            'name' => 'required|string|unique:currencies,name,'.$currency->id,
             'country_name' => 'nullable|string',
-            'code' => 'required|string|unique:currencies,code,' . $currency->id,
+            'code' => 'required|string|unique:currencies,code,'.$currency->id,
             'rate' => 'nullable|numeric',
             'symbol' => 'nullable|string',
             'position' => 'nullable|string',
@@ -95,8 +98,8 @@ class AcnooCurrencyController extends Controller
         $currency->update($request->all());
 
         return response()->json([
-            'message'   => __('Currency updated successfully'),
-            'redirect'  => route('admin.currencies.index')
+            'message' => __('Currency updated successfully'),
+            'redirect' => route('admin.currencies.index'),
         ]);
     }
 
@@ -109,8 +112,7 @@ class AcnooCurrencyController extends Controller
             $currency->update(['is_default' => 1]);
         }
 
-        cache()->forget("default_currency");
-
+        cache()->forget('default_currency');
 
         return redirect()->route('admin.currencies.index')->with('message', __('Default currency activated successfully'));
     }
@@ -120,7 +122,7 @@ class AcnooCurrencyController extends Controller
         if ($currency->is_default) {
             return response()->json([
                 'message' => __('You cannot delete it because it is default currency'),
-                'redirect' => route('admin.currencies.index')
+                'redirect' => route('admin.currencies.index'),
             ], 400);
         }
 
@@ -128,7 +130,7 @@ class AcnooCurrencyController extends Controller
 
         return response()->json([
             'message' => __('Currency deleted successfully'),
-            'redirect' => route('admin.currencies.index')
+            'redirect' => route('admin.currencies.index'),
         ], 200);
     }
 
@@ -139,7 +141,7 @@ class AcnooCurrencyController extends Controller
         if (count($request->ids) === 1 && in_array($default_currency_id, $request->ids)) {
             return response()->json([
                 'message' => __('You cannot delete the default currency.'),
-                'redirect' => route('admin.currencies.index')
+                'redirect' => route('admin.currencies.index'),
             ], 400);
         }
 
@@ -151,7 +153,7 @@ class AcnooCurrencyController extends Controller
 
         return response()->json([
             'message' => __('Selected currencies deleted successfully.'),
-            'redirect' => route('admin.currencies.index')
+            'redirect' => route('admin.currencies.index'),
         ]);
     }
 }

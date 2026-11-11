@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
-use App\Models\User;
-use App\Mail\PasswordReset;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Mail\PasswordReset;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Validation\ValidationException;
 
 class ForgotPasswordController extends Controller
 {
@@ -22,12 +21,12 @@ class ForgotPasswordController extends Controller
        | your application to your users. Feel free to explore this trait.
        |
        */
-    //use SendsPasswordResetEmails;
+    // use SendsPasswordResetEmails;
 
     public function sendResetCode(Request $request): JsonResponse
     {
         $request->validate([
-            'email' => 'required|email|exists:users,email'
+            'email' => 'required|email|exists:users,email',
         ]);
 
         $expire = now()->addHour();
@@ -36,7 +35,7 @@ class ForgotPasswordController extends Controller
         $user->update(['remember_token' => $code, 'email_verified_at' => $expire]);
 
         $data = [
-            'code' => $code
+            'code' => $code,
         ];
 
         try {
@@ -45,6 +44,7 @@ class ForgotPasswordController extends Controller
             } else {
                 Mail::to($request->email)->send(new PasswordReset($data));
             }
+
             return response()->json([
                 'message' => 'Password reset code has been sent to your email.',
             ]);

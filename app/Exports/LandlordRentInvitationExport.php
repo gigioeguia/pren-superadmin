@@ -2,9 +2,9 @@
 
 namespace App\Exports;
 
+use App\Models\Property;
 use App\Models\Rent;
 use App\Models\User;
-use App\Models\Property;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 

@@ -13,6 +13,7 @@ class PermissionController extends Controller
     {
         $users = User::whereNotIn('role', ['superadmin', 'staff', 'landlord', 'tenant'])->get();
         $roles = Role::whereNotIn('name', ['superadmin', 'landlord', 'tenant'])->get();
+
         return view('admin.permissions.index', compact('roles', 'users'));
     }
 
@@ -20,7 +21,7 @@ class PermissionController extends Controller
     {
         $request->validate([
             'user' => ['required', 'exists:users,id'],
-            'roles' => ['required', 'exists:roles,id']
+            'roles' => ['required', 'exists:roles,id'],
         ]);
 
         $user = User::findOrFail($request->input('user'));
@@ -28,7 +29,7 @@ class PermissionController extends Controller
 
         return response()->json([
             'message' => __('Role permissions assigned successfully.'),
-            'redirect' => route('admin.permissions.index')
+            'redirect' => route('admin.permissions.index'),
         ]);
     }
 }

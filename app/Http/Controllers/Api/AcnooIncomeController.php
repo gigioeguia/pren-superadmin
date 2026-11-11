@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Income;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 
 class AcnooIncomeController extends Controller
 {
@@ -15,10 +15,10 @@ class AcnooIncomeController extends Controller
                 $query->where('income_category_id', request('income_category_id'));
             })
             ->when(request('search'), function ($query) {
-                $query->where('incomeFor', 'like', '%' . request('search') . '%')
-                    ->orWhere('amount', 'like', '%' . request('search') . '%')
+                $query->where('incomeFor', 'like', '%'.request('search').'%')
+                    ->orWhere('amount', 'like', '%'.request('search').'%')
                     ->orWhereHas('category', function ($query) {
-                        $query->where('name', 'like', '%' . request('search') . '%');
+                        $query->where('name', 'like', '%'.request('search').'%');
                     });
             })
             ->latest()
@@ -43,7 +43,7 @@ class AcnooIncomeController extends Controller
         ]);
 
         $data = Income::create($request->except('landlord_id') + [
-            'landlord_id' => auth()->id()
+            'landlord_id' => auth()->id(),
         ]);
 
         return response()->json([
@@ -67,7 +67,7 @@ class AcnooIncomeController extends Controller
         $income = Income::findOrFail($id);
 
         $income->update($request->except('landlord_id') + [
-            'landlord_id' => auth()->id()
+            'landlord_id' => auth()->id(),
         ]);
 
         return response()->json([

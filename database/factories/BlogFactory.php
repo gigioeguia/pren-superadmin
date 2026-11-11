@@ -8,13 +8,13 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Blog>
+ * @extends Factory<Blog>
  */
 class BlogFactory extends Factory
 {
     public function definition(): array
     {
-        $title = fake()->unique()->sentence(4) . ' ' . fake()->unique()->randomNumber(5);
+        $title = fake()->unique()->sentence(4).' '.fake()->unique()->randomNumber(5);
 
         return [
             'user_id' => User::factory(),

@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class Maintenance extends Model
 {
     use HasFactory;
-    protected $fillable = ['property_id', 'tenant_id', 'labor_id', 'title', 'description', 'notes', 'comments', 'total_costing', 'images', 'status'];
 
+    protected $fillable = ['property_id', 'tenant_id', 'labor_id', 'title', 'description', 'notes', 'comments', 'total_costing', 'images', 'status'];
 
     public function property()
     {
-       return $this->belongsTo(Property::class, 'property_id');
+        return $this->belongsTo(Property::class, 'property_id');
     }
 
     public function tenant()
@@ -25,9 +25,6 @@ class Maintenance extends Model
     {
         return $this->belongsTo(Labor::class);
     }
-
-
-
 
     // public function maintenanceCost()
     // {
@@ -41,5 +38,4 @@ class Maintenance extends Model
         'labor_id' => 'integer',
         'total_costing' => 'double',
     ];
-
 }

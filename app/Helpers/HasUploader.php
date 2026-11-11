@@ -3,27 +3,21 @@
 namespace App\Helpers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 trait HasUploader
 {
     /**
      * Upload a single file with auto-generated filename.
-     *
-     * @param  Request  $request
-     * @param  string   $input
-     * @param  string|null  $oldFile
-     * @param  string|null  $disk
-     * @return string
      */
     private function upload(Request $request, string $input, ?string $oldFile = null, ?string $disk = null): string
     {
         /** @var UploadedFile $file */
         $file = $request->file($input);
 
-        $filename = now()->timestamp . '.' . $file->getClientOriginalExtension();
-        $path = 'uploads/' . now()->format('y/m') . '-' . rand(1, 1000);
+        $filename = now()->timestamp.'.'.$file->getClientOriginalExtension();
+        $path = 'uploads/'.now()->format('y/m').'-'.rand(1, 1000);
         $filePath = $file->storeAs($path, $filename, $disk ?? config('filesystems.default'));
 
         $this->deleteOldFile($oldFile, $disk);
@@ -33,12 +27,6 @@ trait HasUploader
 
     /**
      * Upload a single file preserving its original filename.
-     *
-     * @param  Request  $request
-     * @param  string   $input
-     * @param  string|null  $oldFile
-     * @param  string|null  $disk
-     * @return string
      */
     private function uploadWithFileName(Request $request, string $input, ?string $oldFile = null, ?string $disk = null): string
     {
@@ -55,12 +43,6 @@ trait HasUploader
 
     /**
      * Upload multiple files and delete old files if provided.
-     *
-     * @param  Request  $request
-     * @param  string   $input
-     * @param  array    $oldFiles
-     * @param  string|null  $disk
-     * @return array
      */
     private function multipleUpload(Request $request, string $input, array $oldFiles = [], ?string $disk = null): array
     {
@@ -68,8 +50,8 @@ trait HasUploader
 
         /** @var UploadedFile $file */
         foreach ($request->file($input) as $file) {
-            $filename = now()->timestamp . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $path = 'uploads/' . now()->format('y/m');
+            $filename = now()->timestamp.'_'.uniqid().'.'.$file->getClientOriginalExtension();
+            $path = 'uploads/'.now()->format('y/m');
             $filePath = $file->storeAs($path, $filename, $disk ?? config('filesystems.default'));
 
             $uploadedFiles[] = $filePath;
@@ -82,15 +64,14 @@ trait HasUploader
         return $uploadedFiles;
     }
 
-
     private function multipleUploadArray(array $files, array $oldFiles = [], ?string $disk = null): array
     {
         $uploadedFiles = [];
 
         foreach ($files as $file) {
-            /** @var \Illuminate\Http\UploadedFile $file */
-            $filename = now()->timestamp . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $path = 'uploads/' . now()->format('y/m');
+            /** @var UploadedFile $file */
+            $filename = now()->timestamp.'_'.uniqid().'.'.$file->getClientOriginalExtension();
+            $path = 'uploads/'.now()->format('y/m');
             $filePath = $file->storeAs($path, $filename, $disk ?? config('filesystems.default'));
             $uploadedFiles[] = $filePath;
         }
@@ -104,10 +85,6 @@ trait HasUploader
 
     /**
      * Delete old file from storage if it exists.
-     *
-     * @param  string|null  $oldFile
-     * @param  string|null  $disk
-     * @return void
      */
     private function deleteOldFile(?string $oldFile, ?string $disk = null): void
     {

@@ -24,6 +24,6 @@ class Plan extends Model
     ];
 
     protected $casts = ([
-        'features' => 'json'
+        'features' => 'json',
     ]);
 }

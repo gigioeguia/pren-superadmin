@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Option;
 use App\Models\Rent;
 use App\Models\RentPayment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 
 class AcnooRentPaymentGenerateController extends Controller
 {
@@ -20,6 +20,7 @@ class AcnooRentPaymentGenerateController extends Controller
     public function index()
     {
         $rent_payments = RentPayment::with(['rent:id,landlord_id', 'rent.landlord:id,name'])->latest()->paginate(10);
+
         return view('admin.rent-payment-generate.index', compact('rent_payments'));
     }
 
@@ -71,7 +72,7 @@ class AcnooRentPaymentGenerateController extends Controller
                 'rent_month' => $request->month,
                 'rent_year' => $request->year,
                 'payment_status' => 'unpaid',
-                'invoice_no' => "PAYSLIP" . str_pad($key + $invoice_no + 1, 2, '0', STR_PAD_LEFT), // Use $key here
+                'invoice_no' => 'PAYSLIP'.str_pad($key + $invoice_no + 1, 2, '0', STR_PAD_LEFT), // Use $key here
                 'created_at' => now(),
                 'updated_at' => now(),
             ];

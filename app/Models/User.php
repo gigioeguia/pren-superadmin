@@ -10,7 +10,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     protected $fillable = [
         'landlord_id',
@@ -28,7 +28,7 @@ class User extends Authenticatable
         'subscriptionDate',
         'will_expire',
         'email_verified_at',
-        'remember_token'
+        'remember_token',
     ];
 
     public function supportMessages()

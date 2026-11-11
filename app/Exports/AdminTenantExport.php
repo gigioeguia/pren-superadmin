@@ -21,7 +21,7 @@ class AdminTenantExport implements FromView
             'user_details',
             'rents',
             'rents.property:id',
-            'rents.property.propertyDetail:property_id,property_info'
+            'rents.property.propertyDetail:property_id,property_info',
         ])
             ->where('role', 'tenant')
             ->when($this->status, function ($query) {
@@ -43,7 +43,7 @@ class AdminTenantExport implements FromView
             ->get();
 
         return view('admin.tenants.excel-csv', [
-            'tenants' => $tenants
+            'tenants' => $tenants,
         ]);
     }
 }

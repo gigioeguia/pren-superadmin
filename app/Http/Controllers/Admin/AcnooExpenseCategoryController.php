@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
-use App\Models\ExpenseCategory;
 use App\Http\Controllers\Controller;
+use App\Models\ExpenseCategory;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class AcnooExpenseCategoryController extends Controller
@@ -20,6 +20,7 @@ class AcnooExpenseCategoryController extends Controller
     public function index()
     {
         $expense_categories = ExpenseCategory::whereNull('landlord_id')->latest()->paginate(10);
+
         return view('admin.expense-categories.index', compact('expense_categories'));
     }
 
@@ -27,8 +28,8 @@ class AcnooExpenseCategoryController extends Controller
     {
         $expense_categories = ExpenseCategory::whereNull('landlord_id')->when(request('search'), function ($q) use ($request) {
             $q->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('description', 'like', '%' . $request->search . '%');
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('description', 'like', '%'.$request->search.'%');
             });
         })
             ->latest()
@@ -36,9 +37,10 @@ class AcnooExpenseCategoryController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.expense-categories.datas', compact('expense_categories'))->render()
+                'data' => view('admin.expense-categories.datas', compact('expense_categories'))->render(),
             ]);
         }
+
         return redirect(url()->previous());
     }
 
@@ -60,7 +62,7 @@ class AcnooExpenseCategoryController extends Controller
 
         return response()->json([
             'message' => __('Expense Category saved successfully.'),
-            'redirect' => route('admin.expense-categories.index')
+            'redirect' => route('admin.expense-categories.index'),
         ]);
     }
 
@@ -84,7 +86,7 @@ class AcnooExpenseCategoryController extends Controller
 
         return response()->json([
             'message' => __('Expense Category updated successfully.'),
-            'redirect' => route('admin.expense-categories.index')
+            'redirect' => route('admin.expense-categories.index'),
         ]);
     }
 
@@ -92,6 +94,7 @@ class AcnooExpenseCategoryController extends Controller
     {
         $category = ExpenseCategory::findOrFail($id);
         $category->update(['status' => $request->status]);
+
         return response()->json([
             'message' => 'Expense Category',
         ]);
@@ -104,7 +107,7 @@ class AcnooExpenseCategoryController extends Controller
 
         return response()->json([
             'message' => 'Expense Category Deleted Successfully',
-            'redirect' => route('admin.expense-categories.index')
+            'redirect' => route('admin.expense-categories.index'),
         ]);
     }
 
@@ -114,7 +117,7 @@ class AcnooExpenseCategoryController extends Controller
 
         return response()->json([
             'message' => 'Selected Expense Category Deleted Successfully',
-            'redirect' => route('admin.expense-categories.index')
+            'redirect' => route('admin.expense-categories.index'),
         ]);
     }
 }

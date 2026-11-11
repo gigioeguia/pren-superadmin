@@ -12,6 +12,7 @@ class AcnooIncomeCategoryController extends Controller
     public function index()
     {
         $income_categories = IncomeCategory::with('landlord')->where('landlord_id', auth()->id())->latest()->paginate(10);
+
         return view('landlord.income-categories.index', compact('income_categories'));
     }
 
@@ -19,8 +20,8 @@ class AcnooIncomeCategoryController extends Controller
     {
         $income_categories = IncomeCategory::with('landlord')->where('landlord_id', auth()->id())->when(request('search'), function ($q) use ($request) {
             $q->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('description', 'like', '%' . $request->search . '%');
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('description', 'like', '%'.$request->search.'%');
             });
         })
             ->latest()
@@ -28,9 +29,10 @@ class AcnooIncomeCategoryController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('landlord.income-categories.datas', compact('income_categories'))->render()
+                'data' => view('landlord.income-categories.datas', compact('income_categories'))->render(),
             ]);
         }
+
         return redirect(url()->previous());
     }
 
@@ -49,12 +51,12 @@ class AcnooIncomeCategoryController extends Controller
         ]);
 
         IncomeCategory::create($request->except('landlord_id') + [
-            'landlord_id' => auth()->id()
+            'landlord_id' => auth()->id(),
         ]);
 
         return response()->json([
             'message' => __('Income Category saved successfully.'),
-            'redirect' => route('landlord.income-categories.index')
+            'redirect' => route('landlord.income-categories.index'),
         ]);
     }
 
@@ -75,12 +77,12 @@ class AcnooIncomeCategoryController extends Controller
         ]);
 
         $category->update($request->except('landlord_id') + [
-            'landlord_id' => auth()->id()
+            'landlord_id' => auth()->id(),
         ]);
 
         return response()->json([
             'message' => __('Income Category updated successfully.'),
-            'redirect' => route('landlord.income-categories.index')
+            'redirect' => route('landlord.income-categories.index'),
         ]);
     }
 
@@ -91,7 +93,7 @@ class AcnooIncomeCategoryController extends Controller
 
         return response()->json([
             'message' => __('Income Category Deleted Successfully'),
-            'redirect' => route('landlord.income-categories.index')
+            'redirect' => route('landlord.income-categories.index'),
         ]);
     }
 
@@ -101,7 +103,7 @@ class AcnooIncomeCategoryController extends Controller
 
         return response()->json([
             'message' => __('Selected Income Category Deleted Successfully'),
-            'redirect' => route('landlord.income-categories.index')
+            'redirect' => route('landlord.income-categories.index'),
         ]);
     }
 
@@ -109,6 +111,7 @@ class AcnooIncomeCategoryController extends Controller
     {
         $category = IncomeCategory::findOrFail($id);
         $category->update(['status' => $request->status]);
+
         return response()->json([
             'message' => 'Income Category',
         ]);

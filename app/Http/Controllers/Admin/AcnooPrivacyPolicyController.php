@@ -18,6 +18,7 @@ class AcnooPrivacyPolicyController extends Controller
     public function index()
     {
         $privacy_policy = Option::where('key', 'privacy-policy')->first();
+
         return view('admin.privacy-policy.index', compact('privacy_policy'));
     }
 
@@ -25,22 +26,22 @@ class AcnooPrivacyPolicyController extends Controller
     {
         $request->validate([
             'privacy_title' => 'required|string',
-            'description' => 'required|string'
+            'description' => 'required|string',
         ]);
 
         $privacy_policy = Option::updateOrCreate(
             ['key' => 'privacy-policy'],
             ['value' => [
                 'privacy_title' => $request->privacy_title,
-                'description' => $request->description
+                'description' => $request->description,
             ]]
         );
 
         Cache::forget($privacy_policy->key);
 
         return response()->json([
-            'message'   => __('Privacy policy updated successfully'),
-            'redirect'  => route('admin.privacy-policy.index')
+            'message' => __('Privacy policy updated successfully'),
+            'redirect' => route('admin.privacy-policy.index'),
         ]);
     }
 }

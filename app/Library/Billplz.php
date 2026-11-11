@@ -2,8 +2,8 @@
 
 namespace App\Library;
 
-use GuzzleHttp\Client;
 use App\Models\Gateway;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -36,16 +36,18 @@ class Billplz
         // Checking Minimum/Maximum amount
         if ($gateway->min_amount > $amount) {
             session()->put('payment_msg', __('The minimum transaction amount is :amount', ['amount' => currency_format($gateway->min_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         } elseif ($gateway->max_amount < $amount) {
             session()->put('payment_msg', __('The maximum transaction amount is :amount', ['amount' => currency_format($gateway->max_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         }
 
         $apiKey = $array['api_key'];
         $collectionId = $array['collection_id'];
         $callbackUrl = url('/payment/billplz');
-        $client = new Client();
+        $client = new Client;
 
         try {
             $response = $client->post($array['mode'] == 'Live' ? 'https://www.billplz.com/api/v3/bills' : 'https://www.billplz-sandbox.com/api/v3/bills', [
@@ -66,6 +68,7 @@ class Billplz
             return redirect($bill['url']);
         } catch (\Exception $e) {
             session()->put('payment_msg', $e->getMessage());
+
             return redirect(Billplz::redirect_if_payment_faild());
         }
     }
@@ -81,15 +84,18 @@ class Billplz
 
                 if ($status == true) {
                     Log::info("Payment successful for Bill ID: {$bill_id}");
+
                     return redirect(Billplz::redirect_if_payment_success());
                 } else {
                     Log::info("Payment failed for Bill ID: {$bill_id}");
                     session()->put('payment_msg', __('Payment failed'));
+
                     return redirect(Billplz::redirect_if_payment_faild());
                 }
             }
         } catch (\Exception $e) {
             session()->put('payment_msg', $e->getMessage());
+
             return redirect(Billplz::redirect_if_payment_faild());
         }
     }

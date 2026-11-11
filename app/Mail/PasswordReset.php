@@ -6,13 +6,13 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\SerializesModels;
 
 class PasswordReset extends Mailable
 {
     use Queueable, SerializesModels;
+
     protected $data;
 
     /**
@@ -25,8 +25,6 @@ class PasswordReset extends Mailable
         $this->data = $data;
     }
 
-
-
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -38,7 +36,7 @@ class PasswordReset extends Mailable
     /**
      * Get the message envelope.
      *
-     * @return \Illuminate\Mail\Mailables\Envelope
+     * @return Envelope
      */
     /*public function envelope()
     {
@@ -49,8 +47,6 @@ class PasswordReset extends Mailable
 
     /**
      * Get the message content definition.
-     *
-     * @return \Illuminate\Mail\Mailables\Content
      */
     public function content(): Content
     {
@@ -67,8 +63,8 @@ class PasswordReset extends Mailable
      *
      * @return array
      */
-   /* public function attachments()
-    {
-        return [];
-    }*/
+    /* public function attachments()
+     {
+         return [];
+     }*/
 }

@@ -20,11 +20,11 @@ class PlanSubscribe extends Model
         'number_of_property',
         'number_of_tenant',
         'number_of_labor',
-        'payment_status'
- ];
+        'payment_status',
+    ];
 
     protected $casts = [
-        'notes' => 'json'
+        'notes' => 'json',
     ];
 
     public function user()

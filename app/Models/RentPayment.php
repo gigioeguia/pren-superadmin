@@ -32,11 +32,13 @@ class RentPayment extends Model
         'note',
     ];
 
-    public function rent(){
+    public function rent()
+    {
         return $this->belongsTo(Rent::class);
     }
 
-    public function gateway(){
+    public function gateway()
+    {
         return $this->belongsTo(Gateway::class);
     }
 
@@ -46,7 +48,7 @@ class RentPayment extends Model
 
         static::creating(function ($model) {
             $id = RentPayment::count() + 1;
-            $model->invoice_no = "RP-" . str_pad($id, 5, '0', STR_PAD_LEFT);
+            $model->invoice_no = 'RP-'.str_pad($id, 5, '0', STR_PAD_LEFT);
         });
     }
 

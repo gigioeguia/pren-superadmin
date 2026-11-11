@@ -15,15 +15,15 @@ class AcnooFeatureController extends Controller
     public function index(Request $request)
     {
         $features = Feature::latest()->paginate(10);
+
         return view('admin.features.index', compact('features'));
     }
-
 
     public function acnooFilter(Request $request)
     {
         $features = Feature::when(request('search'), function ($q) {
             $q->where(function ($q) {
-                $q->where('title', 'like', '%' . request('search') . '%');
+                $q->where('title', 'like', '%'.request('search').'%');
             });
         })
             ->latest()
@@ -31,7 +31,7 @@ class AcnooFeatureController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.features.datas', compact('features'))->render()
+                'data' => view('admin.features.datas', compact('features'))->render(),
             ]);
         }
 
@@ -53,12 +53,12 @@ class AcnooFeatureController extends Controller
         ]);
 
         Feature::create($request->except('image') + [
-            'image' => $request->image ? $this->upload($request, 'image') : null
+            'image' => $request->image ? $this->upload($request, 'image') : null,
         ]);
 
         return response()->json([
             'message' => __('Feature created successfully'),
-            'redirect' => route('admin.features.index')
+            'redirect' => route('admin.features.index'),
         ]);
     }
 
@@ -82,7 +82,7 @@ class AcnooFeatureController extends Controller
 
         return response()->json([
             'message' => __('Feature updated successfully'),
-            'redirect' => route('admin.features.index')
+            'redirect' => route('admin.features.index'),
         ]);
     }
 
@@ -94,8 +94,8 @@ class AcnooFeatureController extends Controller
         $feature->delete();
 
         return response()->json([
-            'message'   => __('Feature deleted successfully'),
-            'redirect'  => route('admin.features.index')
+            'message' => __('Feature deleted successfully'),
+            'redirect' => route('admin.features.index'),
         ]);
     }
 
@@ -103,9 +103,9 @@ class AcnooFeatureController extends Controller
     {
         $feature = Feature::findOrFail($id);
         $feature->update(['status' => $request->status]);
+
         return response()->json(['message' => 'Feature ']);
     }
-
 
     public function deleteAll(Request $request)
     {
@@ -120,7 +120,7 @@ class AcnooFeatureController extends Controller
 
         return response()->json([
             'message' => __('Selected Feature deleted successfully'),
-            'redirect' => route('admin.features.index')
+            'redirect' => route('admin.features.index'),
         ]);
     }
 }

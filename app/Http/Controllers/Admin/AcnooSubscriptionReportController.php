@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
-use App\Models\PlanSubscribe;
-use App\Http\Controllers\Controller;
-use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AdminSubscriptionReportExport;
+use App\Http\Controllers\Controller;
+use App\Models\PlanSubscribe;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooSubscriptionReportController extends Controller
 {
@@ -19,6 +19,7 @@ class AcnooSubscriptionReportController extends Controller
     public function index()
     {
         $subscriptions = PlanSubscribe::with(['user:id,name,will_expire', 'plan:id,subscriptionName', 'gateway:id,name'])->latest()->paginate(10);
+
         return view('admin.reports.subscriptions.index', compact('subscriptions'));
     }
 
@@ -36,15 +37,15 @@ class AcnooSubscriptionReportController extends Controller
 
         if ($request->filled('search')) {
             $subscriptionQuery->where(function ($q) use ($request) {
-                $q->where('payment_status', 'like', '%' . $request->search . '%')
+                $q->where('payment_status', 'like', '%'.$request->search.'%')
                     ->orWhereHas('user', function ($q) use ($request) {
-                        $q->where('name', 'like', '%' . $request->search . '%');
+                        $q->where('name', 'like', '%'.$request->search.'%');
                     })
                     ->orWhereHas('plan', function ($q) use ($request) {
-                        $q->where('subscriptionName', 'like', '%' . $request->search . '%');
+                        $q->where('subscriptionName', 'like', '%'.$request->search.'%');
                     })
                     ->orWhereHas('gateway', function ($q) use ($request) {
-                        $q->where('name', 'like', '%' . $request->search . '%');
+                        $q->where('name', 'like', '%'.$request->search.'%');
                     });
             });
         }
@@ -54,7 +55,7 @@ class AcnooSubscriptionReportController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.reports.subscriptions.datas', compact('subscriptions'))->render()
+                'data' => view('admin.reports.subscriptions.datas', compact('subscriptions'))->render(),
             ]);
         }
 

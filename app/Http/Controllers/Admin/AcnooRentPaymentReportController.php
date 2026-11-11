@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Exports\AdminRentPaymentReportExport;
+use App\Http\Controllers\Controller;
 use App\Models\RentPayment;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -39,18 +39,18 @@ class AcnooRentPaymentReportController extends Controller
 
         if ($request->filled('search')) {
             $rent_paymentQuery->where(function ($q) use ($request) {
-                $q->where('invoice_no', 'like', '%' . $request->search . '%')
-                    ->orWhere('payment_status', 'like', '%' . $request->search . '%')
-                    ->orWhere('utility_bill', 'like', '%' . $request->search . '%')
-                    ->orWhere('monthly_rent', 'like', '%' . $request->search . '%')
+                $q->where('invoice_no', 'like', '%'.$request->search.'%')
+                    ->orWhere('payment_status', 'like', '%'.$request->search.'%')
+                    ->orWhere('utility_bill', 'like', '%'.$request->search.'%')
+                    ->orWhere('monthly_rent', 'like', '%'.$request->search.'%')
                     ->orWhereHas('rent.tenant', function ($q) use ($request) {
-                        $q->where('name', 'like', '%' . $request->search . '%');
+                        $q->where('name', 'like', '%'.$request->search.'%');
                     })
                     ->orWhereHas('rent.property.propertyDetail', function ($q) use ($request) {
-                        $q->where('property_info->property_title', 'like', '%' . $request->search . '%');
+                        $q->where('property_info->property_title', 'like', '%'.$request->search.'%');
                     })
                     ->orWhereHas('gateway', function ($q) use ($request) {
-                        $q->where('name', 'like', '%' . $request->search . '%');
+                        $q->where('name', 'like', '%'.$request->search.'%');
                     });
             });
         }
@@ -60,7 +60,7 @@ class AcnooRentPaymentReportController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.reports.rent-payment.datas', compact('rent_payments'))->render()
+                'data' => view('admin.reports.rent-payment.datas', compact('rent_payments'))->render(),
             ]);
         }
 
@@ -70,6 +70,7 @@ class AcnooRentPaymentReportController extends Controller
     public function show(string $id)
     {
         $rent_payment = RentPayment::with(['rent:id,landlord_id,tenant_id,property_id', 'rent.tenant:id,name,phone,email', 'rent.tenant.user_details:id,user_id,address_info', 'rent.landlord:id,name,phone,email', 'rent.landlord.user_details:id,user_id,address_info', 'rent.property:id,puid', 'rent.property.propertyDetail:id,property_id,property_info'])->findOrFail($id);
+
         return view('landlord.rent-payments.view', compact('rent_payment'));
     }
 

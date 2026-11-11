@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\AdminWithdrawRequestExport;
+use App\Http\Controllers\Controller;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Withdraw;
-use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\AdminWithdrawRequestExport;
 
 class AcnooWithdrawRequestController extends Controller
 {
@@ -22,6 +22,7 @@ class AcnooWithdrawRequestController extends Controller
     public function index(Request $request)
     {
         $withdraws = Withdraw::with(['account_info:id,method_id', 'account_info.withdraw_method:id,name,charge_type', 'user:id,name'])->latest()->paginate(20);
+
         return view('admin.withdrawals.index', compact('withdraws'));
     }
 
@@ -29,12 +30,12 @@ class AcnooWithdrawRequestController extends Controller
     {
         $withdraws = Withdraw::with(['account_info:id,method_id', 'account_info.withdraw_method:id,name,charge_type', 'user:id,name'])
             ->when(request('search'), function ($q) {
-                $q->where('amount', 'like', '%' . request('search') . '%')
-                    ->orWhere('charge', 'like', '%' . request('search') . '%')
-                    ->orWhere('status', 'like', '%' . request('search') . '%');
+                $q->where('amount', 'like', '%'.request('search').'%')
+                    ->orWhere('charge', 'like', '%'.request('search').'%')
+                    ->orWhere('status', 'like', '%'.request('search').'%');
 
                 $q->orWhereHas('user', function ($q) {
-                    $q->where('name', 'like', '%' . request('search') . '%');
+                    $q->where('name', 'like', '%'.request('search').'%');
                 });
             })
             ->when($request->id, function ($query) use ($request) {
@@ -45,9 +46,10 @@ class AcnooWithdrawRequestController extends Controller
 
         if (request()->ajax()) {
             return response()->json([
-                'data' => view('admin.withdrawals.datas', compact('withdraws'))->render()
+                'data' => view('admin.withdrawals.datas', compact('withdraws'))->render(),
             ]);
         }
+
         return redirect(url()->previous());
     }
 
@@ -82,7 +84,7 @@ class AcnooWithdrawRequestController extends Controller
 
             return response()->json([
                 'message' => 'Withdrawal rejected successfully',
-                'redirect' => route('admin.withdraw-request.index')
+                'redirect' => route('admin.withdraw-request.index'),
             ]);
         } else {
             return response()->json(['message' => 'Withdrawal request not found'], 404);
@@ -122,15 +124,16 @@ class AcnooWithdrawRequestController extends Controller
 
                 DB::commit();
 
-                sendNotification($withdraw->id, notify_users([$withdraw->user->id]), admin_url: route('admin.withdraw-request.index', ['id' => $withdraw->id]), landlord_url: route('landlord.withdraw.index', ['id' => $withdraw->id]),  admin_msg: __('A withdrawal request has been approved.'), landlord_msg: __('Your withdrawal request has been approved.'));
+                sendNotification($withdraw->id, notify_users([$withdraw->user->id]), admin_url: route('admin.withdraw-request.index', ['id' => $withdraw->id]), landlord_url: route('landlord.withdraw.index', ['id' => $withdraw->id]), admin_msg: __('A withdrawal request has been approved.'), landlord_msg: __('Your withdrawal request has been approved.'));
 
                 return response()->json([
                     'message' => 'Withdrawal Approve successfully',
-                    'redirect' => route('admin.withdraw-request.index')
+                    'redirect' => route('admin.withdraw-request.index'),
                 ]);
             } catch (\Exception $e) {
                 DB::rollback();
-                return response()->json(['error' => 'Transaction failed: ' . $e->getMessage()], 500);
+
+                return response()->json(['error' => 'Transaction failed: '.$e->getMessage()], 500);
             }
         } else {
             return response()->json(['message' => 'Withdrawal request not found'], 404);

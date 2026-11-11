@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Plan;
-use App\Models\User;
-use App\Models\Gateway;
-use App\Models\RentPayment;
-use App\Models\Transaction;
 use App\Helpers\HasUploader;
-use Illuminate\Http\Request;
+use App\Models\Gateway;
+use App\Models\Plan;
 use App\Models\PlanSubscribe;
+use App\Models\RentPayment;
 use App\Models\SecurityDeposit;
-use Illuminate\Support\Facades\DB;
+use App\Models\Transaction;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
 class PaymentController extends Controller
@@ -68,12 +68,12 @@ class PaymentController extends Controller
         ]);
 
         $payment_type = session('payment_type');
-        if (!session('payment_type')) {
+        if (! session('payment_type')) {
             return redirect(route('order.status', ['status' => 'failed']))->with('error', __('Transaction failed for invalid credentials, Please try again later or contact with admin.'));
         }
 
         $gateway = Gateway::findOrFail($gateway_id);
-        $user = User::findOrFail(session("user_id"));
+        $user = User::findOrFail(session('user_id'));
 
         if ($payment_type == 'security_deposit') {
             $plan = SecurityDeposit::with('tenant:id,name,email,phone')->findOrFail($plan_id);
@@ -94,7 +94,7 @@ class PaymentController extends Controller
             ]);
             DB::beginTransaction();
             try {
-                $attachment = $request->attachment ? $this->upload($request, 'attachment') : NULL;
+                $attachment = $request->attachment ? $this->upload($request, 'attachment') : null;
                 $duration = 0;
                 // in days
                 if ($plan->duration_type == 'month') {
@@ -114,7 +114,7 @@ class PaymentController extends Controller
                     'payment_status' => 'unpaid',
                     'notes' => [
                         'manual_data' => $request->manual_data,
-                        'attachment' => $attachment
+                        'attachment' => $attachment,
                     ],
                 ]);
 
@@ -125,6 +125,7 @@ class PaymentController extends Controller
                 return redirect(route('order.status', ['status' => 'success']))->with('message', __('New subscription purchased requested.'));
             } catch (\Exception $e) {
                 DB::rollback();
+
                 return redirect(route('order.status', ['status' => 'failed']))->with('message', __('Something went wrong!'));
             }
         }
@@ -157,6 +158,7 @@ class PaymentController extends Controller
         session()->put('amount', $amount);
 
         $redirect = $gateway->namespace::make_payment($payment_data);
+
         return $redirect;
     }
 
@@ -171,11 +173,11 @@ class PaymentController extends Controller
             $gateway_id = session('gateway_id');
             $gateway = Gateway::findOrFail($gateway_id);
 
-            if (!$plan && !session('plan_id') || !session('payment_type')) {
+            if (! $plan && ! session('plan_id') || ! session('payment_type')) {
                 return redirect(route('order.status', ['status' => 'failed']))->with('error', __('Transaction failed for invalid credentials, Please try again later or contact with admin.'));
             }
 
-            if (session('plan_id') && !$plan) {
+            if (session('plan_id') && ! $plan) {
                 if ($payment_type == 'security_deposit') {
                     $plan = SecurityDeposit::findOrFail(session('plan_id'));
                 }
@@ -187,7 +189,7 @@ class PaymentController extends Controller
                 }
             }
 
-            if (session('user_id') && !$user) {
+            if (session('user_id') && ! $user) {
                 $user = User::findOrFail(session('user_id'));
             }
 
@@ -223,7 +225,7 @@ class PaymentController extends Controller
                 $landlord = User::where('id', $plan->rent->landlord_id ?? '')->first();
 
                 $landlord->update([
-                    'balance' => $landlord->balance + $plan->total_amount
+                    'balance' => $landlord->balance + $plan->total_amount,
                 ]);
                 // rent payment
                 $plan->update([
@@ -290,7 +292,7 @@ class PaymentController extends Controller
                 ]);
             }
 
-            Cache::forget('plan-data-' . $user->id);
+            Cache::forget('plan-data-'.$user->id);
             session()->forget('plan');
             session()->forget('plan_id');
             session()->forget('user');
@@ -299,9 +301,11 @@ class PaymentController extends Controller
             session()->forget('amount');
 
             DB::commit();
+
             return redirect(route('order.status', ['status' => 'success']))->with('message', __('Payment successfully.'));
         } catch (\Exception $e) {
             DB::rollback();
+
             return redirect(route('order.status', ['status' => 'failed']))->with('message', __('Something went wrong!'));
         }
     }
@@ -314,13 +318,14 @@ class PaymentController extends Controller
         if (session('platform') == 'web') {
             return redirect(route('landlord.subscriptions.index'))->with('error', $payment_msg ?? __('Transaction failed for invalid credentials, Please try again later or contact with admin.'));
         }
+
         return redirect(route('order.status', ['status' => 'failed', 'message' => $payment_msg ?? __('Transaction failed for invalid credentials, Please try again later or contact with admin.')]));
     }
 
     public function orderStatus()
     {
         if (session('platform') == 'web' && session('payment_type') == 'subscription') {
-            return redirect(route('landlord.subscriptions.index'))->with('message', request('message') ?? __('New subscription order successfully.'));;
+            return redirect(route('landlord.subscriptions.index'))->with('message', request('message') ?? __('New subscription order successfully.'));
         }
 
         session()->forget('platform');

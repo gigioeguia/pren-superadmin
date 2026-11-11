@@ -4,14 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Option;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class AcnooSettingsManagerController extends Controller
 {
     public function index()
     {
         $otp = Option::where('key', 'email-varification')->first();
+
         return view('admin.manage-settings.index', compact('otp'));
     }
 

@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
-use Carbon\Carbon;
-use App\Models\Rent;
-use App\Models\Unit;
+use App\Helpers\HasUploader;
+use App\Http\Controllers\Controller;
 use App\Models\Option;
 use App\Models\Property;
-use App\Helpers\HasUploader;
-use Illuminate\Http\Request;
+use App\Models\Rent;
 use App\Models\SecurityDeposit;
+use App\Models\Unit;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 
 class AcnooRentController extends Controller
 {
@@ -54,7 +54,7 @@ class AcnooRentController extends Controller
 
         return response()->json([
             'message' => 'Data fetched successfully',
-            'data' => $responseData
+            'data' => $responseData,
         ]);
     }
 
@@ -71,42 +71,41 @@ class AcnooRentController extends Controller
 
         $property = Property::findOrFail($request->property_id);
 
-        //rental period validate
+        // rental period validate
         $start = Carbon::parse($request->start_date);
         $end = Carbon::parse($request->end_date);
         $rentalDays = $start->diffInDays($end);
 
-
         if ($request->unit_id) {
             $unit = Unit::where('property_id', $property->id)
-                        ->findOrFail($request->unit_id);
+                ->findOrFail($request->unit_id);
             $minValue = $unit->min_rental_value ?? null;
-            $minUnit  = $unit->min_rental_unit ?? null;
+            $minUnit = $unit->min_rental_unit ?? null;
 
-            $deposit_amount  = $unit->security_deposit ?? 0;
-            $rent_advance    = $unit->monthly_rent ?? 0;
+            $deposit_amount = $unit->security_deposit ?? 0;
+            $rent_advance = $unit->monthly_rent ?? 0;
             $utility_advance = $unit->utility_deposit ?? 0;
         } else {
             $minValue = $property->rent_info['min_rental_value'] ?? null;
-            $minUnit  = $property->rent_info['min_rental_unit'] ?? null;
+            $minUnit = $property->rent_info['min_rental_unit'] ?? null;
 
-            $deposit_amount  = $property->security_deposit ?? 0;
-            $rent_advance    = $property->rent_info['monthly_rent'] ?? 0;
+            $deposit_amount = $property->security_deposit ?? 0;
+            $rent_advance = $property->rent_info['monthly_rent'] ?? 0;
             $utility_advance = $property->utility_deposit ?? 0;
         }
 
         if ($minValue && $minUnit) {
-            $minDays = match($minUnit) {
-                'days'   => $minValue,
-                'weeks'  => $minValue * 7,
+            $minDays = match ($minUnit) {
+                'days' => $minValue,
+                'weeks' => $minValue * 7,
                 'months' => $minValue * 30,
-                'years'  => $minValue * 365,
-                default  => 0
+                'years' => $minValue * 365,
+                default => 0
             };
 
             if ($rentalDays < $minDays) {
                 return response()->json([
-                    'message' => "The rental period must be at least {$minValue} {$minUnit}."
+                    'message' => "The rental period must be at least {$minValue} {$minUnit}.",
                 ], 422);
             }
         }
@@ -116,10 +115,9 @@ class AcnooRentController extends Controller
         $amount = $chargeData['amount'] ?? 0;
         $type = $chargeData['type'] ?? 'fixed';
 
-
         // Rent total amount = rent + utility
         $rent_total_amount = $rent_advance + $utility_advance;
-        //Security total amount
+        // Security total amount
         $security_total_amount = $rent_advance + $utility_advance + $deposit_amount;
 
         // Security deposit + rent + utility for landlord balance
@@ -135,7 +133,7 @@ class AcnooRentController extends Controller
                 'utility_bill' => $utility_advance,
                 'monthly_rent' => $rent_advance,
                 'total_amount' => $rent_total_amount,
-                'landlord_agreement' => $request->landlord_agreement ? $this->upload($request, 'landlord_agreement') : NULL,
+                'landlord_agreement' => $request->landlord_agreement ? $this->upload($request, 'landlord_agreement') : null,
             ]);
 
             SecurityDeposit::create([
@@ -155,14 +153,15 @@ class AcnooRentController extends Controller
 
             DB::commit();
 
-            sendNotification($rent->id, notify_users([$rent->tenant->id, $rent->landlord->id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]),  admin_msg: __('Landlord create a new rent invitation'), landlord_msg: __('A new rent invitation has been sent to the tenant. Waiting for approval.'), tenant_msg: __('You have received a new rent invitation. Please review and approve.'));
+            sendNotification($rent->id, notify_users([$rent->tenant->id, $rent->landlord->id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]), admin_msg: __('Landlord create a new rent invitation'), landlord_msg: __('A new rent invitation has been sent to the tenant. Waiting for approval.'), tenant_msg: __('You have received a new rent invitation. Please review and approve.'));
 
             return response()->json([
                 'message' => 'Data save successfully',
-                'data' => $rent
+                'data' => $rent,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json(['message' => 'Something went wrong'], 500);
         }
     }
@@ -191,24 +190,23 @@ class AcnooRentController extends Controller
 
         return response()->json([
             'message' => 'Data fetched successfully',
-            'data' => $data
+            'data' => $data,
         ]);
     }
-
 
     public function tenant_agreement(Request $request, string $id)
     {
         $rent = Rent::findOrFail($id);
 
         $rent->update([
-            'tenant_agreement' => $request->tenant_agreement ? $this->upload($request, 'tenant_agreement') : NULL
+            'tenant_agreement' => $request->tenant_agreement ? $this->upload($request, 'tenant_agreement') : null,
         ]);
 
-        sendNotification($rent->id, notify_users([$rent->tenant->id, $rent->landlord->id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]),  landlord_msg: __('The tenant has submitted the signed rent agreement. Please review it.'), tenant_msg: __('Your rent agreement has been submitted successfully. Awaiting landlord’s review.'));
+        sendNotification($rent->id, notify_users([$rent->tenant->id, $rent->landlord->id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]), landlord_msg: __('The tenant has submitted the signed rent agreement. Please review it.'), tenant_msg: __('Your rent agreement has been submitted successfully. Awaiting landlord’s review.'));
 
         return response()->json([
             'message' => 'Agreement sent successfully',
-            'data' => $rent
+            'data' => $rent,
         ]);
     }
 
@@ -218,14 +216,14 @@ class AcnooRentController extends Controller
 
         if ($rent_accept) {
             $rent_accept->update([
-                'status' => 'processing'
+                'status' => 'processing',
             ]);
 
             sendNotification($rent_accept->id, notify_users([$rent_accept->tenant->id, $rent_accept->landlord->id]), landlord_url: route('landlord.rents.index', ['id' => $rent_accept->id]), landlord_msg: __('The tenant has accepted the rent invitation.'), tenant_msg: __('You have successfully accepted the rent invitation.'));
 
             return response()->json([
                 'message' => 'Rent accepted successfully',
-                'status' => $rent_accept
+                'status' => $rent_accept,
             ]);
         }
     }
@@ -245,7 +243,7 @@ class AcnooRentController extends Controller
 
             return response()->json([
                 'message' => 'Rent approved successfully',
-                'status' =>  $rent_approved
+                'status' => $rent_approved,
             ]);
         } else {
             return response()->json(['message' => 'Rent not found'], 404);
@@ -276,7 +274,7 @@ class AcnooRentController extends Controller
 
             return response()->json([
                 'message' => 'Rent cancelled successfully',
-                'data' =>  $rent_cancelled
+                'data' => $rent_cancelled,
             ]);
         } else {
             return response()->json(['message' => 'Rent not found'], 404);

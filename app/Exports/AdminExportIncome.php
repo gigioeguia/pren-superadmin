@@ -11,8 +11,9 @@ class AdminExportIncome implements FromView
     public function view(): View
     {
         $incomes = Income::with('category:id,name')->whereNull('landlord_id')->latest()->get();
+
         return view('admin.incomes.excel-csv', [
-            'incomes' => $incomes
+            'incomes' => $incomes,
         ]);
     }
 }

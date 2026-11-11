@@ -2,8 +2,8 @@
 
 namespace App\Library;
 
-use GuzzleHttp\Client;
 use App\Models\Gateway;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
@@ -35,9 +35,11 @@ class TapPayment
         // Checking Minimum/Maximum amount
         if ($gateway->min_amount > $amount) {
             session()->put('payment_msg', __('The minimum transaction amount is :amount', ['amount' => currency_format($gateway->min_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         } elseif ($gateway->max_amount < $amount) {
             session()->put('payment_msg', __('The maximum transaction amount is :amount', ['amount' => currency_format($gateway->max_amount, currency: $gateway->currency)]));
+
             return redirect(self::redirect_if_payment_faild());
         }
 
@@ -63,8 +65,8 @@ class TapPayment
             $client = new Client(['base_uri' => 'https://api.tap.company/v2/']);
             $response = $client->post('charges', [
                 'headers' => [
-                    'Authorization' => 'Bearer ' . $array['secret_key'],
-                    'Content-Type'  => 'application/json',
+                    'Authorization' => 'Bearer '.$array['secret_key'],
+                    'Content-Type' => 'application/json',
                 ],
                 'json' => $data,
             ]);
@@ -85,16 +87,16 @@ class TapPayment
         // Extract the parameters from the request
         $paymentId = $request->query('tap_id'); // Tap Payment ID
 
-        if (!$paymentId) {
+        if (! $paymentId) {
             return response()->json(['error' => 'Invalid callback response'], 400);
         }
 
         try {
             // Verify the payment status using the Tap API
-            $client = new \GuzzleHttp\Client();
-            $response = $client->get('https://api.tap.company/v2/' . 'charges/' . $paymentId, [
+            $client = new Client;
+            $response = $client->get('https://api.tap.company/v2/'.'charges/'.$paymentId, [
                 'headers' => [
-                    'Authorization' => 'Bearer ' . session('secret_key'),
+                    'Authorization' => 'Bearer '.session('secret_key'),
                 ],
             ]);
 
@@ -106,10 +108,12 @@ class TapPayment
                 return redirect(self::redirect_if_payment_success());
             } else {
                 session()->put('payment_msg', $paymentDetails['response']['message']);
+
                 return redirect(self::redirect_if_payment_faild());
             }
         } catch (\Exception $e) {
             session()->put('payment_msg', $e->getMessage());
+
             return redirect(self::redirect_if_payment_faild());
         }
     }

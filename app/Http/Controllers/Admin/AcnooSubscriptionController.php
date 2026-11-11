@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Exports\AdminSubscriptionExport;
+use App\Http\Controllers\Controller;
+use App\Models\PlanSubscribe;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
-use App\Models\PlanSubscribe;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
-use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooSubscriptionController extends Controller
 {
@@ -23,6 +23,7 @@ class AcnooSubscriptionController extends Controller
     public function index()
     {
         $subscriptions = PlanSubscribe::with(['user:id,name,will_expire', 'plan:id,subscriptionName', 'gateway:id,name'])->latest()->paginate(10);
+
         return view('admin.subscriptions.index', compact('subscriptions'));
     }
 
@@ -32,15 +33,15 @@ class AcnooSubscriptionController extends Controller
 
         if ($request->filled('search')) {
             $subscriptionQuery->where(function ($q) use ($request) {
-                $q->where('payment_status', 'like', '%' . $request->search . '%')
+                $q->where('payment_status', 'like', '%'.$request->search.'%')
                     ->orWhereHas('user', function ($q) use ($request) {
-                        $q->where('name', 'like', '%' . $request->search . '%');
+                        $q->where('name', 'like', '%'.$request->search.'%');
                     })
                     ->orWhereHas('plan', function ($q) use ($request) {
-                        $q->where('subscriptionName', 'like', '%' . $request->search . '%');
+                        $q->where('subscriptionName', 'like', '%'.$request->search.'%');
                     })
                     ->orWhereHas('gateway', function ($q) use ($request) {
-                        $q->where('name', 'like', '%' . $request->search . '%');
+                        $q->where('name', 'like', '%'.$request->search.'%');
                     });
             });
         }
@@ -49,7 +50,7 @@ class AcnooSubscriptionController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.subscriptions.datas', compact('subscriptions'))->render()
+                'data' => view('admin.subscriptions.datas', compact('subscriptions'))->render(),
             ]);
         }
 
@@ -117,9 +118,9 @@ class AcnooSubscriptionController extends Controller
 
                 DB::commit();
 
-                Cache::forget('plan-data-' . $subscribe->user_id);
+                Cache::forget('plan-data-'.$subscribe->user_id);
 
-                sendNotification($subscribe->id, notify_users([$subscribe->user->id]), admin_url: route('admin.subscriptions.index', ['id' => $subscribe->id]),  admin_msg: __('A new subscription has been activated.'), landlord_msg: __('Your subscription has been successfully activated. Enjoy the benefits!'));
+                sendNotification($subscribe->id, notify_users([$subscribe->user->id]), admin_url: route('admin.subscriptions.index', ['id' => $subscribe->id]), admin_msg: __('A new subscription has been activated.'), landlord_msg: __('Your subscription has been successfully activated. Enjoy the benefits!'));
 
                 return response()->json([
                     'message' => 'Subscription paid successfully',
@@ -127,6 +128,7 @@ class AcnooSubscriptionController extends Controller
                 ]);
             } catch (\Exception) {
                 DB::rollBack();
+
                 return response()->json(['message' => 'Something Went wrong!'], 404);
             }
         } else {
@@ -141,7 +143,7 @@ class AcnooSubscriptionController extends Controller
         // Check if attachment exists in notes
         $filePath = $subscription->notes['attachment'] ?? null;
 
-        if (empty($filePath) || !Storage::exists($filePath)) {
+        if (empty($filePath) || ! Storage::exists($filePath)) {
             return redirect()->back()->with('error', 'File not found');
         }
 
@@ -151,6 +153,7 @@ class AcnooSubscriptionController extends Controller
     public function getInvoice(string $invoice_id)
     {
         $subscriber = PlanSubscribe::with(['plan:id,subscriptionName', 'gateway:id,name', 'user:id,name,email', 'user.user_details:user_id,address_info'])->findOrFail($invoice_id);
+
         return view('admin.subscriptions.invoice', compact('subscriber'));
     }
 

@@ -1,16 +1,16 @@
 <?php
 
-use App\Models\User;
-use App\Models\Option;
-use App\Models\Gateway;
 use App\Models\Currency;
+use App\Models\Gateway;
 use App\Models\Language;
+use App\Models\Option;
 use App\Models\PlanSubscribe;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Date;
+use App\Models\User;
 use App\Notifications\SendNotification;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
 function expectedItemId(): string
@@ -30,7 +30,7 @@ function cache_remember(string $key, callable $callback, int $ttl = 1800): mixed
 
 function get_option(string $key): mixed
 {
-    return cache_remember($key, fn() => Option::where('key', $key)->value('value') ?? []);
+    return cache_remember($key, fn () => Option::where('key', $key)->value('value') ?? []);
 }
 
 function formatted_date(string $date, string $format = 'd M, Y'): ?string
@@ -57,10 +57,10 @@ function currency_format(float|int $amount, string $type = 'icon', int $decimals
 
 function currency()
 {
-    $defaultCurrency = Currency::where('is_default', 1)->first();;
+    $defaultCurrency = Currency::where('is_default', 1)->first();
 
     if ($defaultCurrency) {
-        return (object)[
+        return (object) [
             'name' => $defaultCurrency->name,
             'rate' => $defaultCurrency->rate,
             'code' => $defaultCurrency->code,
@@ -98,13 +98,13 @@ function convert_to_default_amount(float|int $amount, Currency $currency): float
 function default_currency(?string $key = null, ?Currency $currency = null): mixed
 {
     $currency = $currency ?? cache_remember('default_currency', function () {
-        return Currency::where('is_default', 1)->first() ?? (object)[
-            'name'      => 'US Dollar',
-            'code'      => 'USD',
-            'rate'      => 1,
-            'symbol'    => '$',
-            'position'  => 'left',
-            'status'    => true,
+        return Currency::where('is_default', 1)->first() ?? (object) [
+            'name' => 'US Dollar',
+            'code' => 'USD',
+            'rate' => 1,
+            'symbol' => '$',
+            'position' => 'left',
+            'status' => true,
             'is_default' => true,
         ];
     });
@@ -142,7 +142,7 @@ function sendNotification(
 
 function plan_data(?string $landlord_id = null): ?PlanSubscribe
 {
-    return cache_remember('plan-data-' . ($landlord_id ?? auth()->id()), function () use ($landlord_id) {
+    return cache_remember('plan-data-'.($landlord_id ?? auth()->id()), function () use ($landlord_id) {
         $planSubscribe = PlanSubscribe::where('user_id', $landlord_id ?? auth()->id())->latest()->first();
 
         if ($planSubscribe) {
@@ -163,7 +163,7 @@ function languages()
 
 function demoReset()
 {
-    if (!env('DEMO_MODE')) {
+    if (! env('DEMO_MODE')) {
         return true;
     }
 

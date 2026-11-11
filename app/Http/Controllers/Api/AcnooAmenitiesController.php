@@ -11,11 +11,11 @@ class AcnooAmenitiesController extends Controller
     public function index(Request $request)
     {
         $query = Amenity::where('landlord_id', auth()->id())
-                        ->where('status', 1)
-                        ->when($request->search, function($q) use ($request) {
-                            $q->where('name', 'like', '%'. $request->search. '%');
-                        })
-                        ->latest();
+            ->where('status', 1)
+            ->when($request->search, function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->search.'%');
+            })
+            ->latest();
         if ($request->has('no_paginate') && $request->no_paginate == true) {
             $amenities = $query->select('id', 'name')->get();
             $responseData = [
@@ -28,7 +28,7 @@ class AcnooAmenitiesController extends Controller
 
         return response()->json([
             'message' => 'Data fetched successfully',
-            'data' => $responseData
+            'data' => $responseData,
         ]);
     }
 
@@ -40,15 +40,14 @@ class AcnooAmenitiesController extends Controller
         ]);
 
         $data = Amenity::create($request->except('landlord_id') + [
-            'landlord_id' => auth()->id()
+            'landlord_id' => auth()->id(),
         ]);
 
         return response()->json([
             'message' => 'Data store successfully',
-            'data' => $data
+            'data' => $data,
         ]);
     }
-
 
     public function update(Request $request, string $id)
     {
@@ -60,12 +59,12 @@ class AcnooAmenitiesController extends Controller
         $amenity = Amenity::findOrFail($id);
 
         $amenity->update($request->except('landlord_id') + [
-            'landlord_id' => auth()->id()
+            'landlord_id' => auth()->id(),
         ]);
 
         return response()->json([
             'message' => 'Data update successfully',
-            'data' => $amenity
+            'data' => $amenity,
         ]);
     }
 

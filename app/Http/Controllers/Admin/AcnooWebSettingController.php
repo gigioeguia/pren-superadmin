@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Option;
 use App\Helpers\HasUploader;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Option;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class AcnooWebSettingController extends Controller
@@ -15,6 +15,7 @@ class AcnooWebSettingController extends Controller
     public function index()
     {
         $page_data = get_option('manage-pages');
+
         return view('admin.website-setting.manage-pages', compact('page_data'));
     }
 
@@ -24,7 +25,7 @@ class AcnooWebSettingController extends Controller
         Option::updateOrCreate(
             ['key' => 'manage-pages'],
             ['value' => [
-                'headings' => $request->except('_token', '_method', 'slider_image','contact_us_img','footer_socials_icons','about_image','get_app_apple_store_img','get_app_play_store_img','web_logo_one','web_logo_two','soft_mng_subtitle_one_icon','soft_mng_subtitle_two_icon', 'soft_mng_subtitle_three_icon','soft_mng_subtitle_one_img', 'soft_mng_subtitle_two_img', 'soft_mng_subtitle_three_img'),
+                'headings' => $request->except('_token', '_method', 'slider_image', 'contact_us_img', 'footer_socials_icons', 'about_image', 'get_app_apple_store_img', 'get_app_play_store_img', 'web_logo_one', 'web_logo_two', 'soft_mng_subtitle_one_icon', 'soft_mng_subtitle_two_icon', 'soft_mng_subtitle_three_icon', 'soft_mng_subtitle_one_img', 'soft_mng_subtitle_two_img', 'soft_mng_subtitle_three_img'),
 
                 'slider_image' => $request->slider_image ? $this->upload($request, 'slider_image', $option->value['slider_image']) : $option->value['slider_image'] ?? null,
                 'contact_us_img' => $request->contact_us_img ? $this->upload($request, 'contact_us_img', $option->value['contact_us_img']) : $option->value['contact_us_img'] ?? null,
@@ -42,10 +43,11 @@ class AcnooWebSettingController extends Controller
 
                 'footer_socials_icons' => $request->footer_socials_icons ? $this->multipleUpload($request, 'footer_socials_icons') : $option->value['footer_socials_icons'] ?? null,
 
-            ]
-        ]);
+            ],
+            ]);
 
         Cache::forget('manage-pages');
+
         return response()->json(__('Pages updated successfully.'));
     }
 }

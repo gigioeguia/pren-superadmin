@@ -13,7 +13,7 @@ class AcnooHouseTypeController extends Controller
 
         return response()->json([
             'message' => 'Data fetched successfully',
-            'data' => $data
+            'data' => $data,
         ]);
     }
 }

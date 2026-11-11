@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\User;
-use App\Mail\WelcomeMail;
-use App\Models\UserDetail;
 use App\Helpers\HasUploader;
+use App\Http\Controllers\Controller;
+use App\Mail\WelcomeMail;
+use App\Models\User;
+use App\Models\UserDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -48,7 +48,7 @@ class AcnooTenantController extends Controller
 
         return response()->json([
             'message' => 'Data fetched successfully',
-            'data' => $responseData
+            'data' => $responseData,
         ]);
     }
 
@@ -58,7 +58,7 @@ class AcnooTenantController extends Controller
         $tenant_count = User::where([['landlord_id', auth()->id()], ['role', 'tenant']])->count();
 
         if ($plan->number_of_tenant !== -1 && $tenant_count >= $plan->number_of_tenant) {
-            return response()->json(['message' => __('Your Tenant addition limit has been reached. Your current limit is ' . $plan->number_of_tenant)], 406);
+            return response()->json(['message' => __('Your Tenant addition limit has been reached. Your current limit is '.$plan->number_of_tenant)], 406);
         }
 
         $request->validate([
@@ -73,7 +73,7 @@ class AcnooTenantController extends Controller
 
         DB::beginTransaction();
         try {
-            $user =  User::create([
+            $user = User::create([
                 'landlord_id' => auth()->user()->id,
                 'image' => $request->hasFile('image') ? $this->upload($request, 'image') : null,
                 'is_setupped' => 0,
@@ -82,10 +82,10 @@ class AcnooTenantController extends Controller
                 'role' => 'tenant',
                 'phone' => $request->input('phone'),
                 'password' => Hash::make($request->password),
-                'profile_type' => $request->profile_type
+                'profile_type' => $request->profile_type,
             ]);
 
-            $frontImage = $request->hasFile('mykad.front_image') ? $this->upload($request, 'mykad.front_image') :  null;
+            $frontImage = $request->hasFile('mykad.front_image') ? $this->upload($request, 'mykad.front_image') : null;
             $backImage = $request->hasFile('mykad.back_image') ? $this->upload($request, 'mykad.back_image') : null;
 
             UserDetail::create([
@@ -125,7 +125,7 @@ class AcnooTenantController extends Controller
 
             DB::commit();
 
-            sendNotification($user->id, notify_users([$user->landlord_id, $user->id]), admin_url: route('admin.tenants.index', ['id' => $user->id]), landlord_url: route('landlord.tenants.index', ['id' => $user->id]),  admin_msg: __('New tenant has been added'), landlord_msg: __('You have successfully created a new tenant.'), tenant_msg: __('Your account has been created'));
+            sendNotification($user->id, notify_users([$user->landlord_id, $user->id]), admin_url: route('admin.tenants.index', ['id' => $user->id]), landlord_url: route('landlord.tenants.index', ['id' => $user->id]), admin_msg: __('New tenant has been added'), landlord_msg: __('You have successfully created a new tenant.'), tenant_msg: __('Your account has been created'));
 
             return response()->json([
                 'message' => __('Tenant save successfully.'),
@@ -133,6 +133,7 @@ class AcnooTenantController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'message' => __('Tenant store failed.'),
                 'error' => $e->getMessage(),
@@ -164,7 +165,7 @@ class AcnooTenantController extends Controller
 
         return response()->json([
             'message' => 'Data fetched successfully',
-            'data' => $data
+            'data' => $data,
         ]);
     }
 
@@ -174,7 +175,7 @@ class AcnooTenantController extends Controller
             'phone' => 'nullable|array',
             'mobile_no' => 'nullable|string',
             'mobile_code' => 'nullable|string',
-            'email' => 'nullable|email|unique:users,email,' . $id,
+            'email' => 'nullable|email|unique:users,email,'.$id,
             'image' => 'nullable|image|mimes:jpeg,png,gif|max:10240',
             'mykad.front_image' => 'nullable|image|mimes:jpeg,png,gif|max:10240',
             'mykad.back_image' => 'nullable|image|mimes:jpeg,png,gif|max:10240',
@@ -187,7 +188,7 @@ class AcnooTenantController extends Controller
         try {
 
             if ($request->hasFile('image')) {
-                if (!empty($user->image)) {
+                if (! empty($user->image)) {
                     $oldImagePath = dirname($user->image);
                     Storage::deleteDirectory($oldImagePath);
                 }
@@ -205,11 +206,11 @@ class AcnooTenantController extends Controller
                 'role' => 'tenant',
                 'phone' => $request->input('phone'),
                 // 'password' => Hash::make($request->password),
-                'profile_type' => $request->profile_type
+                'profile_type' => $request->profile_type,
             ]);
 
             if ($request->hasFile('mykad.front_image')) {
-                if (!empty($user->user_details->mykad['front_image'])) {
+                if (! empty($user->user_details->mykad['front_image'])) {
                     $oldFrontImagePath = dirname($user->user_details->mykad['front_image']);
                     Storage::deleteDirectory($oldFrontImagePath);
                 }
@@ -219,7 +220,7 @@ class AcnooTenantController extends Controller
             }
 
             if ($request->hasFile('mykad.back_image')) {
-                if (!empty($user->user_details->mykad['back_image'])) {
+                if (! empty($user->user_details->mykad['back_image'])) {
                     $oldBackImagePath = dirname($user->user_details->mykad['back_image']);
                     Storage::deleteDirectory($oldBackImagePath);
                 }
@@ -253,6 +254,7 @@ class AcnooTenantController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'message' => __('Tenant updated failed.'),
                 'error' => $e->getMessage(),

@@ -28,48 +28,58 @@ class Transaction extends Model
         'type',
         'notes',
         'meta',
-   ];
+    ];
 
-   public function paidBy() {
+    public function paidBy()
+    {
 
-    return $this->belongsTo(User::class, 'paid_by');
+        return $this->belongsTo(User::class, 'paid_by');
 
-   }
-   public function received_by() {
+    }
 
-    return $this->belongsTo(User::class);
+    public function received_by()
+    {
 
-   }
-   public function gateway() {
+        return $this->belongsTo(User::class);
 
-    return $this->belongsTo(Gateway::class);
+    }
 
-   }
-   public function security_deposit() {
+    public function gateway()
+    {
 
-    return $this->belongsTo(SecurityDeposit::class);
+        return $this->belongsTo(Gateway::class);
 
-   }
+    }
 
-   public function withdraw() {
+    public function security_deposit()
+    {
 
-    return $this->belongsTo(Withdraw::class);
+        return $this->belongsTo(SecurityDeposit::class);
 
-   }
+    }
 
-   public function plan_subscribe() {
+    public function withdraw()
+    {
 
-    return $this->belongsTo(PlanSubscribe::class);
+        return $this->belongsTo(Withdraw::class);
 
-   }
+    }
 
-   public function rent_payment() {
+    public function plan_subscribe()
+    {
 
-    return $this->belongsTo(RentPayment::class);
+        return $this->belongsTo(PlanSubscribe::class);
 
-   }
+    }
 
-   public static function boot()
+    public function rent_payment()
+    {
+
+        return $this->belongsTo(RentPayment::class);
+
+    }
+
+    public static function boot()
     {
         parent::boot();
 
@@ -78,6 +88,4 @@ class Transaction extends Model
             $model->uid = str_pad($id, 5, '0', STR_PAD_LEFT);
         });
     }
-
-
 }

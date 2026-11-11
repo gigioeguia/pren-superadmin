@@ -9,14 +9,15 @@ class Amenity extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'landlord_id', 'status' ];
+    protected $fillable = ['name', 'landlord_id', 'status'];
 
-    public function landlord() {
+    public function landlord()
+    {
 
-      return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class);
     }
 
     protected $casts = [
-        'status' => 'integer'
+        'status' => 'integer',
     ];
 }

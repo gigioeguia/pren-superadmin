@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Rent;
-use App\Models\User;
-use App\Models\Property;
 use App\Helpers\HasUploader;
-use App\Models\RefundReason;
-use Illuminate\Http\Request;
-use App\Models\RefundRequest;
-use App\Models\SecurityDeposit;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Property;
+use App\Models\RefundReason;
+use App\Models\RefundRequest;
+use App\Models\Rent;
+use App\Models\SecurityDeposit;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\ViewErrorBag;
 
 class AcnooRefundRequestController extends Controller
 {
@@ -38,10 +39,9 @@ class AcnooRefundRequestController extends Controller
             ->latest()
             ->paginate($request->per_page ?? 10);
 
-
         return response()->json([
             'message' => 'Data fetched successfully.',
-            'data' => $refund_requests
+            'data' => $refund_requests,
         ]);
     }
 
@@ -75,11 +75,11 @@ class AcnooRefundRequestController extends Controller
             'bank_info' => $request->bank_info,
         ]);
 
-        sendNotification($property->id, notify_users([$refund_request->tenant->id, $refund_request->landlord->id]), landlord_url: route('landlord.refund-request.index', ['id' => $refund_request->id]),  landlord_msg: __('You have a refund request'), tenant_msg: __('Refund request has been successfully send'));
+        sendNotification($property->id, notify_users([$refund_request->tenant->id, $refund_request->landlord->id]), landlord_url: route('landlord.refund-request.index', ['id' => $refund_request->id]), landlord_msg: __('You have a refund request'), tenant_msg: __('Refund request has been successfully send'));
 
         return response()->json([
             'message' => 'Refund request has been submitted successfully.',
-            'data' => $refund_request
+            'data' => $refund_request,
         ]);
     }
 
@@ -87,16 +87,16 @@ class AcnooRefundRequestController extends Controller
     {
         $refund = RefundRequest::with(['property:id,puid', 'property.propertyDetail:id,property_id,property_info', 'landlord:id,name,phone,email', 'landlord.user_details:user_id,address_info', 'tenant:id,name,phone,email', 'tenant.user_details:user_id,address_info', 'deposit:id,deposit_amount,utility_advance,rent_advance,total_amount'])->findOrFail($id);
 
-        $errors = session()->get('errors', new \Illuminate\Support\ViewErrorBag);
+        $errors = session()->get('errors', new ViewErrorBag);
         $html = view('api-invoice.refund-invoice', compact('refund', 'errors'))->render();
 
         return response()->json([
             'message' => 'Data fetched successfully.',
             'data' => [
                 'id' => $refund->id,
-                'total_amount' => $refund->amount
+                'total_amount' => $refund->amount,
             ],
-            'html' => $html
+            'html' => $html,
         ]);
     }
 
@@ -109,12 +109,12 @@ class AcnooRefundRequestController extends Controller
         $refund_request = RefundRequest::findOrFail($id);
 
         $refund_request->update([
-            'attachment' => $request->attachment ? $this->upload($request, 'attachment') : NULL
+            'attachment' => $request->attachment ? $this->upload($request, 'attachment') : null,
         ]);
 
         return response()->json([
             'message' => 'Receipt uploaded successfully.',
-            'data' => $refund_request
+            'data' => $refund_request,
         ]);
     }
 
@@ -128,11 +128,11 @@ class AcnooRefundRequestController extends Controller
         DB::beginTransaction();
         try {
             $refund_request->update([
-                'status' => 'paid'
+                'status' => 'paid',
             ]);
 
             $security_deposit->update([
-                'status' => 'refund'
+                'status' => 'refund',
             ]);
 
             $rent->update([
@@ -152,6 +152,7 @@ class AcnooRefundRequestController extends Controller
 
         } catch (\Throwable $th) {
             DB::rollBack();
+
             return response()->json([
                 'message' => $th->getMessage(),
             ]);
@@ -159,7 +160,7 @@ class AcnooRefundRequestController extends Controller
 
         return response()->json([
             'message' => 'Refund request has been approved successfully.',
-            'data' => $refund_request
+            'data' => $refund_request,
         ]);
     }
 }

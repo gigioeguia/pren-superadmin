@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Exports\AdminWithdrawMethodExport;
-use App\Models\Currency;
-use Illuminate\Http\Request;
-use App\Models\WithdrawMethod;
 use App\Http\Controllers\Controller;
+use App\Models\Currency;
+use App\Models\WithdrawMethod;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooWithdrawMethodController extends Controller
@@ -22,6 +22,7 @@ class AcnooWithdrawMethodController extends Controller
     public function index()
     {
         $withdrawMethods = WithdrawMethod::with('currency:id,name')->latest()->paginate(20);
+
         return view('admin.withdraw-method.index', compact('withdrawMethods'));
     }
 
@@ -29,13 +30,13 @@ class AcnooWithdrawMethodController extends Controller
     {
         $withdrawMethods = WithdrawMethod::with('currency:id,name')
             ->when(request('search'), function ($q) {
-                $q->where('name', 'like', '%' . request('search') . '%')
-                    ->orWhere('min_amount', 'like', '%' . request('search') . '%')
-                    ->orWhere('max_amount', 'like', '%' . request('search') . '%')
-                    ->orWhere('charge', 'like', '%' . request('search') . '%');
+                $q->where('name', 'like', '%'.request('search').'%')
+                    ->orWhere('min_amount', 'like', '%'.request('search').'%')
+                    ->orWhere('max_amount', 'like', '%'.request('search').'%')
+                    ->orWhere('charge', 'like', '%'.request('search').'%');
 
                 $q->orWhereHas('currency', function ($q) {
-                    $q->where('name', 'like', '%' . request('search') . '%');
+                    $q->where('name', 'like', '%'.request('search').'%');
                 });
             })
             ->latest()
@@ -43,15 +44,17 @@ class AcnooWithdrawMethodController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('admin.withdraw-method.datas', compact('withdrawMethods'))->render()
+                'data' => view('admin.withdraw-method.datas', compact('withdrawMethods'))->render(),
             ]);
         }
+
         return redirect(url()->previous());
     }
 
     public function create()
     {
         $currencies = Currency::latest()->get();
+
         return view('admin.withdraw-method.create', compact('currencies'));
     }
 
@@ -68,7 +71,7 @@ class AcnooWithdrawMethodController extends Controller
             'meta.input.*' => [
                 'required',
                 'regex:/^[a-zA-Z_ ]+$/',
-                'max:255'
+                'max:255',
             ],
         ]);
 
@@ -76,6 +79,7 @@ class AcnooWithdrawMethodController extends Controller
         $replace = array_map(function ($input) {
             $input = strtolower($input);
             $input = preg_replace('/\s+/', '_', trim($input)); // replace space with underscore
+
             return $input;
         }, $rawInputs);
 
@@ -89,20 +93,20 @@ class AcnooWithdrawMethodController extends Controller
         WithdrawMethod::create($request->all());
 
         return response()->json([
-            'message'   => __('Payment Method Created successfully'),
-            'redirect'  => route('admin.withdraw-methods.index')
+            'message' => __('Payment Method Created successfully'),
+            'redirect' => route('admin.withdraw-methods.index'),
         ]);
     }
 
     public function edit(WithdrawMethod $withdrawMethod)
     {
         $currencies = Currency::latest()->get();
+
         return view('admin.withdraw-method.edit', compact('withdrawMethod', 'currencies'));
     }
 
     public function update(Request $request, WithdrawMethod $withdrawMethod)
     {
-
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -116,6 +120,7 @@ class AcnooWithdrawMethodController extends Controller
         $replace = array_map(function ($input) {
             $input = strtolower($input);
             $input = preg_replace('/\s+/', '_', trim($input)); // replace space with underscore
+
             return $input;
         }, $rawInputs);
 
@@ -129,17 +134,18 @@ class AcnooWithdrawMethodController extends Controller
         $withdrawMethod->update($request->all());
 
         return response()->json([
-            'message'   => __('Payment Method Updated successfully'),
-            'redirect'  => route('admin.withdraw-methods.index')
+            'message' => __('Payment Method Updated successfully'),
+            'redirect' => route('admin.withdraw-methods.index'),
         ]);
     }
 
     public function destroy(WithdrawMethod $withdrawMethod)
     {
         $withdrawMethod->delete();
+
         return response()->json([
             'message' => __('Withdraw Method Deleted Successfully'),
-            'redirect' => route('admin.withdraw-methods.index')
+            'redirect' => route('admin.withdraw-methods.index'),
         ]);
     }
 
@@ -147,6 +153,7 @@ class AcnooWithdrawMethodController extends Controller
     {
         $withdrawMethod = WithdrawMethod::findOrFail($id);
         $withdrawMethod->update(['status' => $request->status]);
+
         return response()->json(['message' => 'withdrawMethod']);
     }
 
@@ -156,7 +163,7 @@ class AcnooWithdrawMethodController extends Controller
 
         return response()->json([
             'message' => __('Selected Items deleted successfully.'),
-            'redirect' => route('admin.withdraw-methods.index')
+            'redirect' => route('admin.withdraw-methods.index'),
         ]);
     }
 

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('email');
             $table->longText('phone'); // phone_code and phone will be in json format
             $table->string('gender')->nullable();
-            $table->double('salary', 8,2)->default(0);
+            $table->double('salary', 8, 2)->default(0);
             $table->integer('status')->default(1);
             $table->timestamps();
         });

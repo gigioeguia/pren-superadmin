@@ -23,10 +23,10 @@ return new class extends Migration
             $table->double('utility_deposit')->default(0)->nullable();
             $table->double('security_deposit')->default(0)->nullable();
             $table->text('cover_image')->nullable();
-            $table->longText('room_info')->nullable(); //bedroom,bathroom,room_size,unit_size,floor_rang
+            $table->longText('room_info')->nullable(); // bedroom,bathroom,room_size,unit_size,floor_rang
             $table->integer('status')->default(0); // pending = 0 || approve = 1 || inactive = 2 || rejected = 3
-            $table->longText('rent_info')->nullable(); //property_rent,monthly_rent,min_rental_unit,min_rental_value,completion_year,security_deposit_unit,security_deposit_value
-            $table->longText('address_info')->nullable(); //country, city, state, address, postcode
+            $table->longText('rent_info')->nullable(); // property_rent,monthly_rent,min_rental_unit,min_rental_value,completion_year,security_deposit_unit,security_deposit_value
+            $table->longText('address_info')->nullable(); // country, city, state, address, postcode
             $table->longText('meta')->nullable();
             $table->timestamps();
         });

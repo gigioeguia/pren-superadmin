@@ -11,6 +11,7 @@ class AcnooAmenityController extends Controller
     public function index()
     {
         $amenities = Amenity::where('landlord_id', auth()->id())->latest()->paginate(10);
+
         return view('landlord.amenities.index', compact('amenities'));
     }
 
@@ -19,7 +20,7 @@ class AcnooAmenityController extends Controller
         $amenities = Amenity::where('landlord_id', auth()->id())->when(request('search'), function ($q) {
             $q->where(function ($q) {
                 $search = request('search');
-                $q->where('name', 'like', '%' . $search . '%');
+                $q->where('name', 'like', '%'.$search.'%');
             });
         })
             ->latest()
@@ -27,7 +28,7 @@ class AcnooAmenityController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => view('landlord.amenities.datas', compact('amenities'))->render()
+                'data' => view('landlord.amenities.datas', compact('amenities'))->render(),
             ]);
         }
 
@@ -38,16 +39,16 @@ class AcnooAmenityController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'status' => 'nullable|in:0,1'
+            'status' => 'nullable|in:0,1',
         ]);
 
         Amenity::create($request->except('landlord_id') + [
-            'landlord_id' => auth()->id()
+            'landlord_id' => auth()->id(),
         ]);
 
         return response()->json([
             'message' => 'Amenity Created Successfully',
-            'redirect' => route('landlord.amenities.index')
+            'redirect' => route('landlord.amenities.index'),
         ]);
     }
 
@@ -55,7 +56,7 @@ class AcnooAmenityController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'status' => 'nullable|in:0,1'
+            'status' => 'nullable|in:0,1',
         ]);
 
         $amenity = Amenity::findOrFail($id);
@@ -64,7 +65,7 @@ class AcnooAmenityController extends Controller
 
         return response()->json([
             'message' => 'Amenity Updated Successfully',
-            'redirect' => route('landlord.amenities.index')
+            'redirect' => route('landlord.amenities.index'),
         ]);
     }
 
@@ -72,6 +73,7 @@ class AcnooAmenityController extends Controller
     {
         $amenity = Amenity::findOrFail($id);
         $amenity->update(['status' => $request->status]);
+
         return response()->json([
             'message' => 'Amenity',
         ]);
@@ -83,7 +85,7 @@ class AcnooAmenityController extends Controller
 
         return response()->json([
             'message' => 'Amenity Deleted Successfully',
-            'redirect' => route('landlord.amenities.index')
+            'redirect' => route('landlord.amenities.index'),
         ]);
     }
 
@@ -93,7 +95,7 @@ class AcnooAmenityController extends Controller
 
         return response()->json([
             'message' => 'Selected Amenity Deleted Successfully',
-            'redirect' => route('landlord.amenities.index')
+            'redirect' => route('landlord.amenities.index'),
         ]);
     }
 }

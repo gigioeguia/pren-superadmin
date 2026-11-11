@@ -11,8 +11,9 @@ class AdminSubscriptionExport implements FromView
     public function view(): View
     {
         $subscriptions = PlanSubscribe::with(['user:id,name,will_expire', 'plan:id,subscriptionName', 'gateway:id,name'])->latest()->get();
+
         return view('admin.subscriptions.excel-csv', [
-            'subscriptions' => $subscriptions
+            'subscriptions' => $subscriptions,
         ]);
     }
 }

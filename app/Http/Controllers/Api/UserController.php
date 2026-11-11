@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\User;
+use App\Helpers\HasUploader;
+use App\Http\Controllers\Controller;
 use App\Models\Amenity;
-use App\Models\Gateway;
 use App\Models\Currency;
 use App\Models\Facility;
-use App\Helpers\HasUploader;
+use App\Models\Gateway;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
@@ -39,7 +39,7 @@ class UserController extends Controller
             'phone' => 'nullable|array',
             'mobile_no' => 'nullable|string',
             'mobile_code' => 'nullable|string',
-            'email' => 'nullable|email|unique:users,email,' . auth()->user()->id,
+            'email' => 'nullable|email|unique:users,email,'.auth()->user()->id,
             'image' => 'nullable|image|mimes:jpeg,png,gif|max:10240',
             'mykad.front_image' => 'nullable|image|mimes:jpeg,png,gif|max:10240',
             'mykad.back_image' => 'nullable|image|mimes:jpeg,png,gif|max:10240',
@@ -52,7 +52,7 @@ class UserController extends Controller
         try {
 
             if ($request->hasFile('image')) {
-                if (!empty($user->image)) {
+                if (! empty($user->image)) {
                     $oldImagePath = dirname($user->image);
                     Storage::deleteDirectory($oldImagePath);
                 }
@@ -67,11 +67,11 @@ class UserController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->input('phone'),
-                'profile_type' => $request->profile_type
+                'profile_type' => $request->profile_type,
             ]);
 
             if ($request->hasFile('mykad.front_image')) {
-                if (!empty($user->user_details->mykad['front_image'])) {
+                if (! empty($user->user_details->mykad['front_image'])) {
                     $oldFrontImagePath = dirname($user->user_details->mykad['front_image']);
                     Storage::deleteDirectory($oldFrontImagePath);
                 }
@@ -81,7 +81,7 @@ class UserController extends Controller
             }
 
             if ($request->hasFile('mykad.back_image')) {
-                if (!empty($user->user_details->mykad['back_image'])) {
+                if (! empty($user->user_details->mykad['back_image'])) {
                     $oldBackImagePath = dirname($user->user_details->mykad['back_image']);
                     Storage::deleteDirectory($oldBackImagePath);
                 }
@@ -134,6 +134,7 @@ class UserController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'message' => __('Profile update failed.'),
                 'error' => $e->getMessage(),
@@ -171,7 +172,7 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'Data fetched successfully',
-            'data' => $data
+            'data' => $data,
         ]);
     }
 }
