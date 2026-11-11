@@ -348,3 +348,15 @@ Extracción mecánica de los 169 cuerpos (script de brace-matching sobre los 55 
 
 1. **Test paramétrico sobre todas las rutas `*.filter`/`*.delete-all`: NO se añade.** Las 43 vistas `*.datas` requieren datos de seeders heterogéneos por entidad; el costo y el riesgo de falsos positivos superan el beneficio frente a la cobertura existente (G/H representativos + verbatim-check 155/155 + phpstan nivel 5).
 2. **H4 con property del propio landlord: confirmado suficiente.** H3 documenta el ownership (Seg-5) por separado; H4 aísla el bug de rutas (Seg-15) usando solo datos propios, de modo que cada test rompa por exactamente una razón en su fase.
+
+### Desviación de proceso D8: 1 PR → 3 PRs apilados
+
+El diff total de la implementación es de **265,678 caracteres**, por encima del límite de review de GitHub (**150,000**). La entrega se divide en 3 PRs apilados siguiendo el propio plan de commits atómicos de §5:
+
+| PR | Rama head → base | Contenido | Diff |
+|----|------------------|-----------|------|
+| 1 | `spec/trait-acnoo-fase0-impl-1` → `main` | ciclo del spec (Borrador→Aprobado) + trait + tests G/H + `tests/README.md` | 49k |
+| 2 | `spec/trait-acnoo-fase0-impl-2` → `impl-1` | adopción Admin (34) + baseline 709→708 | 134k |
+| 3 | `spec/trait-acnoo-fase0-impl` → `impl-2` | adopción Landlord (18) + docs + D6/D7 | 87k |
+
+Merge en orden 1→2→3 con **merge commit** (no squash): preserva los commits atómicos del plan de §5 y mantiene el diff incremental de cada PR tras el retarget automático de base al borrarse la rama anterior (con squash, el merge-base se perdería y el PR siguiente volvería a mostrar el diff completo, excediendo otra vez el límite). Justificación frente a workflow-ramas ("merge commit solo si el PR tiene commits atómicos relevantes a preservar"): se cumple — cada PR lleva exactamente los commits atómicos del spec.
