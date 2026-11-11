@@ -1,68 +1,58 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# PropertyRent — Super Admin
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+SaaS de gestión de alquileres de propiedades. Roles: `superadmin`, `admin`, `landlord`, `tenant`. Multi-tenant por landlord; pagos con 11 pasarelas.
 
-## About Laravel
+## Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Backend:** Laravel 10.50, PHP 8.2, MySQL 8, Sanctum (API), Spatie Permission
+- **Frontend:** Blade + Bootstrap, Vite 3, laravel-vite-plugin
+- **Pagos:** 11 gateways en `app/Library/` (Stripe, Mollie, Razorpay, FedaPay, Paystack, Flutterwave, Instamojo, Toyyibpay, Thawani, Tap, Billplz)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Requisitos
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP 8.2 (extensiones: `mbstring`, `pdo_mysql`, `gd`, `zip`, entre otras de Laravel)
+- MySQL 8
+- Node 18+ y npm
+- Composer
 
-## Learning Laravel
+## Setup
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```bash
+composer install
+npm install
+cp .env.example .env        # ⚠ faltan las 11 vars de gateways: copiar de un .env funcional (ver AGENTS.md)
+php artisan key:generate
+php artisan storage:link    # public/storage no se commitea
+php artisan migrate --seed  # 24 seeders en orden (DatabaseSeeder); PermissionSeeder primero
+npm run build               # o npm run dev para desarrollo
+php artisan serve
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Notas críticas del setup
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **`allowScripts` en `package.json`**: `npm install` auto-aprueba el postinstall de esbuild (persistido vía `npm approve-scripts esbuild`). **No removerlo**: sin el binario de esbuild, `npm run dev`/`npm run build` fallan.
+- **`vendor/autoload1.php`**: marcador exigido por el middleware `CheckToken` del instalador. Tras un `composer install` fresco, recrearlo: `echo '{"marker":"installer"}' > vendor/autoload1.php`. Sin él, cualquier request web a una ruta no excluida **borra `vendor/laravel`**.
+- `resources/css/app.css` está a 0 bytes: el build no emite asset CSS (estado preexistente, no un fallo).
 
-## Laravel Sponsors
+## Tests
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+La suite corre sobre la DB MySQL dedicada `dbrentpro_test` (configurada en `phpunit.xml`, decisión ADR-0001; nunca sobre la DB del `.env`):
 
-### Premium Partners
+```bash
+php artisan test                           # suite completa (~15 s)
+php artisan test --group=characterization  # 7 tests de caracterización (se espera que
+                                           # fallen al aplicar los fixes de Fase 1–2)
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+Precondiciones, mocks obligatorios y cobertura de endpoints: ver [`tests/README.md`](tests/README.md).
 
-## Contributing
+## Seguridad conocida
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- `npm audit` reporta 2 advisory **dev-only** (vite GHSA-15r9, high; esbuild GHSA-67mh, moderate) que solo afectan al dev server local. **No** ejecutar `npm audit fix --force` (instalaría vite@8, breaking change). La remediación es la migración planificada del stack de build (ítem 4.5 del plan de acción).
+- Laravel 10 y PHP 8.2 sin soporte de seguridad: el plan de remediación por fases (26 vulnerabilidades, 28 ítems de deuda) vive en `.analisis/plan/plan-accion.md` (carpeta gitignored, solo local).
 
-## Code of Conduct
+## Documentación interna
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-
-
+- [`AGENTS.md`](AGENTS.md) — convenciones para agentes: rutas, middleware, arquitectura de pagos, gotchas
+- [`.agents/`](.agents/) — specs, skills operacionales y decisiones (ADRs)
+- [`tests/README.md`](tests/README.md) — suite de tests smoke y caracterización
