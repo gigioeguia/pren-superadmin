@@ -3,13 +3,16 @@
 Suite de **tests smoke** (caracterización) de los flujos críticos: auth web/API,
 pagos, rutas públicas, guards y rutas Artisan. Origen:
 `.agents/spec-impl/spec-tests-smoke-fase0.md` (Fase 0 / 0.1 del plan de acción).
+La amplían los tests del trait `HasAcnooActions` (G1–G8/H1–H4, con 2
+caracterizaciones nuevas): `.agents/spec-impl/spec-trait-acnoo-fase0.md`
+(Fase 0 / 0.3, DT-C3).
 
 ## Cómo correr la suite
 
 ```bash
-php artisan test                        # suite completa (~17 s)
+php artisan test                        # suite completa
 php artisan test --group=smoke           # solo smoke (todos los de esta suite llevan el grupo implícito por directorio)
-php artisan test --group=characterization # solo tests de caracterización (7)
+php artisan test --group=characterization # solo tests de caracterización (9)
 php artisan test tests/Feature/Auth/     # un dominio
 ```
 
@@ -63,6 +66,8 @@ y el comentario, y actualizar el spec (ver skill `.agents/skills/tests-caracteri
 | `ArtisanRoutesSmokeTest::test_public_update_route_runs_migrations_and_sets_version` | Seg-1 — `/update` público ejecuta Artisan | Fase 1 |
 | `ArtisanRoutesSmokeTest::test_public_cache_clear_route_clears_cache` | Seg-1 — `/cache-clear` público | Fase 1 |
 | `PaymentFlowSmokeTest::test_payment_success_processes_subscription_from_session` | Seg-6 — `/payment/success` público procesa desde sesión | Fase 2 |
+| `LandlordAcnooActionsSmokeTest::test_delete_all_deletes_foreign_amenities_without_ownership_check` | Seg-5 — `deleteAll` landlord sin ownership check (IDOR bulk) | Fase 2 |
+| `LandlordAcnooActionsSmokeTest::test_filter_route_runs_delete_all_due_to_crossed_route` | Seg-15 — ruta cruzada `properties/filter`→`deleteAll` en `routes/landlord.php:15` | Fase 3.6 |
 
 > Nota G2/G4: el 403 observado no lo produce `AdminMiddleware` (que ya dejó
 > pasar al landlord/tenant por el bug de precedencia) sino el middleware Spatie

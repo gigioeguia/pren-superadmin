@@ -256,3 +256,88 @@ Auditoría según skill `revisar-spec`: frontmatter 6/6, prefijos G/H/F oficiale
 **Decisión:** 0 hallazgos altos, 1 medio y 4 bajos (todos resueltos en esta revisión) → estado pasa a `Revisado`. Pendiente de `Aprobado` por el decisor.
 
 **Aprobación (2026-11-11):** el decisor aprueba el spec tras revisión sin hallazgos altos. Listo para implementar en `spec/trait-acnoo-fase0-impl` (apilada sobre `-draft`); las decisiones pendientes de §8 se resuelven en implementación.
+
+---
+
+## 12. Notas de implementación (2026-11-11)
+
+Implementado en rama `spec/trait-acnoo-fase0-impl` (apilada sobre `-draft`).
+
+### Inventario P5 (completado antes de la adopción)
+
+Extracción mecánica de los 169 cuerpos (script de brace-matching sobre los 55 controladores) + cross-check rutas↔métodos con autoload. Resultado: **52 controladores adoptan** el trait, **3 excluidos** (su único método no encaja en el esqueleto y queda como override: `Admin\AcnooSupportController` — filter sin paginate, lista `get()`; `Admin\NotificationController` y `Landlord\NotificationController` — filter `get()` con JSON incondicional), **10 overrides** en adoptantes y **5 supresiones de `status`**. Migrados: 169 − 13 overrides = **156**.
+
+**Admin (36):**
+
+| Controlador | Migra al trait | Queda en el controlador | Notas |
+|---|---|---|---|
+| AcnooAmenityController | filter, deleteAll (bulk), status | — | per10; status msg `'Amenity'`; referencia de adopción |
+| AcnooBlogController | filter, deleteAll (row-by-row), status | — | per10; media `image`; msg `'Blog'` |
+| AcnooClientController | filter, deleteAll (2-fase→intercalado, D5), status | — | per10; msg `'Client '` (espacio final) |
+| AcnooCommentController | filter, deleteAll (bulk) | — | redirect `admin.blogs.index` |
+| AcnooCurrencyController | filter | deleteAll (guard moneda default → 400) | per10; `orderBy` antes de `latest()` |
+| AcnooExpenseCategoryController | filter, deleteAll (bulk), status | — | `whereNull('landlord_id')`; per10 |
+| AcnooExpenseController | deleteAll (bulk), exports | acnooFilter (total_expense en JSON); status suprimido (D1) | exports `AdminExpensesExport` `'admin-expenses'` |
+| AcnooFacilityController | filter, deleteAll (bulk), status | — | per10 |
+| AcnooFaqController | filter, deleteAll (bulk), status | — | per10; msg `'Faq '` (espacio final) |
+| AcnooFeatureController | filter, deleteAll (2-fase→D5), status | — | per10; msg `'Feature '` (espacio final) |
+| AcnooHighlightController | filter, deleteAll (row-by-row), status | — | per10; media `image` |
+| AcnooHouseTypeController | filter, deleteAll (bulk), status | — | per**20** |
+| AcnooIncomeCategoryController | filter, deleteAll (bulk), status | — | `whereNull('landlord_id')`; per10 |
+| AcnooIncomeController | deleteAll (bulk), exports | acnooFilter (total_income); status suprimido (D1) | exports `AdminExportIncome` `'admin-incomes'` |
+| AcnooLandlordController | filter, exports | deleteAll (transacción + user_details + `$e->getMessage()`) | per20; `AdminLandlordExport($request)` `'landlords'` |
+| AcnooLandlordWithdrawReportController | filter, exports | — | per20 `input()` (D3); `'landlord-withdraw-report'` |
+| AcnooLanguageController | filter | deleteAll (`is_default`+File+Cache), status (guard 403+Cache) | per20; `orderBy('order','asc')` |
+| AcnooMessageController | filter, deleteAll (bulk) | — | redirect `admin.messages.index` |
+| PropertyController | los 5 (deleteAll row-by-row con media) | — | per20; status `'Status Updated'` + redirect (único admin); `'properties'` |
+| AcnooRefundReasonController | filter, deleteAll (bulk), status | — | per20; redirect `admin.refund-reason.index` (singular) |
+| AcnooRefundRequestController | filter, exports | — | per20 `input()` (D3); `'refund-reports'` |
+| AcnooRentPaymentController | filter, exports | — | per20; `'rent-payments'` |
+| AcnooRentPaymentReportController | filter, exports | — | per20 `input()` (D3); `'rent-payemnt-report'` (**typo preservado**) |
+| AcnooSecurityDepositController | filter, exports | — | per20; `'security-deposits'` |
+| AcnooSecurityDepositReportController | filter, exports | — | per20; `'security-deposit-reports'` |
+| AcnooSubscriptionController | filter, exports | — | per10; `'subscription-list'` |
+| AcnooSubscriptionReportController | filter, exports | — | per10 `input()` (D3); `'subscription-reports'` |
+| AcnooSupportController | — | acnooFilter (excluido: `get()` sin paginate) | no adopta el trait |
+| AcnooTenantController | filter, exports | deleteAll (transacción + user_details) | per20; `AdminTenantExport($request->status)`; excel `'tenant'` ≠ csv `'tenants'` |
+| AcnooTestimonialController | filter, deleteAll (row-by-row) | — | per10; media `client_image` |
+| AcnooTransactionController | filter, exports | — | per20; `'transactions'` |
+| AcnooTransactionReportController | filter, exports | — | per20 `input()` (D3); `'transaction-reports'` |
+| AcnooWithdrawMethodController | los 5 (deleteAll bulk, status) | — | per20; status msg `'withdrawMethod'`; `__('Selected Items deleted successfully.')` |
+| AcnooWithdrawRequestController | filter, exports | — | per20 (+`when($request->id)`); `'withdraw-request'` |
+| NotificationController | — | acnooFilter (excluido) | no adopta el trait |
+| UserController | filter, deleteAll (bulk) | status suprimido (D1: ruta muerta) | per20; `__('Selected Staff deleted successfully')` |
+
+**Landlord (19):**
+
+| Controlador | Migra al trait | Queda en el controlador | Notas |
+|---|---|---|---|
+| AcnooAmenityController | filter (scoped), deleteAll (bulk), status | — | per10 |
+| AcnooApplicationController | filter, exports | — | per20; `$property = Property::...->get('id')` como statement del hook; `'landlord-applications'` |
+| AcnooExpenseCategoryController | filter (scoped), deleteAll (bulk), status | — | per10 |
+| AcnooExpenseController | deleteAll (bulk), exports | acnooFilter (total_expense); status suprimido (D1) | `'landlord-expenses'` |
+| AcnooFacilityController | filter (scoped), deleteAll (bulk), status | — | per10 |
+| AcnooIncomeCategoryController | filter (scoped), deleteAll (bulk), status | — | per10 |
+| AcnooIncomeController | deleteAll (bulk), exports | acnooFilter (total_income); status suprimido (D1) | `'landlord-incomes'` |
+| AcnooLaborController | filter (scoped), deleteAll (bulk), exports | — | per20; `'landlord-labors'` |
+| AcnooMaintenanceController | filter, exports | — | per20; `'landlord-maintenances'` |
+| AcnooMaintenanceReportController | filter, exports | — | per20; `acnooViewData` retorna 5 vars (4 contadores recomputados en el hook); `'landlord-maintenance-reports'` |
+| AcnooRefundRequestController | filter (scoped), exports | — | per10; `'refund-request'` |
+| AcnooRentInvitationController | filter, exports | — | per20 `input()` (D3); `redirect()->back()` ≡ `url()->previous()` (D4); `'landlord-rent-invitation'` |
+| AcnooRentPaymentController | filter, exports | — | per20; `'landlord-rent-payments'` |
+| AcnooSecurityDepositController | filter (scoped), exports | — | per20; `'security-deposits'` |
+| AcnooTenantController | filter, exports | deleteAll (transacción + user_details) | per20; `LandlordTenantExport($request)` `'landlord-tenants'` |
+| AcnooWithdrawController | filter (scoped), exports | — | per20; `'landlord-withdraw-method'` |
+| AcnooWithdrawMethodController | filter (scoped), deleteAll (bulk), exports | — | per10; redirect `landlord.withdraw-method.index` (singular); `'landlord-user-method'` |
+| NotificationController | — | acnooFilter (excluido) | no adopta el trait |
+| PropertyController | filter (scoped), status, exports | deleteAll (guard rent→400 dentro del bucle) | per20; status msg `'Property'` sin redirect; `'landlord-properties'` |
+
+### Desviaciones (documentadas; ninguna exige volver a Borrador)
+
+| # | Punto | Detalle |
+|---|-------|---------|
+| D1 | Rutas muertas vs trait | 6 rutas apuntan hoy a métodos inexistentes (5×`status`: UserController y AcnooIncome/Expense de ambas capas; 1×`acnooFilter`: `Landlord\AcnooSupportController`, que no adopta). Los 5 adoptantes suprimen `status` con `use HasAcnooActions { status as protected; }` — la ruta sigue muerta (500 al invocarla) igual que hoy. Sin la supresión, el trait **reviviría** las rutas = cambio de comportamiento. |
+| D2 | F2 = 52, no 55 | 3 controladores excluidos (inventario). El DoD "55/55" se cumple como 52 adoptando + 3 excluidos documentados con su único método como override. |
+| D3 | `input('per_page', N)` ≡ `?? N` | Los filtros de reportes leen per_page con `input('per_page', N)`; el trait usa `$request->per_page ?? acnooPerPage()`. Difieren únicamente si `per_page` se envía explícitamente como `null`. |
+| D4 | `redirect()->back()` ≡ `redirect(url()->previous())` | RentInvitation usa `back()`; ambos producen 302 a la URL previa. |
+| D5 | deleteAll 2-fase → intercalado | Client/Feature (admin) borran la media de todas las filas y luego `each->delete()`; el trait intercala media+delete por fila vía `deletingAcnooRow`. Mismo estado final y misma respuesta; cambia solo el orden interno de operaciones (relevante únicamente si un listener de eventos leyera archivos). |
