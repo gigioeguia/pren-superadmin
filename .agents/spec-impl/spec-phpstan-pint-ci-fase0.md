@@ -1,7 +1,7 @@
 ---
 id: spec-phpstan-pint-ci-fase0
 titulo: "PHPStan (Larastan) nivel 5 + Pint + CI"
-estado: Borrador
+estado: Revisado
 fecha: 2026-11-10
 origen: .analisis/plan/plan-accion.md (Fase 0 / 0.2) — DT-A4
 cobertura: Análisis estático nivel 5 con baseline, estilo Pint y pipeline CI de 4 jobs (tests, phpstan, pint, frontend build) sobre la suite smoke existente
@@ -36,7 +36,6 @@ Que todo push/PR a `main` ejecute automáticamente tests + PHPStan nivel 5 + Pin
 - Corregir los errores congelados en el baseline (se atacan por dominio en fases posteriores).
 - Refactors de estilo manual más allá de lo que Pint aplica automáticamente.
 - Branch protection en settings de GitHub (fuera del repo; queda como recomendación post-merge).
-- Badge de CI en el README (cosmético, opcional en el mismo PR).
 
 ### Cobertura objetivo
 - `vendor/bin/phpstan analyse` nivel 5 → **exit 0** (0 errores fuera del baseline).
@@ -86,6 +85,8 @@ steps:
     env: { DB_HOST: 127.0.0.1, DB_USERNAME: root, DB_PASSWORD: root }
 ```
 
+*(Fragmento ilustrativo — la estructura completa del job, con `actions/checkout` y `setup-php`, se define en la implementación.)*
+
 ---
 
 ## 5. Decisiones técnicas
@@ -106,7 +107,7 @@ Fijadas, no negociables salvo volver el spec a `Borrador`:
 
 ## 6. Catálogo de casos
 
-Este spec no cubre flujos HTTP: el catálogo adapta `Dado/Cuando/Entonces` a verificaciones de tooling (prefijo `F` — feature transversal, según `spec-conventions.md`).
+Este spec no cubre flujos HTTP: el catálogo adapta `Dado/Cuando/Entonces` a verificaciones de tooling (prefijo `F` — feature transversal, según `spec-conventions.md`). **Total: 13 verificaciones (F1–F13)** — 4 de análisis estático, 2 de estilo, 7 de CI.
 
 ### 6.1 Análisis estático (PHPStan)
 
@@ -153,7 +154,7 @@ Ninguno: este spec añade tooling, no documenta bugs de aplicación.
 - [ ] F5 verificado: `vendor/bin/pint --test` exit 0.
 - [ ] `.github/workflows/ci.yml` con los 4 jobs disparando en push a `main` y PRs.
 - [ ] Job `tests` incluye MySQL 8 service, el marcador `vendor/autoload1.php` y exporta `DB_HOST/DB_USERNAME/DB_PASSWORD`.
-- [ ] CI en verde en un PR de prueba con los 4 jobs (evidencia: link al run).
+- [ ] CI en verde en un PR de prueba con los 4 jobs (evidencia: link al run). El propio PR de implementación sirve: GitHub Actions ejecuta el workflow del PR que lo introduce.
 - [ ] Suite smoke completa (60 tests) pasa dentro del job `tests` en CI.
 - [ ] `composer analyse` / `composer lint` / `composer lint:fix` funcionan como atajos.
 - [ ] `AGENTS.md` (sección Tooling) documenta los comandos y la regla del baseline.
@@ -171,11 +172,11 @@ Ninguno: este spec añade tooling, no documenta bugs de aplicación.
 | Sin `.env` en CI: credenciales DB ausentes | Job tests falla con connection refused | El workflow exporta `DB_*` (phpunit.xml intacto, sin credenciales versionadas) |
 | **Falta `vendor/autoload1.php` en CI** → `CheckToken` borra `vendor/laravel` en los feature tests | Job tests revienta de forma catastrófica y confusa | Step obligatorio tras `composer install` (F13); documentado también en `tests/README.md` |
 | GitHub Actions deshabilitado o sin minutos | DoD de CI no verificable | Verificar settings (P6) antes; alternativa pendiente: self-hosted runner |
-| Baseline enorme (miles de errores) desanima mejoras futuras | Nivel 5 se percieve inalcanzable sin baseline | Documentar conteo y atacar por dominio en Fase 3–4 (errores de auth/pagos primero) |
+| Baseline enorme (miles de errores) desanima mejoras futuras | Nivel 5 se percibe inalcanzable sin baseline | Documentar conteo y atacar por dominio en Fase 3–4 (errores de auth/pagos primero) |
 
 **Pendiente de decisión:**
 - ¿Activar branch protection (require status checks) al merge? (settings GitHub, fuera del repo).
-- ¿Badge de CI en el README dentro del mismo PR o dejarlo aparte?
+- ¿Badge de CI en el README? (cosmético; en el PR de implementación o aparte).
 
 ---
 
@@ -197,3 +198,19 @@ Ninguno: este spec añade tooling, no documenta bugs de aplicación.
 - `tests/README.md` → precondiciones (DB test, marcador `vendor/autoload1.php`)
 - `AGENTS.md` → sección Tooling (a actualizar)
 - `.agents/spec/spec-conventions.md`
+
+---
+
+## 11. Revisión (2026-11-11)
+
+Auditoría según skill `revisar-spec`: frontmatter 6/6, prefijos F oficiales correlativos sin huecos, formato de catálogo, caracterizaciones (ninguna, declarado), referencias vigentes e idioma ✓.
+
+| H# | Hallazgo | Severidad | Resolución |
+|----|----------|-----------|------------|
+| H1 | Typo "se percieve inalcanzable" (§8) | bajo | Corregido |
+| H2 | Badge de CI en OUT y a la vez como pendiente — ambigüedad de alcance | medio | Retirado de OUT; queda solo como decisión pendiente (§8) |
+| H3 | Conteo total de casos no declarado explícito | bajo | Añadido "13 verificaciones (F1–F13)" en §6 |
+| H4 | DoD "PR de prueba" sin aclarar que puede ser el propio PR de implementación | bajo | Aclarado en el ítem del DoD |
+| H5 | Snippet YAML §4 parcial sin aclarar que es ilustrativo | bajo | Anotado como fragmento ilustrativo |
+
+**Decisión:** 0 hallazgos altos, 1 medio y 4 bajos (todos resueltos en esta revisión) → estado pasa a `Revisado`. Pendiente de `Aprobado` por el decisor.
