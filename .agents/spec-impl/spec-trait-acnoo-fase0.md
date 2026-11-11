@@ -355,9 +355,9 @@ El diff total de la implementación es de **265,678 caracteres**, por encima del
 
 | PR | Rama head → base | Contenido | Diff |
 |----|------------------|-----------|------|
-| 1 | `spec/trait-acnoo-fase0-impl-1` → `main` | ciclo del spec (Borrador→Aprobado) + trait + tests G/H + `tests/README.md` | 49k |
-| 2 | `spec/trait-acnoo-fase0-impl-2` → `impl-1` | adopción Admin (34) + baseline 709→708 | 134k |
-| 3 | `spec/trait-acnoo-fase0-impl` → `impl-2` | adopción Landlord (18) + docs + D6/D7 | 87k |
+| 1 | `spec/trait-acnoo-fase0-impl-1` → `main` | ciclo del spec (Borrador→Aprobado) + trait + tests G/H + `tests/README.md` + índice de specs en `.agents/README.md` | 52k |
+| 2 | `spec/trait-acnoo-fase0-impl-2` → `impl-1` | adopción Admin (34) + baseline 709→708 + `AGENTS.md` intermedio (Admin ya sirve del trait) | 137k |
+| 3 | `spec/trait-acnoo-fase0-impl` → `impl-2` | adopción Landlord (18) + `AGENTS.md` final (52/55) + D6/D7 | 96k |
 
 Merge en orden 1→2→3 con **merge commit** (no squash): preserva los commits atómicos del plan de §5 y mantiene el diff incremental de cada PR tras el retarget automático de base al borrarse la rama anterior (con squash, el merge-base se perdería y el PR siguiente volvería a mostrar el diff completo, excediendo otra vez el límite). Justificación frente a workflow-ramas ("merge commit solo si el PR tiene commits atómicos relevantes a preservar"): se cumple — cada PR lleva exactamente los commits atómicos del spec.
 
@@ -378,3 +378,7 @@ Hallazgo (crítico): "Landlords can alter others' records — status() usa findO
 ### Deuda conocida del trait: DT-M10 (detectada en review, diferida a Fase 2)
 
 Hallazgo (medio): "Failed deletes leave missing media — en el camino row-by-row, `deletingAcnooRow` borra la media antes que la fila; si el delete de la fila falla (FK/concurrencia), la fila queda viva con su media ya borrada". Patrón **preexistente** (todos los originales borraban media antes que la fila — el propio review lo cita) y por tanto preservado 1:1 por contrato. El fix correcto **no es** invertir el orden sin más: las relaciones con `cascadeOnDelete` (`propertyDetail`, `units`) desaparecen tras el delete y la limpieza dejaría de encontrarlas — requiere capturar los paths ANTES del delete y limpiar DESPUÉS, un rediseño del contrato del hook que se ejecutará junto al rework de scoping de Fase 2 (nuevo ítem 2.6 del plan-accion, DT-M10 en deuda-tecnica.md). Nota con la advertencia de la trampa de cascada añadida en el trait, junto al camino row-by-row.
+
+### Respuesta al review — docs contradictorios en los slices (2026-11-11)
+
+Hallazgo (medio): "AGENTS.md still says there is no shared trait, and .agents/README.md still lists only the previous implementation spec". Correcto para los PRs 1/2 aislados: la actualización de docs vivía en el PR 3, dejando ventana contradictoria entre merges. Resuelto re-asignando cada doc al punto más temprano en que es cierto (ver tabla D8): índice de `.agents/README.md` → PR 1 (el spec existe desde entonces; además corrige un gap preexistente — el índice tampoco listaba `spec-phpstan-pint-ci-fase0.md`), `AGENTS.md` intermedio → PR 2 (momento en que 34 controladores Admin sirven del trait; wording exacto para ese estado), `AGENTS.md` final (52/55, 11 overrides) → PR 3.
