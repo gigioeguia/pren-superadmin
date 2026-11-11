@@ -11,7 +11,7 @@ when_to_use: "Antes de mover un spec a Aprobado, o tras reorganizar carpetas de 
 
 1. **Leer reglas**: `.agents/spec/spec-conventions.md` (reglas) y `.agents/spec/spec-template.md` (estructura esperada).
 2. **Leer el spec-impl** a auditar en `.agents/spec-impl/`.
-3. **Frontmatter**: verificar los 6 campos (`id, titulo, estado, fecha, origen, cobertura`). `estado` debe estar en el flujo `Borrador → Revisado → Aprobado → Obsoleto`.
+3. **Frontmatter**: verificar los 6 campos (`id, titulo, estado, fecha, origen, cobertura`). `estado` debe estar en el flujo `Borrador → Revisado → Aprobado → Implementado → Obsoleto` (ver `spec-conventions.md`).
 4. **Numeración**: IDs con prefijos oficiales (`L/S/R/A/P/Pub/G/H/M/U/F`) y correlativos sin huecos.
 5. **Formato de catálogo**: todas las tablas con columnas `ID | Escenario | Dado | Cuando | Entonces`.
 6. **Caracterizaciones**:

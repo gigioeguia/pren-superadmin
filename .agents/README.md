@@ -46,6 +46,8 @@ crear-spec → revisar-spec → (estado: Aprobado) → implementar-spec
                                                           └── testing-conventions (al escribir tests)
 ```
 
+Cierre: al verificar y tachar el DoD, el spec pasa a `Implementado` (estados y transiciones en `spec-conventions.md`).
+
 Todo el flujo está sujeto a `workflow-ramas.md` (nunca editar `main`).
 
 ## Ver también

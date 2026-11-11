@@ -1,7 +1,7 @@
 ---
 id: spec-tests-smoke-fase0
 titulo: "Tests Smoke — Fase 0 / 0.1"
-estado: Borrador
+estado: Implementado
 fecha: 2026-11-10
 origen: .analisis/plan/plan-accion.md (Fase 0 / 0.1) — DT-C1
 cobertura: Catálogo completo (59 tests) sobre flujos críticos (auth web/API, pagos, guards, rutas Artisan)
@@ -241,15 +241,15 @@ Estos 7 tests se marcan con `@group characterization` en la implementación PHPU
 
 ## 8. Criterios de aceptación (Definition of Done)
 
-- [ ] `dbrentpro_test` creada y `phpunit.xml` configurado (`DB_DATABASE=dbrentpro_test`, `APP_KEY` seteada).
-- [ ] `php artisan test` corre sobre `dbrentpro_test` sin tocar la DB del `.env`.
-- [ ] `UserFactory` extendida con estados `landlord()`, `admin()`, `tenant()`, `superadmin()`.
-- [ ] Trait `tests/Concerns/CreatesUsers.php` creado.
-- [ ] Los 59 casos del catálogo (L1–L6, S1–S8, R1–R5, A1–A10, P1–P10, Pub1–10, G1–G4, H1–H4, M1–M2) pasan en verde sobre el código actual.
-- [ ] Cobertura de endpoints críticos ≥ 60 % verificada comparando casos del catálogo contra `php artisan route:list` (rutas de auth, pagos, admin, landlord, maintenance).
-- [ ] Los 7 tests de caracterización marcados con `@group characterization` y comentario que explique que se espera que fallen tras Fase 1–2.
-- [ ] `tests/README.md` explica cómo correr la suite y qué significa `@group characterization`.
-- [ ] Tiempo de ejecución total < 30 s (si se excede, cambiar a `DatabaseTransactions` en tests no-schema).
+- [x] `dbrentpro_test` creada y `phpunit.xml` configurado (`DB_DATABASE=dbrentpro_test`, `APP_KEY` seteada).
+- [x] `php artisan test` corre sobre `dbrentpro_test` sin tocar la DB del `.env`.
+- [x] `UserFactory` extendida con estados `landlord()`, `admin()`, `tenant()`, `superadmin()`.
+- [x] Trait `tests/Concerns/CreatesUsers.php` creado.
+- [x] Los 59 casos del catálogo (L1–L6, S1–S8, R1–R5, A1–A10, P1–P10, Pub1–10, G1–G4, H1–H4, M1–M2) pasan en verde sobre el código actual.
+- [x] Cobertura de endpoints críticos ≥ 60 % verificada comparando casos del catálogo contra `php artisan route:list` (rutas de auth, pagos, admin, landlord, maintenance).
+- [x] Los 7 tests de caracterización marcados con `@group characterization` y comentario que explique que se espera que fallen tras Fase 1–2.
+- [x] `tests/README.md` explica cómo correr la suite y qué significa `@group characterization`.
+- [x] Tiempo de ejecución total < 30 s (si se excede, cambiar a `DatabaseTransactions` en tests no-schema).
 
 ---
 
@@ -321,3 +321,11 @@ documentar desviaciones aquí). Ver `tests/README.md` para ejecución y cobertur
 - Cobertura de endpoints críticos: **44/52 = 84.6 %** ≥ 60 % ✓ (desglose en `tests/README.md`).
 - 59 casos del catálogo implementados (L 6, S 8, R 5, A 10, P 10, Pub 10, G 4, H 4, M 2).
 - `tests/Feature/ExampleTest.php` (stub) eliminado: `GET /` falla 500 sin la Option `manage-pages` y ya está cubierto por Pub1. `tests/Unit/ExampleTest.php` se conserva.
+
+### DoD §8 — verificado y tachado (2026-11-11)
+
+Re-verificación con evidencia fresca antes de marcar los checkboxes: suite 60/60 en 15.5 s; conteo por dominio 6+8+5+10+10+10+4+4+2 = 59 casos exactos; 7 tests `@group characterization` en 4 ficheros con comentario de fase esperada; `dbrentpro` intacta durante el run (users 3→3) mientras la suite trabaja sobre `dbrentpro_test` (53 tablas); cobertura 44/52 = 84.6 % documentada en `tests/README.md`.
+
+### Cierre (2026-11-11)
+
+Estado → `Implementado` (transición añadida a `spec-conventions.md`): implementado vía PR #1 por autorización explícita del autor —sin pasar por `Revisado`/`Aprobado`—, DoD §8 verificado y tachado, desviaciones D1–D6 documentadas arriba. Este documento se conserva como **referencia viva**: es el catálogo que cita `tests/README.md` y la guía para actualizar los 7 tests de caracterización (§7) cuando los fixes de Fase 1–2 los rompan intencionalmente.
