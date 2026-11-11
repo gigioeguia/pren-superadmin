@@ -1,7 +1,7 @@
 ---
 id: spec-trait-acnoo-fase0
 titulo: "Trait único HasAcnooActions para acnooFilter/deleteAll/status/exportExcel/exportCsv"
-estado: Borrador
+estado: Revisado
 fecha: 2026-11-11
 origen: .analisis/plan/plan-accion.md (Fase 0 / 0.3) — DT-C3
 cobertura: Extracción de 169 métodos duplicados (55 acnooFilter + 33 deleteAll + 19 status + 62 exports) en 55 controladores Admin/Landlord a app/Traits/HasAcnooActions.php con comportamiento observable idéntico
@@ -110,7 +110,7 @@ trait HasAcnooActions
 | Vista render | `admin.*.datas` vs `landlord.*.datas`; nombre de variable distinto por vista | `acnooView()` + `acnooViewData()` |
 | Mensaje `status` | `'Amenity'` (roto) vs `'Status Updated'` + `redirect` | `acnooStatusMessage()` + `acnooStatusRedirectRoute()` |
 | `deleteAll` | `whereIn->delete()` bulk vs `get()`+`foreach` con borrado de media (Property, Highlight) | `acnooDeletesRowByRow()` + `deletingAcnooRow()` |
-| Exports | clase Export (20 en `app/Exports`), args (`$request->status`), filenames divergentes por formato | `acnooExport()` + `acnooExcelFilename()`/`acnooCsvFilename()` |
+| Exports | clase Export (31 en `app/Exports`), args (`$request->status`), filenames divergentes por formato | `acnooExport()` + `acnooExcelFilename()`/`acnooCsvFilename()` |
 
 **Regla de oro:** el cuerpo de cada hook se copia VERBATIM del controlador actual (incluido `request()` global y `__()` en mensajes). Cero reescritura, cero "mejoras".
 
@@ -157,8 +157,8 @@ Fijadas, no negociables salvo volver el spec a `Borrador`:
 |----|-----------|------|--------|----------|
 | H1 | filter ajax con scoping | landlord A con 2 amenities propias + 1 de landlord B | POST `/landlord/amenities/filter` ajax | 200 JSON `{data}`; el HTML no contiene la ajena (scoping actual preservado) |
 | H2 | deleteAll propio | landlord A con 3 amenities | POST `/landlord/amenities/delete-all` `{ids: [a, b]}` | filas propias borradas + JSON `{message, redirect}` |
-| H3 | deleteAll ajeno — **caracterización** | landlord A autenticado; amenity de landlord B | POST `/landlord/amenities/delete-all` `{ids: [ajena]}` | fila de B BORRADA (sin ownership check) |
-| H4 | filter que borra — **caracterización** | landlord A con 1 property propia | POST `/landlord/properties/filter` `{ids: [id]}` | la property queda BORRADA (ruta cruzada ejecuta `deleteAll`) |
+| H3 | deleteAll ajeno | landlord A autenticado; amenity de landlord B | POST `/landlord/amenities/delete-all` `{ids: [ajena]}` | fila de B BORRADA (sin ownership check) — **caracterización** |
+| H4 | filter que borra | landlord A con 1 property propia | POST `/landlord/properties/filter` `{ids: [id]}` | la property queda BORRADA (ruta cruzada ejecuta `deleteAll`) — **caracterización** |
 
 > **Caracterización de Seg-5** (H3) — `deleteAll` sin ownership: se espera que falle tras Fase 2 (fix en el trait/Policies).
 > **Caracterización de Seg-15** (H4) — `routes/landlord.php:15` cruza `properties/filter`→`deleteAll`: se espera que falle tras Fase 3.6 (fix de rutas, fuera de 0.3).
@@ -167,8 +167,8 @@ Fijadas, no negociables salvo volver el spec a `Borrador`:
 
 | ID | Escenario | Dado | Cuando | Entonces |
 |----|-----------|------|--------|----------|
-| F1 | 0 duplicados restantes | adopción completa | `grep -rE 'function (acnooFilter\|deleteAll\|status\|exportExcel\|exportCsv)\(' app/Http/Controllers` | solo `HasAcnooActions.php` + los overrides documentados (si los hay, exactamente los enumerados en notas) |
-| F2 | 55/55 adoptan | adopción completa | `grep -rl 'use HasAcnooActions' app/Http/Controllers \| wc -l` | 55 |
+| F1 | 0 duplicados restantes | adopción completa | `grep -rE 'function (acnooFilter\|deleteAll\|status\|exportExcel\|exportCsv)\(' app/Http/Controllers` | 0 resultados, salvo los overrides documentados (si los hay, exactamente los enumerados en notas) — el trait vive en `app/Traits/`, fuera del scope del grep |
+| F2 | 55/55 adoptan | adopción completa | `grep -rl 'App\Traits\HasAcnooActions' app/Http/Controllers \| wc -l` | 55 |
 | F3 | phpstan nivel 5 verde | baseline ajustado | `composer analyse` | exit 0; baseline 709 → N (solo entradas unmatched removidas, diff en el PR) |
 | F4 | estilo verde | — | `composer lint` | exit 0 |
 | F5 | rutas intactas | — | `git diff origin/main -- routes/` | vacío (152 referencias sin cambio) |
@@ -205,7 +205,7 @@ Fijadas, no negociables salvo volver el spec a `Borrador`:
 | Riesgo | Impacto | Mitigación |
 |--------|---------|------------|
 | Variaciones no catalogadas (cuerpos con lógica extra) | medio | Inventario P5 como primer commit; override documentado o hook nuevo — jamás silently-drop |
-| Endpoints tocados sin cobertura smoke (la suite cubre 52 endpoints críticos, no estos 55×5) | alto | Moves verbatim + phpstan nivel 5 + G/H representativos + review por commits mecánicos |
+| Endpoints tocados sin cobertura smoke (la suite cubre 44/52 endpoints críticos, ninguno de estos 55×5 — verificado 2026-11-11) | alto | Moves verbatim + phpstan nivel 5 + G/H representativos + review por commits mecánicos |
 | Baseline con entradas unmatched al borrar código | medio | Procedimiento §5 (shrink quirúrgico, conteo y diff en el PR) |
 | Diff masivo (~60 ficheros) satura la review | medio | Commits atómicos por capa; review con `--stat`; P4 (Pint ya integrado) evita ruido de formato |
 | Frontend depende de los JSON shapes actuales | medio | Preservación estricta §5; G/H asertan shapes; cero cambios de mensaje |
@@ -238,3 +238,19 @@ Fijadas, no negociables salvo volver el spec a `Borrador`:
 - `.agents/spec-impl/spec-phpstan-pint-ci-fase0.md` → baseline y CI (procedimiento de shrink §5)
 - `.agents/skills/testing-conventions.md`, `.agents/skills/tests-caracterizacion.md`, `.agents/skills/workflow-ramas.md`
 - `.agents/spec/spec-conventions.md`
+
+---
+
+## 11. Revisión (2026-11-11)
+
+Auditoría según skill `revisar-spec`: frontmatter 6/6, prefijos G/H/F oficiales correlativos sin huecos, formato de catálogo, conteo 18 = 8+4+6 coherente entre §6, DoD (60+12) y estimación, referencias vigentes (todas existen) e idioma ✓. Cobertura del ítem 0.3 completa: 5 métodos, 55 controladores, criterio de salida de Fase 0 medible. Nota: `H#` abajo son hallazgos de revisión (convención del skill); los casos de catálogo landlord son H1–H4 de §6.2.
+
+| H# | Hallazgo | Severidad | Resolución |
+|----|----------|-----------|------------|
+| H1 | F2: patrón `grep 'use HasAcnooActions'` no matchea el import real `use App\Traits\HasAcnooActions;` → la verificación mediría 0, no 55 | medio | Corregido: patrón `'App\Traits\HasAcnooActions'` |
+| H2 | F1: el resultado esperado citaba `HasAcnooActions.php`, pero el grep se acota a `app/Http/Controllers` y el trait vive en `app/Traits/` → nunca aparecería | bajo | Corregido: esperado = 0 resultados salvo overrides documentados |
+| H3 | Marca `— **caracterización**` en columna Escenario (H3/H4); la convención y el precedente del spec smoke la sitúan en columna Entonces | bajo | Corregido: marca movida a Entonces |
+| H4 | §4 citaba "20 en `app/Exports`" — el conteo real es 31 | bajo | Corregido |
+| H5 | §8 citaba "la suite cubre 52 endpoints críticos" — la cifra de 0.1 es 44/52; verificado además que ningún test smoke toca estos 55×5 endpoints | bajo | Corregido |
+
+**Decisión:** 0 hallazgos altos, 1 medio y 4 bajos (todos resueltos en esta revisión) → estado pasa a `Revisado`. Pendiente de `Aprobado` por el decisor.
