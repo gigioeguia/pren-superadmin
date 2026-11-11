@@ -7,11 +7,15 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserMethod;
 use App\Models\WithdrawMethod;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooWithdrawMethodController extends Controller
 {
+    use HasAcnooActions;
+
     public function index(Request $request)
     {
         $withdraw_methods = UserMethod::with('withdraw_method:id,name,charge,min_amount,charge_type,meta')->where('user_id', auth()->id())->paginate(10);
@@ -19,28 +23,6 @@ class AcnooWithdrawMethodController extends Controller
         $user = User::where('id', auth()->user()->id)->first();
 
         return view('landlord.withdraw-method.index', compact('withdraw_methods', 'methods', 'user'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $withdraw_methods = UserMethod::with('withdraw_method:id,name')
-            ->where('user_id', auth()->id())
-            ->when(request('search'), function ($query) {
-                $query->where('account_no', 'like', '%'.request('search').'%')
-                    ->orWhereHas('withdraw_method', function ($q) {
-                        $q->where('name', 'like', '%'.request('search').'%');
-                    });
-            })
-            ->latest()
-            ->paginate(request('per_page') ?? 10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('landlord.withdraw-method.datas', compact('withdraw_methods'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function store(Request $request)
@@ -116,23 +98,58 @@ class AcnooWithdrawMethodController extends Controller
         ]);
     }
 
-    public function deleteAll(Request $request)
-    {
-        UserMethod::whereIn('id', $request->ids)->delete();
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json([
-            'message' => __('Selected Withdraw Method Deleted Successfully'),
-            'redirect' => route('landlord.withdraw-method.index'),
-        ]);
+    protected function acnooModel(): string
+    {
+        return UserMethod::class;
     }
 
-    public function exportExcel()
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new LandlordUserMethodExport, 'landlord-user-method.xlsx');
+        return UserMethod::with('withdraw_method:id,name')
+            ->where('user_id', auth()->id())
+            ->when(request('search'), function ($query) {
+                $query->where('account_no', 'like', '%'.request('search').'%')
+                    ->orWhereHas('withdraw_method', function ($q) {
+                        $q->where('name', 'like', '%'.request('search').'%');
+                    });
+            })
+            ->latest();
     }
 
-    public function exportCsv()
+    protected function acnooView(): string
     {
-        return Excel::download(new LandlordUserMethodExport, 'landlord-user-method.csv');
+        return 'landlord.withdraw-method.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['withdraw_methods' => $rows];
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'landlord.withdraw-method.index';
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return __('Selected Withdraw Method Deleted Successfully');
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new LandlordUserMethodExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'landlord-user-method';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'landlord-user-method';
     }
 }

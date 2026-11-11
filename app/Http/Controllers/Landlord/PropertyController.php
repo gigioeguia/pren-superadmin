@@ -12,14 +12,17 @@ use App\Models\HouseType;
 use App\Models\Property;
 use App\Models\PropertyDetail;
 use App\Models\Unit;
+use App\Traits\HasAcnooActions;
 use Carbon\Carbon;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 
 class PropertyController extends Controller
 {
+    use HasAcnooActions;
     use HasUploader;
 
     public function index()
@@ -47,48 +50,6 @@ class PropertyController extends Controller
         $categories = Category::all();
 
         return view('landlord.properties.index', compact('properties', 'categories'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $properties = Property::with(['category:id,name', 'propertyDetail:id,property_id,property_info', 'units.rent'])
-            ->where('landlord_id', auth()->id())
-            ->withCount([
-                'units as total_unit',
-                'units as total_available_unit' => function ($query) {
-                    $query->whereDoesntHave('rent', function ($q) {
-                        $q->whereIn('status', ['active', 'processing']);
-                    });
-                },
-            ])
-            ->when(request('category_id'), function ($q) {
-                $q->where('category_id', request('category_id'));
-            })
-            ->when(request('search'), function ($q) {
-                $q->where(function ($q) {
-                    $search = request('search');
-                    $q->where('building_name', 'like', '%'.$search.'%')
-                        ->orWhere('address_info->address', 'like', '%'.$search.'%')
-                        ->orWhere('puid', 'like', '%'.$search.'%')
-                        ->orWhere('rent_info->monthly_rent', 'like', '%'.$search.'%')
-                        ->orWhereHas('category', function ($query) use ($search) {
-                            $query->where('name', 'like', '%'.$search.'%');
-                        })
-                        ->orWhereHas('propertyDetail', function ($query) use ($search) {
-                            $query->where('property_info->property_title', 'like', '%'.$search.'%');
-                        });
-                });
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('landlord.properties.datas', compact('properties'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function create()
@@ -530,14 +491,6 @@ class PropertyController extends Controller
         return view('landlord.properties.property-success', compact('property'));
     }
 
-    public function status(Request $request, $id)
-    {
-        $property = Property::findOrFail($id);
-        $property->update(['status' => $request->status]);
-
-        return response()->json(['message' => 'Property']);
-    }
-
     public function destroy(string $id)
     {
         $property = Property::findOrFail($id);
@@ -619,13 +572,78 @@ class PropertyController extends Controller
         ]);
     }
 
-    public function exportExcel()
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
     {
-        return Excel::download(new LandlordPropertiesExport, 'landlord-properties.xlsx');
+        return Property::class;
     }
 
-    public function exportCsv()
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new LandlordPropertiesExport, 'landlord-properties.csv');
+        return Property::with(['category:id,name', 'propertyDetail:id,property_id,property_info', 'units.rent'])
+            ->where('landlord_id', auth()->id())
+            ->withCount([
+                'units as total_unit',
+                'units as total_available_unit' => function ($query) {
+                    $query->whereDoesntHave('rent', function ($q) {
+                        $q->whereIn('status', ['active', 'processing']);
+                    });
+                },
+            ])
+            ->when(request('category_id'), function ($q) {
+                $q->where('category_id', request('category_id'));
+            })
+            ->when(request('search'), function ($q) {
+                $q->where(function ($q) {
+                    $search = request('search');
+                    $q->where('building_name', 'like', '%'.$search.'%')
+                        ->orWhere('address_info->address', 'like', '%'.$search.'%')
+                        ->orWhere('puid', 'like', '%'.$search.'%')
+                        ->orWhere('rent_info->monthly_rent', 'like', '%'.$search.'%')
+                        ->orWhereHas('category', function ($query) use ($search) {
+                            $query->where('name', 'like', '%'.$search.'%');
+                        })
+                        ->orWhereHas('propertyDetail', function ($query) use ($search) {
+                            $query->where('property_info->property_title', 'like', '%'.$search.'%');
+                        });
+                });
+            })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'landlord.properties.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['properties' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
+    }
+
+    protected function acnooStatusMessage(): string
+    {
+        return 'Property';
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new LandlordPropertiesExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'landlord-properties';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'landlord-properties';
     }
 }

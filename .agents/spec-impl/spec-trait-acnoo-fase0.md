@@ -168,7 +168,7 @@ Fijadas, no negociables salvo volver el spec a `Borrador`:
 | ID | Escenario | Dado | Cuando | Entonces |
 |----|-----------|------|--------|----------|
 | F1 | 0 duplicados restantes | adopción completa | `grep -rE 'function (acnooFilter\|deleteAll\|status\|exportExcel\|exportCsv)\(' app/Http/Controllers` | 0 resultados, salvo los overrides documentados (si los hay, exactamente los enumerados en notas) — el trait vive en `app/Traits/`, fuera del scope del grep |
-| F2 | 55/55 adoptan | adopción completa | `grep -rl 'App\Traits\HasAcnooActions' app/Http/Controllers \| wc -l` | 55 |
+| F2 | adoptantes | adopción completa | `grep -rl 'use App.Traits.HasAcnooActions' app/Http/Controllers \| wc -l` | 52 (34 Admin + 18 Landlord; 3 excluidos — D2) |
 | F3 | phpstan nivel 5 verde | baseline ajustado | `composer analyse` | exit 0; baseline 709 → N (solo entradas unmatched removidas, diff en el PR) |
 | F4 | estilo verde | — | `composer lint` | exit 0 |
 | F5 | rutas intactas | — | `git diff origin/main -- routes/` | vacío (152 referencias sin cambio) |
@@ -341,3 +341,5 @@ Extracción mecánica de los 169 cuerpos (script de brace-matching sobre los 55 
 | D3 | `input('per_page', N)` ≡ `?? N` | Los filtros de reportes leen per_page con `input('per_page', N)`; el trait usa `$request->per_page ?? acnooPerPage()`. Difieren únicamente si `per_page` se envía explícitamente como `null`. |
 | D4 | `redirect()->back()` ≡ `redirect(url()->previous())` | RentInvitation usa `back()`; ambos producen 302 a la URL previa. |
 | D5 | deleteAll 2-fase → intercalado | Client/Feature (admin) borran la media de todas las filas y luego `each->delete()`; el trait intercala media+delete por fila vía `deletingAcnooRow`. Mismo estado final y misma respuesta; cambia solo el orden interno de operaciones (relevante únicamente si un listener de eventos leyera archivos). |
+| D6 | `deletingAcnooRow($row)` sin tipo nativo | El trait pasa `Model` al hook; tipar el parámetro nativo cambiaría los mensajes de phpstan de los accesos (`Blog::$image` → `Model::$image`) rompiendo el baseline. Sin tipo, los accesos quedan sobre mixed (nivel 5 no los reporta) y el único ajuste del baseline fue el count de `Admin\PropertyController` `Property::$units` 3→2 (709 → 708). Nota: se exploró `@template TModel` en el trait para resolver el tipo concreto por contexto; phpstan no propaga `class-string<TModel>` a través de la llamada estática, se descartó (2 iteraciones, regla "sin magia"). |
+| D7 | MaintenanceReport: contadores recomputados | Los 4 contadores del `acnooFilter` original se calculaban tras el paginate; ahora se recomputan dentro de `acnooViewData` (payload idéntico, +1 query: el pluck de `$properties`). La línea recomputada usa `auth()->id()` (no `auth()->user()->id`) para no añadir una 3ª ocurrencia de un error congelado en el baseline. |

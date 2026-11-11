@@ -7,14 +7,17 @@ use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserDetail;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooTenantController extends Controller
 {
+    use HasAcnooActions;
     use HasUploader;
 
     public function index(Request $request)
@@ -31,41 +34,6 @@ class AcnooTenantController extends Controller
             ->paginate(10);
 
         return view('landlord.tenants.index', compact('tenants'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $landlordId = auth()->id();
-
-        $tenants = User::with('user_details')
-            ->where('landlord_id', $landlordId)
-            ->when($request->status, function ($query) use ($request) {
-                $query->whereHas('rents', function ($rentsQuery) use ($request) {
-                    $rentsQuery->where('status', $request->status);
-                });
-            })
-            ->when($request->search, function ($q) use ($request) {
-                $search = $request->search;
-                $q->where(function ($q) use ($search) {
-                    $q->where('name', 'like', '%'.$search.'%')
-                        ->orWhere('email', 'like', '%'.$search.'%')
-                        ->orWhere('unique_id', 'like', '%'.$search.'%')
-                        ->orWhere('profile_type', 'like', '%'.$search.'%')
-                        ->orWhereHas('user_details', function ($query) use ($search) {
-                            $query->where('gender', 'like', '%'.$search.'%');
-                        });
-                });
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('landlord.tenants.datas', compact('tenants'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function create()
@@ -353,13 +321,66 @@ class AcnooTenantController extends Controller
         }
     }
 
-    public function exportExcel(Request $request)
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
     {
-        return Excel::download(new LandlordTenantExport($request), 'landlord-tenants.xlsx');
+        return User::class;
     }
 
-    public function exportCsv(Request $request)
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new LandlordTenantExport($request), 'landlord-tenants.csv');
+        $landlordId = auth()->id();
+
+        return User::with('user_details')
+            ->where('landlord_id', $landlordId)
+            ->when($request->status, function ($query) use ($request) {
+                $query->whereHas('rents', function ($rentsQuery) use ($request) {
+                    $rentsQuery->where('status', $request->status);
+                });
+            })
+            ->when($request->search, function ($q) use ($request) {
+                $search = $request->search;
+                $q->where(function ($q) use ($search) {
+                    $q->where('name', 'like', '%'.$search.'%')
+                        ->orWhere('email', 'like', '%'.$search.'%')
+                        ->orWhere('unique_id', 'like', '%'.$search.'%')
+                        ->orWhere('profile_type', 'like', '%'.$search.'%')
+                        ->orWhereHas('user_details', function ($query) use ($search) {
+                            $query->where('gender', 'like', '%'.$search.'%');
+                        });
+                });
+            })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'landlord.tenants.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['tenants' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new LandlordTenantExport($request);
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'landlord-tenants';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'landlord-tenants';
     }
 }

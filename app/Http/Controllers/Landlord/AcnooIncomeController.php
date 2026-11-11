@@ -6,12 +6,18 @@ use App\Exports\LandlordIncomeExport;
 use App\Http\Controllers\Controller;
 use App\Models\Income;
 use App\Models\IncomeCategory;
+use App\Traits\HasAcnooActions;
 use Carbon\Carbon;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooIncomeController extends Controller
 {
+    use HasAcnooActions {
+        status as protected;
+    }
+
     public function index()
     {
         $income_categories = IncomeCategory::with('landlord:id,name')->whereStatus(1)->where('landlord_id', auth()->id())->latest()->get();
@@ -158,23 +164,52 @@ class AcnooIncomeController extends Controller
         ]);
     }
 
-    public function deleteAll(Request $request)
-    {
-        Income::whereIn('id', $request->ids)->delete();
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json([
-            'message' => 'Selected income deleted successfully',
-            'redirect' => route('landlord.incomes.index'),
-        ]);
+    protected function acnooModel(): string
+    {
+        return Income::class;
     }
 
-    public function exportExcel()
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new LandlordIncomeExport, 'landlord-incomes.xlsx');
+        return Income::with(['category:id,name', 'landlord:id,name'])
+            ->where('landlord_id', auth()->id())
+            ->latest();
     }
 
-    public function exportCsv()
+    protected function acnooView(): string
     {
-        return Excel::download(new LandlordIncomeExport, 'landlord-incomes.csv');
+        return 'landlord.incomes.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['incomes' => $rows];
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return 'Selected income deleted successfully';
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'landlord.incomes.index';
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new LandlordIncomeExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'landlord-incomes';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'landlord-incomes';
     }
 }

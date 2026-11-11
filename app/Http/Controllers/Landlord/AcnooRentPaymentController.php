@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Landlord;
 use App\Exports\LandlordRentPaymentExport;
 use App\Http\Controllers\Controller;
 use App\Models\RentPayment;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooRentPaymentController extends Controller
 {
+    use HasAcnooActions;
+
     public function index()
     {
         $landlord_id = auth()->id();
@@ -24,11 +28,25 @@ class AcnooRentPaymentController extends Controller
         return view('landlord.rent-payments.index', compact('rent_payments'));
     }
 
-    public function acnooFilter(Request $request)
+    public function show(string $id)
+    {
+        $rent_payment = RentPayment::with(['rent:id,landlord_id,tenant_id,property_id', 'rent.tenant:id,name,phone,email', 'rent.tenant.user_details:id,user_id,address_info', 'rent.landlord:id,name,phone,email', 'rent.landlord.user_details:id,user_id,address_info', 'rent.property:id,puid', 'rent.property.propertyDetail:id,property_id,property_info'])->findOrFail($id);
+
+        return view('landlord.rent-payments.view', compact('rent_payment'));
+    }
+
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
+    {
+        return RentPayment::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
     {
         $landlord_id = auth()->id();
 
-        $rent_payments = RentPayment::with(['rent:id,tenant_id,property_id,landlord_id', 'rent.tenant:id,name', 'rent.property:id,puid', 'rent.property.propertyDetail:id,property_id,property_info'])
+        return RentPayment::with(['rent:id,tenant_id,property_id,landlord_id', 'rent.tenant:id,name', 'rent.property:id,puid', 'rent.property.propertyDetail:id,property_id,property_info'])
             ->whereHas('rent', function ($query) use ($landlord_id) {
                 $query->where('landlord_id', $landlord_id);
             })
@@ -51,32 +69,36 @@ class AcnooRentPaymentController extends Controller
                         });
                 });
             })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('landlord.rent-payments.datas', compact('rent_payments'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
+            ->latest();
     }
 
-    public function show(string $id)
+    protected function acnooView(): string
     {
-        $rent_payment = RentPayment::with(['rent:id,landlord_id,tenant_id,property_id', 'rent.tenant:id,name,phone,email', 'rent.tenant.user_details:id,user_id,address_info', 'rent.landlord:id,name,phone,email', 'rent.landlord.user_details:id,user_id,address_info', 'rent.property:id,puid', 'rent.property.propertyDetail:id,property_id,property_info'])->findOrFail($id);
-
-        return view('landlord.rent-payments.view', compact('rent_payment'));
+        return 'landlord.rent-payments.datas';
     }
 
-    public function exportExcel()
+    protected function acnooViewData(LengthAwarePaginator $rows): array
     {
-        return Excel::download(new LandlordRentPaymentExport, 'landlord-rent-payments.xlsx');
+        return ['rent_payments' => $rows];
     }
 
-    public function exportCsv()
+    protected function acnooPerPage(): int
     {
-        return Excel::download(new LandlordRentPaymentExport, 'landlord-rent-payments.csv');
+        return 20;
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new LandlordRentPaymentExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'landlord-rent-payments';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'landlord-rent-payments';
     }
 }

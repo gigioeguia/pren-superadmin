@@ -7,11 +7,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Labor;
 use App\Models\Maintenance;
 use App\Models\Property;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooMaintenanceController extends Controller
 {
+    use HasAcnooActions;
+
     public function index()
     {
         $property = Property::where('landlord_id', auth()->id())->get('id');
@@ -20,43 +24,6 @@ class AcnooMaintenanceController extends Controller
             ->latest()->paginate(10);
 
         return view('landlord.maintenance.index', compact('maintenances'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $property = Property::where('landlord_id', auth()->id())->get('id');
-
-        $maintenances = Maintenance::with(['tenant:id,name,phone', 'labor:id,name', 'property'])->whereIn('property_id', $property)
-            ->when(request('search'), function ($q) {
-                $q->where(function ($q) {
-                    $search = request('search');
-                    $q->where('title', 'like', '%'.$search.'%')
-                        ->orwhere('description', 'like', '%'.$search.'%')
-                        ->orwhere('notes', 'like', '%'.$search.'%')
-                        ->orwhere('comments', 'like', '%'.$search.'%')
-                        ->orWhereHas('tenant', function ($query) use ($search) {
-                            $query->where('name', 'like', '%'.$search.'%')
-                                ->orWhere('phone', 'like', '%'.$search.'%');
-                        })
-
-                        ->orWhereHas('labor', function ($query) use ($search) {
-                            $query->where('name', 'like', '%'.$search.'%');
-                        })
-                        ->orWhereHas('property', function ($query) use ($search) {
-                            $query->where('building_name', 'like', '%'.$search.'%');
-                        });
-                });
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('landlord.maintenance.datas', compact('maintenances'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function show(string $id)
@@ -130,13 +97,68 @@ class AcnooMaintenanceController extends Controller
         ]);
     }
 
-    public function exportExcel()
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
     {
-        return Excel::download(new LandlordMaintenanceExport, 'landlord-maintenances.xlsx');
+        return Maintenance::class;
     }
 
-    public function exportCsv()
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new LandlordMaintenanceExport, 'landlord-maintenances.csv');
+        $property = Property::where('landlord_id', auth()->id())->get('id');
+
+        return Maintenance::with(['tenant:id,name,phone', 'labor:id,name', 'property'])->whereIn('property_id', $property)
+            ->when(request('search'), function ($q) {
+                $q->where(function ($q) {
+                    $search = request('search');
+                    $q->where('title', 'like', '%'.$search.'%')
+                        ->orwhere('description', 'like', '%'.$search.'%')
+                        ->orwhere('notes', 'like', '%'.$search.'%')
+                        ->orwhere('comments', 'like', '%'.$search.'%')
+                        ->orWhereHas('tenant', function ($query) use ($search) {
+                            $query->where('name', 'like', '%'.$search.'%')
+                                ->orWhere('phone', 'like', '%'.$search.'%');
+                        })
+
+                        ->orWhereHas('labor', function ($query) use ($search) {
+                            $query->where('name', 'like', '%'.$search.'%');
+                        })
+                        ->orWhereHas('property', function ($query) use ($search) {
+                            $query->where('building_name', 'like', '%'.$search.'%');
+                        });
+                });
+            })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'landlord.maintenance.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['maintenances' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new LandlordMaintenanceExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'landlord-maintenances';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'landlord-maintenances';
     }
 }

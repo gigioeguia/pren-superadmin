@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Landlord;
 use App\Exports\LandlordSecurityDepositExport;
 use App\Http\Controllers\Controller;
 use App\Models\SecurityDeposit;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooSecurityDepositController extends Controller
 {
+    use HasAcnooActions;
+
     public function index()
     {
         $security_deposits = SecurityDeposit::with(['tenant:id,name', 'property:id,puid',  'property.propertyDetail:id,property_id,property_info'])->where('landlord_id', auth()->id())->latest()->paginate(10);
@@ -17,9 +21,23 @@ class AcnooSecurityDepositController extends Controller
         return view('landlord.security-deposits.index', compact('security_deposits'));
     }
 
-    public function acnooFilter(Request $request)
+    public function show(string $id)
     {
-        $security_deposits = SecurityDeposit::with(['tenant:id,name', 'property:id,puid',  'property.propertyDetail:id,property_id,property_info'])
+        $security_deposit = SecurityDeposit::with(['landlord:id,name,phone,email', 'landlord.user_details:user_id,address_info',  'tenant:id,name,phone,email', 'tenant.user_details:user_id,address_info'])->findOrFail($id);
+
+        return view('landlord.security-deposits.view', compact('security_deposit'));
+    }
+
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
+    {
+        return SecurityDeposit::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
+    {
+        return SecurityDeposit::with(['tenant:id,name', 'property:id,puid',  'property.propertyDetail:id,property_id,property_info'])
             ->where('landlord_id', auth()->id())
             ->when(request('search'), function ($q) {
                 $q->where(function ($q) {
@@ -39,32 +57,36 @@ class AcnooSecurityDepositController extends Controller
                         });
                 });
             })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('landlord.security-deposits.datas', compact('security_deposits'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
+            ->latest();
     }
 
-    public function show(string $id)
+    protected function acnooView(): string
     {
-        $security_deposit = SecurityDeposit::with(['landlord:id,name,phone,email', 'landlord.user_details:user_id,address_info',  'tenant:id,name,phone,email', 'tenant.user_details:user_id,address_info'])->findOrFail($id);
-
-        return view('landlord.security-deposits.view', compact('security_deposit'));
+        return 'landlord.security-deposits.datas';
     }
 
-    public function exportExcel()
+    protected function acnooViewData(LengthAwarePaginator $rows): array
     {
-        return Excel::download(new LandlordSecurityDepositExport, 'security-deposits.xlsx');
+        return ['security_deposits' => $rows];
     }
 
-    public function exportCsv()
+    protected function acnooPerPage(): int
     {
-        return Excel::download(new LandlordSecurityDepositExport, 'security-deposits.csv');
+        return 20;
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new LandlordSecurityDepositExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'security-deposits';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'security-deposits';
     }
 }

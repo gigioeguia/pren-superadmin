@@ -58,7 +58,7 @@ Run a single test: `php artisan test tests/Feature/Auth/WebLoginSmokeTest.php`
 
 - Same entity has 3 controllers: `Admin/`, `Landlord/`, `Api/Acnoo*`. Logic is duplicated and divergent across the three.
 - Most controllers prefixed `Acnoo` (vendor heritage).
-- `acnooFilter()`, `deleteAll()`, `status()`, `exportExcel()`, `exportCsv()` are moving to **one shared trait**: `app/Traits/HasAcnooActions.php` (spec-trait-acnoo-fase0, DT-C3). The Admin layer (34 controllers) already serves them from the trait via `use HasAcnooActions` + a per-controller config hook block (verbatim values); the Landlord layer (18 controllers) adopts it in the stacked follow-up PR; 3 controllers are excluded and some methods remain as documented overrides (inventory in `.agents/spec-impl/spec-trait-acnoo-fase0.md` §12). **Changing shared behavior = edit the trait once.** Do not reintroduce copies of these 5 methods.
+- `acnooFilter()`, `deleteAll()`, `status()`, `exportExcel()`, `exportCsv()` live in **one shared trait**: `app/Traits/HasAcnooActions.php` (spec-trait-acnoo-fase0, DT-C3). 52 of the 55 controllers that had them duplicated now do `use HasAcnooActions` + a per-controller config hook block (verbatim values); 3 are excluded and 10 methods remain as documented overrides (inventory in `.agents/spec-impl/spec-trait-acnoo-fase0.md` §12). **Changing shared behavior = edit the trait once.** Do not reintroduce copies of these 5 methods.
 - Largest: `Admin/PropertyController` (688 lines), `Landlord/PropertyController` (628), `Api/AcnooPropertyController` (564).
 
 ## Translations

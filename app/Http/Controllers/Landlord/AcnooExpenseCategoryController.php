@@ -4,36 +4,21 @@ namespace App\Http\Controllers\Landlord;
 
 use App\Http\Controllers\Controller;
 use App\Models\ExpenseCategory;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class AcnooExpenseCategoryController extends Controller
 {
+    use HasAcnooActions;
+
     public function index()
     {
         $expense_categories = ExpenseCategory::with('landlord')->where('landlord_id', auth()->id())->latest()->paginate(10);
 
         return view('landlord.expense-categories.index', compact('expense_categories'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $expense_categories = ExpenseCategory::with('landlord')->where('landlord_id', auth()->id())->when(request('search'), function ($q) use ($request) {
-            $q->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%'.$request->search.'%')
-                    ->orWhere('description', 'like', '%'.$request->search.'%');
-            });
-        })
-            ->latest()
-            ->paginate($request->per_page ?? 10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('landlord.expense-categories.datas', compact('expense_categories'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function store(Request $request)
@@ -86,16 +71,6 @@ class AcnooExpenseCategoryController extends Controller
         ]);
     }
 
-    public function status(Request $request, string $id)
-    {
-        $category = ExpenseCategory::findOrFail($id);
-        $category->update(['status' => $request->status]);
-
-        return response()->json([
-            'message' => 'Expense Category',
-        ]);
-    }
-
     public function destroy(string $id)
     {
         $category = ExpenseCategory::findOrFail($id);
@@ -107,13 +82,46 @@ class AcnooExpenseCategoryController extends Controller
         ]);
     }
 
-    public function deleteAll(Request $request)
-    {
-        ExpenseCategory::whereIn('id', $request->ids)->delete();
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json([
-            'message' => __('Selected Expense Category Deleted Successfully'),
-            'redirect' => route('landlord.expense-categories.index'),
-        ]);
+    protected function acnooModel(): string
+    {
+        return ExpenseCategory::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
+    {
+        return ExpenseCategory::with('landlord')->where('landlord_id', auth()->id())->when(request('search'), function ($q) use ($request) {
+            $q->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('description', 'like', '%'.$request->search.'%');
+            });
+        })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'landlord.expense-categories.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['expense_categories' => $rows];
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'landlord.expense-categories.index';
+    }
+
+    protected function acnooStatusMessage(): string
+    {
+        return 'Expense Category';
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return __('Selected Expense Category Deleted Successfully');
     }
 }

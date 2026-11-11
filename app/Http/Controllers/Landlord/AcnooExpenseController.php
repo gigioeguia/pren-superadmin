@@ -6,12 +6,18 @@ use App\Exports\LandlordExpensesExport;
 use App\Http\Controllers\Controller;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
+use App\Traits\HasAcnooActions;
 use Carbon\Carbon;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooExpenseController extends Controller
 {
+    use HasAcnooActions {
+        status as protected;
+    }
+
     public function index()
     {
         $expense_categories = ExpenseCategory::with('landlord:id,name')->whereStatus(1)->where('landlord_id', auth()->id())->latest()->get();
@@ -158,23 +164,52 @@ class AcnooExpenseController extends Controller
         ]);
     }
 
-    public function deleteAll(Request $request)
-    {
-        Expense::whereIn('id', $request->ids)->delete();
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json([
-            'message' => 'Selected Expense Deleted Successfully',
-            'redirect' => route('landlord.expenses.index'),
-        ]);
+    protected function acnooModel(): string
+    {
+        return Expense::class;
     }
 
-    public function exportExcel()
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new LandlordExpensesExport, 'landlord-expenses.xlsx');
+        return Expense::with(['category:id,name', 'landlord:id,name'])
+            ->where('landlord_id', auth()->id())
+            ->latest();
     }
 
-    public function exportCsv()
+    protected function acnooView(): string
     {
-        return Excel::download(new LandlordExpensesExport, 'landlord-expenses.csv');
+        return 'landlord.expenses.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['expenses' => $rows];
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return 'Selected Expense Deleted Successfully';
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'landlord.expenses.index';
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new LandlordExpensesExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'landlord-expenses';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'landlord-expenses';
     }
 }

@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Landlord;
 use App\Exports\LandlordRefundRequestExport;
 use App\Http\Controllers\Controller;
 use App\Models\RefundRequest;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooRefundRequestController extends Controller
 {
+    use HasAcnooActions;
+
     public function index()
     {
         $refund_requests = RefundRequest::with(['property:id,puid', 'property.propertyDetail:id,property_id,property_info', 'tenant:id,name', 'deposit:id,deposit_amount,utility_advance,rent_advance,total_amount'])->where('landlord_id', auth()->id())->latest()->paginate(10);
@@ -17,11 +21,26 @@ class AcnooRefundRequestController extends Controller
         return view('landlord.refund-request.index', compact('refund_requests'));
     }
 
-    public function acnooFilter(Request $request)
+    public function show(string $id)
+    {
+
+        $refund = RefundRequest::with(['property:id,puid', 'property.propertyDetail:id,property_id,property_info', 'landlord:id,name,phone,email', 'landlord.user_details:user_id,address_info', 'tenant:id,name,phone,email', 'tenant.user_details:user_id,address_info', 'deposit:id,deposit_amount,utility_advance,rent_advance,total_amount'])->findOrFail($id);
+
+        return view('landlord.refund-request.view', compact('refund'));
+    }
+
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
+    {
+        return RefundRequest::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
     {
         $search = $request->input('search');
 
-        $refund_requests = RefundRequest::with(['property:id,puid', 'property.propertyDetail:id,property_id,property_info', 'tenant:id,name', 'deposit:id,deposit_amount,utility_advance,rent_advance,total_amount'])->where('landlord_id', auth()->id())->when($search, function ($q) use ($search) {
+        return RefundRequest::with(['property:id,puid', 'property.propertyDetail:id,property_id,property_info', 'tenant:id,name', 'deposit:id,deposit_amount,utility_advance,rent_advance,total_amount'])->where('landlord_id', auth()->id())->when($search, function ($q) use ($search) {
             $q->where(function ($q) use ($search) {
                 $q->where('amount', 'like', '%'.$search.'%')
                     ->orWhereHas('tenant', function ($q) use ($search) {
@@ -36,33 +55,31 @@ class AcnooRefundRequestController extends Controller
                     });
             });
         })
-            ->latest()
-            ->paginate($request->per_page ?? 10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('landlord.refund-request.datas', compact('refund_requests'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
+            ->latest();
     }
 
-    public function show(string $id)
+    protected function acnooView(): string
     {
-
-        $refund = RefundRequest::with(['property:id,puid', 'property.propertyDetail:id,property_id,property_info', 'landlord:id,name,phone,email', 'landlord.user_details:user_id,address_info', 'tenant:id,name,phone,email', 'tenant.user_details:user_id,address_info', 'deposit:id,deposit_amount,utility_advance,rent_advance,total_amount'])->findOrFail($id);
-
-        return view('landlord.refund-request.view', compact('refund'));
+        return 'landlord.refund-request.datas';
     }
 
-    public function exportExcel()
+    protected function acnooViewData(LengthAwarePaginator $rows): array
     {
-        return Excel::download(new LandlordRefundRequestExport, 'refund-request.xlsx');
+        return ['refund_requests' => $rows];
     }
 
-    public function exportCsv()
+    protected function acnooExport(Request $request): object
     {
-        return Excel::download(new LandlordRefundRequestExport, 'refund-request.csv');
+        return new LandlordRefundRequestExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'refund-request';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'refund-request';
     }
 }
