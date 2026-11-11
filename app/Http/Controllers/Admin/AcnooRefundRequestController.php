@@ -5,12 +5,16 @@ namespace App\Http\Controllers\Admin;
 use App\Exports\AdminRefundRequestReportExport;
 use App\Http\Controllers\Controller;
 use App\Models\RefundRequest;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooRefundRequestController extends Controller
 {
+    use HasAcnooActions;
+
     public function __construct()
     {
         $this->middleware('permission:reports-read')->only('index', 'show');
@@ -23,7 +27,31 @@ class AcnooRefundRequestController extends Controller
         return view('admin.reports.refund-request.index', compact('refund_requests'));
     }
 
-    public function acnooFilter(Request $request)
+    public function show(string $id)
+    {
+        $refund = RefundRequest::with(
+            [
+                'property:id,puid',
+                'property.propertyDetail:id,property_id,property_info',
+                'landlord:id,name,phone,email',
+                'landlord.user_details:user_id,address_info',
+                'tenant:id,name,phone,email',
+                'tenant.user_details:user_id,address_info',
+                'deposit:id,deposit_amount,utility_advance,rent_advance,total_amount',
+            ]
+        )->findOrFail($id);
+
+        return view('landlord.refund-request.view', compact('refund'));
+    }
+
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
+    {
+        return RefundRequest::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
     {
         $refund_requestQuery = RefundRequest::with(['property:id,puid', 'property.propertyDetail:id,property_id,property_info', 'landlord:id,name', 'tenant:id,name', 'deposit:id,total_amount']);
 
@@ -56,42 +84,36 @@ class AcnooRefundRequestController extends Controller
             });
         }
 
-        $perPage = $request->input('per_page', 20);
-        $refund_requests = $refund_requestQuery->latest()->paginate($perPage);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.reports.refund-request.datas', compact('refund_requests'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
+        return $refund_requestQuery->latest();
     }
 
-    public function show(string $id)
+    protected function acnooView(): string
     {
-        $refund = RefundRequest::with(
-            [
-                'property:id,puid',
-                'property.propertyDetail:id,property_id,property_info',
-                'landlord:id,name,phone,email',
-                'landlord.user_details:user_id,address_info',
-                'tenant:id,name,phone,email',
-                'tenant.user_details:user_id,address_info',
-                'deposit:id,deposit_amount,utility_advance,rent_advance,total_amount',
-            ]
-        )->findOrFail($id);
-
-        return view('landlord.refund-request.view', compact('refund'));
+        return 'admin.reports.refund-request.datas';
     }
 
-    public function exportExcel()
+    protected function acnooViewData(LengthAwarePaginator $rows): array
     {
-        return Excel::download(new AdminRefundRequestReportExport, 'refund-reports.xlsx');
+        return ['refund_requests' => $rows];
     }
 
-    public function exportCsv()
+    protected function acnooPerPage(): int
     {
-        return Excel::download(new AdminRefundRequestReportExport, 'refund-reports.csv');
+        return 20;
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new AdminRefundRequestReportExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'refund-reports';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'refund-reports';
     }
 }

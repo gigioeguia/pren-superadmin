@@ -9,15 +9,18 @@ use App\Models\Plan;
 use App\Models\PlanSubscribe;
 use App\Models\User;
 use App\Models\UserDetail;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooLandlordController extends Controller
 {
+    use HasAcnooActions;
     use HasUploader;
 
     public function __construct()
@@ -46,32 +49,6 @@ class AcnooLandlordController extends Controller
             ->paginate(10);
 
         return view('admin.landlords.index', compact('landlords'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $landlords = User::with('user_details')
-            ->where('role', 'landlord')
-            ->when(request('search'), function ($q) {
-                $q->where(function ($q) {
-                    $search = request('search');
-                    $q->where('name', 'like', '%'.$search.'%')
-                        ->orwhere('email', 'like', '%'.$search.'%')
-                        ->orWhereHas('user_details', function ($query) use ($search) {
-                            $query->where('gender', 'like', '%'.$search.'%');
-                        });
-                });
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.landlords.datas', compact('landlords'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function create()
@@ -366,13 +343,57 @@ class AcnooLandlordController extends Controller
         }
     }
 
-    public function exportExcel(Request $request)
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
     {
-        return Excel::download(new AdminLandlordExport($request), 'landlords.xlsx');
+        return User::class;
     }
 
-    public function exportCsv(Request $request)
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new AdminLandlordExport($request), 'landlords.csv');
+        return User::with('user_details')
+            ->where('role', 'landlord')
+            ->when(request('search'), function ($q) {
+                $q->where(function ($q) {
+                    $search = request('search');
+                    $q->where('name', 'like', '%'.$search.'%')
+                        ->orwhere('email', 'like', '%'.$search.'%')
+                        ->orWhereHas('user_details', function ($query) use ($search) {
+                            $query->where('gender', 'like', '%'.$search.'%');
+                        });
+                });
+            })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'admin.landlords.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['landlords' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new AdminLandlordExport($request);
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'landlords';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'landlords';
     }
 }

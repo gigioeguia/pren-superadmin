@@ -4,35 +4,20 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Faq;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class AcnooFaqController extends Controller
 {
+    use HasAcnooActions;
+
     public function index()
     {
         $faqs = Faq::latest()->paginate(10);
 
         return view('admin.faq.index', compact('faqs'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $faqs = Faq::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('question', 'like', '%'.request('search').'%')
-                    ->orWhere('answer', 'like', '%'.request('search').'%');
-            });
-        })
-            ->latest()
-            ->paginate($request->per_page ?? 10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.faq.datas', compact('faqs'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function create()
@@ -89,21 +74,46 @@ class AcnooFaqController extends Controller
         ]);
     }
 
-    public function status(Request $request, $id)
-    {
-        $faq = Faq::findOrFail($id);
-        $faq->update(['status' => $request->status]);
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json(['message' => 'Faq ']);
+    protected function acnooModel(): string
+    {
+        return Faq::class;
     }
 
-    public function deleteAll(Request $request)
+    protected function acnooQuery(Request $request): Builder
     {
-        Faq::whereIn('id', $request->ids)->delete();
+        return Faq::when(request('search'), function ($q) {
+            $q->where(function ($q) {
+                $q->where('question', 'like', '%'.request('search').'%')
+                    ->orWhere('answer', 'like', '%'.request('search').'%');
+            });
+        })
+            ->latest();
+    }
 
-        return response()->json([
-            'message' => __('Selected Faq deleted successfully'),
-            'redirect' => route('admin.faqs.index'),
-        ]);
+    protected function acnooView(): string
+    {
+        return 'admin.faq.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['faqs' => $rows];
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'admin.faqs.index';
+    }
+
+    protected function acnooStatusMessage(): string
+    {
+        return 'Faq ';
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return __('Selected Faq deleted successfully');
     }
 }

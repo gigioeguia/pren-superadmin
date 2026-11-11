@@ -7,13 +7,17 @@ use App\Http\Controllers\Controller;
 use App\Models\SecurityDeposit;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooSecurityDepositController extends Controller
 {
+    use HasAcnooActions;
+
     public function __construct()
     {
         $this->middleware('permission:security-deposit-read')->only('index');
@@ -36,47 +40,6 @@ class AcnooSecurityDepositController extends Controller
             ->paginate(10);
 
         return view('admin.security-deposits.index', compact('security_deposits'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $security_deposits = SecurityDeposit::with([
-            'tenant:id,name',
-            'property:id',
-            'property.propertyDetail:id,property_id,property_info',
-            'gateway:id,name',
-            'rent:id,tenant_id,property_id',
-            'rent.tenant:id,name',
-            'rent.property:id,puid',
-            'rent.property.propertyDetail:id,property_id,property_info',
-        ])->when(request('search'), function ($q) {
-            $q->where('invoice_no', 'like', '%'.request('search').'%')
-                ->orWhere('status', 'like', '%'.request('search').'%')
-                ->orWhere('total_amount', 'like', '%'.request('search').'%')
-                ->orWhere('utility_advance', 'like', '%'.request('search').'%');
-
-            $q->orWhereHas('tenant', function ($q) {
-                $q->where('name', 'like', '%'.request('search').'%');
-            });
-
-            $q->orWhereHas('gateway', function ($q) {
-                $q->where('name', 'like', '%'.request('search').'%');
-            });
-
-            $q->orWhereHas('property.propertyDetail', function ($q) {
-                $q->where('property_info', 'like', '%'.request('search').'%');
-            });
-        })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if (request()->ajax()) {
-            return response()->json([
-                'data' => view('admin.security-deposits.datas', compact('security_deposits'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function file_download(string $id)
@@ -170,13 +133,72 @@ class AcnooSecurityDepositController extends Controller
         ]);
     }
 
-    public function exportExcel()
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
     {
-        return Excel::download(new AdminSecurityDepositExport, 'security-deposits.xlsx');
+        return SecurityDeposit::class;
     }
 
-    public function exportCsv()
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new AdminSecurityDepositExport, 'security-deposits.csv');
+        return SecurityDeposit::with([
+            'tenant:id,name',
+            'property:id',
+            'property.propertyDetail:id,property_id,property_info',
+            'gateway:id,name',
+            'rent:id,tenant_id,property_id',
+            'rent.tenant:id,name',
+            'rent.property:id,puid',
+            'rent.property.propertyDetail:id,property_id,property_info',
+        ])->when(request('search'), function ($q) {
+            $q->where('invoice_no', 'like', '%'.request('search').'%')
+                ->orWhere('status', 'like', '%'.request('search').'%')
+                ->orWhere('total_amount', 'like', '%'.request('search').'%')
+                ->orWhere('utility_advance', 'like', '%'.request('search').'%');
+
+            $q->orWhereHas('tenant', function ($q) {
+                $q->where('name', 'like', '%'.request('search').'%');
+            });
+
+            $q->orWhereHas('gateway', function ($q) {
+                $q->where('name', 'like', '%'.request('search').'%');
+            });
+
+            $q->orWhereHas('property.propertyDetail', function ($q) {
+                $q->where('property_info', 'like', '%'.request('search').'%');
+            });
+        })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'admin.security-deposits.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['security_deposits' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new AdminSecurityDepositExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'security-deposits';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'security-deposits';
     }
 }

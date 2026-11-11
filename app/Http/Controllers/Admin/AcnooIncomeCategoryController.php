@@ -4,11 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\IncomeCategory;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class AcnooIncomeCategoryController extends Controller
 {
+    use HasAcnooActions;
+
     public function __construct()
     {
         $this->middleware('permission:income-categories-read')->only('index');
@@ -22,27 +27,6 @@ class AcnooIncomeCategoryController extends Controller
         $income_categories = IncomeCategory::whereNull('landlord_id')->latest()->paginate(10);
 
         return view('admin.income-categories.index', compact('income_categories'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $income_categories = IncomeCategory::whereNull('landlord_id')
-            ->when(request('search'), function ($q) use ($request) {
-                $q->where(function ($q) use ($request) {
-                    $q->where('name', 'like', '%'.$request->search.'%')
-                        ->orWhere('description', 'like', '%'.$request->search.'%');
-                });
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.income-categories.datas', compact('income_categories'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function store(Request $request)
@@ -102,23 +86,47 @@ class AcnooIncomeCategoryController extends Controller
         ]);
     }
 
-    public function deleteAll(Request $request)
-    {
-        IncomeCategory::whereIn('id', $request->ids)->delete();
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json([
-            'message' => 'Selected Income Category Deleted Successfully',
-            'redirect' => route('admin.income-categories.index'),
-        ]);
+    protected function acnooModel(): string
+    {
+        return IncomeCategory::class;
     }
 
-    public function status(Request $request, string $id)
+    protected function acnooQuery(Request $request): Builder
     {
-        $category = IncomeCategory::findOrFail($id);
-        $category->update(['status' => $request->status]);
+        return IncomeCategory::whereNull('landlord_id')
+            ->when(request('search'), function ($q) use ($request) {
+                $q->where(function ($q) use ($request) {
+                    $q->where('name', 'like', '%'.$request->search.'%')
+                        ->orWhere('description', 'like', '%'.$request->search.'%');
+                });
+            })
+            ->latest();
+    }
 
-        return response()->json([
-            'message' => 'Income Category',
-        ]);
+    protected function acnooView(): string
+    {
+        return 'admin.income-categories.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['income_categories' => $rows];
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'admin.income-categories.index';
+    }
+
+    protected function acnooStatusMessage(): string
+    {
+        return 'Income Category';
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return 'Selected Income Category Deleted Successfully';
     }
 }

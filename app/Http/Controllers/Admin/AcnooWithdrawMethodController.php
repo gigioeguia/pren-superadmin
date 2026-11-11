@@ -6,11 +6,15 @@ use App\Exports\AdminWithdrawMethodExport;
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
 use App\Models\WithdrawMethod;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooWithdrawMethodController extends Controller
 {
+    use HasAcnooActions;
+
     public function __construct()
     {
         $this->middleware('permission:withdraw-methods-read')->only('index');
@@ -24,31 +28,6 @@ class AcnooWithdrawMethodController extends Controller
         $withdrawMethods = WithdrawMethod::with('currency:id,name')->latest()->paginate(20);
 
         return view('admin.withdraw-method.index', compact('withdrawMethods'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $withdrawMethods = WithdrawMethod::with('currency:id,name')
-            ->when(request('search'), function ($q) {
-                $q->where('name', 'like', '%'.request('search').'%')
-                    ->orWhere('min_amount', 'like', '%'.request('search').'%')
-                    ->orWhere('max_amount', 'like', '%'.request('search').'%')
-                    ->orWhere('charge', 'like', '%'.request('search').'%');
-
-                $q->orWhereHas('currency', function ($q) {
-                    $q->where('name', 'like', '%'.request('search').'%');
-                });
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.withdraw-method.datas', compact('withdrawMethods'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function create()
@@ -149,31 +128,71 @@ class AcnooWithdrawMethodController extends Controller
         ]);
     }
 
-    public function status(Request $request, string $id)
-    {
-        $withdrawMethod = WithdrawMethod::findOrFail($id);
-        $withdrawMethod->update(['status' => $request->status]);
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json(['message' => 'withdrawMethod']);
+    protected function acnooModel(): string
+    {
+        return WithdrawMethod::class;
     }
 
-    public function deleteAll(Request $request)
+    protected function acnooQuery(Request $request): Builder
     {
-        WithdrawMethod::whereIn('id', $request->ids)->delete();
+        return WithdrawMethod::with('currency:id,name')
+            ->when(request('search'), function ($q) {
+                $q->where('name', 'like', '%'.request('search').'%')
+                    ->orWhere('min_amount', 'like', '%'.request('search').'%')
+                    ->orWhere('max_amount', 'like', '%'.request('search').'%')
+                    ->orWhere('charge', 'like', '%'.request('search').'%');
 
-        return response()->json([
-            'message' => __('Selected Items deleted successfully.'),
-            'redirect' => route('admin.withdraw-methods.index'),
-        ]);
+                $q->orWhereHas('currency', function ($q) {
+                    $q->where('name', 'like', '%'.request('search').'%');
+                });
+            })
+            ->latest();
     }
 
-    public function exportExcel()
+    protected function acnooView(): string
     {
-        return Excel::download(new AdminWithdrawMethodExport, 'withdraw-methods.xlsx');
+        return 'admin.withdraw-method.datas';
     }
 
-    public function exportCsv()
+    protected function acnooViewData(LengthAwarePaginator $rows): array
     {
-        return Excel::download(new AdminWithdrawMethodExport, 'withdraw-methods.csv');
+        return ['withdrawMethods' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return __('Selected Items deleted successfully.');
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'admin.withdraw-methods.index';
+    }
+
+    protected function acnooStatusMessage(): string
+    {
+        return 'withdrawMethod';
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new AdminWithdrawMethodExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'withdraw-methods';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'withdraw-methods';
     }
 }

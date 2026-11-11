@@ -2,12 +2,16 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Http\Controllers\Admin\AcnooAmenityController;
+use App\Http\Controllers\Admin\PropertyController;
 use App\Models\Amenity;
 use App\Models\Property;
 use App\Models\PropertyDetail;
+use App\Traits\HasAcnooActions;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use ReflectionClass;
 use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
 
@@ -171,5 +175,30 @@ class AcnooActionsSmokeTest extends TestCase
         // Assert
         $response->assertOk();
         $this->assertStringContainsString('properties.csv', $response->headers->get('content-disposition'));
+    }
+
+    public function test_routed_actions_are_provided_by_the_trait(): void
+    {
+        // Arrange — verificación estructural de la centralización (respuesta al
+        // review del PR 1): tras la adopción, los métodos enrutados dejan de
+        // ser copias locales y los sirve HasAcnooActions.
+        $representatives = [
+            AcnooAmenityController::class => ['acnooFilter', 'deleteAll', 'status'],
+            PropertyController::class => ['acnooFilter', 'deleteAll', 'status', 'exportExcel', 'exportCsv'],
+        ];
+
+        // Act & Assert
+        foreach ($representatives as $controller => $actions) {
+            $this->assertContains(HasAcnooActions::class, class_uses_recursive($controller));
+
+            $file = file_get_contents((new ReflectionClass($controller))->getFileName());
+            foreach ($actions as $action) {
+                $this->assertStringNotContainsString(
+                    "function {$action}(",
+                    $file,
+                    "{$controller} debe servir {$action} desde HasAcnooActions, no como copia local."
+                );
+            }
+        }
     }
 }

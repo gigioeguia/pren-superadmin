@@ -6,12 +6,18 @@ use App\Exports\AdminExportIncome;
 use App\Http\Controllers\Controller;
 use App\Models\Income;
 use App\Models\IncomeCategory;
+use App\Traits\HasAcnooActions;
 use Carbon\Carbon;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooIncomeController extends Controller
 {
+    use HasAcnooActions {
+        status as protected;
+    }
+
     public function __construct()
     {
         $this->middleware('permission:incomes-read')->only('index');
@@ -164,23 +170,52 @@ class AcnooIncomeController extends Controller
         ]);
     }
 
-    public function deleteAll(Request $request)
-    {
-        Income::whereIn('id', $request->ids)->delete();
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json([
-            'message' => 'Selected income deleted successfully',
-            'redirect' => route('admin.incomes.index'),
-        ]);
+    protected function acnooModel(): string
+    {
+        return Income::class;
     }
 
-    public function exportExcel()
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new AdminExportIncome, 'admin-incomes.xlsx');
+        return Income::with('category:id,name')
+            ->whereNull('landlord_id')
+            ->latest();
     }
 
-    public function exportCsv()
+    protected function acnooView(): string
     {
-        return Excel::download(new AdminExportIncome, 'admin-incomes.csv');
+        return 'admin.incomes.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['incomes' => $rows];
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return 'Selected income deleted successfully';
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'admin.incomes.index';
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new AdminExportIncome;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'admin-incomes';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'admin-incomes';
     }
 }

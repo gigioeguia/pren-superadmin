@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\Language;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator as LengthAwarePaginatorContract;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
@@ -14,6 +17,7 @@ use Illuminate\Support\Facades\Storage;
 
 class AcnooLanguageController extends Controller
 {
+    use HasAcnooActions;
     use HasUploader;
 
     public function index()
@@ -23,27 +27,6 @@ class AcnooLanguageController extends Controller
             ->paginate(20);
 
         return view('admin.languages.index', compact('languages'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $languages = Language::orderBy('order', 'asc')
-            ->when($request->search, function ($q) use ($request) {
-                $q->where(function ($q) use ($request) {
-                    $q->where('name', 'like', '%'.$request->search.'%')
-                        ->orWhere('code', 'like', '%'.$request->search.'%');
-                });
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.languages.datas', compact('languages'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function store(Request $request)
@@ -241,5 +224,39 @@ class AcnooLanguageController extends Controller
             'message' => __('Selected Language deleted successfully'),
             'redirect' => route('admin.languages.index'),
         ]);
+    }
+
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
+    {
+        return Language::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
+    {
+        return Language::orderBy('order', 'asc')
+            ->when($request->search, function ($q) use ($request) {
+                $q->where(function ($q) use ($request) {
+                    $q->where('name', 'like', '%'.$request->search.'%')
+                        ->orWhere('code', 'like', '%'.$request->search.'%');
+                });
+            })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'admin.languages.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginatorContract $rows): array
+    {
+        return ['languages' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
     }
 }

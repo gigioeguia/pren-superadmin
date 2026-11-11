@@ -13,14 +13,17 @@ use App\Models\Property;
 use App\Models\PropertyDetail;
 use App\Models\Unit;
 use App\Models\User;
+use App\Traits\HasAcnooActions;
 use Carbon\Carbon;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 
 class PropertyController extends Controller
 {
+    use HasAcnooActions;
     use HasUploader;
 
     public function __construct()
@@ -56,48 +59,6 @@ class PropertyController extends Controller
         $categories = Category::all();
 
         return view('admin.properties.index', compact('properties', 'categories'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $properties = Property::with(['category:id,name', 'landlord:id,name', 'propertyDetail:property_id,property_info', 'units.rent'])
-            ->withCount([
-                'units as total_unit',
-                'units as total_available_unit' => function ($query) {
-                    $query->whereDoesntHave('rent', function ($q) {
-                        $q->whereIn('status', ['active', 'processing']);
-                    });
-                },
-            ])
-            ->when(request('category_id'), function ($q) {
-                $q->where('category_id', request('category_id'));
-            })
-            ->when(request('search'), function ($q) {
-                $q->where('rent_info', 'like', '%'.request('search').'%')
-                    ->orwhere('puid', 'like', '%'.request('search').'%')
-                    ->orWhere('address_info->address', 'like', '%'.request('search').'%')
-                    ->orWhere('address_info->state', 'like', '%'.request('search').'%')
-                    ->orWhere('address_info->city', 'like', '%'.request('search').'%')
-                    ->orWhere('rent_info->monthly_rent', 'like', '%'.request('search').'%');
-
-                $q->orWhereHas('category', function ($q) {
-                    $q->where('name', 'like', '%'.request('search').'%');
-                });
-
-                $q->orWhereHas('propertyDetail', function ($q) {
-                    $q->where('property_info', 'like', '%'.request('search').'%');
-                });
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if (request()->ajax()) {
-            return response()->json([
-                'data' => view('admin.properties.datas', compact('properties'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function getFacilities($landlordId)
@@ -547,20 +508,6 @@ class PropertyController extends Controller
         return view('admin.properties.property-success', compact('property'));
     }
 
-    public function status(Request $request, string $id)
-    {
-
-        $property = Property::findOrFail($id);
-        $property->update([
-            'status' => $request->status,
-        ]);
-
-        return response()->json([
-            'message' => 'Status Updated',
-            'redirect' => route('admin.properties.index'),
-        ]);
-    }
-
     public function destroy(string $id)
     {
         $property = Property::findOrFail($id);
@@ -591,41 +538,6 @@ class PropertyController extends Controller
 
         return response()->json([
             'message' => __('Property deleted successfully'),
-            'redirect' => route('admin.properties.index'),
-        ]);
-    }
-
-    public function deleteAll(Request $request)
-    {
-        $properties = Property::whereIn('id', $request->ids)->get();
-
-        foreach ($properties as $property) {
-            if (! empty($property->cover_image)) {
-                foreach ($property->cover_image as $image) {
-                    $oldImagePath = dirname($image);
-                    Storage::deleteDirectory($oldImagePath);
-                }
-            }
-
-            if (! empty($property->propertyDetail->floorplan_image)) {
-                $oldImagePath = dirname($property->propertyDetail->floorplan_image);
-                Storage::deleteDirectory($oldImagePath);
-            }
-
-            foreach ($property->units as $unit) {
-                if (! empty($unit->images)) {
-                    foreach ($unit->images as $image) {
-                        if ($image && Storage::exists($image)) {
-                            Storage::delete($image);
-                        }
-                    }
-                }
-            }
-            $property->delete();
-        }
-
-        return response()->json([
-            'message' => __('Selected property deleted successfully'),
             'redirect' => route('admin.properties.index'),
         ]);
     }
@@ -677,13 +589,123 @@ class PropertyController extends Controller
         }
     }
 
-    public function exportExcel()
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
     {
-        return Excel::download(new AdminPropertiesExport, 'properties.xlsx');
+        return Property::class;
     }
 
-    public function exportCsv()
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new AdminPropertiesExport, 'properties.csv');
+        return Property::with(['category:id,name', 'landlord:id,name', 'propertyDetail:property_id,property_info', 'units.rent'])
+            ->withCount([
+                'units as total_unit',
+                'units as total_available_unit' => function ($query) {
+                    $query->whereDoesntHave('rent', function ($q) {
+                        $q->whereIn('status', ['active', 'processing']);
+                    });
+                },
+            ])
+            ->when(request('category_id'), function ($q) {
+                $q->where('category_id', request('category_id'));
+            })
+            ->when(request('search'), function ($q) {
+                $q->where('rent_info', 'like', '%'.request('search').'%')
+                    ->orwhere('puid', 'like', '%'.request('search').'%')
+                    ->orWhere('address_info->address', 'like', '%'.request('search').'%')
+                    ->orWhere('address_info->state', 'like', '%'.request('search').'%')
+                    ->orWhere('address_info->city', 'like', '%'.request('search').'%')
+                    ->orWhere('rent_info->monthly_rent', 'like', '%'.request('search').'%');
+
+                $q->orWhereHas('category', function ($q) {
+                    $q->where('name', 'like', '%'.request('search').'%');
+                });
+
+                $q->orWhereHas('propertyDetail', function ($q) {
+                    $q->where('property_info', 'like', '%'.request('search').'%');
+                });
+            })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'admin.properties.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['properties' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
+    }
+
+    protected function acnooDeletesRowByRow(): bool
+    {
+        return true;
+    }
+
+    protected function deletingAcnooRow($row): void
+    {
+        if (! empty($row->cover_image)) {
+            foreach ($row->cover_image as $image) {
+                $oldImagePath = dirname($image);
+                Storage::deleteDirectory($oldImagePath);
+            }
+        }
+
+        if (! empty($row->propertyDetail->floorplan_image)) {
+            $oldImagePath = dirname($row->propertyDetail->floorplan_image);
+            Storage::deleteDirectory($oldImagePath);
+        }
+
+        foreach ($row->units as $unit) {
+            if (! empty($unit->images)) {
+                foreach ($unit->images as $image) {
+                    if ($image && Storage::exists($image)) {
+                        Storage::delete($image);
+                    }
+                }
+            }
+        }
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return __('Selected property deleted successfully');
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'admin.properties.index';
+    }
+
+    protected function acnooStatusMessage(): string
+    {
+        return 'Status Updated';
+    }
+
+    protected function acnooStatusRedirectRoute(): string
+    {
+        return 'admin.properties.index';
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new AdminPropertiesExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'properties';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'properties';
     }
 }

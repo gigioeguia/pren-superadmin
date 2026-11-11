@@ -4,10 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class AcnooCurrencyController extends Controller
 {
+    use HasAcnooActions;
+
     public function __construct()
     {
         $this->middleware('permission:currencies-create')->only('create', 'store');
@@ -21,28 +26,6 @@ class AcnooCurrencyController extends Controller
         $currencies = Currency::orderBy('is_default', 'desc')->orderBy('status', 'desc')->paginate(20);
 
         return view('admin.currencies.index', compact('currencies'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $currencies = Currency::orderBy('is_default', 'desc')->orderBy('status', 'desc')->when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('name', 'like', '%'.request('search').'%')
-                    ->orWhere('country_name', 'like', '%'.request('search').'%')
-                    ->orWhere('code', 'like', '%'.request('search').'%')
-                    ->orWhere('symbol', 'like', '%'.request('search').'%');
-            });
-        })
-            ->latest()
-            ->paginate($request->per_page ?? 10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.currencies.datas', compact('currencies'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function create()
@@ -155,5 +138,35 @@ class AcnooCurrencyController extends Controller
             'message' => __('Selected currencies deleted successfully.'),
             'redirect' => route('admin.currencies.index'),
         ]);
+    }
+
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
+    {
+        return Currency::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
+    {
+        return Currency::orderBy('is_default', 'desc')->orderBy('status', 'desc')->when(request('search'), function ($q) {
+            $q->where(function ($q) {
+                $q->where('name', 'like', '%'.request('search').'%')
+                    ->orWhere('country_name', 'like', '%'.request('search').'%')
+                    ->orWhere('code', 'like', '%'.request('search').'%')
+                    ->orWhere('symbol', 'like', '%'.request('search').'%');
+            });
+        })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'admin.currencies.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['currencies' => $rows];
     }
 }

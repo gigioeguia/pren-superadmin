@@ -7,13 +7,17 @@ use App\Http\Controllers\Controller;
 use App\Models\RentPayment;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooRentPaymentController extends Controller
 {
+    use HasAcnooActions;
+
     public function __construct()
     {
         $this->middleware('permission:rent-payment-read')->only('index');
@@ -33,39 +37,6 @@ class AcnooRentPaymentController extends Controller
             ->paginate(10);
 
         return view('admin.rent-payment.index', compact('rent_payments'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $rent_payments = RentPayment::with(['rent:id,tenant_id,property_id', 'rent.tenant:id,name', 'rent.property:id,puid', 'rent.property.propertyDetail:id,property_id,property_info', 'gateway:id,name'])
-            ->when(request('search'), function ($q) {
-                $q->where('invoice_no', 'like', '%'.request('search').'%')
-                    ->orWhere('monthly_rent', 'like', '%'.request('search').'%')
-                    ->orWhere('utility_bill', 'like', '%'.request('search').'%')
-                    ->orWhere('payment_status', 'like', '%'.request('search').'%');
-
-                $q->orWhereHas('rent.tenant', function ($q) {
-                    $q->where('name', 'like', '%'.request('search').'%');
-                });
-
-                $q->orWhereHas('gateway', function ($q) {
-                    $q->where('name', 'like', '%'.request('search').'%');
-                });
-
-                $q->orWhereHas('rent.property.propertyDetail', function ($q) {
-                    $q->where('property_info', 'like', '%'.request('search').'%');
-                });
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if (request()->ajax()) {
-            return response()->json([
-                'data' => view('admin.rent-payment.datas', compact('rent_payments'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function file_download(string $id)
@@ -159,13 +130,64 @@ class AcnooRentPaymentController extends Controller
         ]);
     }
 
-    public function exportExcel()
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
     {
-        return Excel::download(new AdminRentPaymentExport, 'rent-payments.xlsx');
+        return RentPayment::class;
     }
 
-    public function exportCsv()
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new AdminRentPaymentExport, 'rent-payments.csv');
+        return RentPayment::with(['rent:id,tenant_id,property_id', 'rent.tenant:id,name', 'rent.property:id,puid', 'rent.property.propertyDetail:id,property_id,property_info', 'gateway:id,name'])
+            ->when(request('search'), function ($q) {
+                $q->where('invoice_no', 'like', '%'.request('search').'%')
+                    ->orWhere('monthly_rent', 'like', '%'.request('search').'%')
+                    ->orWhere('utility_bill', 'like', '%'.request('search').'%')
+                    ->orWhere('payment_status', 'like', '%'.request('search').'%');
+
+                $q->orWhereHas('rent.tenant', function ($q) {
+                    $q->where('name', 'like', '%'.request('search').'%');
+                });
+
+                $q->orWhereHas('gateway', function ($q) {
+                    $q->where('name', 'like', '%'.request('search').'%');
+                });
+
+                $q->orWhereHas('rent.property.propertyDetail', function ($q) {
+                    $q->where('property_info', 'like', '%'.request('search').'%');
+                });
+            })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'admin.rent-payment.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['rent_payments' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new AdminRentPaymentExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'rent-payments';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'rent-payments';
     }
 }

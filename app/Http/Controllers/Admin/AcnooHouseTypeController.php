@@ -4,10 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\HouseType;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class AcnooHouseTypeController extends Controller
 {
+    use HasAcnooActions;
+
     public function __construct()
     {
         $this->middleware('permission:house-types-read')->only('index');
@@ -21,26 +26,6 @@ class AcnooHouseTypeController extends Controller
         $house_types = HouseType::latest()->paginate(10);
 
         return view('admin.house-types.index', compact('house_types'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $house_types = HouseType::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $search = request('search');
-                $q->where('name', 'like', '%'.$search.'%');
-            });
-        })
-            ->latest()
-            ->paginate($request->per_page ?? 20);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.house-types.datas', compact('house_types'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function store(Request $request)
@@ -73,16 +58,6 @@ class AcnooHouseTypeController extends Controller
         ]);
     }
 
-    public function status(Request $request, string $id)
-    {
-        $reason = HouseType::findOrFail($id);
-        $reason->update(['status' => $request->status]);
-
-        return response()->json([
-            'message' => 'House Type',
-        ]);
-    }
-
     public function destroy(string $id)
     {
         $reason = HouseType::findOrFail($id);
@@ -94,13 +69,51 @@ class AcnooHouseTypeController extends Controller
         ]);
     }
 
-    public function deleteAll(Request $request)
-    {
-        HouseType::whereIn('id', $request->ids)->delete();
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json([
-            'message' => 'Selected House Types Deleted Successfully',
-            'redirect' => route('admin.house-types.index'),
-        ]);
+    protected function acnooModel(): string
+    {
+        return HouseType::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
+    {
+        return HouseType::when(request('search'), function ($q) {
+            $q->where(function ($q) {
+                $search = request('search');
+                $q->where('name', 'like', '%'.$search.'%');
+            });
+        })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'admin.house-types.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['house_types' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'admin.house-types.index';
+    }
+
+    protected function acnooStatusMessage(): string
+    {
+        return 'House Type';
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return 'Selected House Types Deleted Successfully';
     }
 }

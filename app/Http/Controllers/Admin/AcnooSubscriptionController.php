@@ -6,14 +6,18 @@ use App\Exports\AdminSubscriptionExport;
 use App\Http\Controllers\Controller;
 use App\Models\PlanSubscribe;
 use App\Models\Transaction;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooSubscriptionController extends Controller
 {
+    use HasAcnooActions;
+
     public function __construct()
     {
         $this->middleware('permission:subscriptions-read')->only('index');
@@ -25,36 +29,6 @@ class AcnooSubscriptionController extends Controller
         $subscriptions = PlanSubscribe::with(['user:id,name,will_expire', 'plan:id,subscriptionName', 'gateway:id,name'])->latest()->paginate(10);
 
         return view('admin.subscriptions.index', compact('subscriptions'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $subscriptionQuery = PlanSubscribe::with(['user:id,name', 'plan:id,subscriptionName', 'gateway:id,name']);
-
-        if ($request->filled('search')) {
-            $subscriptionQuery->where(function ($q) use ($request) {
-                $q->where('payment_status', 'like', '%'.$request->search.'%')
-                    ->orWhereHas('user', function ($q) use ($request) {
-                        $q->where('name', 'like', '%'.$request->search.'%');
-                    })
-                    ->orWhereHas('plan', function ($q) use ($request) {
-                        $q->where('subscriptionName', 'like', '%'.$request->search.'%');
-                    })
-                    ->orWhereHas('gateway', function ($q) use ($request) {
-                        $q->where('name', 'like', '%'.$request->search.'%');
-                    });
-            });
-        }
-
-        $subscriptions = $subscriptionQuery->latest()->paginate($request->per_page ?? 10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.subscriptions.datas', compact('subscriptions'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function reject(Request $request, string $id)
@@ -157,13 +131,57 @@ class AcnooSubscriptionController extends Controller
         return view('admin.subscriptions.invoice', compact('subscriber'));
     }
 
-    public function exportExcel()
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
     {
-        return Excel::download(new AdminSubscriptionExport, 'subscription-list.xlsx');
+        return PlanSubscribe::class;
     }
 
-    public function exportCsv()
+    protected function acnooQuery(Request $request): Builder
     {
-        return Excel::download(new AdminSubscriptionExport, 'subscription-list.csv');
+        $subscriptionQuery = PlanSubscribe::with(['user:id,name', 'plan:id,subscriptionName', 'gateway:id,name']);
+
+        if ($request->filled('search')) {
+            $subscriptionQuery->where(function ($q) use ($request) {
+                $q->where('payment_status', 'like', '%'.$request->search.'%')
+                    ->orWhereHas('user', function ($q) use ($request) {
+                        $q->where('name', 'like', '%'.$request->search.'%');
+                    })
+                    ->orWhereHas('plan', function ($q) use ($request) {
+                        $q->where('subscriptionName', 'like', '%'.$request->search.'%');
+                    })
+                    ->orWhereHas('gateway', function ($q) use ($request) {
+                        $q->where('name', 'like', '%'.$request->search.'%');
+                    });
+            });
+        }
+
+        return $subscriptionQuery->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'admin.subscriptions.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['subscriptions' => $rows];
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new AdminSubscriptionExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'subscription-list';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'subscription-list';
     }
 }

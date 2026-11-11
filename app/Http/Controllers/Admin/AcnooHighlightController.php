@@ -5,12 +5,16 @@ namespace App\Http\Controllers\Admin;
 use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\Highlight;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class AcnooHighlightController extends Controller
 {
+    use HasAcnooActions;
     use HasUploader;
 
     public function index(Request $request)
@@ -18,26 +22,6 @@ class AcnooHighlightController extends Controller
         $highlights = Highlight::latest()->paginate(20);
 
         return view('admin.highlights.index', compact('highlights'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $highlights = Highlight::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('short_title', 'like', '%'.request('search').'%')
-                    ->orWhere('title', 'like', '%'.request('search').'%');
-            });
-        })
-            ->latest()
-            ->paginate($request->per_page ?? 10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.highlights.datas', compact('highlights'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function create()
@@ -108,29 +92,58 @@ class AcnooHighlightController extends Controller
         ]);
     }
 
-    public function status(Request $request, $id)
-    {
-        $highlight_status = Highlight::findOrFail($id);
-        $highlight_status->update(['status' => $request->status]);
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json(['message' => 'Highlight']);
+    protected function acnooModel(): string
+    {
+        return Highlight::class;
     }
 
-    public function deleteAll(Request $request)
+    protected function acnooQuery(Request $request): Builder
     {
-        $highlights = Highlight::whereIn('id', $request->ids)->get();
+        return Highlight::when(request('search'), function ($q) {
+            $q->where(function ($q) {
+                $q->where('short_title', 'like', '%'.request('search').'%')
+                    ->orWhere('title', 'like', '%'.request('search').'%');
+            });
+        })
+            ->latest();
+    }
 
-        foreach ($highlights as $highlight) {
-            if (file_exists($highlight->image)) {
-                Storage::delete($highlight->image);
-            }
+    protected function acnooView(): string
+    {
+        return 'admin.highlights.datas';
+    }
 
-            $highlight->delete();
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['highlights' => $rows];
+    }
+
+    protected function acnooDeletesRowByRow(): bool
+    {
+        return true;
+    }
+
+    protected function deletingAcnooRow($row): void
+    {
+        if (file_exists($row->image)) {
+            Storage::delete($row->image);
         }
+    }
 
-        return response()->json([
-            'message' => __('Selected highlight deleted successfully'),
-            'redirect' => route('admin.highlights.index'),
-        ]);
+    protected function acnooRedirectRoute(): string
+    {
+        return 'admin.highlights.index';
+    }
+
+    protected function acnooStatusMessage(): string
+    {
+        return 'Highlight';
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return __('Selected highlight deleted successfully');
     }
 }

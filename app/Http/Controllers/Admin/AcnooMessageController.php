@@ -4,10 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Message;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class AcnooMessageController extends Controller
 {
+    use HasAcnooActions;
+
     public function __construct()
     {
         $this->middleware('permission:messages-read')->only('index');
@@ -21,29 +26,6 @@ class AcnooMessageController extends Controller
         return view('admin.message.index', compact('messages'));
     }
 
-    public function acnooFilter(Request $request)
-    {
-        $messages = Message::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('name', 'like', '%'.request('search').'%')
-                    ->orWhere('phone', 'like', '%'.request('search').'%')
-                    ->orWhere('email', 'like', '%'.request('search').'%')
-                    ->orWhere('company_name', 'like', '%'.request('search').'%')
-                    ->orWhere('message', 'like', '%'.request('search').'%');
-            });
-        })
-            ->latest()
-            ->paginate($request->per_page ?? 10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.message.datas', compact('messages'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
-    }
-
     public function destroy(string $id)
     {
         Message::where('id', $id)->delete();
@@ -54,13 +36,44 @@ class AcnooMessageController extends Controller
         ]);
     }
 
-    public function deleteAll(Request $request)
-    {
-        Message::whereIn('id', $request->ids)->delete();
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json([
-            'message' => 'Selected message deleted successfully',
-            'redirect' => route('admin.messages.index'),
-        ]);
+    protected function acnooModel(): string
+    {
+        return Message::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
+    {
+        return Message::when(request('search'), function ($q) {
+            $q->where(function ($q) {
+                $q->where('name', 'like', '%'.request('search').'%')
+                    ->orWhere('phone', 'like', '%'.request('search').'%')
+                    ->orWhere('email', 'like', '%'.request('search').'%')
+                    ->orWhere('company_name', 'like', '%'.request('search').'%')
+                    ->orWhere('message', 'like', '%'.request('search').'%');
+            });
+        })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'admin.message.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['messages' => $rows];
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'admin.messages.index';
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return 'Selected message deleted successfully';
     }
 }

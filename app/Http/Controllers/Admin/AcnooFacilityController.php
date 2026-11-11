@@ -5,10 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Facility;
 use App\Models\User;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class AcnooFacilityController extends Controller
 {
+    use HasAcnooActions;
+
     public function __construct()
     {
         $this->middleware('permission:facilities-read')->only('index');
@@ -23,30 +28,6 @@ class AcnooFacilityController extends Controller
         $landlords = User::whereRole('landlord')->latest()->get();
 
         return view('admin.facilities.index', compact('facilities', 'landlords'));
-    }
-
-    public function acnooFilter(Request $request)
-    {
-        $facilities = Facility::with('landlord:id,name')
-            ->when(request('search'), function ($q) {
-                $search = request('search');
-                $q->where(function ($q) use ($search) {
-                    $q->where('name', 'like', '%'.$search.'%');
-                    $q->orWhereHas('landlord', function ($landlordQuery) use ($search) {
-                        $landlordQuery->where('name', 'like', '%'.$search.'%');
-                    });
-                });
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.facilities.datas', compact('facilities'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
     }
 
     public function store(Request $request)
@@ -83,16 +64,6 @@ class AcnooFacilityController extends Controller
         ]);
     }
 
-    public function status(Request $request, string $id)
-    {
-        $facility = Facility::findOrFail($id);
-        $facility->update(['status' => $request->status]);
-
-        return response()->json([
-            'message' => 'Facility',
-        ]);
-    }
-
     public function destroy(string $id)
     {
         Facility::where('id', $id)->delete();
@@ -103,13 +74,50 @@ class AcnooFacilityController extends Controller
         ]);
     }
 
-    public function deleteAll(Request $request)
-    {
-        Facility::whereIn('id', $request->ids)->delete();
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
 
-        return response()->json([
-            'message' => 'Selected Facility Deleted Successfully',
-            'redirect' => route('admin.facilities.index'),
-        ]);
+    protected function acnooModel(): string
+    {
+        return Facility::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
+    {
+        return Facility::with('landlord:id,name')
+            ->when(request('search'), function ($q) {
+                $search = request('search');
+                $q->where(function ($q) use ($search) {
+                    $q->where('name', 'like', '%'.$search.'%');
+                    $q->orWhereHas('landlord', function ($landlordQuery) use ($search) {
+                        $landlordQuery->where('name', 'like', '%'.$search.'%');
+                    });
+                });
+            })
+            ->latest();
+    }
+
+    protected function acnooView(): string
+    {
+        return 'admin.facilities.datas';
+    }
+
+    protected function acnooViewData(LengthAwarePaginator $rows): array
+    {
+        return ['facilities' => $rows];
+    }
+
+    protected function acnooRedirectRoute(): string
+    {
+        return 'admin.facilities.index';
+    }
+
+    protected function acnooStatusMessage(): string
+    {
+        return 'Facility';
+    }
+
+    protected function acnooDeleteMessage(): string
+    {
+        return 'Selected Facility Deleted Successfully';
     }
 }

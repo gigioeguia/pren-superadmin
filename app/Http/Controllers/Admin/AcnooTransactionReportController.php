@@ -5,12 +5,16 @@ namespace App\Http\Controllers\Admin;
 use App\Exports\AdminTransactionReportExport;
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
+use App\Traits\HasAcnooActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooTransactionReportController extends Controller
 {
+    use HasAcnooActions;
+
     public function __construct()
     {
         $this->middleware('permission:transactions-read')->only('index');
@@ -23,7 +27,14 @@ class AcnooTransactionReportController extends Controller
         return view('admin.reports.transactions.index', compact('transactions'));
     }
 
-    public function acnooFilter(Request $request)
+    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
+
+    protected function acnooModel(): string
+    {
+        return Transaction::class;
+    }
+
+    protected function acnooQuery(Request $request): Builder
     {
         $transactionQuery = Transaction::with('gateway:id,name');
 
@@ -46,25 +57,36 @@ class AcnooTransactionReportController extends Controller
             });
         }
 
-        $perPage = $request->input('per_page', 20);
-        $transactions = $transactionQuery->latest()->paginate($perPage);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => view('admin.reports.transactions.datas', compact('transactions'))->render(),
-            ]);
-        }
-
-        return redirect(url()->previous());
+        return $transactionQuery->latest();
     }
 
-    public function exportExcel()
+    protected function acnooView(): string
     {
-        return Excel::download(new AdminTransactionReportExport, 'transaction-reports.xlsx');
+        return 'admin.reports.transactions.datas';
     }
 
-    public function exportCsv()
+    protected function acnooViewData(LengthAwarePaginator $rows): array
     {
-        return Excel::download(new AdminTransactionReportExport, 'transaction-reports.csv');
+        return ['transactions' => $rows];
+    }
+
+    protected function acnooPerPage(): int
+    {
+        return 20;
+    }
+
+    protected function acnooExport(Request $request): object
+    {
+        return new AdminTransactionReportExport;
+    }
+
+    protected function acnooExcelFilename(): string
+    {
+        return 'transaction-reports';
+    }
+
+    protected function acnooCsvFilename(): string
+    {
+        return 'transaction-reports';
     }
 }
