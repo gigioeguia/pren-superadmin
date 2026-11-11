@@ -60,11 +60,14 @@ class AcnooActionsSmokeTest extends TestCase
         // Arrange
         $admin = $this->createSuperadmin();
 
-        // Act
-        $response = $this->actingAs($admin)->post('/admin/amenities/filter', ['search' => 'x']);
+        // Act — from() fija la URL previa conocida (respuesta al review:
+        // assertRedirect() sin destino solo verifica "hubo 302")
+        $response = $this->actingAs($admin)
+            ->from('/admin/amenities')
+            ->post('/admin/amenities/filter', ['search' => 'x']);
 
-        // Assert
-        $response->assertRedirect();
+        // Assert — destino exacto: la URL previa
+        $response->assertRedirect('/admin/amenities');
     }
 
     public function test_status_updates_model_and_returns_current_message(): void
