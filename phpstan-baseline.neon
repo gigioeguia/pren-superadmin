@@ -1,0 +1,1971 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Expression on left side of \\?\\? is not nullable\\.$#"
+			count: 1
+			path: app/Console/Commands/RentPaymentGenerate.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function str_pad expects string, \\(float\\|int\\) given\\.$#"
+			count: 1
+			path: app/Console/Commands/RentPaymentGenerate.php
+
+		-
+			message: "#^Variable \\$charge on left side of \\?\\? always exists and is not nullable\\.$#"
+			count: 1
+			path: app/Console/Commands/RentPaymentGenerate.php
+
+		-
+			message: "#^Relation 'plan_subscribe' is not found in App\\\\Models\\\\User model\\.$#"
+			count: 1
+			path: app/Exports/AdminLandlordExport.php
+
+		-
+			message: "#^Relation 'account_info' is not found in App\\\\Models\\\\Withdraw model\\.$#"
+			count: 1
+			path: app/Exports/AdminLandlordWithdrawReportExport.php
+
+		-
+			message: "#^Relation 'user' is not found in App\\\\Models\\\\Withdraw model\\.$#"
+			count: 1
+			path: app/Exports/AdminLandlordWithdrawReportExport.php
+
+		-
+			message: "#^Relation 'units' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 1
+			path: app/Exports/AdminPropertiesExport.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\RefundRequest model\\.$#"
+			count: 1
+			path: app/Exports/AdminRefundRequestReportExport.php
+
+		-
+			message: "#^Relation 'rent' is not found in App\\\\Models\\\\RentPayment model\\.$#"
+			count: 1
+			path: app/Exports/AdminRentPaymentExport.php
+
+		-
+			message: "#^Relation 'rent' is not found in App\\\\Models\\\\RentPayment model\\.$#"
+			count: 1
+			path: app/Exports/AdminRentPaymentReportExport.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\SecurityDeposit model\\.$#"
+			count: 1
+			path: app/Exports/AdminSecurityDepositExport.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\SecurityDeposit model\\.$#"
+			count: 1
+			path: app/Exports/AdminSecurityDepositReportExport.php
+
+		-
+			message: "#^Relation 'gateway' is not found in App\\\\Models\\\\PlanSubscribe model\\.$#"
+			count: 1
+			path: app/Exports/AdminSubscriptionExport.php
+
+		-
+			message: "#^Relation 'plan' is not found in App\\\\Models\\\\PlanSubscribe model\\.$#"
+			count: 1
+			path: app/Exports/AdminSubscriptionExport.php
+
+		-
+			message: "#^Relation 'user' is not found in App\\\\Models\\\\PlanSubscribe model\\.$#"
+			count: 1
+			path: app/Exports/AdminSubscriptionExport.php
+
+		-
+			message: "#^Relation 'gateway' is not found in App\\\\Models\\\\PlanSubscribe model\\.$#"
+			count: 1
+			path: app/Exports/AdminSubscriptionReportExport.php
+
+		-
+			message: "#^Relation 'plan' is not found in App\\\\Models\\\\PlanSubscribe model\\.$#"
+			count: 1
+			path: app/Exports/AdminSubscriptionReportExport.php
+
+		-
+			message: "#^Relation 'user' is not found in App\\\\Models\\\\PlanSubscribe model\\.$#"
+			count: 1
+			path: app/Exports/AdminSubscriptionReportExport.php
+
+		-
+			message: "#^Relation 'rents' is not found in App\\\\Models\\\\User model\\.$#"
+			count: 5
+			path: app/Exports/AdminTenantExport.php
+
+		-
+			message: "#^Relation 'account_info' is not found in App\\\\Models\\\\Withdraw model\\.$#"
+			count: 1
+			path: app/Exports/AdminWithdrawRequestExport.php
+
+		-
+			message: "#^Relation 'user' is not found in App\\\\Models\\\\Withdraw model\\.$#"
+			count: 1
+			path: app/Exports/AdminWithdrawRequestExport.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\Application model\\.$#"
+			count: 1
+			path: app/Exports/LandlordApplicationExport.php
+
+		-
+			message: "#^Relation 'landlord' is not found in App\\\\Models\\\\Labor model\\.$#"
+			count: 1
+			path: app/Exports/LandlordLaborExport.php
+
+		-
+			message: "#^Relation 'labor' is not found in App\\\\Models\\\\Maintenance model\\.$#"
+			count: 1
+			path: app/Exports/LandlordMaintenanceExport.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\Maintenance model\\.$#"
+			count: 1
+			path: app/Exports/LandlordMaintenanceExport.php
+
+		-
+			message: "#^Relation 'tenant' is not found in App\\\\Models\\\\Maintenance model\\.$#"
+			count: 1
+			path: app/Exports/LandlordMaintenanceExport.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Exports/LandlordMaintenanceReportExport.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Exports/LandlordMaintenanceReportExport.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\Maintenance model\\.$#"
+			count: 1
+			path: app/Exports/LandlordMaintenanceReportExport.php
+
+		-
+			message: "#^Relation 'units' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 1
+			path: app/Exports/LandlordPropertiesExport.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\RefundRequest model\\.$#"
+			count: 1
+			path: app/Exports/LandlordRefundRequestExport.php
+
+		-
+			message: "#^Relation 'rent' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 1
+			path: app/Exports/LandlordRentInvitationExport.php
+
+		-
+			message: "#^Relation 'tenant' is not found in App\\\\Models\\\\Rent model\\.$#"
+			count: 1
+			path: app/Exports/LandlordRentInvitationExport.php
+
+		-
+			message: "#^Relation 'user_details' is not found in App\\\\Models\\\\User model\\.$#"
+			count: 1
+			path: app/Exports/LandlordRentInvitationExport.php
+
+		-
+			message: "#^Relation 'rent' is not found in App\\\\Models\\\\RentPayment model\\.$#"
+			count: 2
+			path: app/Exports/LandlordRentPaymentExport.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\SecurityDeposit model\\.$#"
+			count: 1
+			path: app/Exports/LandlordSecurityDepositExport.php
+
+		-
+			message: "#^Relation 'rents' is not found in App\\\\Models\\\\User model\\.$#"
+			count: 1
+			path: app/Exports/LandlordTenantExport.php
+
+		-
+			message: "#^Relation 'user_details' is not found in App\\\\Models\\\\User model\\.$#"
+			count: 1
+			path: app/Exports/LandlordTenantExport.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Exports/LandlordUserMethodExport.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Exports/LandlordUserMethodExport.php
+
+		-
+			message: "#^Relation 'withdraw_method' is not found in App\\\\Models\\\\UserMethod model\\.$#"
+			count: 1
+			path: app/Exports/LandlordUserMethodExport.php
+
+		-
+			message: "#^Relation 'account_info' is not found in App\\\\Models\\\\Withdraw model\\.$#"
+			count: 1
+			path: app/Exports/LandlordWithdrawMethodExport.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Gateway\\:\\:\\$currency\\.$#"
+			count: 3
+			path: app/Helpers/Helper.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\PlanSubscribe\\:\\:\\$will_expire\\.$#"
+			count: 1
+			path: app/Helpers/Helper.php
+
+		-
+			message: "#^Function expectedItemId\\(\\) should return string but returns int\\.$#"
+			count: 1
+			path: app/Helpers/Helper.php
+
+		-
+			message: "#^Parameter \\#1 \\$amount of function convert_to_default_amount expects float\\|int, bool given\\.$#"
+			count: 1
+			path: app/Helpers/Helper.php
+
+		-
+			message: "#^Relation 'account_info' is not found in App\\\\Models\\\\Withdraw model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooAdminDashboardController.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\RefundRequest model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooAdminDashboardController.php
+
+		-
+			message: "#^Relation 'landlord' is not found in App\\\\Models\\\\Amenity model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/AcnooAmenityController.php
+
+		-
+			message: "#^Relation 'landlord' is not found in App\\\\Models\\\\Facility model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/AcnooFacilityController.php
+
+		-
+			message: "#^Call to an undefined method App\\\\Http\\\\Controllers\\\\Admin\\\\AcnooGatewayController\\:\\:upload\\(\\)\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooGatewayController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$user_details\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/AcnooLandlordController.php
+
+		-
+			message: "#^Relation 'plan_subscribe' is not found in App\\\\Models\\\\User model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooLandlordController.php
+
+		-
+			message: "#^Relation 'user_details' is not found in App\\\\Models\\\\User model\\.$#"
+			count: 4
+			path: app/Http/Controllers/Admin/AcnooLandlordController.php
+
+		-
+			message: "#^Relation 'account_info' is not found in App\\\\Models\\\\Withdraw model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/AcnooLandlordWithdrawReportController.php
+
+		-
+			message: "#^Relation 'user' is not found in App\\\\Models\\\\Withdraw model\\.$#"
+			count: 4
+			path: app/Http/Controllers/Admin/AcnooLandlordWithdrawReportController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooProfileController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooProfileController.php
+
+		-
+			message: "#^Relation 'user_details' is not found in App\\\\Models\\\\User model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooProfileController.php
+
+		-
+			message: "#^Relation 'deposit' is not found in App\\\\Models\\\\RefundRequest model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooRefundRequestController.php
+
+		-
+			message: "#^Relation 'landlord' is not found in App\\\\Models\\\\RefundRequest model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooRefundRequestController.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\RefundRequest model\\.$#"
+			count: 5
+			path: app/Http/Controllers/Admin/AcnooRefundRequestController.php
+
+		-
+			message: "#^Relation 'tenant' is not found in App\\\\Models\\\\RefundRequest model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooRefundRequestController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\RentPayment\\:\\:\\$rent\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/AcnooRentPaymentController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooRentPaymentController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooRentPaymentController.php
+
+		-
+			message: "#^Relation 'gateway' is not found in App\\\\Models\\\\RentPayment model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooRentPaymentController.php
+
+		-
+			message: "#^Relation 'rent' is not found in App\\\\Models\\\\RentPayment model\\.$#"
+			count: 4
+			path: app/Http/Controllers/Admin/AcnooRentPaymentController.php
+
+		-
+			message: "#^Expression on left side of \\?\\? is not nullable\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooRentPaymentGenerateController.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function str_pad expects string, \\(float\\|int\\) given\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooRentPaymentGenerateController.php
+
+		-
+			message: "#^Relation 'rent' is not found in App\\\\Models\\\\RentPayment model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooRentPaymentGenerateController.php
+
+		-
+			message: "#^Variable \\$charge on left side of \\?\\? always exists and is not nullable\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooRentPaymentGenerateController.php
+
+		-
+			message: "#^Relation 'gateway' is not found in App\\\\Models\\\\RentPayment model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooRentPaymentReportController.php
+
+		-
+			message: "#^Relation 'rent' is not found in App\\\\Models\\\\RentPayment model\\.$#"
+			count: 5
+			path: app/Http/Controllers/Admin/AcnooRentPaymentReportController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\SecurityDeposit\\:\\:\\$landlord\\.$#"
+			count: 2
+			path: app/Http/Controllers/Admin/AcnooSecurityDepositController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\SecurityDeposit\\:\\:\\$tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Admin/AcnooSecurityDepositController.php
+
+		-
+			message: "#^Relation 'gateway' is not found in App\\\\Models\\\\SecurityDeposit model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooSecurityDepositController.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\SecurityDeposit model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/AcnooSecurityDepositController.php
+
+		-
+			message: "#^Relation 'tenant' is not found in App\\\\Models\\\\SecurityDeposit model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooSecurityDepositController.php
+
+		-
+			message: "#^Relation 'gateway' is not found in App\\\\Models\\\\SecurityDeposit model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooSecurityDepositReportController.php
+
+		-
+			message: "#^Relation 'landlord' is not found in App\\\\Models\\\\SecurityDeposit model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooSecurityDepositReportController.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\SecurityDeposit model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/AcnooSecurityDepositReportController.php
+
+		-
+			message: "#^Relation 'tenant' is not found in App\\\\Models\\\\SecurityDeposit model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooSecurityDepositReportController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\PlanSubscribe\\:\\:\\$user\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooSubscriptionController.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 2
+			path: app/Http/Controllers/Admin/AcnooSubscriptionController.php
+
+		-
+			message: "#^Relation 'gateway' is not found in App\\\\Models\\\\PlanSubscribe model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/AcnooSubscriptionController.php
+
+		-
+			message: "#^Relation 'plan' is not found in App\\\\Models\\\\PlanSubscribe model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/AcnooSubscriptionController.php
+
+		-
+			message: "#^Relation 'user' is not found in App\\\\Models\\\\PlanSubscribe model\\.$#"
+			count: 4
+			path: app/Http/Controllers/Admin/AcnooSubscriptionController.php
+
+		-
+			message: "#^Relation 'gateway' is not found in App\\\\Models\\\\PlanSubscribe model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/AcnooSubscriptionReportController.php
+
+		-
+			message: "#^Relation 'plan' is not found in App\\\\Models\\\\PlanSubscribe model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/AcnooSubscriptionReportController.php
+
+		-
+			message: "#^Relation 'user' is not found in App\\\\Models\\\\PlanSubscribe model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/AcnooSubscriptionReportController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$latestMessage\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooSupportController.php
+
+		-
+			message: "#^Relation 'supportMessages' is not found in App\\\\Models\\\\User model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Admin/AcnooSupportController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$landlord\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooTenantController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$user_details\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/AcnooTenantController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Admin/AcnooTenantController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Admin/AcnooTenantController.php
+
+		-
+			message: "#^Relation 'rents' is not found in App\\\\Models\\\\User model\\.$#"
+			count: 11
+			path: app/Http/Controllers/Admin/AcnooTenantController.php
+
+		-
+			message: "#^Relation 'user_details' is not found in App\\\\Models\\\\User model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/AcnooTenantController.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooTenantController.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooTermConditionController.php
+
+		-
+			message: "#^Relation 'gateway' is not found in App\\\\Models\\\\Transaction model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooTransactionController.php
+
+		-
+			message: "#^Relation 'paidBy' is not found in App\\\\Models\\\\Transaction model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Admin/AcnooTransactionController.php
+
+		-
+			message: "#^Relation 'gateway' is not found in App\\\\Models\\\\Transaction model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/AcnooTransactionReportController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Withdraw\\:\\:\\$user\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/AcnooWithdrawRequestController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooWithdrawRequestController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/AcnooWithdrawRequestController.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 2
+			path: app/Http/Controllers/Admin/AcnooWithdrawRequestController.php
+
+		-
+			message: "#^Relation 'account_info' is not found in App\\\\Models\\\\Withdraw model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/AcnooWithdrawRequestController.php
+
+		-
+			message: "#^Relation 'user' is not found in App\\\\Models\\\\Withdraw model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/AcnooWithdrawRequestController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/NotificationController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/NotificationController.php
+
+		-
+			message: "#^Call to method notifications\\(\\) on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Admin/NotificationController.php
+
+		-
+			message: "#^Call to method notifications\\(\\) on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Admin/NotificationController.php
+
+		-
+			message: "#^Call to method unreadNotifications\\(\\) on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/NotificationController.php
+
+		-
+			message: "#^Call to method unreadNotifications\\(\\) on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/NotificationController.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/NotificationController.php
+
+		-
+			message: "#^Call to method unreadNotifications\\(\\) on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/NotifyContrller.php
+
+		-
+			message: "#^Call to method unreadNotifications\\(\\) on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/NotifyContrller.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Property\\:\\:\\$amenities\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/PropertyController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Property\\:\\:\\$facilities\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/PropertyController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Property\\:\\:\\$landlord\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/PropertyController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Property\\:\\:\\$units\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/PropertyController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Property\\|Illuminate\\\\Database\\\\Eloquent\\\\Collection\\<int, App\\\\Models\\\\Property\\>\\:\\:\\$propertyDetail\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/PropertyController.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 2
+			path: app/Http/Controllers/Admin/PropertyController.php
+
+		-
+			message: "#^Relation 'category' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Admin/PropertyController.php
+
+		-
+			message: "#^Relation 'landlord' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Admin/PropertyController.php
+
+		-
+			message: "#^Relation 'propertyDetail' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 4
+			path: app/Http/Controllers/Admin/PropertyController.php
+
+		-
+			message: "#^Relation 'rent' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/PropertyController.php
+
+		-
+			message: "#^Relation 'units' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 6
+			path: app/Http/Controllers/Admin/PropertyController.php
+
+		-
+			message: "#^Right side of && is always true\\.$#"
+			count: 1
+			path: app/Http/Controllers/Admin/PropertyController.php
+
+		-
+			message: "#^Parameter \\#1 \\$ids of method Illuminate\\\\Database\\\\Eloquent\\\\Relations\\\\BelongsToMany\\<Illuminate\\\\Database\\\\Eloquent\\\\Model\\>\\:\\:sync\\(\\) expects array\\|Illuminate\\\\Database\\\\Eloquent\\\\Model\\|Illuminate\\\\Support\\\\Collection, int\\|string given\\.$#"
+			count: 2
+			path: app/Http/Controllers/Admin/UserController.php
+
+		-
+			message: "#^Access to property \\$business_id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooExpenseController.php
+
+		-
+			message: "#^Access to property \\$business_id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooExpenseController.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\Favorite model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooFavoriteController.php
+
+		-
+			message: "#^Access to property \\$business_id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooIncomeCategoryController.php
+
+		-
+			message: "#^Access to property \\$business_id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooIncomeCategoryController.php
+
+		-
+			message: "#^Access to property \\$business_id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooIncomeController.php
+
+		-
+			message: "#^Access to property \\$business_id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooIncomeController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Labor\\:\\:\\$landlord\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooLaborController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\PlanSubscribe\\:\\:\\$plan\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooLaborController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Application\\:\\:\\$file\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooLandlordApplicationController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Application\\:\\:\\$property\\.$#"
+			count: 3
+			path: app/Http/Controllers/Api/AcnooLandlordApplicationController.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooLandlordApplicationController.php
+
+		-
+			message: "#^Access to property \\$balance on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooLandlordDashboardController.php
+
+		-
+			message: "#^Access to property \\$balance on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooLandlordDashboardController.php
+
+		-
+			message: "#^Expression on left side of \\?\\? is not nullable\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooLandlordDashboardController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Maintenance\\:\\:\\$property\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooLandlordMaintenanceController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooLandlordMaintenanceController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooLandlordMaintenanceController.php
+
+		-
+			message: "#^Access to property \\$unreadNotifications on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooNotificationController.php
+
+		-
+			message: "#^Access to property \\$unreadNotifications on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooNotificationController.php
+
+		-
+			message: "#^Call to method unreadNotifications\\(\\) on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooNotificationController.php
+
+		-
+			message: "#^Call to method unreadNotifications\\(\\) on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooNotificationController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\PlanSubscribe\\:\\:\\$plan\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooPropertyController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Property\\:\\:\\$propertyDetail\\.$#"
+			count: 3
+			path: app/Http/Controllers/Api/AcnooPropertyController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Property\\:\\:\\$units\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooPropertyController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooPropertyController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooPropertyController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 4
+			path: app/Http/Controllers/Api/AcnooPropertyController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 4
+			path: app/Http/Controllers/Api/AcnooPropertyController.php
+
+		-
+			message: "#^Access to property \\$user_details on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooPropertyController.php
+
+		-
+			message: "#^Access to property \\$user_details on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooPropertyController.php
+
+		-
+			message: "#^Relation 'category' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooPropertyController.php
+
+		-
+			message: "#^Relation 'favorite' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooPropertyController.php
+
+		-
+			message: "#^Relation 'house_type' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooPropertyController.php
+
+		-
+			message: "#^Relation 'landlord' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooPropertyController.php
+
+		-
+			message: "#^Relation 'propertyDetail' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Api/AcnooPropertyController.php
+
+		-
+			message: "#^Relation 'rent' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 4
+			path: app/Http/Controllers/Api/AcnooPropertyController.php
+
+		-
+			message: "#^Relation 'tenant' is not found in App\\\\Models\\\\Review model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooPropertyController.php
+
+		-
+			message: "#^Relation 'units' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 4
+			path: app/Http/Controllers/Api/AcnooPropertyController.php
+
+		-
+			message: "#^Right side of && is always true\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooPropertyController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\RefundRequest\\:\\:\\$landlord\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooRefundRequestController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\RefundRequest\\:\\:\\$tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooRefundRequestController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooRefundRequestController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooRefundRequestController.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\RefundRequest model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooRefundRequestController.php
+
+		-
+			message: "#^Variable \\$request on left side of \\?\\? is never defined\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooRefundRequestController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Rent\\:\\:\\$landlord\\.$#"
+			count: 5
+			path: app/Http/Controllers/Api/AcnooRentController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Rent\\:\\:\\$tenant\\.$#"
+			count: 5
+			path: app/Http/Controllers/Api/AcnooRentController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 3
+			path: app/Http/Controllers/Api/AcnooRentController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 3
+			path: app/Http/Controllers/Api/AcnooRentController.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooRentController.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\Rent model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooRentController.php
+
+		-
+			message: "#^Relation 'tenant' is not found in App\\\\Models\\\\Rent model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooRentController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooRentPaymentController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooRentPaymentController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooRentPaymentController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooRentPaymentController.php
+
+		-
+			message: "#^Relation 'rent' is not found in App\\\\Models\\\\RentPayment model\\.$#"
+			count: 4
+			path: app/Http/Controllers/Api/AcnooRentPaymentController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooReviewController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooReviewController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooSecurityDepositController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooSecurityDepositController.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\SecurityDeposit model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooSecurityDepositController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Application\\:\\:\\$property\\.$#"
+			count: 16
+			path: app/Http/Controllers/Api/AcnooTenantApplicationController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Application\\:\\:\\$tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooTenantApplicationController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 6
+			path: app/Http/Controllers/Api/AcnooTenantApplicationController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 6
+			path: app/Http/Controllers/Api/AcnooTenantApplicationController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooTenantApplicationController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooTenantApplicationController.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\Application model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooTenantApplicationController.php
+
+		-
+			message: "#^Relation 'tenant' is not found in App\\\\Models\\\\Application model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooTenantApplicationController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\PlanSubscribe\\:\\:\\$plan\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooTenantController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$user_details\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooTenantController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooTenantController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooTenantController.php
+
+		-
+			message: "#^Relation 'rents' is not found in App\\\\Models\\\\User model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooTenantController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Maintenance\\:\\:\\$property\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooTenantMaintenanceController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Maintenance\\:\\:\\$tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooTenantMaintenanceController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooTenantMaintenanceController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooTenantMaintenanceController.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\Maintenance model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooTenantMaintenanceController.php
+
+		-
+			message: "#^Relation 'tenant' is not found in App\\\\Models\\\\Maintenance model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooTenantMaintenanceController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Withdraw\\:\\:\\$user\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooWithdrawController.php
+
+		-
+			message: "#^Access to property \\$balance on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooWithdrawController.php
+
+		-
+			message: "#^Access to property \\$balance on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooWithdrawController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooWithdrawController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooWithdrawController.php
+
+		-
+			message: "#^Call to method update\\(\\) on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooWithdrawController.php
+
+		-
+			message: "#^Call to method update\\(\\) on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooWithdrawController.php
+
+		-
+			message: "#^Relation 'account_info' is not found in App\\\\Models\\\\Withdraw model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooWithdrawController.php
+
+		-
+			message: "#^Relation 'user' is not found in App\\\\Models\\\\Withdraw model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooWithdrawController.php
+
+		-
+			message: "#^Relation 'withdraw' is not found in App\\\\Models\\\\Transaction model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooWithdrawController.php
+
+		-
+			message: "#^Variable \\$request on left side of \\?\\? is never defined\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooWithdrawController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\UserMethod\\:\\:\\$withdraw_method\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooWithdrawMethodController.php
+
+		-
+			message: "#^Access to property \\$balance on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooWithdrawMethodController.php
+
+		-
+			message: "#^Access to property \\$balance on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooWithdrawMethodController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooWithdrawMethodController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooWithdrawMethodController.php
+
+		-
+			message: "#^Parameter \\#1 \\$json of function json_decode expects string, null given\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooWithdrawMethodController.php
+
+		-
+			message: "#^Relation 'withdraw_method' is not found in App\\\\Models\\\\UserMethod model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/AcnooWithdrawMethodController.php
+
+		-
+			message: "#^Variable \\$transformedData might not be defined\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/AcnooWithdrawMethodController.php
+
+		-
+			message: "#^Access to property \\$email on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Access to property \\$email on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Access to property \\$is_setupped on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Access to property \\$is_setupped on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Access to property \\$name on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Access to property \\$name on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Access to property \\$remember_token on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Access to property \\$remember_token on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 4
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 4
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Call to an undefined method Laravel\\\\Sanctum\\\\Contracts\\\\HasAbilities\\:\\:delete\\(\\)\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Call to method createToken\\(\\) on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Call to method createToken\\(\\) on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Call to method currentAccessToken\\(\\) on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Call to method currentAccessToken\\(\\) on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Call to method tokens\\(\\) on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Call to method tokens\\(\\) on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/Auth/SigninController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$currency\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/UserController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$user_details\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/UserController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/UserController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Api/UserController.php
+
+		-
+			message: "#^Relation 'plan_subscribe' is not found in App\\\\Models\\\\User model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Api/UserController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 3
+			path: app/Http/Controllers/Auth/LoginController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 3
+			path: app/Http/Controllers/Auth/LoginController.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/AcnooApplicationController.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\Application model\\.$#"
+			count: 4
+			path: app/Http/Controllers/Landlord/AcnooApplicationController.php
+
+		-
+			message: "#^Relation 'tenant' is not found in App\\\\Models\\\\Application model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/AcnooApplicationController.php
+
+		-
+			message: "#^Relation 'unit' is not found in App\\\\Models\\\\Application model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooApplicationController.php
+
+		-
+			message: "#^Relation 'landlord' is not found in App\\\\Models\\\\ExpenseCategory model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/AcnooExpenseCategoryController.php
+
+		-
+			message: "#^Relation 'landlord' is not found in App\\\\Models\\\\ExpenseCategory model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooExpenseController.php
+
+		-
+			message: "#^Relation 'landlord' is not found in App\\\\Models\\\\IncomeCategory model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/AcnooIncomeCategoryController.php
+
+		-
+			message: "#^Relation 'landlord' is not found in App\\\\Models\\\\IncomeCategory model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooIncomeController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Labor\\:\\:\\$landlord\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/AcnooLaborController.php
+
+		-
+			message: "#^Relation 'landlord' is not found in App\\\\Models\\\\Labor model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/AcnooLaborController.php
+
+		-
+			message: "#^Relation 'labor' is not found in App\\\\Models\\\\Maintenance model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/AcnooMaintenanceController.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\Maintenance model\\.$#"
+			count: 4
+			path: app/Http/Controllers/Landlord/AcnooMaintenanceController.php
+
+		-
+			message: "#^Relation 'tenant' is not found in App\\\\Models\\\\Maintenance model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Landlord/AcnooMaintenanceController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/AcnooMaintenanceReportController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/AcnooMaintenanceReportController.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\Maintenance model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Landlord/AcnooMaintenanceReportController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$user_details\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooProfileController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/AcnooProfileController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/AcnooProfileController.php
+
+		-
+			message: "#^Array has 2 duplicate keys with value 'email' \\('email', 'email'\\)\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooProfileController.php
+
+		-
+			message: "#^Relation 'user_details' is not found in App\\\\Models\\\\User model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooProfileController.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\RefundRequest model\\.$#"
+			count: 5
+			path: app/Http/Controllers/Landlord/AcnooRefundRequestController.php
+
+		-
+			message: "#^Relation 'tenant' is not found in App\\\\Models\\\\RefundRequest model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooRefundRequestController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Rent\\:\\:\\$amenities\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Rent\\:\\:\\$amenity_names\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Rent\\:\\:\\$facilities\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Rent\\:\\:\\$facility_names\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Rent\\:\\:\\$landlord\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Rent\\:\\:\\$property\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Rent\\:\\:\\$tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\Rent model\\.$#"
+			count: 4
+			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
+
+		-
+			message: "#^Relation 'rent' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
+
+		-
+			message: "#^Relation 'rent' is not found in App\\\\Models\\\\Unit model\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
+
+		-
+			message: "#^Relation 'security_deposit' is not found in App\\\\Models\\\\Rent model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
+
+		-
+			message: "#^Relation 'tenant' is not found in App\\\\Models\\\\Rent model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
+
+		-
+			message: "#^Relation 'units' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
+
+		-
+			message: "#^Relation 'user_details' is not found in App\\\\Models\\\\User model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
+
+		-
+			message: "#^Relation 'rent' is not found in App\\\\Models\\\\RentPayment model\\.$#"
+			count: 8
+			path: app/Http/Controllers/Landlord/AcnooRentPaymentController.php
+
+		-
+			message: "#^Relation 'landlord' is not found in App\\\\Models\\\\SecurityDeposit model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooSecurityDepositController.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\SecurityDeposit model\\.$#"
+			count: 4
+			path: app/Http/Controllers/Landlord/AcnooSecurityDepositController.php
+
+		-
+			message: "#^Relation 'tenant' is not found in App\\\\Models\\\\SecurityDeposit model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooSecurityDepositController.php
+
+		-
+			message: "#^Relation 'sender' is not found in App\\\\Models\\\\Support model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Landlord/AcnooSupportController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$user_details\\.$#"
+			count: 3
+			path: app/Http/Controllers/Landlord/AcnooTenantController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/AcnooTenantController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/AcnooTenantController.php
+
+		-
+			message: "#^Relation 'rents' is not found in App\\\\Models\\\\User model\\.$#"
+			count: 4
+			path: app/Http/Controllers/Landlord/AcnooTenantController.php
+
+		-
+			message: "#^Relation 'user_details' is not found in App\\\\Models\\\\User model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Landlord/AcnooTenantController.php
+
+		-
+			message: "#^Access to property \\$balance on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/AcnooWithdrawController.php
+
+		-
+			message: "#^Access to property \\$balance on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/AcnooWithdrawController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooWithdrawController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooWithdrawController.php
+
+		-
+			message: "#^Call to method update\\(\\) on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooWithdrawController.php
+
+		-
+			message: "#^Call to method update\\(\\) on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooWithdrawController.php
+
+		-
+			message: "#^Relation 'account_info' is not found in App\\\\Models\\\\Withdraw model\\.$#"
+			count: 4
+			path: app/Http/Controllers/Landlord/AcnooWithdrawController.php
+
+		-
+			message: "#^Relation 'user' is not found in App\\\\Models\\\\Withdraw model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooWithdrawController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooWithdrawMethodController.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/AcnooWithdrawMethodController.php
+
+		-
+			message: "#^Relation 'withdraw_method' is not found in App\\\\Models\\\\UserMethod model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Landlord/AcnooWithdrawMethodController.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\Application model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/DashboardController.php
+
+		-
+			message: "#^Relation 'property' is not found in App\\\\Models\\\\Maintenance model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/DashboardController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/NotificationController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/NotificationController.php
+
+		-
+			message: "#^Call to method notifications\\(\\) on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/NotificationController.php
+
+		-
+			message: "#^Call to method notifications\\(\\) on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/NotificationController.php
+
+		-
+			message: "#^Call to method unreadNotifications\\(\\) on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/NotificationController.php
+
+		-
+			message: "#^Call to method unreadNotifications\\(\\) on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/NotificationController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\PlanSubscribe\\:\\:\\$plan\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/PropertyController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Property\\:\\:\\$amenities\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/PropertyController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Property\\:\\:\\$facilities\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/PropertyController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Property\\:\\:\\$landlord\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/PropertyController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Property\\:\\:\\$propertyDetail\\.$#"
+			count: 3
+			path: app/Http/Controllers/Landlord/PropertyController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Property\\:\\:\\$rent\\.$#"
+			count: 2
+			path: app/Http/Controllers/Landlord/PropertyController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Property\\:\\:\\$units\\.$#"
+			count: 3
+			path: app/Http/Controllers/Landlord/PropertyController.php
+
+		-
+			message: "#^Relation 'category' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 3
+			path: app/Http/Controllers/Landlord/PropertyController.php
+
+		-
+			message: "#^Relation 'landlord' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/PropertyController.php
+
+		-
+			message: "#^Relation 'propertyDetail' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 4
+			path: app/Http/Controllers/Landlord/PropertyController.php
+
+		-
+			message: "#^Relation 'rent' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/PropertyController.php
+
+		-
+			message: "#^Relation 'units' is not found in App\\\\Models\\\\Property model\\.$#"
+			count: 5
+			path: app/Http/Controllers/Landlord/PropertyController.php
+
+		-
+			message: "#^Right side of && is always true\\.$#"
+			count: 1
+			path: app/Http/Controllers/Landlord/PropertyController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Gateway\\:\\:\\$currency\\.$#"
+			count: 1
+			path: app/Http/Controllers/PaymentController.php
+
+		-
+			message: "#^Relation 'currency' is not found in App\\\\Models\\\\Gateway model\\.$#"
+			count: 3
+			path: app/Http/Controllers/PaymentController.php
+
+		-
+			message: "#^Relation 'rent' is not found in App\\\\Models\\\\RentPayment model\\.$#"
+			count: 1
+			path: app/Http/Controllers/PaymentController.php
+
+		-
+			message: "#^Relation 'tenant' is not found in App\\\\Models\\\\SecurityDeposit model\\.$#"
+			count: 1
+			path: app/Http/Controllers/PaymentController.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 2
+			path: app/Http/Middleware/AdminMiddleware.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 2
+			path: app/Http/Middleware/AdminMiddleware.php
+
+		-
+			message: "#^Access to property \\$email on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Middleware/DemoMode.php
+
+		-
+			message: "#^Access to property \\$email on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Middleware/DemoMode.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\PlanSubscribe\\:\\:\\$plan\\.$#"
+			count: 1
+			path: app/Http/Middleware/ExpiredMiddleware.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\PlanSubscribe\\:\\:\\$will_expire\\.$#"
+			count: 1
+			path: app/Http/Middleware/ExpiredMiddleware.php
+
+		-
+			message: "#^Method App\\\\Http\\\\Middleware\\\\ExpiredMiddleware\\:\\:handle\\(\\) should return Illuminate\\\\Http\\\\RedirectResponse\\|Illuminate\\\\Http\\\\Response but returns Illuminate\\\\Http\\\\JsonResponse\\.$#"
+			count: 1
+			path: app/Http/Middleware/ExpiredMiddleware.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Http/Middleware/LandlordMiddleware.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Http/Middleware/LandlordMiddleware.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 4
+			path: app/Http/Middleware/RedirectIfAuthenticated.php
+
+		-
+			message: "#^Access to property \\$role on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 4
+			path: app/Http/Middleware/RedirectIfAuthenticated.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Gateway\\|Illuminate\\\\Database\\\\Eloquent\\\\Collection\\<int, App\\\\Models\\\\Gateway\\>\\:\\:\\$currency\\.$#"
+			count: 2
+			path: app/Library/Billplz.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Gateway\\|Illuminate\\\\Database\\\\Eloquent\\\\Collection\\<int, App\\\\Models\\\\Gateway\\>\\:\\:\\$currency\\.$#"
+			count: 2
+			path: app/Library/FedaPayGateway.php
+
+		-
+			message: "#^Cannot call method generateToken\\(\\) on resource\\.$#"
+			count: 1
+			path: app/Library/FedaPayGateway.php
+
+		-
+			message: "#^Variable \\$data on left side of \\?\\? is never defined\\.$#"
+			count: 1
+			path: app/Library/FedaPayGateway.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Gateway\\|Illuminate\\\\Database\\\\Eloquent\\\\Collection\\<int, App\\\\Models\\\\Gateway\\>\\:\\:\\$currency\\.$#"
+			count: 2
+			path: app/Library/Flutterwave.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Gateway\\|Illuminate\\\\Database\\\\Eloquent\\\\Collection\\<int, App\\\\Models\\\\Gateway\\>\\:\\:\\$currency\\.$#"
+			count: 2
+			path: app/Library/Instamojo.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Gateway\\|Illuminate\\\\Database\\\\Eloquent\\\\Collection\\<int, App\\\\Models\\\\Gateway\\>\\:\\:\\$currency\\.$#"
+			count: 2
+			path: app/Library/Mollie.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: app/Library/Mollie.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Gateway\\|Illuminate\\\\Database\\\\Eloquent\\\\Collection\\<int, App\\\\Models\\\\Gateway\\>\\:\\:\\$currency\\.$#"
+			count: 2
+			path: app/Library/Paystack.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Gateway\\|Illuminate\\\\Database\\\\Eloquent\\\\Collection\\<int, App\\\\Models\\\\Gateway\\>\\:\\:\\$currency\\.$#"
+			count: 2
+			path: app/Library/Razorpay.php
+
+		-
+			message: "#^Access to an undefined property Razorpay\\\\Api\\\\Api\\:\\:\\$order\\.$#"
+			count: 1
+			path: app/Library/Razorpay.php
+
+		-
+			message: "#^Access to an undefined property Razorpay\\\\Api\\\\Api\\:\\:\\$payment\\.$#"
+			count: 1
+			path: app/Library/Razorpay.php
+
+		-
+			message: "#^Access to an undefined property Razorpay\\\\Api\\\\Api\\:\\:\\$utility\\.$#"
+			count: 1
+			path: app/Library/Razorpay.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Gateway\\|Illuminate\\\\Database\\\\Eloquent\\\\Collection\\<int, App\\\\Models\\\\Gateway\\>\\:\\:\\$currency\\.$#"
+			count: 2
+			path: app/Library/StripeGateway.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Gateway\\|Illuminate\\\\Database\\\\Eloquent\\\\Collection\\<int, App\\\\Models\\\\Gateway\\>\\:\\:\\$currency\\.$#"
+			count: 2
+			path: app/Library/TapPayment.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Gateway\\|Illuminate\\\\Database\\\\Eloquent\\\\Collection\\<int, App\\\\Models\\\\Gateway\\>\\:\\:\\$currency\\.$#"
+			count: 2
+			path: app/Library/Thawani.php
+
+		-
+			message: "#^Class App\\\\Library\\\\Thawani referenced with incorrect case\\: App\\\\Library\\\\thawani\\.$#"
+			count: 4
+			path: app/Library/Thawani.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Gateway\\|Illuminate\\\\Database\\\\Eloquent\\\\Collection\\<int, App\\\\Models\\\\Gateway\\>\\:\\:\\$currency\\.$#"
+			count: 2
+			path: app/Library/Toyyibpay.php
+
+		-
+			message: "#^Offset 0 does not exist on Illuminate\\\\Http\\\\Client\\\\Response\\.$#"
+			count: 1
+			path: app/Library/Toyyibpay.php
+
+		-
+			message: "#^Class Illuminate\\\\Support\\\\Str referenced with incorrect case\\: illuminate\\\\Support\\\\Str\\.$#"
+			count: 2
+			path: app/Models/Blog.php
+
+		-
+			message: "#^PHPDoc type array of property App\\\\Models\\\\Category\\:\\:\\$fillable is not covariant with PHPDoc type array\\<int, string\\> of overridden property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$fillable\\.$#"
+			count: 1
+			path: app/Models/Category.php
+
+		-
+			message: "#^PHPDoc type array of property App\\\\Models\\\\Expense\\:\\:\\$fillable is not covariant with PHPDoc type array\\<int, string\\> of overridden property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$fillable\\.$#"
+			count: 1
+			path: app/Models/Expense.php
+
+		-
+			message: "#^PHPDoc type array of property App\\\\Models\\\\Faq\\:\\:\\$casts is not covariant with PHPDoc type array\\<string, string\\> of overridden property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$casts\\.$#"
+			count: 1
+			path: app/Models/Faq.php
+
+		-
+			message: "#^PHPDoc type array of property App\\\\Models\\\\Gateway\\:\\:\\$casts is not covariant with PHPDoc type array\\<string, string\\> of overridden property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$casts\\.$#"
+			count: 1
+			path: app/Models/Gateway.php
+
+		-
+			message: "#^PHPDoc type array of property App\\\\Models\\\\Gateway\\:\\:\\$fillable is not covariant with PHPDoc type array\\<int, string\\> of overridden property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$fillable\\.$#"
+			count: 1
+			path: app/Models/Gateway.php
+
+		-
+			message: "#^PHPDoc type array of property App\\\\Models\\\\Notification\\:\\:\\$casts is not covariant with PHPDoc type array\\<string, string\\> of overridden property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$casts\\.$#"
+			count: 1
+			path: app/Models/Notification.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function str_pad expects string, \\(float\\|int\\) given\\.$#"
+			count: 1
+			path: app/Models/Property.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function str_pad expects string, \\(float\\|int\\) given\\.$#"
+			count: 1
+			path: app/Models/RefundRequest.php
+
+		-
+			message: "#^PHPDoc type array of property App\\\\Models\\\\RentPayment\\:\\:\\$fillable is not covariant with PHPDoc type array\\<int, string\\> of overridden property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$fillable\\.$#"
+			count: 1
+			path: app/Models/RentPayment.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function str_pad expects string, int given\\.$#"
+			count: 1
+			path: app/Models/RentPayment.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function str_pad expects string, int given\\.$#"
+			count: 1
+			path: app/Models/SecurityDeposit.php
+
+		-
+			message: "#^Class App\\\\Models\\\\Tenant not found\\.$#"
+			count: 1
+			path: app/Models/TenantApplication.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function str_pad expects string, int given\\.$#"
+			count: 1
+			path: app/Models/Transaction.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function str_pad expects string, \\(float\\|int\\) given\\.$#"
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$menu_slug\\.$#"
+			count: 1
+			path: app/Providers/AuthServiceProvider.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
+			count: 1
+			path: app/Providers/RouteServiceProvider.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
+			count: 1
+			path: app/Providers/RouteServiceProvider.php
+
+		-
+			message: "#^Call to static method first\\(\\) on an unknown class App\\\\Models\\\\Website\\.$#"
+			count: 1
+			path: app/Providers/WebsiteServiceProvider.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\RentPayment\\:\\:\\$rent\\.$#"
+			count: 1
+			path: app/Services/AcnooLateFeeService.php
+
+		-
+			message: "#^Parameter \\#1 \\$year of static method Carbon\\\\Carbon\\:\\:create\\(\\) expects DateTimeInterface\\|int\\|null, string\\|null given\\.$#"
+			count: 1
+			path: app/Services/AcnooLateFeeService.php
