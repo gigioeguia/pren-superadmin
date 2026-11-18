@@ -53,14 +53,16 @@ class SignupController extends Controller
 
             if ($otpStatus === 'off') {
 
-                $user = User::updateOrCreate(['email' => $request->email], $request->except('password') + [
+                $user = User::updateOrCreate(['email' => $request->email], $request->except('password', 'role') + [
                     'remember_token' => null,
-                    'role' => 'landlord',
                     'email_verified_at' => now(),
                     'password' => Hash::make($request->password),
                     'is_setupped' => 1,
                 ]
                 );
+
+                $user->role = 'landlord';
+                $user->save();
 
                 session()->put('user_id', $user->id);
                 session()->put('plan_id', $request->plan_id);
@@ -81,7 +83,7 @@ class SignupController extends Controller
             $expireSeconds = $this->getOtpTimeInSeconds();
             $expire = now()->addSeconds($expireSeconds);
 
-            $user = User::updateOrCreate(['email' => $request->email], $request->except('password') + [
+            $user = User::updateOrCreate(['email' => $request->email], $request->except('password', 'role') + [
                 'remember_token' => $code,
                 'role' => 'landlord',
                 'email_verified_at' => $expire,
@@ -89,6 +91,9 @@ class SignupController extends Controller
                 'is_setupped' => 1,
             ]
             );
+
+            $user->role = 'landlord';
+            $user->save();
 
             session()->put('user_id', $user->id);
             session()->put('plan_id', $request->plan_id);
