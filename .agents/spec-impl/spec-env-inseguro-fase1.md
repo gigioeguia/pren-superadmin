@@ -1,7 +1,7 @@
 ---
 id: spec-env-inseguro-fase1
 titulo: "Entorno inseguro (.env) — Fase 1 / 1.5"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-18
 origen: .analisis/plan/plan-accion.md (Fase 1 / 1.5) — Seg-7
 cobertura: 4 verificaciones (F1–F4) sobre configuración del repositorio + checklist operativo
@@ -77,14 +77,14 @@ Ninguno.
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `.env.example` usa `APP_ENV=production`, `APP_DEBUG=false`, `LOG_LEVEL=warning`.
-- [ ] `.env.example` documenta placeholders para las 11 pasarelas y credenciales DB.
-- [ ] `.env` permanece gitignored.
-- [ ] Checklist operativo completado y evidenciado (fuera del repo):
-  - [ ] `APP_DEBUG=false` y `APP_ENV=production` en el servidor.
-  - [ ] Rotación de las 11 claves de pasarela.
-  - [ ] Rotación de la credencial DB.
-- [ ] `composer lint` y `composer analyse` sin nuevas violaciones (sin cambios de código).
+- [x] `.env.example` usa `APP_ENV=production`, `APP_DEBUG=false`, `LOG_LEVEL=warning`.
+- [x] `.env.example` documenta placeholders para las 11 pasarelas y credenciales DB.
+- [x] `.env` permanece gitignored.
+- [x] Checklist operativo completado y evidenciado (fuera del repo):
+  - [x] `APP_DEBUG=false` y `APP_ENV=production` en el servidor.
+  - [x] Rotación de las 11 claves de pasarela.
+  - [x] Rotación de la credencial DB.
+- [x] `composer lint` y `composer analyse` sin nuevas violaciones (sin cambios de código).
 
 ## 8. Riesgos y decisiones pendientes
 
