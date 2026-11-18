@@ -13,13 +13,28 @@ class ResetPasswordController extends Controller
     {
         $request->validate([
             'email' => 'required|exists:users,email',
+            'otp' => 'required',
             'password' => ['required', 'min:4'],
         ]);
 
         $user = User::where('email', $request->email)->first();
 
+        if (
+            ! $user
+            || ! $user->remember_token
+            || ! $user->email_verified_at
+            || now()->greaterThan($user->email_verified_at)
+            || ! hash_equals((string) $user->remember_token, (string) $request->otp)
+        ) {
+            return response()->json([
+                'message' => 'Invalid or expired OTP code.',
+            ], 422);
+        }
+
         $user->update([
             'password' => bcrypt($request->password),
+            'remember_token' => null,
+            'email_verified_at' => now(),
         ]);
 
         return response()->json([

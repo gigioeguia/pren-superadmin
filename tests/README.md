@@ -60,7 +60,6 @@ y el comentario, y actualizar el spec (ver skill `.agents/skills/tests-caracteri
 | Test | Bug caracterizado | Debe fallar tras |
 |------|-------------------|------------------|
 | `ApiAuthSmokeTest::test_api_sign_up_accepts_arbitrary_role` | Seg-4 — registro API con `role` arbitrario | Fase 1 |
-| `ApiAuthSmokeTest::test_api_reset_password_without_otp_changes_password` | Seg-3 — reset password sin OTP | Fase 1 |
 | `PaymentFlowSmokeTest::test_payment_success_processes_subscription_from_session` | Seg-6 — `/payment/success` público procesa desde sesión | Fase 2 |
 | `LandlordAcnooActionsSmokeTest::test_delete_all_deletes_foreign_amenities_without_ownership_check` | Seg-5 — `deleteAll` landlord sin ownership check (IDOR bulk) | Fase 2 |
 | `LandlordAcnooActionsSmokeTest::test_filter_route_runs_delete_all_due_to_crossed_route` | Seg-15 — ruta cruzada `properties/filter`→`deleteAll` en `routes/landlord.php:15` | Fase 3.6 |

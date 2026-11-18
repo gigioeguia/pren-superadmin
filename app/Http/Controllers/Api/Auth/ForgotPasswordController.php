@@ -29,7 +29,7 @@ class ForgotPasswordController extends Controller
             'email' => 'required|email|exists:users,email',
         ]);
 
-        $expire = now()->addHour();
+        $expire = now()->addMinutes(15);
         $code = random_int(100000, 999999);
         $user = User::where('email', $request->email)->first();
         $user->update(['remember_token' => $code, 'email_verified_at' => $expire]);
@@ -62,7 +62,7 @@ class ForgotPasswordController extends Controller
         ]);
 
         $code = random_int(100000, 999999);
-        $expire = now()->addMinutes(env('OTP_VISIBILITY_TIME') ?? 3);
+        $expire = now()->addMinutes(15);
         $data = [
             'code' => $code,
         ];
