@@ -17,7 +17,6 @@ class User extends Authenticatable
         'plan_subscribe_id',
         'unique_id',
         'name',
-        'role',
         'email',
         'image',
         'phone',

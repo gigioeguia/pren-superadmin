@@ -73,6 +73,7 @@ class AcnooTenantController extends Controller
 
         DB::beginTransaction();
         try {
+            User::unguard();
             $user = User::create([
                 'landlord_id' => auth()->user()->id,
                 'image' => $request->hasFile('image') ? $this->upload($request, 'image') : null,
@@ -84,6 +85,7 @@ class AcnooTenantController extends Controller
                 'password' => Hash::make($request->password),
                 'profile_type' => $request->profile_type,
             ]);
+            User::reguard();
 
             $frontImage = $request->hasFile('mykad.front_image') ? $this->upload($request, 'mykad.front_image') : null;
             $backImage = $request->hasFile('mykad.back_image') ? $this->upload($request, 'mykad.back_image') : null;
@@ -203,11 +205,13 @@ class AcnooTenantController extends Controller
                 'is_setupped' => 1,
                 'name' => $request->name,
                 'email' => $request->email,
-                'role' => 'tenant',
                 'phone' => $request->input('phone'),
                 // 'password' => Hash::make($request->password),
                 'profile_type' => $request->profile_type,
             ]);
+
+            $user->role = 'tenant';
+            $user->save();
 
             if ($request->hasFile('mykad.front_image')) {
                 if (! empty($user->user_details->mykad['front_image'])) {

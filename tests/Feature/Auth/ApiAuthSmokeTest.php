@@ -3,6 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use App\Mail\PasswordReset;
+use App\Models\Option;
 use App\Models\Plan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -87,18 +88,11 @@ class ApiAuthSmokeTest extends TestCase
         ]);
     }
 
-    /**
-     * @group characterization
-     */
-    public function test_api_sign_up_accepts_arbitrary_role(): void
+    public function test_api_sign_up_ignores_arbitrary_role(): void
     {
-        // Expected to fail after Phase 1 (Seg-4 fix) — API registration
-        // must not accept arbitrary roles like superadmin. Update to
-        // secure behavior (403/422 or role forced to landlord) when it fails.
-        // Arrange
+        // A14
         Plan::factory()->create();
 
-        // Act
         $response = $this->postJson('/api/v1/sign-up', [
             'name' => 'Mallory',
             'email' => 'mallory@example.test',
@@ -106,14 +100,126 @@ class ApiAuthSmokeTest extends TestCase
             'role' => 'superadmin',
         ]);
 
-        // Assert
         $response->assertOk();
         $this->assertNotEmpty($response->json('token'));
 
         $this->assertDatabaseHas('users', [
             'email' => 'mallory@example.test',
+            'role' => 'landlord',
+        ]);
+    }
+
+    public function test_api_sign_up_without_role_creates_landlord(): void
+    {
+        // A15
+        Plan::factory()->create();
+
+        $response = $this->postJson('/api/v1/sign-up', [
+            'name' => 'No Role',
+            'email' => 'norole@example.test',
+            'password' => 'password',
+        ]);
+
+        $response->assertOk();
+        $this->assertNotEmpty($response->json('token'));
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'norole@example.test',
+            'role' => 'landlord',
+        ]);
+    }
+
+    public function test_api_sign_up_otp_on_ignores_arbitrary_role(): void
+    {
+        // A16
+        Plan::factory()->create();
+        Option::factory()->create([
+            'key' => 'email-varification',
+            'value' => [
+                'otp_status' => 'on',
+                'otp_expiration_time' => 5,
+                'otp_duration_type' => 'minute',
+            ],
+        ]);
+
+        Mail::fake();
+
+        $response = $this->postJson('/api/v1/sign-up', [
+            'name' => 'Mallory OTP',
+            'email' => 'malloryotp@example.test',
+            'password' => 'password',
             'role' => 'superadmin',
         ]);
+
+        $response->assertOk();
+        $this->assertTrue($response->json('otp_required'));
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'malloryotp@example.test',
+            'role' => 'landlord',
+        ]);
+    }
+
+    public function test_api_sign_up_setupped_email_does_not_change_role(): void
+    {
+        // A17
+        Plan::factory()->create();
+        $existing = User::factory()->superadmin()->create([
+            'email' => 'mallory@example.test',
+            'is_setupped' => 1,
+        ]);
+
+        $response = $this->postJson('/api/v1/sign-up', [
+            'name' => 'Mallory',
+            'email' => 'mallory@example.test',
+            'password' => 'password',
+            'role' => 'superadmin',
+        ]);
+
+        $response->assertStatus(406);
+
+        $this->assertSame('superadmin', $existing->fresh()->role);
+    }
+
+    public function test_api_sign_up_reregistration_forces_landlord(): void
+    {
+        // A18
+        Plan::factory()->create();
+        User::factory()->create([
+            'email' => 'mallory@example.test',
+            'is_setupped' => 0,
+            'role' => 'admin',
+        ]);
+
+        $response = $this->postJson('/api/v1/sign-up', [
+            'name' => 'Mallory',
+            'email' => 'mallory@example.test',
+            'password' => 'password',
+            'role' => 'admin',
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'mallory@example.test',
+            'role' => 'landlord',
+        ]);
+    }
+
+    public function test_user_mass_assignment_does_not_persist_role(): void
+    {
+        // U1
+        $user = User::factory()->create();
+
+        $user->fill(['role' => 'superadmin']);
+        $user->save();
+
+        $this->assertSame('landlord', $user->fresh()->role);
+
+        $user->role = 'superadmin';
+        $user->save();
+
+        $this->assertSame('superadmin', $user->fresh()->role);
     }
 
     public function test_api_submit_otp_with_valid_token_returns_token(): void
