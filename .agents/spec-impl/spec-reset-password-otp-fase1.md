@@ -1,7 +1,7 @@
 ---
 id: spec-reset-password-otp-fase1
 titulo: "Reset de contraseña sin OTP (API) — Fase 1 / 1.3"
-estado: Revisado
+estado: Implementado
 fecha: 2026-11-18
 origen: .analisis/plan/plan-accion.md (Fase 1 / 1.3) — Seg-3
 cobertura: 4 casos (A8, A11–A13) sobre el flujo de reset de contraseña API
@@ -92,16 +92,16 @@ Ninguno: Seg-3 queda remediado por este spec; A8 se convierte a test de bloqueo.
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `userResetPassword` valida `otp` (required) y comprueba expiración con `hash_equals`.
-- [ ] OTP inválido o expirado devuelve 422 `"Invalid or expired OTP code."` sin cambiar la contraseña.
-- [ ] Reset sin `otp` devuelve 422 por validación Laravel.
-- [ ] Reset con OTP válido cambia la contraseña, limpia `remember_token` y actualiza `email_verified_at`.
-- [ ] `sendResetCode` y `resendOtp` usan TTL de 15 minutos.
-- [ ] Vista del email muestra expiración de 15 minutos.
-- [ ] A8 ya no lleva `@group characterization`.
-- [ ] `php artisan test tests/Feature/Auth/ApiAuthSmokeTest.php` en verde.
-- [ ] `tests/README.md` actualizado: Seg-3 sin casos de caracterización.
-- [ ] `composer lint` y `composer analyse` sin nuevas violaciones en archivos tocados.
+- [x] `userResetPassword` valida `otp` (required) y comprueba expiración con `hash_equals`.
+- [x] OTP inválido o expirado devuelve 422 `"Invalid or expired OTP code."` sin cambiar la contraseña.
+- [x] Reset sin `otp` devuelve 422 por validación Laravel.
+- [x] Reset con OTP válido cambia la contraseña, limpia `remember_token` y actualiza `email_verified_at`.
+- [x] `sendResetCode` y `resendOtp` usan TTL de 15 minutos.
+- [x] Vista del email muestra expiración de 15 minutos.
+- [x] A8 ya no lleva `@group characterization`.
+- [x] `php artisan test tests/Feature/Auth/ApiAuthSmokeTest.php` en verde.
+- [x] `tests/README.md` actualizado: Seg-3 sin casos de caracterización.
+- [x] `composer lint` y `composer analyse` sin nuevas violaciones en archivos tocados.
 
 ## 8. Riesgos y decisiones pendientes
 

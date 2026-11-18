@@ -156,13 +156,8 @@ class ApiAuthSmokeTest extends TestCase
         Mail::assertSent(PasswordReset::class);
     }
 
-    /**
-     * @group characterization
-     */
-    public function test_api_reset_password_without_otp_changes_password(): void
+    public function test_api_reset_password_without_otp_returns_422(): void
     {
-        // Expected to fail after Phase 1 (Seg-3 fix) — userResetPassword
-        // must require a valid OTP code, not just email + password.
         // Arrange
         $user = $this->createLandlord();
 
@@ -173,10 +168,79 @@ class ApiAuthSmokeTest extends TestCase
         ]);
 
         // Assert
+        $response->assertStatus(422);
+
+        $this->assertFalse(Hash::check('hacked-password', $user->fresh()->password));
+    }
+
+    public function test_api_reset_password_with_invalid_otp_returns_422(): void
+    {
+        // Arrange
+        $user = $this->createLandlord();
+        $user->update([
+            'remember_token' => '123456',
+            'email_verified_at' => now()->addMinutes(15),
+        ]);
+
+        // Act
+        $response = $this->postJson('/api/v1/user-password-reset', [
+            'email' => $user->email,
+            'otp' => '999999',
+            'password' => 'hacked-password',
+        ]);
+
+        // Assert
+        $response->assertStatus(422)
+            ->assertJsonPath('message', 'Invalid or expired OTP code.');
+
+        $this->assertFalse(Hash::check('hacked-password', $user->fresh()->password));
+    }
+
+    public function test_api_reset_password_with_expired_otp_returns_422(): void
+    {
+        // Arrange
+        $user = $this->createLandlord();
+        $user->update([
+            'remember_token' => '123456',
+            'email_verified_at' => now()->subMinute(),
+        ]);
+
+        // Act
+        $response = $this->postJson('/api/v1/user-password-reset', [
+            'email' => $user->email,
+            'otp' => '123456',
+            'password' => 'hacked-password',
+        ]);
+
+        // Assert
+        $response->assertStatus(422)
+            ->assertJsonPath('message', 'Invalid or expired OTP code.');
+
+        $this->assertFalse(Hash::check('hacked-password', $user->fresh()->password));
+    }
+
+    public function test_api_reset_password_with_valid_otp_changes_password(): void
+    {
+        // Arrange
+        $user = $this->createLandlord();
+        $user->update([
+            'remember_token' => '123456',
+            'email_verified_at' => now()->addMinutes(15),
+        ]);
+
+        // Act
+        $response = $this->postJson('/api/v1/user-password-reset', [
+            'email' => $user->email,
+            'otp' => '123456',
+            'password' => 'new-secure-password',
+        ]);
+
+        // Assert
         $response->assertOk()
             ->assertJsonPath('message', 'Your password has been changed!');
 
-        $this->assertTrue(Hash::check('hacked-password', $user->fresh()->password));
+        $this->assertTrue(Hash::check('new-secure-password', $user->fresh()->password));
+        $this->assertNull($user->fresh()->remember_token);
     }
 
     public function test_api_refresh_token_returns_new_token(): void

@@ -63,7 +63,7 @@
         <p>{{ __('You are having this email because you have requested for a password reset.') }}</p>
         <p>{{ __('Your verification code is: ') }}<b>{{ $data['code'] }}</b></p>
 
-        <p>{{ __('This password reset code will expire in 60 minutes.') }}</p>
+        <p>{{ __('This password reset code will expire in 15 minutes.') }}</p>
 
         <p>{{ __('If you did not request a password reset, no further action is required.') }}</p>
 
