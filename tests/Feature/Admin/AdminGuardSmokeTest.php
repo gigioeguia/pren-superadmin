@@ -28,16 +28,8 @@ class AdminGuardSmokeTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
-    /**
-     * @group characterization
-     */
-    public function test_landlord_passes_broken_admin_middleware(): void
+    public function test_landlord_is_redirected_to_login(): void
     {
-        // Expected to fail after Phase 1 (Seg-2 fix) — AdminMiddleware has a
-        // precedence bug: auth()->check() && role!=='landlord' || role!=='tenant'.
-        // Landlords must be redirected to login. The 403 below comes from the
-        // Spatie permission middleware, NOT from AdminMiddleware: the guard
-        // was already bypassed.
         // Arrange
         $landlord = $this->createLandlord();
 
@@ -45,7 +37,7 @@ class AdminGuardSmokeTest extends TestCase
         $response = $this->actingAs($landlord)->get('/admin');
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertRedirect(route('login'));
     }
 
     public function test_admin_with_permission_renders_dashboard(): void
@@ -60,14 +52,8 @@ class AdminGuardSmokeTest extends TestCase
         $response->assertOk();
     }
 
-    /**
-     * @group characterization
-     */
-    public function test_tenant_passes_broken_admin_middleware(): void
+    public function test_tenant_is_redirected_to_login(): void
     {
-        // Expected to fail after Phase 1 (Seg-2 fix) — same precedence bug
-        // as G2. Tenants must be redirected to login; the 403 below proves
-        // AdminMiddleware let the tenant through.
         // Arrange
         $tenant = $this->createTenant();
 
@@ -75,6 +61,18 @@ class AdminGuardSmokeTest extends TestCase
         $response = $this->actingAs($tenant)->get('/admin');
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertRedirect(route('login'));
+    }
+
+    public function test_superadmin_with_permission_renders_dashboard(): void
+    {
+        // Arrange
+        $superadmin = $this->createSuperadmin();
+
+        // Act
+        $response = $this->actingAs($superadmin)->get('/admin');
+
+        // Assert
+        $response->assertOk();
     }
 }

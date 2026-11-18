@@ -1,7 +1,7 @@
 ---
 id: spec-admin-middleware-fase1
 titulo: "AdminMiddleware lógica rota — Fase 1 / 1.2"
-estado: Revisado
+estado: Implementado
 fecha: 2026-11-18
 origen: .analisis/plan/plan-accion.md (Fase 1 / 1.2) — Seg-2
 cobertura: 5 casos (G1–G5) sobre el guard admin (/admin)
@@ -91,14 +91,14 @@ Ninguno: Seg-2 queda remediado por este spec; G2/G4 se convierten a tests de red
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `AdminMiddleware::handle` usa `auth()->check() && hasAnyRole(['admin','superadmin'])`.
-- [ ] `GET /admin` devuelve 302 a `/login` para anónimos.
-- [ ] `GET /admin` devuelve 302 a `/login` para landlords y tenants autenticados.
-- [ ] `GET /admin` devuelve 200 para admin y superadmin con `dashboard-read`.
-- [ ] G2 y G4 ya no llevan `@group characterization`.
-- [ ] `php artisan test tests/Feature/Admin/AdminGuardSmokeTest.php` en verde.
-- [ ] `tests/README.md` actualizado: Seg-2 sin casos de caracterización.
-- [ ] `composer lint` y `composer analyse` sin nuevas violaciones en archivos tocados.
+- [x] `AdminMiddleware::handle` usa `auth()->check() && hasAnyRole(['admin','superadmin'])`.
+- [x] `GET /admin` devuelve 302 a `/login` para anónimos.
+- [x] `GET /admin` devuelve 302 a `/login` para landlords y tenants autenticados.
+- [x] `GET /admin` devuelve 200 para admin y superadmin con `dashboard-read`.
+- [x] G2 y G4 ya no llevan `@group characterization`.
+- [x] `php artisan test tests/Feature/Admin/AdminGuardSmokeTest.php` en verde.
+- [x] `tests/README.md` actualizado: Seg-2 sin casos de caracterización.
+- [x] `composer lint` y `composer analyse` sin nuevas violaciones en archivos tocados.
 
 ## 8. Riesgos y decisiones pendientes
 
