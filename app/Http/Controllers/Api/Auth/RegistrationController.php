@@ -23,7 +23,6 @@ class RegistrationController extends Controller
             'name' => 'required|string|max:255',
             'password' => 'required|min:6|max:100',
             'email' => 'required|email',
-            'role' => 'required|string',
         ]);
 
         DB::beginTransaction();
@@ -65,15 +64,20 @@ class RegistrationController extends Controller
                 ];
             }
 
-            // Create or update user
+            // Create or update user. `role` no es fillable; se fuerza por propiedad
+            // directa tras la creación (Seg-4). El evento `creating` del modelo
+            // garantiza un valor por defecto 'landlord' si no se asigna.
             $user = User::updateOrCreate(
                 ['email' => $request->email],
-                $request->except('password') + [
+                $request->except('password', 'role') + [
                     'remember_token' => $otpStatus === 'on' ? $code : null,
                     'email_verified_at' => $otpStatus === 'on' ? $expire : now(),
                     'password' => Hash::make($request->password),
                 ]
             );
+
+            $user->role = 'landlord';
+            $user->save();
 
             if ($otpStatus === 'off') {
 

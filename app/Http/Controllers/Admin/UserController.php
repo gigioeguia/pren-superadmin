@@ -56,10 +56,13 @@ class UserController extends Controller
             'image' => 'nullable|image',
         ]);
 
-        $user = User::create($request->except('image', 'password') + [
+        $user = User::create($request->except('image', 'password', 'role') + [
             'image' => $request->image ? $this->upload($request, 'image') : null,
             'password' => Hash::make($request->password),
         ]);
+
+        $user->role = $request->role;
+        $user->save();
 
         $role = Role::where('name', $request->role)->first();
         $user->roles()->sync($role->id);
@@ -102,10 +105,13 @@ class UserController extends Controller
 
         $role = Role::where('name', $request->role)->first();
         $user->roles()->sync($role->id);
-        $user->update($request->except('image', 'password') + [
+        $user->update($request->except('image', 'password', 'role') + [
             'image' => $request->image ? $this->upload($request, 'image', $user->image) : $user->image,
             'password' => $request->password ? Hash::make($request->password) : $user->password,
         ]);
+
+        $user->role = $request->role;
+        $user->save();
 
         return response()->json([
             'message' => __('Staff updated successfully'),

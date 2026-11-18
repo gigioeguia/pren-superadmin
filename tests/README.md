@@ -12,7 +12,7 @@ caracterizaciones nuevas): `.agents/spec-impl/spec-trait-acnoo-fase0.md`
 ```bash
 php artisan test                        # suite completa
 php artisan test --group=smoke           # solo smoke (todos los de esta suite llevan el grupo implícito por directorio)
-php artisan test --group=characterization # solo tests de caracterización (9)
+php artisan test --group=characterization # solo tests de caracterización (8)
 php artisan test tests/Feature/Auth/     # un dominio
 ```
 
@@ -59,7 +59,6 @@ y el comentario, y actualizar el spec (ver skill `.agents/skills/tests-caracteri
 
 | Test | Bug caracterizado | Debe fallar tras |
 |------|-------------------|------------------|
-| `ApiAuthSmokeTest::test_api_sign_up_accepts_arbitrary_role` | Seg-4 — registro API con `role` arbitrario | Fase 1 |
 | `PaymentFlowSmokeTest::test_payment_success_processes_subscription_from_session` | Seg-6 — `/payment/success` público procesa desde sesión | Fase 2 |
 | `LandlordAcnooActionsSmokeTest::test_delete_all_deletes_foreign_amenities_without_ownership_check` | Seg-5 — `deleteAll` landlord sin ownership check (IDOR bulk) | Fase 2 |
 | `LandlordAcnooActionsSmokeTest::test_filter_route_runs_delete_all_due_to_crossed_route` | Seg-15 — ruta cruzada `properties/filter`→`deleteAll` en `routes/landlord.php:15` | Fase 3.6 |

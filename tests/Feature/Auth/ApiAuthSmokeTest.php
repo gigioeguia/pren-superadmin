@@ -3,9 +3,11 @@
 namespace Tests\Feature\Auth;
 
 use App\Mail\PasswordReset;
+use App\Models\Option;
 use App\Models\Plan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Laravel\Sanctum\Sanctum;
@@ -87,15 +89,9 @@ class ApiAuthSmokeTest extends TestCase
         ]);
     }
 
-    /**
-     * @group characterization
-     */
-    public function test_api_sign_up_accepts_arbitrary_role(): void
+    public function test_api_sign_up_with_arbitrary_role_is_forced_to_landlord(): void
     {
-        // Expected to fail after Phase 1 (Seg-4 fix) — API registration
-        // must not accept arbitrary roles like superadmin. Update to
-        // secure behavior (403/422 or role forced to landlord) when it fails.
-        // Arrange
+        // Arrange (A5)
         Plan::factory()->create();
 
         // Act
@@ -112,7 +108,62 @@ class ApiAuthSmokeTest extends TestCase
 
         $this->assertDatabaseHas('users', [
             'email' => 'mallory@example.test',
-            'role' => 'superadmin',
+            'role' => 'landlord',
+        ]);
+    }
+
+    public function test_api_sign_up_without_role_creates_landlord(): void
+    {
+        // Arrange (A14)
+        Plan::factory()->create();
+
+        // Act
+        $response = $this->postJson('/api/v1/sign-up', [
+            'name' => 'NoRole User',
+            'email' => 'norole@example.test',
+            'password' => 'password',
+        ]);
+
+        // Assert
+        $response->assertOk();
+        $this->assertNotEmpty($response->json('token'));
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'norole@example.test',
+            'role' => 'landlord',
+        ]);
+    }
+
+    public function test_api_sign_up_otp_on_ignores_arbitrary_role(): void
+    {
+        // Arrange (A15)
+        Plan::factory()->create();
+
+        // enable OTP
+        Cache::forget('email-varification');
+        Option::create([
+            'key' => 'email-varification',
+            'value' => ['otp_status' => 'on', 'otp_expiration_time' => 10, 'otp_duration_type' => 'minute'],
+            'status' => 1,
+        ]);
+
+        Mail::fake();
+
+        // Act
+        $response = $this->postJson('/api/v1/sign-up', [
+            'name' => 'Otp User',
+            'email' => 'otpuser@example.test',
+            'password' => 'password',
+            'role' => 'admin',
+        ]);
+
+        // Assert
+        $response->assertOk();
+        $this->assertTrue((bool) $response->json('otp_required'));
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'otpuser@example.test',
+            'role' => 'landlord',
         ]);
     }
 

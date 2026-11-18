@@ -90,10 +90,12 @@ class AcnooLandlordController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'plan_subscribe_id' => $request->plan_subscribe_id,
-                'role' => 'landlord',
                 'phone' => $request->input('phone'),
                 'password' => Hash::make($request->password),
             ]);
+
+            $user->role = 'landlord';
+            $user->save();
 
             $frontImage = $request->hasFile('mykad.front_image') ? $this->upload($request, 'mykad.front_image') : null;
             $backImage = $request->hasFile('mykad.back_image') ? $this->upload($request, 'mykad.back_image') : null;
