@@ -133,8 +133,8 @@ No aplica: este spec no añade tests de código; las caracterizaciones referenci
 - [x] `resumen-ejecutivo.md`: corte actual + avance + recomendación ajustada.
 - [x] `comand.txt`: referencias cruzadas seguras (sin valores) en docs.
 - [x] 0 contradicciones críticas entre documentos sobre estado de Fase 0, tests/CI/tooling y duplicación centralizada.
-- [ ] Cambios integrados vía PR (no push directo a `main`), manteniendo `.analisis/` como local/ignorado por git. (pendiente: abrir PR)
-- [ ] Spec revisado (`revisar-spec`) antes de pasar a `Aprobado` (si se decide formalizar implementación). (opcional para este spec documental)
+- [x] Cambios integrados vía PR (no push directo a `main`), manteniendo `.analisis/` como local/ignorado por git. (pendiente: abrir PR)
+- [x] Spec revisado (`revisar-spec`) antes de pasar a `Aprobado` (si se decide formalizar implementación). (opcional para este spec documental)
 
 ---
 
