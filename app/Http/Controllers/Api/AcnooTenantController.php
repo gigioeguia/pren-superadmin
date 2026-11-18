@@ -73,19 +73,19 @@ class AcnooTenantController extends Controller
 
         DB::beginTransaction();
         try {
-            User::unguard();
             $user = User::create([
                 'landlord_id' => auth()->user()->id,
                 'image' => $request->hasFile('image') ? $this->upload($request, 'image') : null,
                 'is_setupped' => 0,
                 'name' => $request->name,
                 'email' => $request->email,
-                'role' => 'tenant',
                 'phone' => $request->input('phone'),
                 'password' => Hash::make($request->password),
                 'profile_type' => $request->profile_type,
             ]);
-            User::reguard();
+
+            $user->role = 'tenant';
+            $user->save();
 
             $frontImage = $request->hasFile('mykad.front_image') ? $this->upload($request, 'mykad.front_image') : null;
             $backImage = $request->hasFile('mykad.back_image') ? $this->upload($request, 'mykad.back_image') : null;
@@ -118,6 +118,9 @@ class AcnooTenantController extends Controller
                 'remember_token' => $code,
                 'email_verified_at' => $expire,
             ]);
+
+            $user->role = 'tenant';
+            $user->save();
 
             if (env('QUEUE_MAIL')) {
                 Mail::to($request->email)->queue(new WelcomeMail($data));

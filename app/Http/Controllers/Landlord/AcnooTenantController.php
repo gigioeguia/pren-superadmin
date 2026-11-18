@@ -61,19 +61,19 @@ class AcnooTenantController extends Controller
 
         DB::beginTransaction();
         try {
-            User::unguard();
             $user = User::create([
                 'landlord_id' => auth()->user()->id,
                 'image' => $request->hasFile('image') ? $this->upload($request, 'image') : null,
                 'is_setupped' => 1,
                 'name' => $request->name,
                 'email' => $request->email,
-                'role' => 'tenant',
                 'phone' => $request->input('phone'),
                 'password' => Hash::make($request->password),
                 'profile_type' => $request->profile_type,
             ]);
-            User::reguard();
+
+            $user->role = 'tenant';
+            $user->save();
 
             $frontImage = $request->hasFile('mykad.front_image') ? $this->upload($request, 'mykad.front_image') : null;
             $backImage = $request->hasFile('mykad.back_image') ? $this->upload($request, 'mykad.back_image') : null;

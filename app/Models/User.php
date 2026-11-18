@@ -12,6 +12,15 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
+    protected static function booted(): void
+    {
+        static::creating(function (User $user): void {
+            if (empty($user->role)) {
+                $user->role = 'landlord';
+            }
+        });
+    }
+
     protected $fillable = [
         'landlord_id',
         'plan_subscribe_id',

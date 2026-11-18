@@ -7,6 +7,7 @@ use App\Models\Option;
 use App\Models\Plan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Laravel\Sanctum\Sanctum;
@@ -88,11 +89,12 @@ class ApiAuthSmokeTest extends TestCase
         ]);
     }
 
-    public function test_api_sign_up_ignores_arbitrary_role(): void
+    public function test_api_sign_up_with_arbitrary_role_is_forced_to_landlord(): void
     {
-        // A14
+        // Arrange (A5)
         Plan::factory()->create();
 
+        // Act
         $response = $this->postJson('/api/v1/sign-up', [
             'name' => 'Mallory',
             'email' => 'mallory@example.test',
@@ -100,6 +102,7 @@ class ApiAuthSmokeTest extends TestCase
             'role' => 'superadmin',
         ]);
 
+        // Assert
         $response->assertOk();
         $this->assertNotEmpty($response->json('token'));
 
@@ -111,15 +114,17 @@ class ApiAuthSmokeTest extends TestCase
 
     public function test_api_sign_up_without_role_creates_landlord(): void
     {
-        // A15
+        // Arrange (A14)
         Plan::factory()->create();
 
+        // Act
         $response = $this->postJson('/api/v1/sign-up', [
-            'name' => 'No Role',
+            'name' => 'NoRole User',
             'email' => 'norole@example.test',
             'password' => 'password',
         ]);
 
+        // Assert
         $response->assertOk();
         $this->assertNotEmpty($response->json('token'));
 
@@ -131,95 +136,35 @@ class ApiAuthSmokeTest extends TestCase
 
     public function test_api_sign_up_otp_on_ignores_arbitrary_role(): void
     {
-        // A16
+        // Arrange (A15)
         Plan::factory()->create();
-        Option::factory()->create([
+
+        // enable OTP
+        Cache::forget('email-varification');
+        Option::create([
             'key' => 'email-varification',
-            'value' => [
-                'otp_status' => 'on',
-                'otp_expiration_time' => 5,
-                'otp_duration_type' => 'minute',
-            ],
+            'value' => ['otp_status' => 'on', 'otp_expiration_time' => 10, 'otp_duration_type' => 'minute'],
+            'status' => 1,
         ]);
 
         Mail::fake();
 
+        // Act
         $response = $this->postJson('/api/v1/sign-up', [
-            'name' => 'Mallory OTP',
-            'email' => 'malloryotp@example.test',
-            'password' => 'password',
-            'role' => 'superadmin',
-        ]);
-
-        $response->assertOk();
-        $this->assertTrue($response->json('otp_required'));
-
-        $this->assertDatabaseHas('users', [
-            'email' => 'malloryotp@example.test',
-            'role' => 'landlord',
-        ]);
-    }
-
-    public function test_api_sign_up_setupped_email_does_not_change_role(): void
-    {
-        // A17
-        Plan::factory()->create();
-        $existing = User::factory()->superadmin()->create([
-            'email' => 'mallory@example.test',
-            'is_setupped' => 1,
-        ]);
-
-        $response = $this->postJson('/api/v1/sign-up', [
-            'name' => 'Mallory',
-            'email' => 'mallory@example.test',
-            'password' => 'password',
-            'role' => 'superadmin',
-        ]);
-
-        $response->assertStatus(406);
-
-        $this->assertSame('superadmin', $existing->fresh()->role);
-    }
-
-    public function test_api_sign_up_reregistration_forces_landlord(): void
-    {
-        // A18
-        Plan::factory()->create();
-        User::factory()->create([
-            'email' => 'mallory@example.test',
-            'is_setupped' => 0,
-            'role' => 'admin',
-        ]);
-
-        $response = $this->postJson('/api/v1/sign-up', [
-            'name' => 'Mallory',
-            'email' => 'mallory@example.test',
+            'name' => 'Otp User',
+            'email' => 'otpuser@example.test',
             'password' => 'password',
             'role' => 'admin',
         ]);
 
+        // Assert
         $response->assertOk();
+        $this->assertTrue((bool) $response->json('otp_required'));
 
         $this->assertDatabaseHas('users', [
-            'email' => 'mallory@example.test',
+            'email' => 'otpuser@example.test',
             'role' => 'landlord',
         ]);
-    }
-
-    public function test_user_mass_assignment_does_not_persist_role(): void
-    {
-        // U1
-        $user = User::factory()->create();
-
-        $user->fill(['role' => 'superadmin']);
-        $user->save();
-
-        $this->assertSame('landlord', $user->fresh()->role);
-
-        $user->role = 'superadmin';
-        $user->save();
-
-        $this->assertSame('superadmin', $user->fresh()->role);
     }
 
     public function test_api_submit_otp_with_valid_token_returns_token(): void

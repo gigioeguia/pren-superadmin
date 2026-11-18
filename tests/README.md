@@ -12,7 +12,7 @@ caracterizaciones nuevas): `.agents/spec-impl/spec-trait-acnoo-fase0.md`
 ```bash
 php artisan test                        # suite completa
 php artisan test --group=smoke           # solo smoke (todos los de esta suite llevan el grupo implícito por directorio)
-php artisan test --group=characterization # solo tests de caracterización (9)
+php artisan test --group=characterization # solo tests de caracterización (8)
 php artisan test tests/Feature/Auth/     # un dominio
 ```
 

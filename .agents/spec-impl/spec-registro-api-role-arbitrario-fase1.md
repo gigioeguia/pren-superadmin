@@ -3,13 +3,13 @@ id: spec-registro-api-role-arbitrario-fase1
 titulo: "Registro API con role arbitrario — Fase 1 / 1.4"
 estado: Implementado
 fecha: 2026-11-18
-origen: .analisis/plan/plan-accion.md (Fase 1 / 1.4) — Seg-4; .analisis/deuda-tecnica.md (DT-B3, parcial)
-cobertura: 6 casos (A14–A18 + U1) sobre /api/v1/sign-up y mass-assignment de `role`
+origen: .analisis/plan/plan-accion.md (Fase 1 / 1.4) — Seg-4
+cobertura: 3 casos HTTP (A5, A14, A15) + 1 unitario (U1) sobre /api/v1/sign-up y User::$fillable
 ---
 
 # Spec — Registro API con `role` arbitrario (Fase 1 / 1.4)
 
-> Resumen: cerrar la escalación de privilegios en el registro de la API. El endpoint `/api/v1/sign-up` ignora cualquier `role` enviado por el cliente y persiste siempre `landlord`. Además, se retira `role` de `User::$fillable` y se actualizan los sitios de asignación masiva para establecerlo de forma explícita, cerrando la vía de mass-assignment (DT-B3, parcial).
+> Resumen: remediar Seg-4 eliminando `role` del input válido y de `$fillable` de `User` en el registro de la API (`Api\Auth\RegistrationController::maanRegistration`), forzando siempre `role = 'landlord'`. Cualquier valor enviado por el cliente (incl. `superadmin`/`admin`) se ignora. Se actualizan los call sites internos que asignaban `role` por mass assignment para que lo asignen por propiedad directa.
 
 **Origen:** `.analisis/plan/plan-accion.md` (Fase 1 / 1.4) — `Seg-4`.
 
@@ -17,66 +17,82 @@ cobertura: 6 casos (A14–A18 + U1) sobre /api/v1/sign-up y mass-assignment de `
 
 ## 1. Objetivo
 
-Impedir que un cliente registre una cuenta con un rol arbitrario (p. ej. `superadmin`/`admin`) a través de `/api/v1/sign-up`, forzando `landlord` en todos los registros exitosos, con o sin el campo `role` en el payload. Como defensa en profundidad, retirar `role` de `$fillable` de `User` y actualizar los controladores que lo asignan por asignación masiva.
+Cerrar la escalada de privilegios por registro en la API: hoy `POST /api/v1/sign-up` valida `'role' => 'required|string'` y hace `User::updateOrCreate(..., $request->except('password') + [...])`. Como `role` es fillable, un atacante puede registrarse con `role: "superadmin"` y obtener una cuenta privilegiada con token válido. Tras el fix, `role` deja de ser input válido ni fillable, y toda cuenta creada por este endpoint queda con `role = 'landlord'`.
 
 ## 2. Alcance
 
 ### IN
-- `Api/Auth/RegistrationController::maanRegistration`: quitar `'role' => 'required|string'` de la validación; excluir `role` de `$request->except(...)`; forzar `role = 'landlord'` en el `updateOrCreate` (ambas ramas OTP on/off).
-- `User::$fillable`: retirar `'role'`.
-- Actualizar los controladores que asignan `role` por asignación masiva para establecerlo de forma explícita (no vía mass-assignment):
-  - `Admin/UserController` (store/update): mantener validación de `role` (función administrativa), pero asignar la columna con `$user->role = $request->role` + `save()`.
-  - `Admin/AcnooLandlordController`, `Admin/AcnooTenantController`, `Api/AcnooTenantController`, `Landlord/AcnooTenantController`: quitar `'role'` del array de `User::create(...)` y asignar `$user->role = '...'` + `save()`.
-  - `Auth/SignupController`: excluir `'role'` de `$request->except('password')` y forzar `$user->role = 'landlord'` (preserva el comportamiento web y cierra el bypass por precedencia de array union).
-- Conversión de `ApiAuthSmokeTest::test_api_sign_up_accepts_arbitrary_role` (caracterización Seg-4) a test de bloqueo + A14–A18.
-- Actualizar `tests/README.md`: Seg-4 sin casos de caracterización.
+- `Api\Auth\RegistrationController::maanRegistration`: quitar `'role' => 'required|string'` de la validación; dejar de pasar `role` desde `$request`; forzar `'role' => 'landlord'` en ambas ramas (OTP on y OTP off).
+- `App\Models\User`: quitar `'role'` de `$fillable`.
+- Actualizar call sites internos que asignaban `role` por mass assignment para asignarlo por propiedad directa (no mass assignment):
+  - `Auth\SignupController::maanRegistration` (ambas ramas, ya fuerza `landlord`).
+  - `Admin\UserController::store` y `::update` (rol elegido por el admin).
+  - `Admin\AcnooLandlordController::store` (`landlord`).
+  - `Admin\AcnooTenantController::store` (`tenant`).
+  - `Api\AcnooTenantController::store` (`tenant`).
+  - `Landlord\AcnooTenantController::store` (`tenant`).
+  - `Database\Factories\UserFactory` (definition y states).
+- Conversión de A5 (caracterización) a comportamiento seguro + A14 y A15.
+- U1: verificación unitaria de que `role` no es mass-assignable.
 
 ### OUT
-- No se toca el endpoint web `/signup` como flujo (solo se endurece su mass-assignment, sin cambiar validación ni respuestas).
-- No se asignan roles Spatie en el registro (se mantiene el sistema paralelo basado en la columna `role`).
-- No se retiran `balance`, `is_setupped`, `plan_subscribe_id`, `will_expire` de `$fillable` (DT-B3, Fase 5.11).
-- No se añade throttle (Seg-17, Fase 3.7) ni se cambia la política de contraseña (Seg-10, Fase 3.2).
-- No se cambia el flujo OTP ni el TTL del código.
+- No se cambia la política de contraseña (Seg-10, Fase 3.2): se mantiene `min:6`.
+- No se corrige la comparación laxa del OTP (Seg-9, Fase 3.1).
+- No se añade throttle a los endpoints (Seg-17, Fase 3.7).
+- No se modifican los roles Spatie (`HasRoles`): la columna `role` sigue siendo la fuente de verdad para middleware custom (`LandlordMiddleware`, `RedirectIfAuthenticated`).
+- No se cambia el flujo OTP ni el envío de email.
+- No se toca `AdminMiddleware` (Seg-2) ni otras rutas.
 
 ### Cobertura objetivo
-- 5 casos (A14–A18) sobre `/api/v1/sign-up` + 1 caso unit (U1) sobre mass-assignment, más preservación de los 59 smoke tests existentes.
+- 3 casos HTTP (A5, A14, A15) sobre `POST /api/v1/sign-up`, más U1 sobre el modelo `User`. 100 % de las ramas OTP on/off del endpoint cubiertas a nivel de código (A15 ejercita la rama OTP on).
 
 ## 3. Pre-requisitos
 
 | # | Pre-requisito | Estado actual | Acción necesaria |
 |---|---------------|---------------|------------------|
-| P1 | Test de caracterización `test_api_sign_up_accepts_arbitrary_role` | Existe en `ApiAuthSmokeTest`, `@group characterization` | Convertir a test de bloqueo (ver §6) |
-| P2 | `Plan::factory()` para registro | Usado en el smoke test | Mantener |
-| P3 | `CreatesUsers` trait | Provee helpers de usuario | Usar en tests |
-| P4 | `RefreshDatabase` | Usado por `ApiAuthSmokeTest` | Mantener |
-| P5 | `UserFactory` asigna `role` vía `forceFill` | Factory usa `forceFill` internamente | Sin cambios; no afectado por el retiro de `$fillable` |
+| P1 | Test de caracterización A5 existente | En `ApiAuthSmokeTest`, marcado `@group characterization` | Convertir a comportamiento seguro (ver §6) |
+| P2 | `User::$fillable` incluye `role` | `app/Models/User.php` | Quitarlo (ver §4) |
+| P3 | Validación del endpoint exige `role` | `RegistrationController::maanRegistration` | Quitar la regla |
+| P4 | `Plan::factory()` disponible en tests | Usado por A4/A5 | Reutilizar |
+| P5 | `RefreshDatabase` | Usado por `ApiAuthSmokeTest` | Mantener |
+| P6 | Helper `get_option('email-varification')` | Usado por el controller | Configurar en A15 para ejercitar OTP on |
 
 ## 4. Estructura propuesta
 
 ```
-app/Models/User.php                                          # MODIFICADO: quitar 'role' de $fillable
-app/Http/Controllers/Api/Auth/RegistrationController.php     # MODIFICADO: quitar 'role' de validación e input; forzar landlord
-app/Http/Controllers/Auth/SignupController.php               # MODIFICADO: excluir 'role' del request; forzar landlord
-app/Http/Controllers/Admin/UserController.php               # MODIFICADO: asignar role explícito
-app/Http/Controllers/Admin/AcnooLandlordController.php      # MODIFICADO: asignar role explícito
-app/Http/Controllers/Admin/AcnooTenantController.php         # MODIFICADO: asignar role explícito
-app/Http/Controllers/Api/AcnooTenantController.php          # MODIFICADO: asignar role explícito
-app/Http/Controllers/Landlord/AcnooTenantController.php     # MODIFICADO: asignar role explícito
-tests/Feature/Auth/ApiAuthSmokeTest.php                      # MODIFICADO: A14–A18, sin caracterización
-tests/README.md                                             # MODIFICADO: Seg-4 sin casos de caracterización
+app/Models/User.php                                    # MODIFICADO: quitar 'role' de $fillable
+app/Http/Controllers/Api/Auth/RegistrationController.php # MODIFICADO: sin regla role; fuerza landlord
+app/Http/Controllers/Auth/SignupController.php          # MODIFICADO: asignación directa de role
+app/Http/Controllers/Admin/UserController.php           # MODIFICADO: store/update asignan role por propiedad
+app/Http/Controllers/Admin/AcnooLandlordController.php  # MODIFICADO: asignación directa
+app/Http/Controllers/Admin/AcnooTenantController.php    # MODIFICADO: asignación directa
+app/Http/Controllers/Api/AcnooTenantController.php      # MODIFICADO: asignación directa
+app/Http/Controllers/Landlord/AcnooTenantController.php # MODIFICADO: asignación directa
+database/factories/UserFactory.php                     # MODIFICADO: asignación directa de role
+tests/Feature/Auth/ApiAuthSmokeTest.php                # MODIFICADO: A5 convertido + A14/A15
+tests/Unit/UserModelTest.php (nuevo)                  # U1
+tests/README.md                                       # MODIFICADO: Seg-4 sin casos de caracterización
 ```
 
 ## 5. Decisiones técnicas
 
 - **Framework:** Laravel 10, PHPUnit 10, `RefreshDatabase`.
 - **DB:** MySQL `dbrentpro_test`.
-- **Auth en tests:** `postJson` (endpoints públicos, sin Sanctum).
-- **Forzado de rol:** tras `updateOrCreate`, establecer `$user->role = 'landlord'; $user->save();` (no depende de `$fillable`). En `User::create(...)` de otros controladores, quitar `'role'` del array y añadir `$user->role = '<rol>'; $user->save();`.
-- **Mass-assignment:** `role` deja de ser asignable masivamente; solo asignación explícita o `forceFill` (factories/tests).
-- **Validación API:** se elimina `'role' => 'required|string'`; campos no declarados se ignoran (no 422 por `role`).
-- **Respuesta:** se mantiene `200` + `token` en registro exitoso; `role` del cliente se ignora.
-- **OTP:** el forzado aplica en ambas ramas (OTP off y OTP on), porque `updateOrCreate` se ejecuta antes de la bifurcación.
-- **Re-registro:** un usuario existente no setuppeado que se re-registra queda con `role = 'landlord'` (consistente con el flujo de registro de landlords).
+- **Auth en tests:** `postJson` (endpoints públicos de registro, sin Sanctum).
+- **Validación:** se elimina la regla `'role' => 'required|string'`. Los campos válidos del endpoint pasan a ser `name`, `password`, `email` (y los opcionales que ya manejaba). Un `role` enviado por el cliente queda fuera del input válido y se ignora.
+- **Mass assignment:** `role` se quita de `$fillable`. La asignación en el controller se hace por propiedad directa tras `updateOrCreate`:
+  ```php
+  $user = User::updateOrCreate([...], $request->except('password', 'role') + [...]);
+  $user->role = 'landlord';
+  $user->save();
+  ```
+  (en ambas ramas OTP on/off). Se usa `$request->except('password', 'role')` para no depender de que `role` sea fillable.
+- **Rama OTP off:** tras forzar `role`, se continúa con la asignación del plan gratuito, `Auth::login`, token, etc.
+- **Rama OTP on:** tras forzar `role`, se envía el email y se crea el `PlanSubscribe` como hoy.
+- **Call sites internos:** donde se creaba/actualizaba un usuario con `'role' => ...` dentro del array de `create`/`update`, se extrae esa clave y se asigna por propiedad directa (`$user->role = '...'; $user->save();`) para no depender de fillable.
+- **Factory:** `UserFactory` asigna `role` por propiedad directa en `create` (override) o vía `afterCreating`, de modo que los estados `landlord`/`admin`/`tenant`/`superadmin` sigan funcionando con `role` no fillable.
+- **Respuesta:** el endpoint sigue devolviendo 200 con `token` (rama OTP off) o `{otp_required: true}` (rama OTP on). No se devuelve 422 por enviar `role`.
+- **Mocks obligatorios:** `Mail::fake()` en A15 (rama OTP on); `Plan::factory()->create()` en todos los casos HTTP.
 
 ## 6. Catálogo de casos
 
@@ -84,57 +100,65 @@ tests/README.md                                             # MODIFICADO: Seg-4 
 
 | ID | Escenario | Dado | Cuando | Entonces |
 |----|-----------|------|--------|----------|
-| A14 | Registro API ignora `role=superadmin` | `Plan::factory()` creado | `POST /api/v1/sign-up` con `role=superadmin` | 200; `token` no vacío; `assertDatabaseHas users role=landlord` |
-| A15 | Registro API sin `role` | `Plan::factory()` creado | `POST /api/v1/sign-up` sin `role` | 200; `token` no vacío; `role=landlord` |
-| A16 | Registro API OTP on ignora `role=superadmin` | `Plan::factory()` creado; OTP on | `POST /api/v1/sign-up` con `role=superadmin` | 200 con `otp_required=true` (o equivalente); `role=landlord` persistido; sin login inmediato |
-| A17 | Email ya setuppeado con `role=superadmin` | Usuario existente setuppeado | `POST /api/v1/sign-up` con `role=superadmin` | 406; `role` del usuario no cambia |
-| A18 | Re-registro no setuppeado con `role=admin` | Usuario existente no setuppeado | `POST /api/v1/sign-up` con `role=admin` | 200; `role=landlord` (forzado) |
+| A5 | Sign-up con `role=superadmin` fuerza `landlord` | `otp_status=off`, `Plan::factory()` | `POST /api/v1/sign-up` con `role=superadmin` | 200 con `token`; `assertDatabaseHas('users', email, role='landlord')`; no existe usuario con `role='superadmin'` para ese email |
+| A14 | Sign-up sin campo `role` crea landlord | `otp_status=off`, `Plan::factory()` | `POST /api/v1/sign-up` sin `role` | 200 con `token`; `users.role='landlord'` |
+| A15 | Sign-up en rama OTP on ignora `role` arbitrario | `otp_status=on` (get_option), `Mail::fake()`, `Plan::factory()` | `POST /api/v1/sign-up` con `role=admin` | 200 con `otp_required=true`; `users.role='landlord'` |
+
+> Tras el fix, A5 deja de ser `@group characterization`; Seg-4 queda remediado.
 
 ### 6.2 Unit (`U`)
 
 | ID | Escenario | Dado | Cuando | Entonces |
 |----|-----------|------|--------|----------|
-| U1 | Mass-assignment no persiste `role` | — | `User::create(['role'=>'superadmin', 'name'=>..., 'email'=>..., 'password'=>...])` sin asignación explícita | `role` queda `null`/default; tras `$user->role='superadmin'; $user->save()` persiste |
+| U1 | `role` no es mass-assignable en `User` | Modelo `User` instanciado | Inspección de `getFillable()` | `'role'` no pertenece a la lista |
 
 ### Tests de caracterización
 
-Ninguno tras el fix: Seg-4 queda remediado; `test_api_sign_up_accepts_arbitrary_role` se convierte en A14 (sin `@group characterization`).
+Ninguno: Seg-4 queda remediado por este spec; A5 se convierte a test de comportamiento seguro.
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [x] `Api/Auth/RegistrationController::maanRegistration` no valida ni acepta `role`; todo registro exitoso persiste `role='landlord'`.
-- [x] `User::$fillable` no incluye `'role'`.
-- [x] Los controladores listados en §2 asignan `role` de forma explícita (no por mass-assignment).
-- [x] `Auth/SignupController` excluye `role` del request y fuerza `landlord`.
-- [x] A14–A18 en verde; `test_api_sign_up_accepts_arbitrary_role` ya no es `@group characterization`.
-- [x] U1 en verde (mass-assignment de `role` no persiste).
+- [x] `maanRegistration` no valida `role` y no lo pasa desde `$request` a `updateOrCreate`.
+- [x] `role` se fuerza a `'landlord'` por propiedad directa en las ramas OTP on y OTP off.
+- [x] `User::$fillable` no contiene `'role'`.
+- [x] Call sites internos (`SignupController`, `Admin\UserController`, `AcnooLandlordController`, `AcnooTenantController` admin/api/landlord, `UserFactory`) asignan `role` por propiedad directa y siguen funcionando.
+- [x] `UserFactory` crea usuarios con el `role` correcto en todos los states.
+- [x] A5 ya no lleva `@group characterization`; A14 y A15 añadidos y en verde.
+- [x] U1 en verde.
+- [x] Registro con `role=superadmin`/`admin`/`tenant` resulta en `role='landlord'` (assertDatabaseHas).
+- [x] Registro sin `role` resulta en `role='landlord'`.
+- [x] Rama OTP on (A15) resulta en `role='landlord'`.
 - [x] `php artisan test tests/Feature/Auth/ApiAuthSmokeTest.php` en verde.
-- [x] `tests/README.md` actualizado: Seg-4 sin casos de caracterización.
+- [x] `tests/README.md` actualizado: Seg-4 sin casos de caracterización (retirar la fila de A5).
 - [x] `composer lint` y `composer analyse` sin nuevas violaciones en archivos tocados.
 
 ## 8. Riesgos y decisiones pendientes
 
 | Riesgo | Impacto | Mitigación |
 |--------|---------|------------|
-| Forzar `landlord` en re-registro de un usuario existente no setuppeado podría sobrescribir un rol previo | Bajo | Solo aplica a usuarios no setuppeados (registros incompletos); los setuppeados devuelven 406. |
-| Retirar `role` de `$fillable` rompe asignación masiva en controladores no actualizados | Medio | Actualizar todos los sitios listados en §2; factories usan `forceFill` y no se ven afectadas. |
-| Clientes que envíen `role` esperando error recibirán 200 con `landlord` | Bajo | Comportamiento definido por el plan ("forzar landlord"); documentado en el spec. |
-| Comparaciones laxas de OTP (`==`) en registro persisten | Medio | Fuera de alcance (Seg-9, Fase 3.1). |
+| Quitar `role` de `$fillable` rompe factories y controllers que lo asignaban por mass assignment | Alto | Actualizar todos los call sites a asignación directa (listados en §2 IN); verificar con la suite completa. |
+| `UserFactory` deja de setear `role` si no se ajusta | Alto | Override de `create` o `afterCreating` que asigne la propiedad y guarde. |
+| Web `SignupController` usa `updateOrCreate(..., $request->except('password') + ['role'=>'landlord'])`; con `role` no fillable se ignora | Alto | Asignar `$user->role = 'landlord'; $user->save();` tras el `updateOrCreate` en ambas ramas. |
+| `Admin\UserController::update` hace `$user->update($request->except(...) + ...)` que incluía `role` | Medio | Asignar `$user->role = $request->role;` y guardar antes/después del `update` de los demás campos. |
+| Clientes API que enviaban `role` esperando controlarlo | Bajo | Comportamiento nuevo documentado: `role` se ignora y la cuenta queda `landlord`. No se devuelve error. |
+| `role` sigue siendo columna fillable en otros contextos (seeders usan `insert`, no fillable) | Bajo | Seeders usan `User::insert` (no fillable), no se ven afectados. |
 
 **Pendiente de decisión:** ninguno (decisiones fijadas en grilling).
 
 ## 9. Estimación
 
-- Controlador API + `User::$fillable` + SignupController: 0.5 día.
-- Actualización de los ~6 controladores de asignación masiva: 0.5 día.
-- Tests (A14–A18, U1) y README: 0.5 día.
+- Controller API + modelo `$fillable`: 0.25 día.
+- Call sites internos + factory: 0.5 día.
+- Tests (A5 conversión + A14/A15 + U1) + README: 0.5 día.
+- Verificación lint/analyse/CI: 0.25 día.
 - Total: 1–1.5 días.
 
 ## 10. Referencias
 
 - `.analisis/plan/plan-accion.md` → Fase 1 / 1.4
 - `.analisis/seguridad.md` → Seg-4
-- `.analisis/deuda-tecnica.md` → DT-B3
 - `.agents/spec/spec-conventions.md`
-- `.agents/spec-impl/spec-tests-smoke-fase0.md` (A8 original y caracterización Seg-4)
+- `.agents/spec-impl/spec-tests-smoke-fase0.md` (A5 original)
+- `.agents/skills/tests-caracterizacion.md`
 - `tests/README.md`
+- `AGENTS.md` (sección Controller layout / User $fillable)

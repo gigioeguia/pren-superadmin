@@ -64,20 +64,18 @@ class RegistrationController extends Controller
                 ];
             }
 
-            // Create or update user
-            User::unguard();
+            // Create or update user. `role` no es fillable; se fuerza por propiedad
+            // directa tras la creación (Seg-4). El evento `creating` del modelo
+            // garantiza un valor por defecto 'landlord' si no se asigna.
             $user = User::updateOrCreate(
                 ['email' => $request->email],
-                $request->except(['password', 'role']) + [
-                    'role' => 'landlord',
+                $request->except('password', 'role') + [
                     'remember_token' => $otpStatus === 'on' ? $code : null,
                     'email_verified_at' => $otpStatus === 'on' ? $expire : now(),
                     'password' => Hash::make($request->password),
                 ]
             );
-            User::reguard();
 
-            // El rol nunca se toma del cliente: siempre landlord (Seg-4).
             $user->role = 'landlord';
             $user->save();
 
