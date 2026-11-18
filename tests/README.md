@@ -63,8 +63,6 @@ y el comentario, y actualizar el spec (ver skill `.agents/skills/tests-caracteri
 | `ApiAuthSmokeTest::test_api_reset_password_without_otp_changes_password` | Seg-3 — reset password sin OTP | Fase 1 |
 | `AdminGuardSmokeTest::test_landlord_passes_broken_admin_middleware` | Seg-2 — `AdminMiddleware` bug de precedencia | Fase 1 |
 | `AdminGuardSmokeTest::test_tenant_passes_broken_admin_middleware` | Seg-2 — ídem (tenant) | Fase 1 |
-| `ArtisanRoutesSmokeTest::test_public_update_route_runs_migrations_and_sets_version` | Seg-1 — `/update` público ejecuta Artisan | Fase 1 |
-| `ArtisanRoutesSmokeTest::test_public_cache_clear_route_clears_cache` | Seg-1 — `/cache-clear` público | Fase 1 |
 | `PaymentFlowSmokeTest::test_payment_success_processes_subscription_from_session` | Seg-6 — `/payment/success` público procesa desde sesión | Fase 2 |
 | `LandlordAcnooActionsSmokeTest::test_delete_all_deletes_foreign_amenities_without_ownership_check` | Seg-5 — `deleteAll` landlord sin ownership check (IDOR bulk) | Fase 2 |
 | `LandlordAcnooActionsSmokeTest::test_filter_route_runs_delete_all_due_to_crossed_route` | Seg-15 — ruta cruzada `properties/filter`→`deleteAll` en `routes/landlord.php:15` | Fase 3.6 |
@@ -107,7 +105,7 @@ CMS público, entradas de guards y maintenance.
 | Status gateways | 12 | 8 | P10 (GET; los 4 POST/view de paystack/razorpay sin cover) |
 | CMS público | 12 | 10 | Pub1–Pub10 (sin `POST /blogs` ni `highlights/{id}`) |
 | Guards | 2 | 2 | G1–G4, H1–H4 |
-| Maintenance | 2 | 2 | M1–M2 |
+| Maintenance | 2 | 2 | M1–M6 |
 | **Total** | **52** | **44 (84.6 %)** | ≥ 60 % ✓ |
 
 ## Desviaciones vs el catálogo del spec
