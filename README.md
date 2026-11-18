@@ -40,7 +40,7 @@ La suite corre sobre la DB MySQL dedicada `dbrentpro_test` (configurada en `phpu
 
 ```bash
 php artisan test                           # suite completa (~15 s)
-php artisan test --group=characterization  # 7 tests de caracterización (se espera que
+php artisan test --group=characterization  # 5 tests de caracterización (se espera que
                                            # fallen al aplicar los fixes de Fase 1–2)
 ```
 

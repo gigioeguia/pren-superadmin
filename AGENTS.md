@@ -29,9 +29,9 @@ Run a single test: `php artisan test tests/Feature/Auth/WebLoginSmokeTest.php`
 | `routes/api.php` | `api` | `/api` | `api` (no dot) |
 | `routes/admin.php` | `web,auth,admin` | `/admin` | `admin.` |
 | `routes/landlord.php` | `web,landlord,expired` | `/landlord` | `landlord.` |
-| `routes/maintenance.php` | `web` (PUBLIC) | — | — |
+| `routes/maintenance.php` | `web` + `auth` + `role:superadmin` | — | — |
 
-- `maintenance.php` is `require`d from `web.php` — `GET /update` and `GET /cache-clear` run Artisan commands with **no auth**. Known critical issue.
+- `maintenance.php` is `require`d from `web.php` — `GET /update` and `GET /cache-clear` now require `auth` + `role:superadmin` (Fase 1 / 1.1). Previously public (Seg-1), now mitigated.
 - API route names: `api` prefix without dot (e.g. `apisign-in`, `apiproperties`).
 
 ## Middleware aliases (`app/Http/Kernel.php`)
