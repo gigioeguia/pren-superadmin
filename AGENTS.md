@@ -36,7 +36,7 @@ Run a single test: `php artisan test tests/Feature/Auth/WebLoginSmokeTest.php`
 
 ## Middleware aliases (`app/Http/Kernel.php`)
 
-`admin`, `landlord`, `expired`, `role`, `permission`, `role_or_permission` (Spatie). Custom: `AdminMiddleware`, `LandlordMiddleware`, `ExpiredMiddleware`, `DemoMode`, `SetLocale`. `VerifyCsrfToken` exempts `/billplz-callback`.
+`admin`, `landlord`, `expired`, `role`, `permission`, `role_or_permission` (Spatie). Custom: `AdminMiddleware`, `LandlordMiddleware`, `ExpiredMiddleware`, `DemoMode`, `SetLocale`. `VerifyCsrfToken` has no exemptions (Fase 1 / 1.6 removed `/billplz-callback`).
 
 ## Global helpers (autoloaded via composer `files`)
 
@@ -51,6 +51,7 @@ Run a single test: `php artisan test tests/Feature/Auth/WebLoginSmokeTest.php`
 
 - 11 gateways in `app/Library/` (Stripe, Mollie, Razorpay, FedaPay, Paystack, Flutterwave, Instamojo, Toyyibpay, Thawani, Tap, Billplz). Each class implements `make_payment(array $data)` and `status()`.
 - Gateways are DB-driven: `Gateway->namespace` holds the class FQCN, invoked dynamically as `$gateway->namespace::make_payment($data)`. **Editing a gateway class requires updating the file, the DB row, and `config/gateways.php` (whitelist; Fase 2 / 2.5).** A namespace not whitelisted is blocked with `403` at invocation.
+- Payment URLs are signed (`signed` middleware) and `/payment/success` requires auth + gateway verification/idempotency (Fase 2 / 2.3–2.4); webhooks/callbacks are hardened (Fase 1 / 1.6).
 - `.env.example` does **not** list the 11 gateway env vars (`STRIPE_KEY`, `STRIPE_SECRET`, `MOLLIE_API_KEY`, `FEDAPAY_API_KEY`, `PAYSTACK_*`, `RAZORPAY_*`, `INSTAMOJO_*`, `TOYYIBPAY_*`, `FLUTTERWAVE_*`, `THAWANI_*`, `TAP_*`, `BILLPLZ_*`). Copy from a working `.env`.
 - `DEMO_MODE` env enables `DemoMode` middleware, which blocks mutating routes (see `$adminDisabledRoutes` / `$landlordDisabledRoutes` in `app/Http/Middleware/DemoMode.php`). **Nota (Fase 3 / 3.5):** la activación ahora depende exclusivamente de `APP_ENV=demo` (`app()->environment('demo')`); `env('DEMO_MODE')` ya no se consulta. La restricción de landlords se basa en `users.is_demo`.
 

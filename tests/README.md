@@ -12,7 +12,7 @@ caracterizaciones nuevas): `.agents/spec-impl/spec-trait-acnoo-fase0.md`
 ```bash
 php artisan test                        # suite completa
 php artisan test --group=smoke           # solo smoke (todos los de esta suite llevan el grupo implícito por directorio)
-php artisan test --group=characterization # solo tests de caracterización (8)
+php artisan test --group=characterization # solo tests de caracterización (1)
 php artisan test tests/Feature/Auth/     # un dominio
 ```
 
@@ -59,10 +59,7 @@ y el comentario, y actualizar el spec (ver skill `.agents/skills/tests-caracteri
 
 | Test | Bug caracterizado | Debe fallar tras |
 |------|-------------------|------------------|
-| `PaymentFlowSmokeTest::test_payment_success_processes_subscription_from_session` | Seg-6 — `/payment/success` público procesa desde sesión | Fase 2 |
 | `LandlordAcnooActionsSmokeTest::test_delete_all_deletes_foreign_amenities_without_ownership_check` | Seg-5 — `deleteAll` landlord sin ownership check (IDOR bulk) | Fase 2 |
-| `PropertyOwnershipSmokeTest::test_f25..f30` | Seg-5 — preservación de `landlord_id` en `update()` de Property (Fase 2 / 2.2) | Implementado |
-| `LandlordAcnooActionsSmokeTest::test_landlord_properties_filter_does_not_delete` | Seg-15 — ruta cruzada `properties/filter`→`deleteAll` (corregida en Fase 3.6) | Implementado |
 
 > Nota G2/G4: el 403 observado no lo produce `AdminMiddleware` (que ya dejó
 > pasar al landlord/tenant por el bug de precedencia) sino el middleware Spatie
