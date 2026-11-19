@@ -17,7 +17,7 @@ class AcnooWithdrawMethodController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:withdraw-methods-read')->only('index');
+        $this->middleware('permission:withdraw-methods-read')->only('index', 'acnooFilter', 'exportExcel', 'exportCsv');
         $this->middleware('permission:withdraw-methods-create')->only('create', 'store');
         $this->middleware('permission:withdraw-methods-update')->only('edit', 'update', 'status');
         $this->middleware('permission:withdraw-methods-delete')->only('destroy', 'deleteAll');

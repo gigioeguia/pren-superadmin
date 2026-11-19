@@ -16,7 +16,7 @@ class AcnooTransactionController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:transactions-read')->only('index');
+        $this->middleware('permission:transactions-read')->only('index', 'acnooFilter', 'exportExcel', 'exportCsv');
     }
 
     public function index()

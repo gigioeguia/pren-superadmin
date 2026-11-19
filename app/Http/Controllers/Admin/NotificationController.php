@@ -10,7 +10,7 @@ class NotificationController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:notifications-read')->only('mtIndex');
+        $this->middleware('permission:notifications-read')->only('mtIndex', 'mtView', 'mtReadAll', 'acnooFilter');
     }
 
     public function mtIndex()

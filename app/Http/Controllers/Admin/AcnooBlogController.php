@@ -18,6 +18,14 @@ class AcnooBlogController extends Controller
     use HasAcnooActions;
     use HasUploader;
 
+    public function __construct()
+    {
+        $this->middleware('permission:blogs-read')->only('index', 'acnooFilter', 'filterComment');
+        $this->middleware('permission:blogs-create')->only('create', 'store');
+        $this->middleware('permission:blogs-update')->only('edit', 'update', 'status');
+        $this->middleware('permission:blogs-delete')->only('destroy', 'deleteAll');
+    }
+
     public function index(Request $request)
     {
         $blogs = Blog::latest()->paginate(20);

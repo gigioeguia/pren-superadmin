@@ -8,6 +8,13 @@ use Illuminate\Support\Facades\File;
 
 class TranslationController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:translations-create')->only('store');
+        $this->middleware('permission:translations-update')->only('update', 'bulkUpdate');
+        $this->middleware('permission:translations-delete')->only('destroy');
+    }
+
     public function store(Request $request)
     {
         $request->validate([

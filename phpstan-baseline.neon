@@ -1911,11 +1911,6 @@ parameters:
 			path: app/Models/User.php
 
 		-
-			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$menu_slug\\.$#"
-			count: 1
-			path: app/Providers/AuthServiceProvider.php
-
-		-
 			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
 			count: 1
 			path: app/Providers/RouteServiceProvider.php

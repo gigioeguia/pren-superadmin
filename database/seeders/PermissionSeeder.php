@@ -62,7 +62,16 @@ class PermissionSeeder extends Seeder
                 'about-us' => 'r,u',
                 'profile' => 'r,u',
                 'languages' => 'r,c,u,d',
-            ],
+                'blogs' => 'r,c,u,d',
+                'clients' => 'r,c,u,d',
+                'comments' => 'r,d',
+                'faqs' => 'r,c,u,d',
+                'features' => 'r,c,u,d',
+                'highlights' => 'r,c,u,d',
+                'testimonials' => 'r,c,u,d',
+                'website-settings' => 'r,u',
+                'manage-settings' => 'r,u',
+                'translations' => 'c,u,d',            ],
 
             'Admin' => [
                 'dashboard' => 'r',
@@ -109,7 +118,16 @@ class PermissionSeeder extends Seeder
                 'about-us' => 'r,u',
                 'profile' => 'r,u',
                 'languages' => 'r,c,u,d',
-            ],
+                'blogs' => 'r,c,u,d',
+                'clients' => 'r,c,u,d',
+                'comments' => 'r,d',
+                'faqs' => 'r,c,u,d',
+                'features' => 'r,c,u,d',
+                'highlights' => 'r,c,u,d',
+                'testimonials' => 'r,c,u,d',
+                'website-settings' => 'r,u',
+                'manage-settings' => 'r,u',
+                'translations' => 'c,u,d',            ],
         ];
 
         foreach ($rolesStructure as $key => $modules) {

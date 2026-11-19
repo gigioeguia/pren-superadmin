@@ -15,7 +15,7 @@ class AcnooMessageController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:messages-read')->only('index');
+        $this->middleware('permission:messages-read')->only('index', 'acnooFilter');
         $this->middleware('permission:messages-delete')->only('destroy', 'deleteAll');
     }
 

@@ -22,9 +22,9 @@ class UserController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:users-read')->only('index');
+        $this->middleware('permission:users-read')->only('index', 'acnooFilter');
         $this->middleware('permission:users-create')->only('create', 'store');
-        $this->middleware('permission:users-update')->only('edit', 'update');
+        $this->middleware('permission:users-update')->only('edit', 'update', 'status');
         $this->middleware('permission:users-delete')->only('destroy', 'deleteAll');
     }
 

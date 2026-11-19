@@ -12,6 +12,12 @@ class AcnooWebSettingController extends Controller
 {
     use HasUploader;
 
+    public function __construct()
+    {
+        $this->middleware('permission:website-settings-read')->only('index');
+        $this->middleware('permission:website-settings-update')->only('update');
+    }
+
     public function index()
     {
         $page_data = get_option('manage-pages');

@@ -17,7 +17,7 @@ class AcnooAdminDashboardController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:dashboard-read')->only('index');
+        $this->middleware('permission:dashboard-read')->only('index', 'getDashboardData', 'property_chart', 'account_chart');
     }
 
     public function index()

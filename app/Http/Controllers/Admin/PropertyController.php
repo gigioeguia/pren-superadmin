@@ -29,7 +29,7 @@ class PropertyController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:properties-read')->only('index', 'show');
+        $this->middleware('permission:properties-read')->only('index', 'show', 'acnooFilter', 'exportExcel', 'exportCsv', 'propertySuccess', 'getFacilities', 'getAmenities');
         $this->middleware('permission:properties-create')->only('create', 'store');
         $this->middleware('permission:properties-update')->only('edit', 'update', 'status', 'approve', 'reject');
         $this->middleware('permission:properties-delete')->only('destroy', 'deleteAll');

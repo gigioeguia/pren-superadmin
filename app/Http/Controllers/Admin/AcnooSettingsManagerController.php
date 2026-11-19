@@ -9,6 +9,12 @@ use Illuminate\Support\Facades\Cache;
 
 class AcnooSettingsManagerController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:manage-settings-read')->only('index');
+        $this->middleware('permission:manage-settings-update')->only('store');
+    }
+
     public function index()
     {
         $otp = Option::where('key', 'email-varification')->first();

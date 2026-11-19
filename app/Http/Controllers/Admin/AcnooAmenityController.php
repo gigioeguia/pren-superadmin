@@ -16,7 +16,7 @@ class AcnooAmenityController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:amenities-read')->only('index');
+        $this->middleware('permission:amenities-read')->only('index', 'acnooFilter');
         $this->middleware('permission:amenities-create')->only('store');
         $this->middleware('permission:amenities-update')->only('update', 'status');
         $this->middleware('permission:amenities-delete')->only('destroy', 'deleteAll');

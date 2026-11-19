@@ -20,7 +20,7 @@ class AcnooSubscriptionController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:subscriptions-read')->only('index');
+        $this->middleware('permission:subscriptions-read')->only('index', 'acnooFilter', 'file_download', 'getInvoice', 'exportExcel', 'exportCsv');
         $this->middleware('permission:subscriptions-update')->only('reject', 'paid');
     }
 

@@ -15,7 +15,7 @@ class AcnooHouseTypeController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:house-types-read')->only('index');
+        $this->middleware('permission:house-types-read')->only('index', 'acnooFilter');
         $this->middleware('permission:house-types-create')->only('store');
         $this->middleware('permission:house-types-update')->only('update', 'status');
         $this->middleware('permission:house-types-delete')->only('destroy', 'deleteAll');

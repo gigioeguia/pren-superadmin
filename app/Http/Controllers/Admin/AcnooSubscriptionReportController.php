@@ -17,7 +17,7 @@ class AcnooSubscriptionReportController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:subscriptions-read')->only('index');
+        $this->middleware('permission:subscriptions-read')->only('index', 'acnooFilter', 'exportExcel', 'exportCsv');
     }
 
     public function index()

@@ -14,7 +14,7 @@ class AcnooSupportController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:supports-read')->only(['index']);
+        $this->middleware('permission:supports-read')->only('index', 'getDetailsMsg', 'acnooFilter');
         $this->middleware('permission:supports-create')->only('reply');
     }
 
