@@ -17,6 +17,7 @@ class AcnooLandlordApplicationController extends Controller
     {
 
         $application_process = Application::findOrFail($id);
+        $this->authorize('process', $application_process);
 
         if ($application_process) {
             $application_process->update([
@@ -39,6 +40,7 @@ class AcnooLandlordApplicationController extends Controller
     {
 
         $approve_application = Application::findOrFail($id);
+        $this->authorize('approve', $approve_application);
         $security_deposit = SecurityDeposit::where('property_id', $approve_application->property_id)
             ->where('unit_id', $approve_application->unit_id)
             ->first();
@@ -75,6 +77,7 @@ class AcnooLandlordApplicationController extends Controller
         ]);
 
         $application_reject = Application::findOrFail($id);
+        $this->authorize('reject', $application_reject);
 
         if (! empty($application_reject->tenant_agreement) && Storage::exists($application_reject->tenant_agreement)) {
             return response()->json([
@@ -107,6 +110,7 @@ class AcnooLandlordApplicationController extends Controller
     public function file_download(string $id)
     {
         $application = Application::findOrFail($id);
+        $this->authorize('fileDownload', $application);
 
         if (is_null($application->file)) {
             return response()->json([

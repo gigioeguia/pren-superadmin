@@ -279,6 +279,7 @@ class AcnooPropertyController extends Controller
                 ]);
             },
         ])->findOrFail($id);
+        $this->authorize('view', $property);
         $reviews = Review::with('tenant:id,name,image')->where('property_id', $property->id)->latest()->get();
 
         $can_review = Rent::where('tenant_id', auth()->user()->id)
@@ -345,6 +346,7 @@ class AcnooPropertyController extends Controller
             DB::beginTransaction();
 
             $property = Property::findOrFail($id);
+            $this->authorize('update', $property);
 
             // cover image
             if ($request->cover_removed_images) {
@@ -532,6 +534,7 @@ class AcnooPropertyController extends Controller
     public function destroy(string $id)
     {
         $property = Property::findOrFail($id);
+        $this->authorize('delete', $property);
 
         if (! empty($property->cover_image)) {
             foreach ($property->cover_image as $image) {

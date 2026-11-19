@@ -24,6 +24,7 @@ class AcnooSecurityDepositController extends Controller
     public function show(string $id)
     {
         $security_deposit = SecurityDeposit::with(['landlord:id,name,phone,email', 'landlord.user_details:user_id,address_info',  'tenant:id,name,phone,email', 'tenant.user_details:user_id,address_info'])->findOrFail($id);
+        $this->authorize('view', $security_deposit);
 
         return view('landlord.security-deposits.view', compact('security_deposit'));
     }

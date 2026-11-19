@@ -1,7 +1,7 @@
 ---
 id: spec-policies-fase2
 titulo: "Crear Policies para Property/Application/SecurityDeposit/Withdraw/RentPayment — Fase 2 / 2.1"
-estado: Borrador
+estado: Implementado
 fecha: 2026-11-19
 origen: .analisis/plan/plan-accion.md (Fase 2 / 2.1) — Seg-5
 cobertura: 24 casos (F1–F24) sobre IDOR en show/update/destroy/offline_payment/file_download de las 5 entidades

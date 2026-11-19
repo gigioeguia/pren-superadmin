@@ -134,6 +134,7 @@ class AcnooTenantApplicationController extends Controller
     public function show(string $id)
     {
         $data = Application::with(['tenant', 'tenant.user_details', 'property:id,puid,category_id,landlord_id,address_info,rent_info,utility_deposit,security_deposit,late_fee,late_fee_after_days', 'property.propertyDetail:property_id,property_type,property_info', 'property.category:id,name', 'property.landlord:id,name,phone,email', 'property.rent:property_id,id', 'unit'])->findOrFail($id);
+        $this->authorize('view', $data);
 
         $security_deposit = SecurityDeposit::where('property_id', $data->property_id)->first();
 
@@ -153,6 +154,7 @@ class AcnooTenantApplicationController extends Controller
     public function agreement_sign(Request $request, string $id)
     {
         $agreement_sign = Application::findOrFail($id);
+        $this->authorize('agreementSign', $agreement_sign);
         $chargeOption = Option::where('key', 'service-charge')->first();
         $chargeData = $chargeOption->value;
 

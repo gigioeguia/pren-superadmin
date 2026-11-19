@@ -45,6 +45,7 @@ class AcnooSecurityDepositController extends Controller
     public function file_download(string $id)
     {
         $security_deposit = SecurityDeposit::findOrFail($id);
+        $this->authorize('fileDownload', $security_deposit);
 
         // Check if attachment exists in notes
         $filePath = $security_deposit->payment_data['payment_receipt'] ?? null;
@@ -59,6 +60,7 @@ class AcnooSecurityDepositController extends Controller
     public function approve(string $id)
     {
         $security_deposit = SecurityDeposit::findOrFail($id);
+        $this->authorize('approve', $security_deposit);
         $landlord = User::where('id', $security_deposit->landlord_id)->first();
 
         if ($security_deposit->status == 'pending') {
@@ -120,6 +122,7 @@ class AcnooSecurityDepositController extends Controller
     public function rejected(Request $request, string $id)
     {
         $security_deposit = SecurityDeposit::findOrFail($id);
+        $this->authorize('reject', $security_deposit);
         $security_deposit->update([
             'note' => $request->note,
             'status' => 'rejected',

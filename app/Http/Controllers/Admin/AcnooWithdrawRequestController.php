@@ -37,6 +37,10 @@ class AcnooWithdrawRequestController extends Controller
             ->latest()
             ->first();
 
+        if ($withdraw) {
+            $this->authorize('view', $withdraw);
+        }
+
         return view('admin.withdrawals.view', compact('withdraw'));
     }
 
@@ -47,6 +51,7 @@ class AcnooWithdrawRequestController extends Controller
         ]);
 
         $withdraw_reject = Withdraw::with('user:id,name')->findOrFail($id);
+        $this->authorize('reject', $withdraw_reject);
 
         if ($withdraw_reject) {
 
@@ -75,6 +80,7 @@ class AcnooWithdrawRequestController extends Controller
         ]);
 
         $withdraw = Withdraw::with('user:id,name')->findOrFail($id);
+        $this->authorize('approve', $withdraw);
         $landlord = User::where('id', $withdraw->user->id)->first();
 
         if ($withdraw) {
