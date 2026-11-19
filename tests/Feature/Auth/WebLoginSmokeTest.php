@@ -92,4 +92,23 @@ class WebLoginSmokeTest extends TestCase
         // Assert
         $response->assertOk()->assertViewIs('auth.login');
     }
+
+    // L7 — throttle: 6.º intento de login devuelve 429
+    public function test_login_is_throttled_after_five_attempts(): void
+    {
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson('/login/store', [
+                'email' => 'nobody@example.test',
+                'password' => 'wrong-password',
+            ])->assertUnauthorized();
+        }
+
+        $response = $this->postJson('/login/store', [
+            'email' => 'nobody@example.test',
+            'password' => 'wrong-password',
+        ]);
+
+        $response->assertStatus(429);
+        $this->assertTrue($response->headers->has('Retry-After'));
+    }
 }
