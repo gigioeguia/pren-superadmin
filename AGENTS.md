@@ -50,7 +50,7 @@ Run a single test: `php artisan test tests/Feature/Auth/WebLoginSmokeTest.php`
 ## Payments architecture
 
 - 11 gateways in `app/Library/` (Stripe, Mollie, Razorpay, FedaPay, Paystack, Flutterwave, Instamojo, Toyyibpay, Thawani, Tap, Billplz). Each class implements `make_payment(array $data)` and `status()`.
-- Gateways are DB-driven: `Gateway->namespace` holds the class FQCN, invoked dynamically as `$gateway->namespace::make_payment($data)`. **Editing a gateway class requires updating both the file and the DB row.**
+- Gateways are DB-driven: `Gateway->namespace` holds the class FQCN, invoked dynamically as `$gateway->namespace::make_payment($data)`. **Editing a gateway class requires updating the file, the DB row, and `config/gateways.php` (whitelist; Fase 2 / 2.5).** A namespace not whitelisted is blocked with `403` at invocation.
 - `.env.example` does **not** list the 11 gateway env vars (`STRIPE_KEY`, `STRIPE_SECRET`, `MOLLIE_API_KEY`, `FEDAPAY_API_KEY`, `PAYSTACK_*`, `RAZORPAY_*`, `INSTAMOJO_*`, `TOYYIBPAY_*`, `FLUTTERWAVE_*`, `THAWANI_*`, `TAP_*`, `BILLPLZ_*`). Copy from a working `.env`.
 - `DEMO_MODE` env enables `DemoMode` middleware, which blocks mutating routes (see `$adminDisabledRoutes` / `$landlordDisabledRoutes` in `app/Http/Middleware/DemoMode.php`).
 

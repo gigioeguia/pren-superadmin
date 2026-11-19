@@ -13,6 +13,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
 use Stripe\Stripe;
@@ -88,6 +89,17 @@ class PaymentController extends Controller
         }
 
         $gateway = Gateway::findOrFail($gateway_id);
+
+        // Fase 2 / 2.5 (Seg-6): only whitelisted gateway classes may be
+        // invoked dynamically from the DB-stored namespace (fail-closed).
+        if (! Gateway::isAllowedNamespace($gateway->namespace)) {
+            Log::warning('Blocked gateway namespace', [
+                'gateway_id' => $gateway->id,
+                'namespace' => $gateway->namespace,
+            ]);
+            abort(403);
+        }
+
         $user = User::findOrFail(session('user_id'));
 
         if ($payment_type == 'security_deposit') {
