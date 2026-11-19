@@ -98,7 +98,7 @@ CMS público, entradas de guards y maintenance.
 |---------|---------------|-----------|-------|
 | Auth web | 10 | 9 | L1–L6, S1–S8, R1–R5 (solo `otp-resend` sin cover) |
 | Auth API | 8 | 7 | A1–A10 (solo `resend-otp` sin cover) |
-| Pagos web | 6 | 6 | P1–P9 |
+| Pagos web | 6 | 6 | P1–P11 (incluye firma de URLs y endpoint API; ver spec-payment-controller-sin-user-id-fase2) |
 | Status gateways | 12 | 8 | P10 (GET; los 4 POST/view de paystack/razorpay sin cover) |
 | CMS público | 12 | 10 | Pub1–Pub10 (sin `POST /blogs` ni `highlights/{id}`) |
 | Guards | 2 | 2 | G1–G4, H1–H4 |

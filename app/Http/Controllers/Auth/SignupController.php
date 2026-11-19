@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 
 class SignupController extends Controller
 {
@@ -73,7 +74,7 @@ class SignupController extends Controller
 
                 return response()->json([
                     'message' => 'Account created successfully.',
-                    'redirect' => route('payments-gateways.index', [
+                    'redirect' => URL::temporarySignedRoute('payments-gateways.index', now()->addHours(2), [
                         'plan_id' => $request->plan_id,
                         'landlord_id' => $user->id,
                     ]),
@@ -215,7 +216,7 @@ class SignupController extends Controller
                 $redirect_url = route('landlord.dashboard');
             } else {
                 $message = __('Your account is verified. Proceed to payment.');
-                $redirect_url = route('payments-gateways.index', [
+                $redirect_url = URL::temporarySignedRoute('payments-gateways.index', now()->addHours(2), [
                     'plan_id' => $plan->id,
                     'landlord_id' => $user->id,
                 ]);

@@ -75,7 +75,7 @@
                                                 {{ __('Buy Now')  }}
                                             </button>
                                         @else
-                                            <a href="{{ route('payments-gateways.index', ['plan_id' => $plan->id, 'landlord_id' => auth()->user()->id]) }}" class="buy-sub-btn fs-6">
+                                            <a href="{{ URL::temporarySignedRoute('payments-gateways.index', now()->addHours(2), ['plan_id' => $plan->id, 'landlord_id' => auth()->user()->id]) }}" class="buy-sub-btn fs-6">
                                                 {{ __('Buy Now') }}
                                             </a>
                                         @endif

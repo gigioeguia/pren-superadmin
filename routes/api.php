@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api;
 use App\Http\Controllers\Api\Auth;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -93,5 +94,6 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/sign-out', [Auth\SigninController::class, 'maanSignOut']);
         Route::post('/refresh-token', [Auth\SigninController::class, 'userRefreshToken']);
+        Route::get('/payment-url', [PaymentController::class, 'paymentUrl']);
     });
 });
