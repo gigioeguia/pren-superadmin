@@ -34,7 +34,7 @@ class AcnooBlogController extends Controller
     {
         $request->validate([
             'title' => 'required|unique:blogs,title',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'boolean',
             'descriptions' => 'nullable|string',
             'tags' => 'nullable|array',
@@ -63,7 +63,7 @@ class AcnooBlogController extends Controller
 
         $request->validate([
             'title' => 'required|unique:blogs,title,'.$blog->id,
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'boolean',
             'descriptions' => 'nullable|string',
             'tags' => 'nullable|array',

@@ -15,6 +15,9 @@ class AcnooLandlordApplicationController extends Controller
 
     public function processing(Request $request, string $id)
     {
+        $request->validate([
+            'landlord_agreement' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
+        ]);
 
         $application_process = Application::findOrFail($id);
         $this->authorize('process', $application_process);

@@ -9,32 +9,16 @@ use Illuminate\Support\Facades\Storage;
 trait HasUploader
 {
     /**
-     * Upload a single file with auto-generated filename.
+     * Upload a single file with an auto-generated filename.
      */
     private function upload(Request $request, string $input, ?string $oldFile = null, ?string $disk = null): string
     {
         /** @var UploadedFile $file */
         $file = $request->file($input);
 
-        $filename = now()->timestamp.'.'.$file->getClientOriginalExtension();
-        $path = 'uploads/'.now()->format('y/m').'-'.rand(1, 1000);
+        $filename = $this->generatedFilename($file);
+        $path = 'uploads/'.now()->format('y/m');
         $filePath = $file->storeAs($path, $filename, $disk ?? config('filesystems.default'));
-
-        $this->deleteOldFile($oldFile, $disk);
-
-        return $filePath;
-    }
-
-    /**
-     * Upload a single file preserving its original filename.
-     */
-    private function uploadWithFileName(Request $request, string $input, ?string $oldFile = null, ?string $disk = null): string
-    {
-        /** @var UploadedFile $file */
-        $file = $request->file($input);
-
-        $path = 'files';
-        $filePath = $file->storeAs($path, $file->getClientOriginalName(), $disk ?? config('filesystems.default'));
 
         $this->deleteOldFile($oldFile, $disk);
 
@@ -50,7 +34,7 @@ trait HasUploader
 
         /** @var UploadedFile $file */
         foreach ($request->file($input) as $file) {
-            $filename = now()->timestamp.'_'.uniqid().'.'.$file->getClientOriginalExtension();
+            $filename = $this->generatedFilename($file);
             $path = 'uploads/'.now()->format('y/m');
             $filePath = $file->storeAs($path, $filename, $disk ?? config('filesystems.default'));
 
@@ -64,13 +48,16 @@ trait HasUploader
         return $uploadedFiles;
     }
 
+    /**
+     * Upload multiple files from a plain array and delete old files if provided.
+     */
     private function multipleUploadArray(array $files, array $oldFiles = [], ?string $disk = null): array
     {
         $uploadedFiles = [];
 
         foreach ($files as $file) {
             /** @var UploadedFile $file */
-            $filename = now()->timestamp.'_'.uniqid().'.'.$file->getClientOriginalExtension();
+            $filename = $this->generatedFilename($file);
             $path = 'uploads/'.now()->format('y/m');
             $filePath = $file->storeAs($path, $filename, $disk ?? config('filesystems.default'));
             $uploadedFiles[] = $filePath;
@@ -91,5 +78,25 @@ trait HasUploader
         if ($oldFile && Storage::disk($disk ?? config('filesystems.default'))->exists($oldFile)) {
             Storage::disk($disk ?? config('filesystems.default'))->delete($oldFile);
         }
+    }
+
+    /**
+     * Build a unique, normalized filename independent of the client input.
+     */
+    private function generatedFilename(UploadedFile $file): string
+    {
+        $extension = $this->normalizeExtension($file->getClientOriginalExtension());
+
+        return now()->format('YmdHis').'_'.uniqid().'.'.$extension;
+    }
+
+    /**
+     * Normalize a client-provided extension: lowercase and strip non-alphanumeric chars.
+     */
+    private function normalizeExtension(string $extension): string
+    {
+        $normalized = strtolower(preg_replace('/[^a-z0-9]/', '', $extension));
+
+        return $normalized !== '' ? $normalized : 'bin';
     }
 }

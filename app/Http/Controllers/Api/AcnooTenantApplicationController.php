@@ -66,7 +66,7 @@ class AcnooTenantApplicationController extends Controller
     {
         $request->validate([
             'property_id' => 'required|integer',
-            'document_file' => 'nullable',
+            'document_file' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date',
             'rejected_cause' => 'nullable|string',
@@ -153,6 +153,11 @@ class AcnooTenantApplicationController extends Controller
 
     public function agreement_sign(Request $request, string $id)
     {
+        $request->validate([
+            'tenant_agreement' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
+            'landlord_agreement' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
+        ]);
+
         $agreement_sign = Application::findOrFail($id);
         $this->authorize('agreementSign', $agreement_sign);
         $chargeOption = Option::where('key', 'service-charge')->first();

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class SystemSettingController extends Controller
@@ -29,9 +30,7 @@ class SystemSettingController extends Controller
 
         if ($request->hasFile('service_account_credentials')) {
             $file = $request->file('service_account_credentials');
-            $name = 'service-account-credentials.json';
-            $path = 'uploads/';
-            $file->move($path, $name);
+            Storage::disk(config('filesystems.default'))->putFileAs('uploads', $file, 'service-account-credentials.json');
         }
 
         $APP_NAME = Str::slug($request->APP_NAME);

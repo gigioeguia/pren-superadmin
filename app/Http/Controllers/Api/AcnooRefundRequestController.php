@@ -103,7 +103,7 @@ class AcnooRefundRequestController extends Controller
     public function upload_receipt(Request $request, string $id)
     {
         $request->validate([
-            'attachment' => 'required|file',
+            'attachment' => 'required|file|mimes:jpeg,png,jpg,gif,pdf,doc,docx,xls,xlsx,txt,zip|max:5120',
         ]);
 
         $refund_request = RefundRequest::findOrFail($id);

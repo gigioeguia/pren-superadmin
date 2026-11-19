@@ -54,9 +54,9 @@ class AcnooTenantController extends Controller
             'mobile_code' => 'nullable|string',
             'email' => 'nullable|email|unique:users,email',
             'password' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,gif,svg|max:10240',
-            'mykad.front_image' => 'nullable|image|mimes:jpeg,png,gif,svg|max:10240',
-            'mykad.back_image' => 'nullable|image|mimes:jpeg,png,gif,svg|max:10240',
+            'image' => 'nullable|image|mimes:jpeg,png,gif|max:10240',
+            'mykad.front_image' => 'nullable|image|mimes:jpeg,png,gif|max:10240',
+            'mykad.back_image' => 'nullable|image|mimes:jpeg,png,gif|max:10240',
         ]);
 
         DB::beginTransaction();
@@ -169,8 +169,8 @@ class AcnooTenantController extends Controller
 
             if ($request->hasFile('image')) {
                 if (! empty($user->image)) {
-                    $oldImagePath = dirname($user->image);
-                    Storage::deleteDirectory($oldImagePath);
+                    $oldImagePath = $user->image;
+                    $this->deleteOldFile($oldImagePath);
                 }
                 $image = $this->upload($request, 'image');
             } else {
@@ -193,8 +193,8 @@ class AcnooTenantController extends Controller
 
             if ($request->hasFile('mykad.front_image')) {
                 if (! empty($user->user_details->mykad['front_image'])) {
-                    $oldFrontImagePath = dirname($user->user_details->mykad['front_image']);
-                    Storage::deleteDirectory($oldFrontImagePath);
+                    $oldFrontImagePath = $user->user_details->mykad['front_image'];
+                    $this->deleteOldFile($oldFrontImagePath);
                 }
                 $frontImage = $this->upload($request, 'mykad.front_image');
             } else {
@@ -203,8 +203,8 @@ class AcnooTenantController extends Controller
 
             if ($request->hasFile('mykad.back_image')) {
                 if (! empty($user->user_details->mykad['back_image'])) {
-                    $oldBackImagePath = dirname($user->user_details->mykad['back_image']);
-                    Storage::deleteDirectory($oldBackImagePath);
+                    $oldBackImagePath = $user->user_details->mykad['back_image'];
+                    $this->deleteOldFile($oldBackImagePath);
                 }
                 $backImage = $this->upload($request, 'mykad.back_image');
             } else {

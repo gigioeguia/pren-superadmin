@@ -46,7 +46,7 @@ class PlanController extends Controller
             'features.*' => 'array',
             'features.*.*' => 'string',
             'status' => 'nullable|in:on',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,svg',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         if (empty($request->property_unlimited_status)) {
@@ -111,7 +111,7 @@ class PlanController extends Controller
             'features.*' => 'array',
             'features.*.*' => 'string',
             'status' => 'nullable|in:on',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,svg',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         if (empty($request->property_unlimited_status)) {

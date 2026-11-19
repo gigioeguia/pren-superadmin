@@ -5,12 +5,14 @@ namespace Tests\Feature\Admin;
 use App\Http\Controllers\Admin\AcnooAmenityController;
 use App\Http\Controllers\Admin\PropertyController;
 use App\Models\Amenity;
+use App\Models\Blog;
 use App\Models\Property;
 use App\Models\PropertyDetail;
 use App\Models\Unit;
 use App\Traits\HasAcnooActions;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use ReflectionClass;
@@ -243,5 +245,45 @@ class AcnooActionsSmokeTest extends TestCase
                 );
             }
         }
+    }
+
+    public function test_upload_generates_normalized_filename(): void
+    {
+        // Arrange
+        $admin = $this->createSuperadmin();
+        $disk = config('filesystems.default');
+        Storage::fake($disk);
+
+        // Act
+        $response = $this->actingAs($admin)->post('/admin/blogs', [
+            'title' => 'Upload Normalized Blog',
+            'image' => UploadedFile::fake()->image('evil.php.jpg'),
+            'status' => 1,
+        ]);
+
+        // Assert
+        $response->assertOk();
+        $blog = Blog::first();
+        $this->assertNotNull($blog->image);
+        $this->assertStringNotContainsString('evil.php.jpg', $blog->image);
+        $this->assertMatchesRegularExpression('/\.[a-z0-9]+$/', basename($blog->image));
+        Storage::disk($disk)->assertExists($blog->image);
+    }
+
+    public function test_upload_rejects_invalid_mime(): void
+    {
+        // Arrange
+        $admin = $this->createSuperadmin();
+        $disk = config('filesystems.default');
+        Storage::fake($disk);
+
+        // Act
+        $response = $this->actingAs($admin)->post('/admin/blogs', [
+            'title' => 'Bad Mime Blog',
+            'image' => UploadedFile::fake()->create('shell.php', 10, 'application/x-php'),
+        ], ['X-Requested-With' => 'XMLHttpRequest', 'Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(422)->assertJsonValidationErrors('image');
     }
 }

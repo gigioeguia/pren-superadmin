@@ -40,7 +40,7 @@ class AcnooSupportController extends Controller
     {
         $request->validate([
             'message' => 'nullable|string|required_without:file',
-            'file' => 'nullable|file',
+            'file' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf,doc,docx,xls,xlsx,txt,zip|max:10240',
         ]);
 
         $admin = User::where('role', 'superadmin')->first();

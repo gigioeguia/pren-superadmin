@@ -35,7 +35,7 @@ class AcnooHighlightController extends Controller
             'short_title' => 'required|max:55',
             'title' => 'required|unique:highlights,title',
             'status' => 'boolean',
-            'image' => 'required|image|max:1024|mimes:jpeg,png,jpg,gif,svg',
+            'image' => 'required|image|max:1024|mimes:jpeg,png,jpg,gif',
         ]);
 
         Highlight::create($request->except('image', 'title', 'slug') + [
@@ -63,7 +63,7 @@ class AcnooHighlightController extends Controller
             'title' => 'required|unique:highlights,title,'.$highlight->id,
             'slug' => 'required',
             'status' => 'boolean',
-            'image' => 'image|max:1024|mimes:jpeg,png,jpg,gif,svg',
+            'image' => 'image|max:1024|mimes:jpeg,png,jpg,gif',
         ]);
 
         $highlight->update($request->except('image', 'title', 'slug') + [

@@ -51,7 +51,7 @@ class AcnooApplicationController extends Controller
         if ($application_process) {
 
             $request->validate([
-                'landlord_agreement' => 'required|file',
+                'landlord_agreement' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
             ]);
 
             $application_process->update([

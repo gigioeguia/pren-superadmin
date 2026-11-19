@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 
 class AcnooProfileController extends Controller
 {
@@ -34,9 +33,9 @@ class AcnooProfileController extends Controller
             'phone' => 'nullable|array',
             'profile_type' => 'nullable|string:255',
             'email' => 'nullable|email|unique:users,email,'.$id,
-            'image' => 'nullable|image|mimes:jpeg,png,gif,svg|max:1024',
-            'mykad.front_image' => 'nullable|image|mimes:jpeg,png,gif,svg|max:1024',
-            'mykad.back_image' => 'nullable|image|mimes:jpeg,png,gif,svg|max:1024',
+            'image' => 'nullable|image|mimes:jpeg,png,gif|max:1024',
+            'mykad.front_image' => 'nullable|image|mimes:jpeg,png,gif|max:1024',
+            'mykad.back_image' => 'nullable|image|mimes:jpeg,png,gif|max:1024',
         ]);
 
         $user = User::findOrFail($id);
@@ -58,8 +57,8 @@ class AcnooProfileController extends Controller
 
             if ($request->hasFile('image')) {
                 if (! empty($user->image)) {
-                    $oldImagePath = dirname($user->image);
-                    Storage::deleteDirectory($oldImagePath);
+                    $oldImagePath = $user->image;
+                    $this->deleteOldFile($oldImagePath);
                 }
                 $image = $this->upload($request, 'image');
             } else {
@@ -79,8 +78,8 @@ class AcnooProfileController extends Controller
 
             if ($request->hasFile('mykad.front_image')) {
                 if (! empty($user->user_details->mykad['front_image'])) {
-                    $oldFrontImagePath = dirname($user->user_details->mykad['front_image']);
-                    Storage::deleteDirectory($oldFrontImagePath);
+                    $oldFrontImagePath = $user->user_details->mykad['front_image'];
+                    $this->deleteOldFile($oldFrontImagePath);
                 }
                 $frontImage = $this->upload($request, 'mykad.front_image');
             } else {
@@ -89,8 +88,8 @@ class AcnooProfileController extends Controller
 
             if ($request->hasFile('mykad.back_image')) {
                 if (! empty($user->user_details->mykad['back_image'])) {
-                    $oldBackImagePath = dirname($user->user_details->mykad['back_image']);
-                    Storage::deleteDirectory($oldBackImagePath);
+                    $oldBackImagePath = $user->user_details->mykad['back_image'];
+                    $this->deleteOldFile($oldBackImagePath);
                 }
                 $backImage = $this->upload($request, 'mykad.back_image');
             } else {

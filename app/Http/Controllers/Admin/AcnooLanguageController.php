@@ -35,7 +35,7 @@ class AcnooLanguageController extends Controller
             'order' => 'required|integer|min:1',
             'name' => 'required|string|max:100',
             'code' => 'required|string|max:20|unique:languages,code',
-            'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         Language::create($request->except('icon') + [
@@ -112,7 +112,7 @@ class AcnooLanguageController extends Controller
             'name' => 'required|string|max:100',
             'code' => 'required|string|max:20|unique:languages,code,'.$language->id,
             'order' => 'required|integer|min:1',
-            'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($language->code !== $request->code) {

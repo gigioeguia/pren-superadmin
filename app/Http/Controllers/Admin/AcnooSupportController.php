@@ -81,6 +81,7 @@ class AcnooSupportController extends Controller
         $request->validate([
             'message' => 'nullable|string|required_without:file',
             'receiver_id' => 'required|exists:users,id',
+            'file' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf,doc,docx,xls,xlsx,txt,zip|max:10240',
         ]);
 
         $filePath = null;

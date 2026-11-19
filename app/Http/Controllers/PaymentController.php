@@ -117,7 +117,7 @@ class PaymentController extends Controller
 
         if ($gateway->is_manual) {
             $request->validate([
-                'attachment' => 'required|mimes:jpg,jpeg,png|max:2048|file',
+                'attachment' => 'required|file|mimes:jpg,jpeg,png|max:2048',
             ]);
             DB::beginTransaction();
             try {
