@@ -12,6 +12,7 @@ use App\Library\Thawani;
 use App\Library\Toyyibpay;
 use App\Models\Gateway;
 use App\Models\Plan;
+use App\Models\PlanSubscribe;
 use App\Models\Property;
 use App\Models\PropertyDetail;
 use App\Models\RentPayment;
@@ -149,14 +150,8 @@ class PaymentFlowSmokeTest extends TestCase
         $this->assertEquals($gateway->id, session('gateway_id'));
     }
 
-    /**
-     * @group characterization
-     */
     public function test_payment_success_processes_subscription_from_session(): void
     {
-        // Expected to fail after Phase 2 (Seg-6 fix) — /payment/success is
-        // public and processes payments from a forgeable session. It must
-        // require auth + payment signature verification.
         // Arrange
         $plan = Plan::factory()->create(); // month => 30 days
         $landlord = $this->createLandlord(['will_expire' => now()->subDay()]);
@@ -164,13 +159,14 @@ class PaymentFlowSmokeTest extends TestCase
         $this->createSuperadmin(); // received_by en Transaction
 
         // Act
-        $response = $this->withSession([
+        $response = $this->actingAs($landlord)->withSession([
             'payment_type' => 'subscription',
             'plan' => $plan,
             'user' => $landlord,
             'amount' => 8,
             'gateway_id' => $gateway->id,
             'platform' => 'web',
+            'payment_info' => ['status' => 1],
         ])->get('/payment/success');
 
         // Assert
@@ -201,7 +197,7 @@ class PaymentFlowSmokeTest extends TestCase
         $response = $this->get('/payment/success');
 
         // Assert
-        $response->assertRedirect(route('order.status', ['status' => 'failed']));
+        $response->assertRedirect(route('login'));
     }
 
     public function test_payment_failed_redirects_to_order_status(): void
@@ -359,5 +355,93 @@ class PaymentFlowSmokeTest extends TestCase
         $response = $this->getJson('/api/v1/payment-url');
 
         $response->assertUnauthorized();
+    }
+
+    public function test_p12_success_without_auth_redirects_to_login(): void
+    {
+        $plan = Plan::factory()->create();
+        $landlord = $this->createLandlord();
+        $gateway = Gateway::factory()->create();
+
+        $response = $this->withSession([
+            'payment_type' => 'subscription',
+            'plan' => $plan,
+            'user' => $landlord,
+            'amount' => 8,
+            'gateway_id' => $gateway->id,
+            'platform' => 'web',
+            'payment_info' => ['status' => 1],
+        ])->get('/payment/success');
+
+        $response->assertRedirect(route('login'));
+    }
+
+    public function test_p14_success_without_payment_info_redirects_failed(): void
+    {
+        $plan = Plan::factory()->create();
+        $landlord = $this->createLandlord();
+        $gateway = Gateway::factory()->create();
+
+        $response = $this->actingAs($landlord)->withSession([
+            'payment_type' => 'subscription',
+            'plan' => $plan,
+            'user' => $landlord,
+            'amount' => 8,
+            'gateway_id' => $gateway->id,
+            'platform' => 'web',
+        ])->get('/payment/success');
+
+        $response->assertRedirect(route('order.status', ['status' => 'failed']));
+        $this->assertDatabaseMissing('plan_subscribes', ['user_id' => $landlord->id]);
+    }
+
+    public function test_p16_success_identity_mismatch_returns_403(): void
+    {
+        $plan = Plan::factory()->create();
+        $landlordA = $this->createLandlord();
+        $landlordB = $this->createLandlord();
+        $gateway = Gateway::factory()->create();
+
+        $response = $this->actingAs($landlordA)->withSession([
+            'payment_type' => 'subscription',
+            'plan' => $plan,
+            'user' => $landlordB,
+            'amount' => 8,
+            'gateway_id' => $gateway->id,
+            'platform' => 'web',
+            'payment_info' => ['status' => 1],
+        ])->get('/payment/success');
+
+        $response->assertForbidden();
+    }
+
+    public function test_p17_success_idempotent_second_call(): void
+    {
+        $plan = Plan::factory()->create();
+        $landlord = $this->createLandlord(['will_expire' => now()->subDay()]);
+        $gateway = Gateway::factory()->create();
+        $this->createSuperadmin();
+
+        $session = [
+            'payment_type' => 'subscription',
+            'plan' => $plan,
+            'user' => $landlord,
+            'amount' => 8,
+            'gateway_id' => $gateway->id,
+            'platform' => 'web',
+            'payment_info' => ['status' => 1],
+        ];
+
+        $first = $this->actingAs($landlord)->withSession($session)->get('/payment/success');
+        $first->assertRedirect(route('order.status', ['status' => 'success']));
+
+        $countBefore = PlanSubscribe::where('user_id', $landlord->id)->count();
+
+        // second call with processed flag still in session
+        $second = $this->actingAs($landlord)->withSession(array_merge($session, ['payment_processed' => true]))->get('/payment/success');
+        $second->assertRedirect(route('order.status', ['status' => 'success']));
+
+        $countAfter = PlanSubscribe::where('user_id', $landlord->id)->count();
+        $this->assertEquals($countBefore, $countAfter);
     }
 }

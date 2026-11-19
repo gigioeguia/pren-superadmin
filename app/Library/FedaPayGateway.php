@@ -95,6 +95,7 @@ class FedaPayGateway
                 $tx = Transaction::retrieve($tx_id);
                 $txArray = json_decode(json_encode($tx), true);
                 if (is_array($txArray) && ($txArray['status'] ?? null) === 'approved') {
+                    Session::put('payment_info', ['status' => 1]);
                     Session::forget('fedapay_credentials');
 
                     return redirect(self::redirect_if_payment_success());

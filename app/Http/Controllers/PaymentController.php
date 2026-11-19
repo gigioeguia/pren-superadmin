@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
+use Stripe\Stripe;
 
 class PaymentController extends Controller
 {
@@ -176,16 +177,41 @@ class PaymentController extends Controller
         return $redirect;
     }
 
-    public function success()
+    public function success(Request $request)
     {
-        DB::beginTransaction();
+        if (auth()->guest()) {
+            return redirect(route('login'));
+        }
+
+        $user = session('user');
+        if (session('user_id') && ! $user) {
+            $user = User::find(session('user_id'));
+        }
+        if ($user && auth()->id() !== (int) $user->id && auth()->id() !== (int) session('user_id')) {
+            abort(403);
+        }
+
+        // Idempotency: already processed in this session.
+        // Idempotency: already processed in this session.
+        if (session('payment_processed')) {
+            session()->forget(['plan', 'plan_id', 'user', 'user_id', 'gateway_id', 'amount', 'payment_info', 'payment_processed']);
+
+            return redirect(route('order.status', ['status' => 'success']))->with('message', __('Payment successfully.'));
+        }
+
+        $lock = Cache::lock('payment-success:'.session()->getId(), 10);
+        if (! $lock->get()) {
+            return redirect(route('order.status', ['status' => 'failed']))->with('error', __('Transaction failed for invalid credentials, Please try again later or contact with admin.'));
+        }
+
         try {
+            DB::beginTransaction();
+
             $plan = session('plan');
             $user = session('user');
             $amount = session('amount');
             $payment_type = session('payment_type');
             $gateway_id = session('gateway_id');
-            $gateway = Gateway::findOrFail($gateway_id);
 
             if (! $plan && ! session('plan_id') || ! session('payment_type')) {
                 return redirect(route('order.status', ['status' => 'failed']))->with('error', __('Transaction failed for invalid credentials, Please try again later or contact with admin.'));
@@ -207,65 +233,95 @@ class PaymentController extends Controller
                 $user = User::findOrFail(session('user_id'));
             }
 
+            // Identity check.
+            // (handled before transaction)
+
+            if (! $gateway_id) {
+                return redirect(route('order.status', ['status' => 'failed']))->with('error', __('Transaction failed for invalid credentials, Please try again later or contact with admin.'));
+            }
+
+            $gateway = Gateway::findOrFail($gateway_id);
+
+            // Payment verification (gateway must have confirmed).
+            $sessionId = $request->query('session_id');
+            $paymentInfo = session('payment_info');
+
+            if ($sessionId) {
+                Stripe::setApiKey($gateway->data['stripe_secret'] ?? '');
+                $stripeSession = \Stripe\Checkout\Session::retrieve($sessionId);
+                if (($stripeSession->payment_status ?? null) !== 'paid') {
+                    return redirect(route('order.status', ['status' => 'failed']))->with('error', __('Transaction failed for invalid credentials, Please try again later or contact with admin.'));
+                }
+            } elseif (is_array($paymentInfo)) {
+                $status = $paymentInfo['status'] ?? $paymentInfo['payment_status'] ?? null;
+                if ((int) $status !== 1) {
+                    return redirect(route('order.status', ['status' => 'failed']))->with('error', __('Transaction failed for invalid credentials, Please try again later or contact with admin.'));
+                }
+            } else {
+                return redirect(route('order.status', ['status' => 'failed']))->with('error', __('Transaction failed for invalid credentials, Please try again later or contact with admin.'));
+            }
+
             if ($payment_type == 'security_deposit') {
                 $landlord = User::where('id', $plan->landlord_id)->first();
 
-                $landlord->update([
-                    'balance' => $landlord->balance + $plan->landlord_balance,
-                ]);
+                if ($plan->status !== 'paid') {
+                    $landlord->update([
+                        'balance' => $landlord->balance + $plan->landlord_balance,
+                    ]);
 
-                // security deposit
-                $plan->update([
-                    'payment_date' => today(),
-                    'gateway_id' => $gateway_id,
-                    'status' => 'paid',
-                ]);
+                    $plan->update([
+                        'payment_date' => today(),
+                        'gateway_id' => $gateway_id,
+                        'status' => 'paid',
+                    ]);
 
-                Transaction::create([
-                    'paid_by' => $user->id,
-                    'received_by' => $landlord->id,
-                    'gateway_id' => $gateway_id,
-                    'security_deposit_id' => $plan->id,
-                    'date' => today(),
-                    'type' => 'debit',
-                    'payment_method' => $gateway->name ?? null,
-                    'payment_type' => 'security_deposit',
-                    'amount' => $plan->landlord_balance ?? 0,
-                    'charge' => $plan->charge ?? 0,
-                ]);
+                    Transaction::create([
+                        'paid_by' => $user->id,
+                        'received_by' => $landlord->id,
+                        'gateway_id' => $gateway_id,
+                        'security_deposit_id' => $plan->id,
+                        'date' => today(),
+                        'type' => 'debit',
+                        'payment_method' => $gateway->name ?? null,
+                        'payment_type' => 'security_deposit',
+                        'amount' => $plan->landlord_balance ?? 0,
+                        'charge' => $plan->charge ?? 0,
+                    ]);
+                }
             }
 
             if ($payment_type == 'rent_payment') {
                 $landlord = User::where('id', $plan->rent->landlord_id ?? '')->first();
 
-                $landlord->update([
-                    'balance' => $landlord->balance + $plan->total_amount,
-                ]);
-                // rent payment
-                $plan->update([
-                    'payment_date' => today(),
-                    'gateway_id' => $gateway_id,
-                    'payment_status' => 'paid',
-                ]);
+                if ($plan->payment_status !== 'paid') {
+                    $landlord->update([
+                        'balance' => $landlord->balance + $plan->total_amount,
+                    ]);
 
-                Transaction::create([
-                    'paid_by' => $user->id,
-                    'received_by' => $landlord->id,
-                    'gateway_id' => $gateway_id,
-                    'rent_payment_id' => $plan->id,
-                    'date' => today(),
-                    'amount' => $plan->subtotal_amount ?? 0,
-                    'charge' => $plan->charge ?? 0,
-                    'type' => 'debit',
-                    'payment_method' => $gateway->name ?? null,
-                    'payment_type' => 'rent_payment',
-                ]);
+                    $plan->update([
+                        'payment_date' => today(),
+                        'gateway_id' => $gateway_id,
+                        'payment_status' => 'paid',
+                    ]);
+
+                    Transaction::create([
+                        'paid_by' => $user->id,
+                        'received_by' => $landlord->id,
+                        'gateway_id' => $gateway_id,
+                        'rent_payment_id' => $plan->id,
+                        'date' => today(),
+                        'amount' => $plan->subtotal_amount ?? 0,
+                        'charge' => $plan->charge ?? 0,
+                        'type' => 'debit',
+                        'payment_method' => $gateway->name ?? null,
+                        'payment_type' => 'rent_payment',
+                    ]);
+                }
             }
 
             if ($payment_type == 'subscription') {
                 $admin = User::whereIn('role', ['superadmin', 'admin'])->first();
                 $duration = 0;
-                // in days
                 if ($plan->duration_type == 'month') {
                     $duration = $plan->duration * 30;
                 } elseif ($plan->duration_type == 'year') {
@@ -307,12 +363,14 @@ class PaymentController extends Controller
             }
 
             Cache::forget('plan-data-'.$user->id);
+            session()->put('payment_processed', true);
             session()->forget('plan');
             session()->forget('plan_id');
             session()->forget('user');
             session()->forget('user_id');
             session()->forget('gateway_id');
             session()->forget('amount');
+            session()->forget('payment_info');
 
             DB::commit();
 
@@ -321,6 +379,8 @@ class PaymentController extends Controller
             DB::rollback();
 
             return redirect(route('order.status', ['status' => 'failed']))->with('message', __('Something went wrong!'));
+        } finally {
+            $lock->release();
         }
     }
 
