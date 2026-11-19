@@ -444,4 +444,57 @@ class PaymentFlowSmokeTest extends TestCase
         $countAfter = PlanSubscribe::where('user_id', $landlord->id)->count();
         $this->assertEquals($countBefore, $countAfter);
     }
+
+    public function test_p20_gateway_with_non_whitelisted_namespace_returns_403(): void
+    {
+        // Arrange
+        $plan = Plan::factory()->create();
+        $landlord = $this->createLandlord();
+        $gateway = Gateway::factory()->create([
+            'namespace' => 'App\\Library\\EvilGateway',
+            'is_manual' => 0,
+        ]);
+
+        StubGateway::$lastPaymentData = [];
+
+        // Act
+        $response = $this->withSession([
+            'payment_type' => 'subscription',
+            'user_id' => $landlord->id,
+            'platform' => 'web',
+        ])->post("/payments/{$plan->id}/{$gateway->id}");
+
+        // Assert
+        $response->assertForbidden();
+
+        $this->assertSame([], StubGateway::$lastPaymentData);
+        $this->assertDatabaseMissing('plan_subscribes', [
+            'user_id' => $landlord->id,
+            'plan_id' => $plan->id,
+        ]);
+        $this->assertNull(session('plan'));
+        $this->assertNull(session('user'));
+        $this->assertNull(session('gateway_id'));
+    }
+
+    public function test_p22_gateway_with_nonexistent_namespace_returns_403(): void
+    {
+        // Arrange
+        $plan = Plan::factory()->create();
+        $landlord = $this->createLandlord();
+        $gateway = Gateway::factory()->create([
+            'namespace' => 'App\\Library\\Nope',
+            'is_manual' => 0,
+        ]);
+
+        // Act
+        $response = $this->withSession([
+            'payment_type' => 'subscription',
+            'user_id' => $landlord->id,
+            'platform' => 'web',
+        ])->post("/payments/{$plan->id}/{$gateway->id}");
+
+        // Assert
+        $response->assertForbidden();
+    }
 }

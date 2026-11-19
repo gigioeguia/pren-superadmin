@@ -38,6 +38,39 @@ class Gateway extends Model
     }
 
     /**
+     * FQCN list allowed to be invoked dynamically from `gateways.namespace`.
+     *
+     * In production this is the config list. In the test environment the
+     * `Tests\Stubs\StubGateway` class is auto-included when available
+     * (autoload-dev) so payment tests keep working without production coupling.
+     *
+     * @return array<int, string>
+     */
+    public static function allowedNamespaces(): array
+    {
+        $namespaces = (array) config('gateways.allowed_namespaces', []);
+
+        // Auto-include the test stub only when it actually exists.
+        if (class_exists('Tests\\Stubs\\StubGateway')) {
+            $namespaces[] = 'Tests\\Stubs\\StubGateway';
+        }
+
+        return array_values(array_unique($namespaces));
+    }
+
+    /**
+     * Whether the given namespace is allowed to be invoked dynamically.
+     */
+    public static function isAllowedNamespace(?string $namespace): bool
+    {
+        if ($namespace === null || $namespace === '' || ! class_exists($namespace)) {
+            return false;
+        }
+
+        return in_array($namespace, self::allowedNamespaces(), true);
+    }
+
+    /**
      * The attributes that should be cast to native types.
      *
      * @var array
