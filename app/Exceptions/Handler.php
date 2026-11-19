@@ -52,7 +52,9 @@ class Handler extends ExceptionHandler
 
     public function render($request, Throwable $e)
     {
-        if (! config('app.debug') && $this->isServerError($e)) {
+        $response = parent::render($request, $e);
+
+        if (! config('app.debug') && $response->getStatusCode() >= 500) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => __(ErrorMessage::GENERIC)], 500);
             }
@@ -60,13 +62,6 @@ class Handler extends ExceptionHandler
             return response(__(ErrorMessage::GENERIC), 500);
         }
 
-        return parent::render($request, $e);
-    }
-
-    private function isServerError(Throwable $e): bool
-    {
-        $status = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
-
-        return $status >= 500;
+        return $response;
     }
 }
