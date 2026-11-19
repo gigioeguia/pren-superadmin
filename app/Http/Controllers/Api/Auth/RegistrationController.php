@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rules\Password;
 
 class RegistrationController extends Controller
 {
@@ -21,7 +22,7 @@ class RegistrationController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'password' => 'required|min:6|max:100',
+            'password' => Password::required(),
             'email' => 'required|email',
         ]);
 

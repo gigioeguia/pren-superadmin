@@ -73,13 +73,36 @@ class WebPasswordResetSmokeTest extends TestCase
         $response = $this->post('/reset-password', [
             'token' => $token,
             'email' => $user->email,
-            'password' => 'new-password',
-            'password_confirmation' => 'new-password',
+            'password' => 'NewPassword123',
+            'password_confirmation' => 'NewPassword123',
         ]);
 
         // Assert
         $response->assertStatus(302)->assertSessionHas('status');
 
-        $this->assertTrue(Hash::check('new-password', $user->fresh()->password));
+        $this->assertTrue(Hash::check('NewPassword123', $user->fresh()->password));
+    }
+
+    // R6 — contraseña débil rechazada en reset web
+    public function test_reset_password_with_weak_password_returns_errors(): void
+    {
+        // Arrange
+        Notification::fake();
+        $user = $this->createLandlord();
+
+        $this->post('/forgot-password', ['email' => $user->email]);
+
+        $token = Notification::sent($user, ResetPassword::class)->first()->token;
+
+        // Act
+        $response = $this->post('/reset-password', [
+            'token' => $token,
+            'email' => $user->email,
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        // Assert
+        $response->assertStatus(302)->assertSessionHasErrors('password');
     }
 }

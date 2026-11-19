@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rules\Password;
 
 class ResetPasswordController extends Controller
 {
@@ -14,7 +15,7 @@ class ResetPasswordController extends Controller
         $request->validate([
             'email' => 'required|exists:users,email',
             'otp' => 'required',
-            'password' => ['required', 'min:4'],
+            'password' => Password::required(),
         ]);
 
         $user = User::where('email', $request->email)->first();
