@@ -16,6 +16,14 @@ class AcnooFeatureController extends Controller
     use HasAcnooActions;
     use HasUploader;
 
+    public function __construct()
+    {
+        $this->middleware('permission:features-read')->only('index', 'acnooFilter');
+        $this->middleware('permission:features-create')->only('create', 'store');
+        $this->middleware('permission:features-update')->only('edit', 'update', 'status');
+        $this->middleware('permission:features-delete')->only('destroy', 'deleteAll');
+    }
+
     public function index(Request $request)
     {
         $features = Feature::latest()->paginate(10);

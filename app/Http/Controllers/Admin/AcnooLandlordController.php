@@ -26,7 +26,7 @@ class AcnooLandlordController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:landlords-read')->only('index');
+        $this->middleware('permission:landlords-read')->only('index', 'acnooFilter', 'exportExcel', 'exportCsv');
         $this->middleware('permission:landlords-create')->only('create', 'store');
         $this->middleware('permission:landlords-update')->only('edit', 'update');
         $this->middleware('permission:landlords-delete')->only('destroy', 'deleteAll');

@@ -16,6 +16,14 @@ class AcnooTestimonialController extends Controller
     use HasAcnooActions;
     use HasUploader;
 
+    public function __construct()
+    {
+        $this->middleware('permission:testimonials-read')->only('index', 'acnooFilter');
+        $this->middleware('permission:testimonials-create')->only('create', 'store');
+        $this->middleware('permission:testimonials-update')->only('edit', 'update');
+        $this->middleware('permission:testimonials-delete')->only('destroy', 'deleteAll');
+    }
+
     public function index(Request $request)
     {
         $testimonials = Testimonial::latest()->paginate(10);

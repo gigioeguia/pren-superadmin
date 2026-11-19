@@ -43,10 +43,9 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        Gate::define('isAdmin', function (User $user) {
-            return $user->permissions()->first()->menu_slug;
+        // Superadmin bypassa toda autorización (permisos Spatie + Policies).
+        Gate::before(function (User $user, string $ability) {
+            return $user->hasRole('superadmin') ? true : null;
         });
-
-        //
     }
 }

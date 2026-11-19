@@ -17,6 +17,14 @@ class AcnooHighlightController extends Controller
     use HasAcnooActions;
     use HasUploader;
 
+    public function __construct()
+    {
+        $this->middleware('permission:highlights-read')->only('index', 'acnooFilter');
+        $this->middleware('permission:highlights-create')->only('create', 'store');
+        $this->middleware('permission:highlights-update')->only('edit', 'update', 'status');
+        $this->middleware('permission:highlights-delete')->only('destroy', 'deleteAll');
+    }
+
     public function index(Request $request)
     {
         $highlights = Highlight::latest()->paginate(20);

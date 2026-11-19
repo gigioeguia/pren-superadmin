@@ -9,6 +9,12 @@ use Spatie\Permission\Models\Role;
 
 class PermissionController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:permissions-read')->only('index');
+        $this->middleware('permission:permissions-create')->only('store');
+    }
+
     public function index(Request $request)
     {
         $users = User::whereNotIn('role', ['superadmin', 'staff', 'landlord', 'tenant'])->get();

@@ -20,6 +20,14 @@ class AcnooLanguageController extends Controller
     use HasAcnooActions;
     use HasUploader;
 
+    public function __construct()
+    {
+        $this->middleware('permission:languages-read')->only('index', 'show', 'acnooFilter');
+        $this->middleware('permission:languages-create')->only('store');
+        $this->middleware('permission:languages-update')->only('update', 'status', 'isDefault');
+        $this->middleware('permission:languages-delete')->only('destroy', 'deleteAll');
+    }
+
     public function index()
     {
         $languages = Language::orderBy('order', 'asc')

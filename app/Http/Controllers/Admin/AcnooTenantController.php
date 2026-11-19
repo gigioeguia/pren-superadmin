@@ -24,7 +24,7 @@ class AcnooTenantController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:tenants-read')->only('index');
+        $this->middleware('permission:tenants-read')->only('index', 'acnooFilter', 'file_download', 'exportExcel', 'exportCsv');
         $this->middleware('permission:tenants-create')->only('create', 'store');
         $this->middleware('permission:tenants-update')->only('edit', 'update');
         $this->middleware('permission:tenants-delete')->only('destroy', 'deleteAll');

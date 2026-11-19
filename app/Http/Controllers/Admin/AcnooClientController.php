@@ -16,6 +16,14 @@ class AcnooClientController extends Controller
     use HasAcnooActions;
     use HasUploader;
 
+    public function __construct()
+    {
+        $this->middleware('permission:clients-read')->only('index', 'acnooFilter');
+        $this->middleware('permission:clients-create')->only('create', 'store');
+        $this->middleware('permission:clients-update')->only('edit', 'update', 'status');
+        $this->middleware('permission:clients-delete')->only('destroy', 'deleteAll');
+    }
+
     public function index(Request $request)
     {
         $clients = Client::latest()->paginate(10);

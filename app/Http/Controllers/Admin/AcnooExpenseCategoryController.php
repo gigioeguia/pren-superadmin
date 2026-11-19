@@ -16,9 +16,9 @@ class AcnooExpenseCategoryController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:expense-categories-read')->only('index');
+        $this->middleware('permission:expense-categories-read')->only('index', 'acnooFilter');
         $this->middleware('permission:expense-categories-create')->only('store');
-        $this->middleware('permission:expense-categories-update')->only('update');
+        $this->middleware('permission:expense-categories-update')->only('update', 'status');
         $this->middleware('permission:expense-categories-delete')->only('destroy', 'deleteAll');
     }
 

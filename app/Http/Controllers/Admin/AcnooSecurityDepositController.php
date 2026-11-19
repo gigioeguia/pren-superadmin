@@ -21,7 +21,7 @@ class AcnooSecurityDepositController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:security-deposit-read')->only('index');
+        $this->middleware('permission:security-deposit-read')->only('index', 'acnooFilter', 'file_download', 'exportExcel', 'exportCsv');
         $this->middleware('permission:security-deposit-update')->only('approve', 'rejected');
     }
 

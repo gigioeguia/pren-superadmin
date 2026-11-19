@@ -21,7 +21,7 @@ class AcnooRentPaymentController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:rent-payment-read')->only('index');
+        $this->middleware('permission:rent-payment-read')->only('index', 'acnooFilter', 'file_download', 'exportExcel', 'exportCsv');
         $this->middleware('permission:rent-payment-update')->only('approve', 'rejected');
     }
 

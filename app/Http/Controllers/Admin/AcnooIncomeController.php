@@ -20,9 +20,9 @@ class AcnooIncomeController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:incomes-read')->only('index');
+        $this->middleware('permission:incomes-read')->only('index', 'acnooFilter', 'exportExcel', 'exportCsv');
         $this->middleware('permission:incomes-create')->only('store');
-        $this->middleware('permission:incomes-update')->only('update');
+        $this->middleware('permission:incomes-update')->only('update', 'status');
         $this->middleware('permission:incomes-delete')->only('destroy', 'deleteAll');
     }
 

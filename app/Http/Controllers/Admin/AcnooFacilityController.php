@@ -16,7 +16,7 @@ class AcnooFacilityController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:facilities-read')->only('index');
+        $this->middleware('permission:facilities-read')->only('index', 'acnooFilter');
         $this->middleware('permission:facilities-create')->only('store');
         $this->middleware('permission:facilities-update')->only('update', 'status');
         $this->middleware('permission:facilities-delete')->only('destroy', 'deleteAll');

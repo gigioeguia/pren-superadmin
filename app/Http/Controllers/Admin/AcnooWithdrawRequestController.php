@@ -20,8 +20,8 @@ class AcnooWithdrawRequestController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:withdraw-request-read')->only('index');
-        $this->middleware('permission:withdraw-request-update')->only('approve', 'reject');
+        $this->middleware('permission:withdraw-request-read')->only('index', 'show', 'acnooFilter', 'exportExcel', 'exportCsv');
+        $this->middleware('permission:withdraw-request-update')->only('store', 'approve', 'reject');
     }
 
     public function index(Request $request)

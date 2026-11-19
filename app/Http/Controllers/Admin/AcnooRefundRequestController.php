@@ -17,7 +17,7 @@ class AcnooRefundRequestController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:reports-read')->only('index', 'show');
+        $this->middleware('permission:reports-read')->only('index', 'show', 'acnooFilter', 'exportExcel', 'exportCsv');
     }
 
     public function index()

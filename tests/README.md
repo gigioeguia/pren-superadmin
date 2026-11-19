@@ -106,6 +106,10 @@ CMS público, entradas de guards y maintenance.
 
 Casos que verifican `429 Too Many Requests` en el 6.º intento (mismo IP): `L7` (login web), `A20` (sign-in API), `A21` (send-reset-code API). Aserción sobre status 429 y header `Retry-After`.
 
+## Permisos admin (Fase 3 / 3.8)
+
+Casos de denegación (`403`) para admin autenticado sin el permiso requerido: `G6` (admin sin permisos → 403 en `/admin`), `F40`–`F51` (uno por módulo nuevo: blogs, clients, comments, faqs, features, highlights, testimonials, website-settings, manage-settings, translations, permissions, languages), `U1` (superadmin sin permisos bypassa), `U2` (admin sin permiso no bypassa). Archivos: `AdminGuardSmokeTest`, `PermissionDenialSmokeTest`.
+
 ## Desviaciones vs el catálogo del spec
 
 Documentadas en `.agents/spec-impl/spec-tests-smoke-fase0.md` §12 (D1–D6):

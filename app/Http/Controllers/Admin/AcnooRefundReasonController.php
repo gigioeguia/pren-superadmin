@@ -15,7 +15,7 @@ class AcnooRefundReasonController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:refund_reasons-read')->only('index');
+        $this->middleware('permission:refund_reasons-read')->only('index', 'acnooFilter');
         $this->middleware('permission:refund_reasons-create')->only('store');
         $this->middleware('permission:refund_reasons-update')->only('update', 'status');
         $this->middleware('permission:refund_reasons-delete')->only('destroy', 'deleteAll');

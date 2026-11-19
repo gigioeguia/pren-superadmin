@@ -13,6 +13,12 @@ class AcnooCommentController extends Controller
 {
     use HasAcnooActions;
 
+    public function __construct()
+    {
+        $this->middleware('permission:comments-read')->only('acnooFilter');
+        $this->middleware('permission:comments-delete')->only('destroy', 'deleteAll');
+    }
+
     public function destroy($id)
     {
         Comment::where('id', $id)->delete();

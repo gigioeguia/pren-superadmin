@@ -13,6 +13,14 @@ class AcnooFaqController extends Controller
 {
     use HasAcnooActions;
 
+    public function __construct()
+    {
+        $this->middleware('permission:faqs-read')->only('index', 'acnooFilter');
+        $this->middleware('permission:faqs-create')->only('create', 'store');
+        $this->middleware('permission:faqs-update')->only('edit', 'update', 'status');
+        $this->middleware('permission:faqs-delete')->only('destroy', 'deleteAll');
+    }
+
     public function index()
     {
         $faqs = Faq::latest()->paginate(10);

@@ -16,9 +16,9 @@ class AcnooCurrencyController extends Controller
     public function __construct()
     {
         $this->middleware('permission:currencies-create')->only('create', 'store');
-        $this->middleware('permission:currencies-read')->only('index');
+        $this->middleware('permission:currencies-read')->only('index', 'acnooFilter');
         $this->middleware('permission:currencies-update')->only('edit', 'update', 'default');
-        $this->middleware('permission:currencies-delete')->only('destroy');
+        $this->middleware('permission:currencies-delete')->only('destroy', 'deleteAll');
     }
 
     public function index()

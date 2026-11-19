@@ -20,9 +20,9 @@ class AcnooExpenseController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:expenses-read')->only('index');
+        $this->middleware('permission:expenses-read')->only('index', 'acnooFilter', 'exportExcel', 'exportCsv');
         $this->middleware('permission:expenses-create')->only('store');
-        $this->middleware('permission:expenses-update')->only('update');
+        $this->middleware('permission:expenses-update')->only('update', 'status');
         $this->middleware('permission:expenses-delete')->only('destroy', 'deleteAll');
     }
 

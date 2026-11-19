@@ -16,7 +16,7 @@ class AcnooIncomeCategoryController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:income-categories-read')->only('index');
+        $this->middleware('permission:income-categories-read')->only('index', 'acnooFilter');
         $this->middleware('permission:income-categories-create')->only('store');
         $this->middleware('permission:income-categories-update')->only('update', 'status');
         $this->middleware('permission:income-categories-delete')->only('destroy', 'deleteAll');
