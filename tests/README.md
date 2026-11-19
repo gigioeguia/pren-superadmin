@@ -102,6 +102,10 @@ CMS público, entradas de guards y maintenance.
 | Maintenance | 2 | 2 | M1–M6 |
 | **Total** | **52** | **44 (84.6 %)** | ≥ 60 % ✓ |
 
+## Throttle (Fase 3 / 3.7)
+
+Casos que verifican `429 Too Many Requests` en el 6.º intento (mismo IP): `L7` (login web), `A20` (sign-in API), `A21` (send-reset-code API). Aserción sobre status 429 y header `Retry-After`.
+
 ## Desviaciones vs el catálogo del spec
 
 Documentadas en `.agents/spec-impl/spec-tests-smoke-fase0.md` §12 (D1–D6):
