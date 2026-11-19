@@ -4,6 +4,7 @@ namespace App\Library;
 
 use App\Models\Gateway;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use Throwable;
@@ -147,12 +148,18 @@ class Flutterwave
             return abort(404);
         }
         $response = Request()->all();
-        $payment_id = $response['transaction_id'] ?? $response['tx_ref'];
+        $payment_id = $response['transaction_id'] ?? $response['tx_ref'] ?? null;
         $info = Session::get('flutterwave_credentials');
         $cred['secret_key'] = $info['secret_key'];
         $cred['payment_id'] = $payment_id;
 
-        $status = Flutterwave::isfraud($cred);
+        try {
+            $status = Flutterwave::isfraud($cred);
+        } catch (Throwable $e) {
+            Log::warning('Flutterwave status verification failed: '.$e->getMessage());
+            $status = 0;
+        }
+
         if ($status == 1) {
 
             $data['payment_id'] = $payment_id;
@@ -186,28 +193,13 @@ class Flutterwave
         $secret_key = $cred['secret_key'];
         $payment_id = $cred['payment_id'];
         try {
-            $curl = curl_init();
-            curl_setopt_array($curl, [
-                CURLOPT_URL => 'https://api.flutterwave.com/v3/transactions/'.$payment_id.'/verify',
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => '',
-                CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 0,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => 'GET',
-                CURLOPT_HTTPHEADER => [
-                    'Content-Type: application/json',
-                    'Authorization: Bearer '.$secret_key,
-                ],
-            ]);
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer '.$secret_key,
+            ])->get('https://api.flutterwave.com/v3/transactions/'.$payment_id.'/verify');
 
-            $response = curl_exec($curl);
+            $arr = $response->json();
 
-            curl_close($curl);
-            $arr = json_decode($response, true);
-
-            return $arr['status'] === 'success' ? 1 : 0;
+            return (is_array($arr) && ($arr['status'] ?? null) === 'success') ? 1 : 0;
         } catch (Throwable $th) {
             return 0;
         }

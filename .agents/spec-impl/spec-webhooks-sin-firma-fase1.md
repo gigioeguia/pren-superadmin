@@ -1,7 +1,7 @@
 ---
 id: spec-webhooks-sin-firma-fase1
 titulo: "Webhooks sin firma — validación de autenticidad en callbacks de pasarela (Fase 1 / 1.6)"
-estado: Borrador
+estado: Implementado
 fecha: 2026-11-18
 origen: .analisis/plan/plan-accion.md (Fase 1 / 1.6) — Seg-8
 cobertura: 12 casos (P11–P22) sobre los 10 endpoints de status de pasarela + exención CSRF `/billplz-callback`

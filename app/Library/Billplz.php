@@ -5,6 +5,7 @@ namespace App\Library;
 use App\Models\Gateway;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
@@ -47,6 +48,10 @@ class Billplz
         $apiKey = $array['api_key'];
         $collectionId = $array['collection_id'];
         $callbackUrl = url('/payment/billplz');
+        Session::put('billplz_credentials', [
+            'api_key' => $apiKey,
+            'mode' => $array['mode'],
+        ]);
         $client = new Client;
 
         try {
@@ -75,28 +80,49 @@ class Billplz
 
     public function status(Request $request)
     {
+        if (! Session::has('billplz_credentials')) {
+            return abort(404);
+        }
+
+        $creds = Session::get('billplz_credentials');
         $data = $request->all();
 
         try {
-            if (isset($data['billplz']) && isset($data['billplz']['paid'])) {
-                $status = $data['billplz']['paid'];
+            if (isset($data['billplz']) && isset($data['billplz']['id'])) {
                 $bill_id = $data['billplz']['id'];
+                $base = ($creds['mode'] ?? '') == 'Live'
+                    ? 'https://www.billplz.com'
+                    : 'https://www.billplz-sandbox.com';
 
-                if ($status == true) {
+                $response = Http::withBasicAuth($creds['api_key'], '')
+                    ->get($base.'/api/v3/bills/'.$bill_id);
+
+                $bill = $response->json();
+
+                if (is_array($bill) && ($bill['paid'] ?? false) === true) {
                     Log::info("Payment successful for Bill ID: {$bill_id}");
 
-                    return redirect(Billplz::redirect_if_payment_success());
-                } else {
-                    Log::info("Payment failed for Bill ID: {$bill_id}");
-                    session()->put('payment_msg', __('Payment failed'));
+                    Session::forget('billplz_credentials');
 
-                    return redirect(Billplz::redirect_if_payment_faild());
+                    return redirect(Billplz::redirect_if_payment_success());
                 }
+
+                Log::info("Payment failed for Bill ID: {$bill_id}");
+                session()->put('payment_msg', __('Payment failed'));
+                Session::forget('billplz_credentials');
+
+                return redirect(Billplz::redirect_if_payment_faild());
             }
-        } catch (\Exception $e) {
-            session()->put('payment_msg', $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::warning('Billplz status verification failed: '.$e->getMessage());
+            session()->put('payment_msg', __('Payment failed'));
+            Session::forget('billplz_credentials');
 
             return redirect(Billplz::redirect_if_payment_faild());
         }
+
+        Session::forget('billplz_credentials');
+
+        return redirect(Billplz::redirect_if_payment_faild());
     }
 }

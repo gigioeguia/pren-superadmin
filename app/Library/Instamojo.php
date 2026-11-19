@@ -138,10 +138,17 @@ class Instamojo
             return abort(404);
         }
         $response = Request()->all();
-        $payment_id = $response['payment_id'];
+        $payment_id = $response['payment_id'] ?? null;
         $info = Session::get('instamojo_credentials');
 
-        if ($response['payment_status'] == 'Credit') {
+        $creds = [
+            'payment_id' => $payment_id,
+            'x_api_key' => $info['x_api_key'] ?? null,
+            'x_auth_token' => $info['x_auth_token'] ?? null,
+            'is_test' => ($info['mode'] ?? false) ? 1 : 0,
+        ];
+
+        if ($payment_id && Instamojo::isfraud($creds) === 1) {
             $data['payment_id'] = $payment_id;
             $data['payment_method'] = 'instamojo';
             $data['gateway_id'] = $info['gateway_id'];
@@ -168,35 +175,22 @@ class Instamojo
     {
         $payment_id = $creds['payment_id'];
         $api = $creds['x_api_key'];
-        $is_test = $creds['is_test'];
         $auth_token = $creds['x_auth_token'];
+        $is_test = $creds['is_test'] ?? 0;
 
-        if ($is_test == 1) {
-            $url = 'https://test.instamojo.com/api/1.1/payments/'.$payment_id.'/';
-        } else {
-            $url = 'https://www.instamojo.com/api/1.1/payments/'.$payment_id.'/';
-        }
+        $base = $is_test == 1
+            ? 'https://test.instamojo.com/api/1.1/payments/'
+            : 'https://www.instamojo.com/api/1.1/payments/';
 
         try {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_HEADER, false);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt(
-                $ch,
-                CURLOPT_HTTPHEADER,
-                [
-                    'Content-Type: application/json',
-                    'X-Api-Key:'.$api,
-                    'X-Auth-Token:'.$auth_token,
-                ]
-            );
-            $response = curl_exec($ch);
-            curl_close($ch);
-            $arr = json_decode($response, true);
+            $response = Http::withHeaders([
+                'X-Api-Key' => $api,
+                'X-Auth-Token' => $auth_token,
+            ])->get($base.$payment_id.'/');
 
-            return $arr['success'] === true ? 1 : 0;
+            $arr = $response->json();
+
+            return (is_array($arr) && ($arr['success'] ?? false) === true) ? 1 : 0;
         } catch (\Throwable $th) {
             return 0;
         }

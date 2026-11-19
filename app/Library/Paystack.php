@@ -4,6 +4,8 @@ namespace App\Library;
 
 use App\Models\Gateway;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Throwable;
 
@@ -107,25 +109,20 @@ class Paystack
         }
 
         $info = Session::get('paystack_credentials');
-        $curl = curl_init();
-        curl_setopt_array($curl, [
-            CURLOPT_URL => 'https://api.paystack.co/transaction/verify/'.$request->ref_id,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'GET',
-            CURLOPT_HTTPHEADER => [
-                'Authorization: Bearer '.$info['secret_key'].'',
-                'Cache-Control: no-cache',
-            ],
-        ]);
+        $url = 'https://api.paystack.co/transaction/verify/'.$request->ref_id;
 
-        $response = curl_exec($curl);
+        try {
+            $httpResponse = Http::withHeaders([
+                'Authorization' => 'Bearer '.$info['secret_key'],
+                'Cache-Control' => 'no-cache',
+            ])->get($url);
 
-        $err = curl_error($curl);
-        curl_close($curl);
+            $response = $httpResponse->body();
+            $err = null;
+        } catch (Throwable $e) {
+            $response = null;
+            $err = $e->getMessage();
+        }
 
         if ($err) {
             Session::forget('paystack_credentials');
@@ -134,28 +131,32 @@ class Paystack
 
             return redirect(Paystack::redirect_if_payment_faild());
         } else {
-            $data = json_decode($response);
-            if ($data->status == true && $data->data->status == 'success') {
-                $ref_id = $data->data->reference;
-                $amount = $data->data->amount / 100;
+            try {
+                $data = json_decode($response);
+                if (is_object($data) && ($data->status ?? false) == true && isset($data->data) && ($data->data->status ?? null) == 'success') {
+                    $ref_id = $data->data->reference;
+                    $amount = $data->data->amount / 100;
 
-                abort_unless($amount == $info['amount'], 404);
+                    abort_unless($amount == $info['amount'], 404);
 
-                $pay_data['payment_id'] = $ref_id;
-                $pay_data['payment_method'] = 'paystack';
-                $pay_data['gateway_id'] = $info['gateway_id'];
-                $pay_data['amount'] = $info['main_amount'];
-                $pay_data['charge'] = $info['charge'];
-                $pay_data['status'] = 1;
-                $pay_data['payment_status'] = 1;
-                $pay_data['is_fallback'] = $info['is_fallback'];
+                    $pay_data['payment_id'] = $ref_id;
+                    $pay_data['payment_method'] = 'paystack';
+                    $pay_data['gateway_id'] = $info['gateway_id'];
+                    $pay_data['amount'] = $info['main_amount'];
+                    $pay_data['charge'] = $info['charge'];
+                    $pay_data['status'] = 1;
+                    $pay_data['payment_status'] = 1;
+                    $pay_data['is_fallback'] = $info['is_fallback'];
 
-                Session::forget('paystack_credentials');
-                Session::put('payment_info', $pay_data);
+                    Session::forget('paystack_credentials');
+                    Session::put('payment_info', $pay_data);
 
-                return request()->expectsJson() ?
-                    Paystack::redirect_if_payment_success() :
-                    redirect(Paystack::redirect_if_payment_success());
+                    return request()->expectsJson() ?
+                        Paystack::redirect_if_payment_success() :
+                        redirect(Paystack::redirect_if_payment_success());
+                }
+            } catch (Throwable $e) {
+                Log::warning('Paystack status verification failed: '.$e->getMessage());
             }
         }
         Session::forget('paystack_credentials');

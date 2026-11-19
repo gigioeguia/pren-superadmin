@@ -5,6 +5,8 @@ namespace App\Library;
 use App\Models\Gateway;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Throwable;
 
@@ -140,11 +142,17 @@ class Thawani
         $info = Session::get('thawani_credentials');
         $mode = Session::get('thawani_credentials')['mode'];
         $secret_key = Session::get('thawani_credentials')['secret_key'];
-        $invoice = Session::get('thawani_credentials')['response']['data']['invoice'];
-        $response = $this->getResponse($mode, $invoice, $secret_key);
-        $responseArr = json_decode($response, true);
+        $invoice = Session::get('thawani_credentials')['response']['data']['invoice'] ?? null;
 
-        if (array_key_exists('success', $responseArr) && $responseArr['success'] == true) {
+        try {
+            $response = $invoice ? $this->getResponse($mode, $invoice, $secret_key) : null;
+            $responseArr = $response ? json_decode($response, true) : null;
+        } catch (Throwable $e) {
+            Log::warning('Thawani status verification failed: '.$e->getMessage());
+            $responseArr = null;
+        }
+
+        if (is_array($responseArr) && array_key_exists('success', $responseArr) && $responseArr['success'] == true) {
             $data['payment_id'] = $responseArr['data'][0]['payment_id'];
             $data['payment_method'] = 'thawani';
             $data['gateway_id'] = $info['gateway_id'];
@@ -178,32 +186,15 @@ class Thawani
         } else {
             $url = "https://checkout.thawani.om/api/v1/payments/?checkout_invoice=$invoice_id";
         }
-        $curl = curl_init();
+        try {
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'thawani-api-key' => $api_key,
+            ])->get($url);
 
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'GET',
-            CURLOPT_POSTFIELDS => '',
-            CURLOPT_HTTPHEADER => [
-                'Content-Type: application/json',
-                'thawani-api-key: '.$api_key,
-            ],
-        ]);
-
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-
-        curl_close($curl);
-
-        if ($err) {
-            return $err;
-        } else {
-            return $response;
+            return $response->body();
+        } catch (Throwable $e) {
+            return $e->getMessage();
         }
     }
 
