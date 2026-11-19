@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\WelcomeMail;
 use App\Models\User;
 use App\Models\UserDetail;
+use App\Support\ErrorMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -136,11 +137,12 @@ class AcnooTenantController extends Controller
                 'data' => $user->load('user_details'),
             ]);
         } catch (\Exception $e) {
+            report($e);
             DB::rollBack();
 
             return response()->json([
                 'message' => __('Tenant store failed.'),
-                'error' => $e->getMessage(),
+                'error' => __(ErrorMessage::GENERIC),
             ], 500);
         }
     }
@@ -259,11 +261,12 @@ class AcnooTenantController extends Controller
                 'data' => $user->load('user_details'),
             ]);
         } catch (\Exception $e) {
+            report($e);
             DB::rollBack();
 
             return response()->json([
                 'message' => __('Tenant updated failed.'),
-                'error' => $e->getMessage(),
+                'error' => __(ErrorMessage::GENERIC),
             ], 500);
         }
     }

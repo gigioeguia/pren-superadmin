@@ -7,6 +7,7 @@ use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserDetail;
+use App\Support\ErrorMessage;
 use App\Traits\HasAcnooActions;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -104,11 +105,12 @@ class AcnooTenantController extends Controller
                 'redirect' => route('landlord.tenants.index'),
             ]);
         } catch (\Exception $e) {
+            report($e);
             DB::rollBack();
 
             return response()->json([
                 'message' => __('Tenant store failed.'),
-                'error' => $e->getMessage(),
+                'error' => __(ErrorMessage::GENERIC),
             ], 500);
         }
     }
@@ -235,11 +237,12 @@ class AcnooTenantController extends Controller
                 'redirect' => route('landlord.tenants.index'),
             ]);
         } catch (\Exception $e) {
+            report($e);
             DB::rollBack();
 
             return response()->json([
                 'message' => __('Tenant updated failed.'),
-                'error' => $e->getMessage(),
+                'error' => __(ErrorMessage::GENERIC),
             ], 500);
         }
     }
@@ -274,10 +277,11 @@ class AcnooTenantController extends Controller
                 'redirect' => route('landlord.tenants.index'),
             ]);
         } catch (\Exception $e) {
+            report($e);
             DB::rollBack();
 
             return response()->json([
-                'message' => 'Something went wrong: '.$e->getMessage(),
+                'message' => __(ErrorMessage::GENERIC),
             ], 500);
         }
     }
@@ -317,10 +321,11 @@ class AcnooTenantController extends Controller
                 'redirect' => route('landlord.tenants.index'),
             ]);
         } catch (\Exception $e) {
+            report($e);
             DB::rollBack();
 
             return response()->json([
-                'message' => 'Something went wrong: '.$e->getMessage(),
+                'message' => __(ErrorMessage::GENERIC),
             ], 500);
         }
     }

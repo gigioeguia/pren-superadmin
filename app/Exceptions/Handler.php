@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Support\ErrorMessage;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Psr\Log\LogLevel;
 use Throwable;
@@ -47,5 +48,25 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+    }
+
+    public function render($request, Throwable $e)
+    {
+        if (! config('app.debug') && $this->isServerError($e)) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => __(ErrorMessage::GENERIC)], 500);
+            }
+
+            return response(__(ErrorMessage::GENERIC), 500);
+        }
+
+        return parent::render($request, $e);
+    }
+
+    private function isServerError(Throwable $e): bool
+    {
+        $status = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+
+        return $status >= 500;
     }
 }

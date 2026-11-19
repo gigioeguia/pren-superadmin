@@ -9,6 +9,7 @@ use App\Models\Currency;
 use App\Models\Facility;
 use App\Models\Gateway;
 use App\Models\User;
+use App\Support\ErrorMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -132,11 +133,12 @@ class UserController extends Controller
                 'data' => $user->load('user_details', 'plan_subscribe:id,plan_id', 'plan_subscribe.plan:id,subscriptionName'),
             ]);
         } catch (\Exception $e) {
+            report($e);
             DB::rollBack();
 
             return response()->json([
                 'message' => __('Profile update failed.'),
-                'error' => $e->getMessage(),
+                'error' => __(ErrorMessage::GENERIC),
             ], 500);
         }
     }

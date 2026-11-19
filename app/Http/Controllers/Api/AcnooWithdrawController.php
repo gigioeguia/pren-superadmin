@@ -7,6 +7,7 @@ use App\Models\Transaction;
 use App\Models\UserMethod;
 use App\Models\Withdraw;
 use App\Models\WithdrawMethod;
+use App\Support\ErrorMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ViewErrorBag;
@@ -97,9 +98,10 @@ class AcnooWithdrawController extends Controller
                 );
             }
         } catch (\Exception $e) {
+            report($e);
             DB::rollback();
 
-            return response()->json(['error' => 'Transaction failed: '.$e->getMessage()], 500);
+            return response()->json(['error' => __(ErrorMessage::TRANSACTION)], 500);
         }
     }
 

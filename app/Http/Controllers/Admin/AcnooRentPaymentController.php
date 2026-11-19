@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\RentPayment;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Support\ErrorMessage;
 use App\Traits\HasAcnooActions;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -101,9 +102,10 @@ class AcnooRentPaymentController extends Controller
                 'redirect' => route('admin.rent-payments.index'),
             ]);
         } catch (\Throwable $e) {
+            report($e);
             DB::rollback();
 
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => __(ErrorMessage::GENERIC)], 500);
         }
     }
 

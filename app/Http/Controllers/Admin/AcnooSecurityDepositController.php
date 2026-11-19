@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SecurityDeposit;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Support\ErrorMessage;
 use App\Traits\HasAcnooActions;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -105,10 +106,11 @@ class AcnooSecurityDepositController extends Controller
                     'redirect' => route('admin.security-deposits.index'),
                 ]);
             } catch (\Throwable $th) {
+                report($th);
                 DB::rollBack();
 
                 return response()->json([
-                    'message' => $th->getMessage(),
+                    'message' => __(ErrorMessage::TRANSACTION),
                 ]);
             }
         } else {

@@ -3,6 +3,7 @@
 namespace App\Library;
 
 use App\Models\Gateway;
+use App\Support\ErrorMessage;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -72,7 +73,7 @@ class Billplz
 
             return redirect($bill['url']);
         } catch (\Exception $e) {
-            session()->put('payment_msg', $e->getMessage());
+            session()->put('payment_msg', __(ErrorMessage::PAYMENT));
 
             return redirect(Billplz::redirect_if_payment_faild());
         }

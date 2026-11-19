@@ -3,6 +3,7 @@
 namespace App\Library;
 
 use App\Models\Gateway;
+use App\Support\ErrorMessage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -194,7 +195,7 @@ class Thawani
 
             return $response->body();
         } catch (Throwable $e) {
-            return $e->getMessage();
+            return __(ErrorMessage::PAYMENT);
         }
     }
 
