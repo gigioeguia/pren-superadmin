@@ -14,13 +14,13 @@ Route::prefix('v1')->group(function () {
         Route::get('/amenity', 'amenities');
     });
 
-    Route::post('/sign-up', [Auth\RegistrationController::class, 'maanRegistration'])->name('sign-up');
-    Route::post('/submit-otp', [Auth\RegistrationController::class, 'submitOtp'])->name('submit-otp');
-    Route::post('sign-in', [Auth\SigninController::class, 'maanSignIn'])->name('sign-in');
+    Route::post('/sign-up', [Auth\RegistrationController::class, 'maanRegistration'])->name('sign-up')->middleware('throttle:5,1');
+    Route::post('/submit-otp', [Auth\RegistrationController::class, 'submitOtp'])->name('submit-otp')->middleware('throttle:5,1');
+    Route::post('sign-in', [Auth\SigninController::class, 'maanSignIn'])->name('sign-in')->middleware('throttle:5,1');
 
-    Route::post('/send-reset-code', [Auth\ForgotPasswordController::class, 'sendResetCode']);
-    Route::post('/resend-otp', [Auth\ForgotPasswordController::class, 'resendOtp']);
-    Route::post('/user-password-reset', [Auth\ResetPasswordController::class, 'userResetPassword']);
+    Route::post('/send-reset-code', [Auth\ForgotPasswordController::class, 'sendResetCode'])->middleware('throttle:5,1');
+    Route::post('/resend-otp', [Auth\ForgotPasswordController::class, 'resendOtp'])->middleware('throttle:5,1');
+    Route::post('/user-password-reset', [Auth\ResetPasswordController::class, 'userResetPassword'])->middleware('throttle:5,1');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::controller(Api\UserController::class)->group(function () {

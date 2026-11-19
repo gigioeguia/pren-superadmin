@@ -426,4 +426,44 @@ class ApiAuthSmokeTest extends TestCase
         $response->assertOk()
             ->assertJsonPath('message', __('Sign out successfully'));
     }
+
+    // A20 — throttle: 6.º intento de sign-in devuelve 429
+    public function test_api_sign_in_is_throttled_after_five_attempts(): void
+    {
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson('/api/v1/sign-in', [
+                'email' => 'nobody@example.test',
+                'password' => 'wrong-password',
+            ])->assertUnauthorized();
+        }
+
+        $response = $this->postJson('/api/v1/sign-in', [
+            'email' => 'nobody@example.test',
+            'password' => 'wrong-password',
+        ]);
+
+        $response->assertStatus(429);
+        $this->assertTrue($response->headers->has('Retry-After'));
+    }
+
+    // A21 — throttle: 6.º send-reset-code devuelve 429
+    public function test_api_send_reset_code_is_throttled_after_five_attempts(): void
+    {
+        // Arrange
+        Mail::fake();
+        $user = $this->createLandlord();
+
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson('/api/v1/send-reset-code', [
+                'email' => $user->email,
+            ])->assertOk();
+        }
+
+        $response = $this->postJson('/api/v1/send-reset-code', [
+            'email' => $user->email,
+        ]);
+
+        $response->assertStatus(429);
+        $this->assertTrue($response->headers->has('Retry-After'));
+    }
 }
