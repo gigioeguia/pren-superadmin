@@ -6,6 +6,7 @@ use App\Models\Gateway;
 use FedaPay\FedaPay;
 use FedaPay\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
 class FedaPayGateway
@@ -49,6 +50,11 @@ class FedaPayGateway
             FedaPay::setApiKey($array['api_key']);
             FedaPay::setEnvironment($array['mode'] === 'Live' ? 'live' : 'sandbox');
 
+            Session::put('fedapay_credentials', [
+                'api_key' => $array['api_key'],
+                'mode' => $array['mode'],
+            ]);
+
             $tx = Transaction::create([
                 'description' => $data['billName'] ?? 'Make plan purchase payment',
                 'amount' => (int) $amount,
@@ -74,18 +80,33 @@ class FedaPayGateway
 
     public function status(Request $request)
     {
-        try {
-            if ($request->status === 'approved') {
-                return redirect(self::redirect_if_payment_success());
-            } else {
-                session()->put('payment_msg', __('Payment failed'));
-
-                return redirect(self::redirect_if_payment_failed());
-            }
-        } catch (\Exception $e) {
-            session()->put('payment_msg', $e->getMessage());
-
-            return redirect(self::redirect_if_payment_failed());
+        if (! Session::has('fedapay_credentials')) {
+            return abort(404);
         }
+
+        $creds = Session::get('fedapay_credentials');
+        $tx_id = $request->input('id') ?? $request->input('transaction_id');
+
+        try {
+            FedaPay::setApiKey($creds['api_key']);
+            FedaPay::setEnvironment(($creds['mode'] ?? '') === 'Live' ? 'live' : 'sandbox');
+
+            if ($tx_id) {
+                $tx = Transaction::retrieve($tx_id);
+                $txArray = json_decode(json_encode($tx), true);
+                if (is_array($txArray) && ($txArray['status'] ?? null) === 'approved') {
+                    Session::forget('fedapay_credentials');
+
+                    return redirect(self::redirect_if_payment_success());
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('FedaPay status verification failed: '.$e->getMessage());
+        }
+
+        session()->put('payment_msg', __('Payment failed'));
+        Session::forget('fedapay_credentials');
+
+        return redirect(self::redirect_if_payment_failed());
     }
 }

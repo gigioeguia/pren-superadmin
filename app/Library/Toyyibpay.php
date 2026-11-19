@@ -4,6 +4,7 @@ namespace App\Library;
 
 use App\Models\Gateway;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use Throwable;
@@ -132,35 +133,50 @@ class Toyyibpay
             return abort(404);
         }
         $response = Request()->all();
-        $status = $response['status_id'];
-        $payment_id = $response['billcode'];
-
+        $payment_id = $response['billcode'] ?? null;
         $info = Session::get('toyyibpay_credentials');
 
-        if ($status == 1) {
-            $data['payment_id'] = $payment_id;
-            $data['payment_method'] = 'toyyibpay';
-            $data['gateway_id'] = $info['gateway_id'];
+        $base = ($info['mode'] ?? false)
+            ? 'https://dev.toyyibpay.com/'
+            : 'https://toyyibpay.com/';
 
-            $data['amount'] = $info['main_amount'];
-            $data['charge'] = $info['charge'];
-            $data['status'] = 1;
-            $data['payment_status'] = 1;
+        try {
+            $apiResponse = Http::asForm()->post($base.'index.php/api/getBillTransactions', [
+                'billCode' => $payment_id,
+            ]);
 
-            Session::forget('toyyibpay_credentials');
-            Session::put('payment_info', $data);
+            $transactions = $apiResponse->json();
+            $paid = is_array($transactions)
+                && isset($transactions[0]['billpaymentStatus'])
+                && (int) $transactions[0]['billpaymentStatus'] === 1;
 
-            return request()->expectsJson() ?
-                Toyyibpay::redirect_if_payment_success() :
-                redirect(Toyyibpay::redirect_if_payment_success());
-        } else {
-            $data['payment_status'] = 0;
-            Session::put('payment_info', $data);
-            Session::forget('toyyibpay_credentials');
+            if ($paid) {
+                $data['payment_id'] = $payment_id;
+                $data['payment_method'] = 'toyyibpay';
+                $data['gateway_id'] = $info['gateway_id'];
 
-            return request()->expectsJson() ?
-                Toyyibpay::redirect_if_payment_faild() :
-                redirect(Toyyibpay::redirect_if_payment_faild());
+                $data['amount'] = $info['main_amount'];
+                $data['charge'] = $info['charge'];
+                $data['status'] = 1;
+                $data['payment_status'] = 1;
+
+                Session::forget('toyyibpay_credentials');
+                Session::put('payment_info', $data);
+
+                return request()->expectsJson() ?
+                    Toyyibpay::redirect_if_payment_success() :
+                    redirect(Toyyibpay::redirect_if_payment_success());
+            }
+        } catch (Throwable $e) {
+            Log::warning('Toyyibpay status verification failed: '.$e->getMessage());
         }
+
+        $data['payment_status'] = 0;
+        Session::put('payment_info', $data);
+        Session::forget('toyyibpay_credentials');
+
+        return request()->expectsJson() ?
+            Toyyibpay::redirect_if_payment_faild() :
+            redirect(Toyyibpay::redirect_if_payment_faild());
     }
 }

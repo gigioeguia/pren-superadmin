@@ -149,9 +149,9 @@ class Razorpay
 
             // Now verify the signature is correct . We create the private function for verify the signature
             $signatureStatus = Razorpay::SignatureVerify(
-                $request->all()['rzp_signature'],
-                $request->all()['rzp_paymentid'],
-                $request->all()['rzp_orderid']
+                $request->input('rzp_signature'),
+                $request->input('rzp_paymentid'),
+                $request->input('rzp_orderid')
             );
 
             // If Signature status is true We will save the payment response in our database
@@ -184,6 +184,8 @@ class Razorpay
                     Razorpay::redirect_if_payment_faild() :
                     redirect(Razorpay::redirect_if_payment_faild());
             }
+        } else {
+            return abort(404);
         }
     }
 

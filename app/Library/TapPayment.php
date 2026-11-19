@@ -5,6 +5,7 @@ namespace App\Library;
 use App\Models\Gateway;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 
 class TapPayment
@@ -93,18 +94,15 @@ class TapPayment
 
         try {
             // Verify the payment status using the Tap API
-            $client = new Client;
-            $response = $client->get('https://api.tap.company/v2/'.'charges/'.$paymentId, [
-                'headers' => [
-                    'Authorization' => 'Bearer '.session('secret_key'),
-                ],
-            ]);
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer '.session('secret_key'),
+            ])->get('https://api.tap.company/v2/charges/'.$paymentId);
 
-            $paymentDetails = json_decode($response->getBody(), true);
+            $paymentDetails = $response->json();
             session()->forget('secret_key');
 
             // Check the status
-            if ($paymentDetails['status'] === 'CAPTURED') {
+            if (is_array($paymentDetails) && ($paymentDetails['status'] ?? null) === 'CAPTURED') {
                 return redirect(self::redirect_if_payment_success());
             } else {
                 session()->put('payment_msg', $paymentDetails['response']['message']);

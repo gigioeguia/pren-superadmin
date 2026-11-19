@@ -4,6 +4,8 @@ namespace App\Library;
 
 use App\Models\Gateway;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Mollie\Api\MollieApiClient;
 
@@ -103,12 +105,22 @@ class Mollie
         if (Session::has('pay_id') && Session::has('mollie_credentials')) {
             $info = Session::get('mollie_credentials');
 
-            $mollie = new MollieApiClient;
-            $mollie->setApiKey($info['api_key']);
             $pay_id = Session::get('pay_id');
-            $payment = $mollie->payments->get($pay_id);
 
-            if ($payment->isPaid()) {
+            try {
+                $response = Http::withToken($info['api_key'])
+                    ->get('https://api.mollie.com/v2/payments/'.$pay_id);
+
+                $payment = $response->json();
+            } catch (\Throwable $e) {
+                Log::warning('Mollie status verification failed: '.$e->getMessage());
+                Session::forget('pay_id');
+                Session::forget('mollie_credentials');
+
+                return request()->expectsJson() ? Mollie::redirect_if_payment_faild() : redirect(Mollie::redirect_if_payment_faild());
+            }
+
+            if (is_array($payment) && ($payment['status'] ?? null) === 'paid') {
                 $data['payment_id'] = Session::get('pay_id');
                 $data['payment_method'] = 'mollie';
                 $data['gateway_id'] = $info['gateway_id'];
