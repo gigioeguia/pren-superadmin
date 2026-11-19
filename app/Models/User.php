@@ -101,6 +101,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'phone' => 'json',
+        'is_demo' => 'boolean',
     ];
 
     protected $hidden = [

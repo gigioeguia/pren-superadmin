@@ -25,7 +25,7 @@ Términos recurrentes del código que un agente debe entender antes de tocar ló
 - **`expired` (middleware)**: bloquea rutas `/landlord/*` si la suscripción del landlord está vencida.
 - **`payment_type`** (en sesión y requests): distingue `subscription` (compra de plan), `security_deposit`, `rent_payment`. Lo setea `PaymentController` en sesión para enrutar el callback de success.
 - **`Gateway->namespace`** (columna en BD): FQCN de la clase que implementa el gateway (`App\Library\StripeGateway`, etc.). Se invoca dinámicamente `$gateway->namespace::make_payment($data)`. **Editar un gateway = actualizar archivo Y fila en BD.**
-- **`DemoMode` (middleware)**: si `DEMO_MODE=true`, bloquea rutas mutativas listadas en `$adminDisabledRoutes` / `$landlordDisabledRoutes`. Solo bloquea al email exacto `landlord@acnoo.com` para landlords.
+- **`DemoMode` (middleware)**: se activa solo si `APP_ENV=demo` (`app()->environment('demo')`). Bloquea rutas mutativas listadas en `$adminDisabledRoutes` / `$landlordDisabledRoutes`. Para landlords, solo restringe a usuarios con `is_demo=true` (no email hardcodeado).
 - **`@group characterization`**: marca tests que documentan comportamiento actual (inseguro) que se espera romper tras una fase del plan-accion. Ver skill `tests-caracterizacion.md`.
 
 ## Pasarelas de pago (11)

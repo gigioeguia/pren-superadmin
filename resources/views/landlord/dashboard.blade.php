@@ -6,7 +6,7 @@
 
 @section('main_content')
     <div class="woodland-section-container ">
-        @if (env('DEMO_MODE') && auth()->user()->email == 'landlord@acnoo.com')
+        @if (app()->environment('demo') && auth()->check() && auth()->user()->is_demo === true)
         <div class="alert alert-dismissible fade show text-center mb-3 text-white" role="alert">
             <b class="text-light">Note:</b> This is a demo account — data resets every hour for this account only. Some of module are disabled in this account, to get full access please please create your own account.
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>

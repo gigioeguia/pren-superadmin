@@ -11,6 +11,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 function expectedItemId(): string
@@ -161,10 +162,12 @@ function languages()
     });
 }
 
-function demoReset()
+function demoReset(): bool
 {
-    if (! env('DEMO_MODE')) {
-        return true;
+    if (! app()->environment('demo')) {
+        Log::warning('demoReset skipped: not demo environment.');
+
+        return false;
     }
 
     DB::table('properties')->where('landlord_id', 3)->delete();
@@ -174,4 +177,6 @@ function demoReset()
     DB::table('incomes')->where('landlord_id', 3)->delete();
 
     Artisan::call('db:seed', ['--class' => 'DemoSeeder']);
+
+    return true;
 }

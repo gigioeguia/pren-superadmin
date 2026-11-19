@@ -73,4 +73,11 @@ class UserFactory extends Factory
             'is_setupped' => 1,
         ]);
     }
+
+    public function demo(): static
+    {
+        return $this->afterCreating(function (User $user): void {
+            $user->forceFill(['is_demo' => true])->save();
+        });
+    }
 }

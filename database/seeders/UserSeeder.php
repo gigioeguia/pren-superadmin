@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
     public function run()
     {
         $users = [
-            ['landlord_id' => null, 'plan_subscribe_id' => null, 'unique_id' => '687324', 'name' => 'Alex', 'role' => 'landlord', 'email' => 'landlord@acnoo.com', 'image' => 'uploads/25/05-946/1748665555.jpeg', 'phone' => '{"mobile_code":"+880","mobile_no":"01933445566"}', 'password' => bcrypt('landlord'), 'is_setupped' => '1', 'balance' => '1000', 'profile_type' => null, 'subscriptionDate' => now(), 'will_expire' => now()->addYears(5), 'email_verified_at' => null, 'remember_token' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['landlord_id' => null, 'plan_subscribe_id' => null, 'unique_id' => '687324', 'name' => 'Alex', 'role' => 'landlord', 'email' => 'landlord@acnoo.com', 'image' => 'uploads/25/05-946/1748665555.jpeg', 'phone' => '{"mobile_code":"+880","mobile_no":"01933445566"}', 'password' => bcrypt('landlord'), 'is_setupped' => '1', 'is_demo' => '1', 'balance' => '1000', 'profile_type' => null, 'subscriptionDate' => now(), 'will_expire' => now()->addYears(5), 'email_verified_at' => null, 'remember_token' => null, 'created_at' => now(), 'updated_at' => now()],
             ['landlord_id' => '3', 'plan_subscribe_id' => null, 'unique_id' => '000004', 'name' => 'Britanni Edwards', 'role' => 'tenant', 'email' => 'tenant@acnoo.com', 'image' => null, 'phone' => '{"mobile_code":"+260","mobile_no":"34"}', 'password' => '$2y$10$Ptk1xPUe6hg6Brstl8.XkOkL7arOFQv8N0dd4eDrv1MIF9ZXNW3rW', 'is_setupped' => '1', 'balance' => '0', 'profile_type' => 'company', 'subscriptionDate' => null, 'will_expire' => null, 'email_verified_at' => null, 'remember_token' => null, 'created_at' => '2025-09-23 10:00:13', 'updated_at' => '2025-09-23 10:00:13'],
 
         ];
