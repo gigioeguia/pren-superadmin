@@ -45,6 +45,7 @@ class AcnooSecurityDepositController extends Controller
     public function show(string $id)
     {
         $security_deposit = SecurityDeposit::with(['property:id,security_deposit,utility_deposit,rent_info', 'property.propertyDetail:property_id,property_info', 'landlord:id,name,phone,email', 'landlord.user_details:user_id,address_info', 'tenant:id,name,phone,email', 'tenant.user_details:user_id,address_info'])->findOrFail($id);
+        $this->authorize('view', $security_deposit);
 
         $errors = session()->get('errors', new ViewErrorBag);
         $html = view('api-invoice.security-deposit', compact('security_deposit', 'errors'))->render();
@@ -116,6 +117,7 @@ class AcnooSecurityDepositController extends Controller
                 if ($request->payment_type == 'security_deposit') {
 
                     $security_deposit = SecurityDeposit::findOrFail($id);
+                    $this->authorize('offlinePayment', $security_deposit);
                     $security_deposit->update([
                         'payment_date' => today(),
                         'status' => 'pending',

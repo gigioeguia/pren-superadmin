@@ -103,6 +103,7 @@ class AcnooWithdrawController extends Controller
     public function show(string $id)
     {
         $withdraw = Withdraw::with(['user:id,name,phone,email', 'user.user_details:user_id,address_info', 'account_info:id,method_id', 'account_info.withdraw_method:id,charge_type'])->findOrFail($id);
+        $this->authorize('view', $withdraw);
 
         return view('landlord.withdraw-request.invoice', compact('withdraw'));
     }

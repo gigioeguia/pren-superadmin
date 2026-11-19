@@ -38,12 +38,15 @@ class AcnooApplicationController extends Controller
             'property.rent:property_id,id',
             'unit:id,monthly_rent,utility_deposit,security_deposit,late_fee,late_fee_after_days'])->findOrFail($id);
 
+        $this->authorize('view', $application);
+
         return view('landlord.application.view', compact('application'));
     }
 
     public function processing(Request $request, string $id)
     {
         $application_process = Application::findOrFail($id);
+        $this->authorize('process', $application_process);
 
         if ($application_process) {
 
@@ -68,6 +71,7 @@ class AcnooApplicationController extends Controller
     public function approved(string $id)
     {
         $approve_application = Application::findOrFail($id);
+        $this->authorize('approve', $approve_application);
         $security_deposit = SecurityDeposit::where('property_id', $approve_application->property_id)
             ->where('unit_id', $approve_application->unit_id)
             ->first();
@@ -103,6 +107,7 @@ class AcnooApplicationController extends Controller
         ]);
 
         $application_reject = Application::findOrFail($id);
+        $this->authorize('reject', $application_reject);
         if (empty($application_reject->tenant_agreement) || ! Storage::exists($application_reject->tenant_agreement)) {
             if ($application_reject) {
                 $application_reject->update([
@@ -127,6 +132,7 @@ class AcnooApplicationController extends Controller
     public function file_download(string $id, string $type)
     {
         $application = Application::findOrFail($id);
+        $this->authorize('fileDownload', $application);
 
         $filePath = $type === 'landlord' ? $application->landlord_agreement : $application->tenant_agreement;
 

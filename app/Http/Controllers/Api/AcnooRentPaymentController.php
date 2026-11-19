@@ -40,6 +40,7 @@ class AcnooRentPaymentController extends Controller
     public function show(string $id)
     {
         $rent_payment = RentPayment::with(['rent:id,tenant_id,landlord_id,property_id', 'rent.tenant:id,name,email,phone', 'rent.tenant.user_details:user_id,address_info', 'rent.landlord:id,name,email,phone', 'rent.landlord.user_details:user_id,address_info', 'rent.property:id,puid', 'rent.property.propertyDetail:id,property_id,property_info'])->findOrFail($id);
+        $this->authorize('view', $rent_payment);
 
         $errors = session()->get('errors', new ViewErrorBag);
         $html = view('api-invoice.rent-payment', compact('rent_payment', 'errors'))->render();

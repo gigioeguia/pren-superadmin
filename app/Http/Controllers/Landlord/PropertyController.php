@@ -231,9 +231,9 @@ class PropertyController extends Controller
                     },
                 ]);
             },
-        ])
-            ->where('landlord_id', auth()->id())
-            ->findOrFail($id);
+        ])->findOrFail($id);
+
+        $this->authorize('view', $property);
 
         if ($property->category_id == 6) {
             foreach ($property->units as $unit) {
@@ -267,6 +267,7 @@ class PropertyController extends Controller
         $amenities = Amenity::where('landlord_id', auth()->id())->get();
         $house_types = HouseType::where('status', 1)->latest()->get();
         $property = Property::with(['category:id,name', 'propertyDetail'])->findOrFail($id);
+        $this->authorize('update', $property);
 
         return view('landlord.properties.edit', compact('categories', 'facilities', 'amenities', 'house_types', 'phone_codes', 'countries', 'property'));
     }
@@ -314,6 +315,7 @@ class PropertyController extends Controller
             DB::beginTransaction();
 
             $property = Property::findOrFail($id);
+            $this->authorize('update', $property);
 
             // cover image
             if ($request->cover_removed_images) {
@@ -494,6 +496,7 @@ class PropertyController extends Controller
     public function destroy(string $id)
     {
         $property = Property::findOrFail($id);
+        $this->authorize('delete', $property);
 
         if (! empty($property->cover_image)) {
             foreach ($property->cover_image as $image) {

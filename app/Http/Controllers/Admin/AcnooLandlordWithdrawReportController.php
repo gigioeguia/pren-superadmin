@@ -31,6 +31,7 @@ class AcnooLandlordWithdrawReportController extends Controller
     {
 
         $withdraw = Withdraw::with(['user:id,name,phone,email', 'user.user_details:user_id,address_info'])->findOrFail($id);
+        $this->authorize('view', $withdraw);
 
         return view('admin.reports.withdrawals.invoice', compact('withdraw'));
     }

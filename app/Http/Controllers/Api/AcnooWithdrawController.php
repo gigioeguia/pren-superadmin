@@ -106,6 +106,7 @@ class AcnooWithdrawController extends Controller
     public function invoice(string $id)
     {
         $withdraw = Withdraw::with(['user:id,name,phone,email', 'user.user_details:user_id,address_info', 'account_info:id,method_id', 'account_info.withdraw_method:id,charge_type'])->findOrFail($id);
+        $this->authorize('invoice', $withdraw);
 
         $errors = session()->get('errors', new ViewErrorBag);
         $html = view('api-invoice.withdraw', compact('withdraw', 'errors'))->render();
@@ -123,6 +124,7 @@ class AcnooWithdrawController extends Controller
     public function summary(string $id)
     {
         $withdraw = Withdraw::findOrFail($id);
+        $this->authorize('summary', $withdraw);
         $summary = Transaction::select('id', 'withdraw_id', 'uid', 'payment_type')->with('withdraw:id,user_method_id,amount,charge,status,created_at', 'withdraw.account_info:id,method_id', 'withdraw.account_info.withdraw_method:id,name')->where('withdraw_id', $withdraw->id)->first();
 
         return response()->json([

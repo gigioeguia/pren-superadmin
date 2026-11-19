@@ -42,6 +42,7 @@ class AcnooRentPaymentController extends Controller
     public function file_download(string $id)
     {
         $rent_payment = RentPayment::findOrFail($id);
+        $this->authorize('fileDownload', $rent_payment);
 
         // Check if attachment exists in notes
         $filePath = $rent_payment->payment_data['payment_receipt'] ?? null;
@@ -56,6 +57,7 @@ class AcnooRentPaymentController extends Controller
     public function approve(string $id)
     {
         $rent_payment = RentPayment::findOrFail($id);
+        $this->authorize('approve', $rent_payment);
         $landlord = User::where('id', $rent_payment->rent->landlord_id ?? '')->first();
 
         DB::beginTransaction();
@@ -109,6 +111,7 @@ class AcnooRentPaymentController extends Controller
     {
 
         $rent_payment = RentPayment::findOrFail($id);
+        $this->authorize('reject', $rent_payment);
         $rent_payment->update([
             'note' => $request->note,
             'payment_status' => 'rejected',
