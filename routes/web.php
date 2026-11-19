@@ -16,10 +16,10 @@ Route::get('/contact-us', [Web\ContactController::class, 'index'])->name('contac
 Route::post('/contact/store', [Web\ContactController::class, 'store'])->name('contact.store');
 
 // Security Deposit & Rent payment
-Route::get('/online-payments-gateways/{payment_id}/{tenant_id}', [Web\PaymentController::class, 'DepositRentPayment'])->name('online.payments-gateways.index');
+Route::get('/online-payments-gateways/{payment_id}', [Web\PaymentController::class, 'DepositRentPayment'])->name('online.payments-gateways.index')->middleware('signed');
 
 // Subscription Payment
-Route::get('/payments-gateways/{plan_id}/{landlord_id}', [Web\PaymentController::class, 'index'])->name('payments-gateways.index');
+Route::get('/payments-gateways/{plan_id}/{landlord_id}', [Web\PaymentController::class, 'index'])->name('payments-gateways.index')->middleware('signed');
 
 Route::post('/payments/{plan_id}/{gateway_id}', [Web\PaymentController::class, 'payment'])->name('payments-gateways.payment');
 Route::get('/payment/success', [Web\PaymentController::class, 'success'])->name('payment.success');

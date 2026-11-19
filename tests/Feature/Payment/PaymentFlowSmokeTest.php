@@ -14,11 +14,14 @@ use App\Models\Gateway;
 use App\Models\Plan;
 use App\Models\Property;
 use App\Models\PropertyDetail;
+use App\Models\RentPayment;
 use App\Models\SecurityDeposit;
 use App\Models\Transaction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
+use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\CreatesUsers;
 use Tests\Stubs\StubGateway;
 use Tests\TestCase;
@@ -42,7 +45,11 @@ class PaymentFlowSmokeTest extends TestCase
         Gateway::factory()->create();
 
         // Act
-        $response = $this->get("/payments-gateways/{$plan->id}/{$landlord->id}");
+        $url = URL::temporarySignedRoute('payments-gateways.index', now()->addHours(2), [
+            'plan_id' => $plan->id,
+            'landlord_id' => $landlord->id,
+        ]);
+        $response = $this->get($url);
 
         // Assert
         $response->assertOk()->assertViewIs('payments.index');
@@ -61,9 +68,11 @@ class PaymentFlowSmokeTest extends TestCase
         Gateway::factory()->create();
 
         // Act
-        $response = $this->get(
-            "/online-payments-gateways/{$deposit->id}/{$deposit->tenant_id}?payment_type=security_deposit"
-        );
+        $url = URL::temporarySignedRoute('online.payments-gateways.index', now()->addHours(2), [
+            'payment_id' => $deposit->id,
+            'payment_type' => 'security_deposit',
+        ]);
+        $response = $this->get($url);
 
         // Assert
         $response->assertOk()->assertViewIs('payments.online_payment');
@@ -74,7 +83,12 @@ class PaymentFlowSmokeTest extends TestCase
     public function test_security_deposit_view_with_invalid_payment_type_redirects_with_error(): void
     {
         // Act
-        $response = $this->get('/online-payments-gateways/1/1?payment_type=xxx');
+        $url = URL::temporarySignedRoute('online.payments-gateways.index', now()->addHours(2), [
+            'payment_id' => 1,
+            'payment_type' => 'xxx',
+        ]);
+
+        $response = $this->get($url);
 
         // Assert
         $response->assertStatus(302)->assertSessionHas('error');
@@ -234,5 +248,116 @@ class PaymentFlowSmokeTest extends TestCase
         foreach ($endpoints as $uri => $class) {
             $this->get($uri)->assertOk();
         }
+    }
+
+    public function test_p2_unsigned_subscription_url_returns_403(): void
+    {
+        $plan = Plan::factory()->create();
+        $landlord = $this->createLandlord();
+
+        $response = $this->get("/payments-gateways/{$plan->id}/{$landlord->id}");
+
+        $response->assertForbidden();
+    }
+
+    public function test_p3_signed_url_for_other_user_with_session_returns_403(): void
+    {
+        $plan = Plan::factory()->create();
+        $landlordA = $this->createLandlord();
+        $landlordB = $this->createLandlord();
+
+        $url = URL::temporarySignedRoute('payments-gateways.index', now()->addHours(2), [
+            'plan_id' => $plan->id,
+            'landlord_id' => $landlordB->id,
+        ]);
+
+        $response = $this->actingAs($landlordA)->get($url);
+
+        $response->assertForbidden();
+    }
+
+    public function test_p4_signed_deposit_url_renders_view(): void
+    {
+        $deposit = SecurityDeposit::factory()->create([
+            'property_id' => Property::factory()->has(PropertyDetail::factory()),
+        ]);
+        Gateway::factory()->create();
+
+        $url = URL::temporarySignedRoute('online.payments-gateways.index', now()->addHours(2), [
+            'payment_id' => $deposit->id,
+            'payment_type' => 'security_deposit',
+        ]);
+        $response = $this->get($url);
+
+        $response->assertOk()->assertViewIs('payments.online_payment');
+        $this->assertEquals($deposit->tenant_id, session('user_id'));
+        $this->assertEquals('security_deposit', session('payment_type'));
+    }
+
+    public function test_p5_signed_rent_url_renders_view(): void
+    {
+        $rentPayment = RentPayment::factory()->create();
+        Gateway::factory()->create();
+
+        $url = URL::temporarySignedRoute('online.payments-gateways.index', now()->addHours(2), [
+            'payment_id' => $rentPayment->id,
+            'payment_type' => 'rent_payment',
+        ]);
+        $response = $this->get($url);
+
+        $response->assertOk();
+        $this->assertEquals($rentPayment->rent->tenant_id, session('user_id'));
+        $this->assertEquals('rent_payment', session('payment_type'));
+    }
+
+    public function test_p6_unsigned_deposit_url_returns_403(): void
+    {
+        $deposit = SecurityDeposit::factory()->create();
+
+        $response = $this->get("/online-payments-gateways/{$deposit->id}?payment_type=security_deposit");
+
+        $response->assertForbidden();
+    }
+
+    public function test_p7_old_route_with_tenant_id_returns_404(): void
+    {
+        $deposit = SecurityDeposit::factory()->create();
+
+        $response = $this->get("/online-payments-gateways/{$deposit->id}/{$deposit->tenant_id}?payment_type=security_deposit");
+
+        $response->assertNotFound();
+    }
+
+    public function test_p9_api_payment_url_subscription(): void
+    {
+        $landlord = $this->createLandlord();
+        $plan = Plan::factory()->create();
+        Gateway::factory()->create();
+
+        Sanctum::actingAs($landlord, ['*']);
+        $response = $this->getJson('/api/v1/payment-url?payment_type=subscription&plan_id='.$plan->id);
+
+        $response->assertOk()->assertJsonStructure(['url']);
+        $url = $response->json('url');
+        $this->assertStringContainsString('/payments-gateways/'.$plan->id.'/'.$landlord->id, $url);
+    }
+
+    public function test_p10_api_payment_url_rejects_foreign_deposit(): void
+    {
+        $tenantA = $this->createTenant();
+        $tenantB = $this->createTenant();
+        $deposit = SecurityDeposit::factory()->create(['tenant_id' => $tenantB->id]);
+
+        Sanctum::actingAs($tenantA, ['*']);
+        $response = $this->getJson('/api/v1/payment-url?payment_type=security_deposit&payment_id='.$deposit->id);
+
+        $response->assertForbidden();
+    }
+
+    public function test_p11_api_payment_url_requires_auth(): void
+    {
+        $response = $this->getJson('/api/v1/payment-url');
+
+        $response->assertUnauthorized();
     }
 }

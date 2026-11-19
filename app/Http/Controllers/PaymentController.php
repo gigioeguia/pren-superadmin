@@ -14,22 +14,30 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\URL;
 
 class PaymentController extends Controller
 {
     use HasUploader;
 
     // security deposit & rent payment gateway
-    public function DepositRentPayment($id, $tenant_id)
+    public function DepositRentPayment($id)
     {
         if (request('payment_type') == 'security_deposit') {
             $plan = SecurityDeposit::findOrFail($id);
             session()->put('payment_type', 'security_deposit');
+            $tenant_id = $plan->tenant_id;
         } elseif (request('payment_type') == 'rent_payment') {
             $plan = RentPayment::findOrFail($id);
             session()->put('payment_type', 'rent_payment');
+            $tenant_id = $plan->rent()->first()?->tenant_id;
         } else {
             return back()->with('error', __('Wrong Payment type provided!'));
+        }
+
+        // Defense in depth: if a web session exists, the authenticated user must be the payer.
+        if (auth()->check() && $tenant_id && auth()->id() !== (int) $tenant_id) {
+            abort(403);
         }
 
         $gateways = Gateway::with('currency:id,code,rate,symbol,position')->where(['status' => 1, 'is_manual' => 0])->get();
@@ -44,6 +52,12 @@ class PaymentController extends Controller
     public function index(string $id, string $landlord_id)
     {
         $plan = Plan::findOrFail($id);
+
+        // The URL is signed; still, when a web session exists the authenticated
+        // user must match the landlord encoded in the signed URL.
+        if (auth()->check() && auth()->id() !== (int) $landlord_id) {
+            abort(403);
+        }
 
         if (request('platform') == 'app') {
             $gateways = Gateway::with('currency:id,code,rate,symbol,position')->where(['status' => 1, 'is_manual' => 0])->get();
@@ -308,6 +322,59 @@ class PaymentController extends Controller
 
             return redirect(route('order.status', ['status' => 'failed']))->with('message', __('Something went wrong!'));
         }
+    }
+
+    /**
+     * Mint a signed payment URL for clients without a web session (mobile app).
+     */
+    public function paymentUrl(Request $request)
+    {
+        $request->validate([
+            'payment_type' => 'required|string|in:subscription,security_deposit,rent_payment',
+        ]);
+
+        $type = $request->payment_type;
+
+        if ($type === 'subscription') {
+            $request->validate(['plan_id' => 'required|exists:plans,id']);
+            $plan = Plan::findOrFail($request->plan_id);
+            $landlord_id = auth()->id();
+
+            $url = URL::temporarySignedRoute(
+                'payments-gateways.index',
+                now()->addHours(2),
+                ['plan_id' => $plan->id, 'landlord_id' => $landlord_id]
+            );
+        } elseif ($type === 'security_deposit') {
+            $request->validate(['payment_id' => 'required|exists:security_deposits,id']);
+            $deposit = SecurityDeposit::findOrFail($request->payment_id);
+
+            if (auth()->id() !== (int) $deposit->tenant_id) {
+                abort(403);
+            }
+
+            $url = URL::temporarySignedRoute(
+                'online.payments-gateways.index',
+                now()->addHours(2),
+                ['payment_id' => $deposit->id]
+            );
+        } else { // rent_payment
+            $request->validate(['payment_id' => 'required|exists:rent_payments,id']);
+            $rentPayment = RentPayment::findOrFail($request->payment_id);
+            $rent = $rentPayment->rent()->first();
+
+            if (! $rent || auth()->id() !== (int) $rent->tenant_id) {
+                abort(403);
+            }
+
+            $url = URL::temporarySignedRoute(
+                'online.payments-gateways.index',
+                now()->addHours(2),
+                ['payment_id' => $rentPayment->id]
+            );
+        }
+
+        return response()->json(['url' => $url]);
     }
 
     public function failed()
