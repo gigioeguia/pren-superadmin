@@ -12,8 +12,8 @@ Route::get('/property-chart', [Landlord\DashboardController::class, 'property_ch
 Route::get('/account-chart', [Landlord\DashboardController::class, 'account_chart'])->name('getAccountData');
 
 Route::resource('properties', Landlord\PropertyController::class);
-Route::post('properties/filter', [Landlord\PropertyController::class, 'deleteAll'])->name('properties.delete-all');
-Route::post('properties/delete-all', [Landlord\PropertyController::class, 'acnooFilter'])->name('properties.filter');
+Route::post('properties/filter', [Landlord\PropertyController::class, 'acnooFilter'])->name('properties.filter');
+Route::post('properties/delete-all', [Landlord\PropertyController::class, 'deleteAll'])->name('properties.delete-all');
 Route::get('properties/success/{id}', [Landlord\PropertyController::class, 'successView'])->name('properties.success');
 Route::post('properties/status/{id}', [Landlord\PropertyController::class, 'status'])->name('properties.status');
 Route::get('properties-excel', [Landlord\PropertyController::class, 'exportExcel'])->name('properties.excel');
