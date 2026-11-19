@@ -187,6 +187,71 @@ class ApiAuthSmokeTest extends TestCase
         $this->assertNotEmpty($response->json('token'));
     }
 
+    // A15 — OTP expirado
+    public function test_api_submit_otp_with_expired_token_returns_410(): void
+    {
+        // Arrange
+        $user = User::factory()->landlord()->create([
+            'email' => 'john@example.test',
+            'remember_token' => '123456',
+            'email_verified_at' => now()->subHour(),
+        ]);
+
+        // Act
+        $response = $this->postJson('/api/v1/submit-otp', [
+            'otp' => '123456',
+            'email' => $user->email,
+        ]);
+
+        // Assert
+        $response->assertStatus(410)
+            ->assertJsonPath('error', __('The verification otp has been expired.'));
+        $this->assertEmpty($response->json('token'));
+    }
+
+    // A16 — OTP inválido
+    public function test_api_submit_otp_with_invalid_token_returns_400(): void
+    {
+        // Arrange
+        $user = User::factory()->landlord()->create([
+            'email' => 'john@example.test',
+            'remember_token' => '123456',
+            'email_verified_at' => now()->addHour(),
+        ]);
+
+        // Act
+        $response = $this->postJson('/api/v1/submit-otp', [
+            'otp' => '999999',
+            'email' => $user->email,
+        ]);
+
+        // Assert
+        $response->assertStatus(400)
+            ->assertJsonPath('error', __('Invalid otp.'));
+    }
+
+    // A17 — bypass cerrado: remember_token null + otp '0000'
+    public function test_api_submit_otp_with_null_token_and_zero_otp_returns_400(): void
+    {
+        // Arrange
+        $user = User::factory()->landlord()->create([
+            'email' => 'john@example.test',
+            'remember_token' => null,
+            'email_verified_at' => now()->addHour(),
+        ]);
+
+        // Act
+        $response = $this->postJson('/api/v1/submit-otp', [
+            'otp' => '0000',
+            'email' => $user->email,
+        ]);
+
+        // Assert
+        $response->assertStatus(400)
+            ->assertJsonPath('error', __('Invalid otp.'));
+        $this->assertNull($user->fresh()->remember_token);
+    }
+
     public function test_api_send_reset_code_sends_mail_and_stores_code(): void
     {
         // Arrange
