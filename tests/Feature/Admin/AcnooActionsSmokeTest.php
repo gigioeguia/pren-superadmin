@@ -7,9 +7,11 @@ use App\Http\Controllers\Admin\PropertyController;
 use App\Models\Amenity;
 use App\Models\Property;
 use App\Models\PropertyDetail;
+use App\Models\Unit;
 use App\Traits\HasAcnooActions;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use ReflectionClass;
 use Tests\Concerns\CreatesUsers;
@@ -136,8 +138,14 @@ class AcnooActionsSmokeTest extends TestCase
             'property_id' => $property->id,
             'floorplan_image' => 'properties/102/floorplan.jpg',
         ]);
+        Unit::create([
+            'property_id' => $property->id,
+            'unit_name' => 'U1',
+            'images' => ['units/7/img.jpg'],
+        ]);
         Storage::disk($disk)->put('properties/101/cover.jpg', 'img');
         Storage::disk($disk)->put('properties/102/floorplan.jpg', 'img');
+        Storage::disk($disk)->put('units/7/img.jpg', 'img');
 
         // Act
         $response = $this->actingAs($admin)->postJson('/admin/properties/delete-all', [
@@ -149,6 +157,41 @@ class AcnooActionsSmokeTest extends TestCase
         $this->assertDatabaseMissing('properties', ['id' => $property->id]);
         Storage::disk($disk)->assertMissing('properties/101/cover.jpg');
         Storage::disk($disk)->assertMissing('properties/102/floorplan.jpg');
+        Storage::disk($disk)->assertMissing('units/7/img.jpg');
+    }
+
+    public function test_row_by_row_preserves_media_when_delete_fails(): void
+    {
+        // Arrange
+        $admin = $this->createSuperadmin();
+        $disk = config('filesystems.default');
+        Storage::fake($disk);
+
+        $property = Property::factory()->create([
+            'cover_image' => ['properties/301/cover.jpg'],
+        ]);
+        PropertyDetail::factory()->create([
+            'property_id' => $property->id,
+            'floorplan_image' => 'properties/302/floorplan.jpg',
+        ]);
+        Storage::disk($disk)->put('properties/301/cover.jpg', 'img');
+        Storage::disk($disk)->put('properties/302/floorplan.jpg', 'img');
+
+        // Fuerza fallo del delete disparando una excepción en el evento deleting.
+        Event::listen('eloquent.deleting: '.Property::class, function () {
+            throw new \RuntimeException('boom');
+        });
+
+        // Act
+        $response = $this->actingAs($admin)->postJson('/admin/properties/delete-all', [
+            'ids' => [$property->id],
+        ]);
+
+        // Assert — el delete falla y la media se preserva.
+        $this->assertGreaterThanOrEqual(400, $response->status());
+        $this->assertDatabaseHas('properties', ['id' => $property->id]);
+        Storage::disk($disk)->assertExists('properties/301/cover.jpg');
+        Storage::disk($disk)->assertExists('properties/302/floorplan.jpg');
     }
 
     public function test_export_excel_downloads_xlsx(): void

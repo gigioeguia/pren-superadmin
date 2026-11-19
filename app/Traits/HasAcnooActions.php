@@ -54,21 +54,22 @@ trait HasAcnooActions
     // caracterizado por H3).
     public function deleteAll(Request $request)
     {
-        // DEUDA CONOCIDA (DT-M10, fix en Fase 2 junto al scoping): la limpieza
-        // de media (deletingAcnooRow) corre ANTES del delete de la fila —
-        // patrón preexistente preservado 1:1 de los controladores originales.
-        // Si el delete de la fila falla (FK/concurrencia), la fila queda viva
-        // con su media ya borrada. El fix correcto captura los paths ANTES del
-        // delete y limpia DESPUÉS — no reordenar sin más: las relaciones con
-        // cascadeOnDelete (propertyDetail, units) desaparecen tras el delete y
-        // la limpieza dejaría de encontrarlas. Es un rediseño del contrato del
-        // hook, no un swap de dos líneas.
+        // DT-M10 (Fase 2 / 2.6): la media se captura ANTES del delete (las
+        // relaciones con cascadeOnDelete — propertyDetail, units — desaparecen
+        // tras él) y se limpia DESPUÉS del delete exitoso. Si `$row->delete()`
+        // lanza, los callables no se ejecutan y la media se preserva.
         if ($this->acnooDeletesRowByRow()) {
             $this->acnooModel()::whereIn('id', $request->ids)->get()
                 ->each(function (Model $row) {
-                    $this->deletingAcnooRow($row);
+                    $cleanup = $this->deletingAcnooRow($row);
 
                     $row->delete();
+
+                    foreach ($cleanup as $callback) {
+                        if ($callback instanceof \Closure) {
+                            $callback();
+                        }
+                    }
                 });
         } else {
             $this->acnooModel()::whereIn('id', $request->ids)->delete();
@@ -120,9 +121,15 @@ trait HasAcnooActions
         return false;
     }
 
-    protected function deletingAcnooRow(Model $row): void
+    /**
+     * Captura la media de la fila y devuelve la lista de callables que la
+     * limpian. Los callables se ejecutan DESPUÉS de `$row->delete()` exitoso.
+     *
+     * @return array<int, \Closure>
+     */
+    protected function deletingAcnooRow(Model $row): array
     {
-        //
+        return [];
     }
 
     // Hooks requeridos solo si la ruta correspondiente existe en el controlador.

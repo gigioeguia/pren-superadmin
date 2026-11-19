@@ -655,29 +655,36 @@ class PropertyController extends Controller
         return true;
     }
 
-    protected function deletingAcnooRow($row): void
+    protected function deletingAcnooRow($row): array
     {
+        $cleanup = [];
+
         if (! empty($row->cover_image)) {
             foreach ($row->cover_image as $image) {
-                $oldImagePath = dirname($image);
-                Storage::deleteDirectory($oldImagePath);
+                $dir = dirname($image);
+                $cleanup[] = fn () => Storage::deleteDirectory($dir);
             }
         }
 
-        if (! empty($row->propertyDetail->floorplan_image)) {
-            $oldImagePath = dirname($row->propertyDetail->floorplan_image);
-            Storage::deleteDirectory($oldImagePath);
+        $propertyDetail = $row->propertyDetail;
+        if (! empty($propertyDetail?->floorplan_image)) {
+            $dir = dirname($propertyDetail->floorplan_image);
+            $cleanup[] = fn () => Storage::deleteDirectory($dir);
         }
 
+        $unitImages = [];
         foreach ($row->units as $unit) {
-            if (! empty($unit->images)) {
-                foreach ($unit->images as $image) {
-                    if ($image && Storage::exists($image)) {
-                        Storage::delete($image);
-                    }
+            foreach ($unit->images ?? [] as $image) {
+                if ($image) {
+                    $unitImages[] = $image;
                 }
             }
         }
+        if ($unitImages !== []) {
+            $cleanup[] = fn () => Storage::delete($unitImages);
+        }
+
+        return $cleanup;
     }
 
     protected function acnooDeleteMessage(): string
