@@ -22,7 +22,7 @@ Route::get('/online-payments-gateways/{payment_id}', [Web\PaymentController::cla
 Route::get('/payments-gateways/{plan_id}/{landlord_id}', [Web\PaymentController::class, 'index'])->name('payments-gateways.index')->middleware('signed');
 
 Route::post('/payments/{plan_id}/{gateway_id}', [Web\PaymentController::class, 'payment'])->name('payments-gateways.payment');
-Route::get('/payment/success', [Web\PaymentController::class, 'success'])->name('payment.success');
+Route::get('/payment/success', [Web\PaymentController::class, 'success'])->name('payment.success')->middleware('auth');
 Route::get('/payment/failed', [Web\PaymentController::class, 'failed'])->name('payment.failed');
 Route::get('/order-status', [Web\PaymentController::class, 'orderStatus'])->name('order.status');
 // Payment Routes End

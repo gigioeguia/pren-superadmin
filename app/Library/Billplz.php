@@ -102,6 +102,7 @@ class Billplz
                 if (is_array($bill) && ($bill['paid'] ?? false) === true) {
                     Log::info("Payment successful for Bill ID: {$bill_id}");
 
+                    Session::put('payment_info', ['status' => 1]);
                     Session::forget('billplz_credentials');
 
                     return redirect(Billplz::redirect_if_payment_success());

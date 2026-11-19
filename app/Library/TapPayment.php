@@ -103,6 +103,8 @@ class TapPayment
 
             // Check the status
             if (is_array($paymentDetails) && ($paymentDetails['status'] ?? null) === 'CAPTURED') {
+                Session::put('payment_info', ['status' => 1]);
+
                 return redirect(self::redirect_if_payment_success());
             } else {
                 session()->put('payment_msg', $paymentDetails['response']['message']);

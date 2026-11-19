@@ -60,7 +60,7 @@ class StripeGateway
                 ],
             ],
             'mode' => 'payment',
-            'success_url' => route('payment.success'),
+            'success_url' => route('payment.success').'?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => route('payment.failed'),
         ]);
 
