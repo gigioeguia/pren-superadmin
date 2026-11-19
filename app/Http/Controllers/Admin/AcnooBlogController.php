@@ -136,11 +136,15 @@ class AcnooBlogController extends Controller
         return true;
     }
 
-    protected function deletingAcnooRow($row): void
+    protected function deletingAcnooRow($row): array
     {
-        if (file_exists($row->image)) {
-            Storage::delete($row->image);
+        $image = $row->image;
+
+        if ($image && file_exists($image)) {
+            return [fn () => Storage::delete($image)];
         }
+
+        return [];
     }
 
     protected function acnooRedirectRoute(): string

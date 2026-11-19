@@ -8,10 +8,12 @@ use App\Models\Amenity;
 use App\Models\PlanSubscribe;
 use App\Models\Property;
 use App\Models\PropertyDetail;
+use App\Models\Rent;
 use App\Models\User;
 use App\Traits\HasAcnooActions;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use ReflectionClass;
 use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
@@ -89,6 +91,78 @@ class LandlordAcnooActionsSmokeTest extends TestCase
         $this->assertDatabaseHas('amenities', ['id' => $keep->id]);
         $this->assertDatabaseMissing('amenities', ['id' => $deleteA->id]);
         $this->assertDatabaseMissing('amenities', ['id' => $deleteB->id]);
+    }
+
+    public function test_landlord_delete_all_cleans_media_after_delete(): void
+    {
+        // Arrange
+        $landlord = $this->landlordWithSubscription();
+        $disk = config('filesystems.default');
+        Storage::fake($disk);
+
+        $property = Property::factory()->create([
+            'landlord_id' => $landlord->id,
+            'cover_image' => ['properties/201/cover.jpg'],
+        ]);
+        PropertyDetail::factory()->create([
+            'property_id' => $property->id,
+            'floorplan_image' => 'properties/202/floorplan.jpg',
+        ]);
+        Storage::disk($disk)->put('properties/201/cover.jpg', 'img');
+        Storage::disk($disk)->put('properties/202/floorplan.jpg', 'img');
+
+        // Act
+        $response = $this->actingAs($landlord)->postJson('/landlord/properties/filter', [
+            'ids' => [$property->id],
+        ]);
+
+        // Assert
+        $response->assertOk();
+        $this->assertDatabaseMissing('properties', ['id' => $property->id]);
+        Storage::disk($disk)->assertMissing('properties/201/cover.jpg');
+        Storage::disk($disk)->assertMissing('properties/202/floorplan.jpg');
+    }
+
+    public function test_landlord_delete_all_preserves_media_when_rented(): void
+    {
+        // Arrange
+        $landlord = $this->landlordWithSubscription();
+        $tenant = $this->createTenant();
+        $disk = config('filesystems.default');
+        Storage::fake($disk);
+
+        $property = Property::factory()->create([
+            'landlord_id' => $landlord->id,
+            'cover_image' => ['properties/301/cover.jpg'],
+        ]);
+        PropertyDetail::factory()->create([
+            'property_id' => $property->id,
+            'floorplan_image' => 'properties/302/floorplan.jpg',
+        ]);
+        Storage::disk($disk)->put('properties/301/cover.jpg', 'img');
+        Storage::disk($disk)->put('properties/302/floorplan.jpg', 'img');
+
+        Rent::create([
+            'landlord_id' => $landlord->id,
+            'tenant_id' => $tenant->id,
+            'property_id' => $property->id,
+            'monthly_rent' => 100,
+            'total_amount' => 100,
+            'start_date' => now(),
+            'end_date' => now()->addMonth(),
+            'status' => 1,
+        ]);
+
+        // Act
+        $response = $this->actingAs($landlord)->postJson('/landlord/properties/filter', [
+            'ids' => [$property->id],
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $this->assertDatabaseHas('properties', ['id' => $property->id]);
+        Storage::disk($disk)->assertExists('properties/301/cover.jpg');
+        Storage::disk($disk)->assertExists('properties/302/floorplan.jpg');
     }
 
     /**

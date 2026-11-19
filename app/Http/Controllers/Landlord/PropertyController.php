@@ -538,34 +538,46 @@ class PropertyController extends Controller
         $properties = Property::whereIn('id', $request->ids)->get();
 
         foreach ($properties as $property) {
+            // Captura ANTES del delete: las relaciones cascadeOnDelete
+            // (propertyDetail, units) desaparecen tras él.
+            $cleanup = [];
+
             if (! empty($property->cover_image)) {
                 foreach ($property->cover_image as $image) {
-                    $oldImagePath = dirname($image);
-                    Storage::deleteDirectory($oldImagePath);
+                    $dir = dirname($image);
+                    $cleanup[] = fn () => Storage::deleteDirectory($dir);
                 }
             }
-            if (! empty($property->propertyDetail->floorplan_image)) {
-                $oldImagePath = dirname($property->propertyDetail->floorplan_image);
-                Storage::deleteDirectory($oldImagePath);
+
+            $propertyDetail = $property->propertyDetail()->first();
+            if (! empty($propertyDetail?->floorplan_image)) {
+                $dir = dirname($propertyDetail->floorplan_image);
+                $cleanup[] = fn () => Storage::deleteDirectory($dir);
             }
 
+            $unitImages = [];
             foreach ($property->units as $unit) {
-                if (! empty($unit->images)) {
-                    foreach ($unit->images as $image) {
-                        if ($image && Storage::exists($image)) {
-                            Storage::delete($image);
-                        }
+                foreach ($unit->images ?? [] as $image) {
+                    if ($image) {
+                        $unitImages[] = $image;
                     }
                 }
             }
-            if ($property->rent !== null) {
+            if ($unitImages !== []) {
+                $cleanup[] = fn () => Storage::delete($unitImages);
+            }
 
+            if ($property->rent !== null) {
                 return response()->json([
                     'message' => __('Your property is already rented by tenant. Cannot delete it until remove the tenant first'),
                 ], 400);
             }
 
             $property->delete();
+
+            foreach ($cleanup as $callback) {
+                $callback();
+            }
         }
 
         return response()->json([
