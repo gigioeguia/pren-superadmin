@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class PropertyController extends Controller
 {
@@ -294,7 +295,7 @@ class PropertyController extends Controller
         $request->validate([
             'category_id' => 'required|exists:categories,id',
             'house_type_id' => 'nullable|exists:house_types,id',
-            'landlord_id' => 'required|exists:users,id',
+            'landlord_id' => ['required', Rule::exists('users', 'id')->where('role', 'landlord')],
             'state' => 'nullable',
             'city' => 'nullable',
             'building_name' => 'nullable',

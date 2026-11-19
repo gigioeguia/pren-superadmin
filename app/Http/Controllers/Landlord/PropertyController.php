@@ -345,7 +345,6 @@ class PropertyController extends Controller
             }
 
             $property->update([
-                'landlord_id' => auth()->id(),
                 'category_id' => $request->category_id,
                 'house_type_id' => $request->house_type_id,
                 'type' => $request->type,
