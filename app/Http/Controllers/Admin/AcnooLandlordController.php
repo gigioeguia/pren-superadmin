@@ -69,9 +69,9 @@ class AcnooLandlordController extends Controller
             'mobile_code' => 'nullable|string',
             'email' => 'nullable|email|unique:users,email',
             'password' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,gif,svg|max:10240',
-            'mykad.front_image' => 'nullable|image|mimes:jpeg,png,gif,svg|max:10240',
-            'mykad.back_image' => 'nullable|image|mimes:jpeg,png,gif,svg|max:10240',
+            'image' => 'nullable|image|mimes:jpeg,png,gif|max:10240',
+            'mykad.front_image' => 'nullable|image|mimes:jpeg,png,gif|max:10240',
+            'mykad.back_image' => 'nullable|image|mimes:jpeg,png,gif|max:10240',
         ], [
             'phone.mobile_no.max' => 'The phone must not be greater than 15 characters.',
         ]);

@@ -21,6 +21,24 @@ class AcnooWebSettingController extends Controller
 
     public function update(Request $request, $key)
     {
+        $request->validate([
+            'slider_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'contact_us_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'about_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'get_app_apple_store_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'get_app_play_store_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'web_logo_one' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'web_logo_two' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'soft_mng_subtitle_one_icon' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'soft_mng_subtitle_two_icon' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'soft_mng_subtitle_three_icon' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'soft_mng_subtitle_one_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'soft_mng_subtitle_two_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'soft_mng_subtitle_three_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'footer_socials_icons' => 'nullable|array',
+            'footer_socials_icons.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
         $option = Option::where('key', 'manage-pages')->first();
         Option::updateOrCreate(
             ['key' => 'manage-pages'],

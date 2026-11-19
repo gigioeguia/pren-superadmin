@@ -66,7 +66,7 @@ class AcnooSecurityDepositController extends Controller
 
         if ($gateway->is_manual == 1) {
             $request->validate([
-                'payment_receipt' => 'required|file',
+                'payment_receipt' => 'required|file|mimes:jpeg,png,jpg,pdf|max:5120',
                 'payment_note' => 'nullable|string',
             ]);
 

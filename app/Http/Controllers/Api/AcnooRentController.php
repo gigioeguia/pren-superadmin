@@ -66,7 +66,7 @@ class AcnooRentController extends Controller
             'unit_id' => 'nullable|exists:units,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
-            'landlord_agreement' => 'required|file',
+            'landlord_agreement' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
         ]);
 
         $property = Property::findOrFail($request->property_id);
@@ -196,6 +196,10 @@ class AcnooRentController extends Controller
 
     public function tenant_agreement(Request $request, string $id)
     {
+        $request->validate([
+            'tenant_agreement' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
+        ]);
+
         $rent = Rent::findOrFail($id);
 
         $rent->update([

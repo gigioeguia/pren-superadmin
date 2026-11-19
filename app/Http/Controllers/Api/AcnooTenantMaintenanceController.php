@@ -56,6 +56,7 @@ class AcnooTenantMaintenanceController extends Controller
             'property_id' => 'required|exists:properties,id',
             'description' => 'nullable|string',
             'images' => 'nullable|array',
+            'images.*' => 'file|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $maintenance = Maintenance::create($request->except('images', 'tenant_id') + [
@@ -91,6 +92,7 @@ class AcnooTenantMaintenanceController extends Controller
             'property_id' => 'required|exists:properties,id',
             'description' => 'nullable|string',
             'images' => 'nullable|array',
+            'images.*' => 'file|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($maintenance->status == 'processing' || $maintenance->status == 'completed') {

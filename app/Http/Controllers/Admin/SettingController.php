@@ -33,7 +33,9 @@ class SettingController extends Controller
             'phone' => 'nullable|string',
             'email' => 'nullable|email',
             'app_url' => 'required|string',
-            'logo' => 'nullable|image',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'favicon' => 'nullable|image|mimes:jpeg,png,jpg,gif,ico|max:2048',
+            'login_page_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'withdraw_payment_success_title' => 'required|string|max:25',
             'withdraw_payment_success_message' => 'required|string|max:120',
         ]);

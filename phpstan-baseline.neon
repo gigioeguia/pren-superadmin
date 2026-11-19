@@ -251,11 +251,6 @@ parameters:
 			path: app/Http/Controllers/Admin/AcnooFacilityController.php
 
 		-
-			message: "#^Call to an undefined method App\\\\Http\\\\Controllers\\\\Admin\\\\AcnooGatewayController\\:\\:upload\\(\\)\\.$#"
-			count: 1
-			path: app/Http/Controllers/Admin/AcnooGatewayController.php
-
-		-
 			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$user_details\\.$#"
 			count: 3
 			path: app/Http/Controllers/Admin/AcnooLandlordController.php

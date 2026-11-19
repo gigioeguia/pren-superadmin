@@ -34,7 +34,7 @@ class AcnooFeatureController extends Controller
             'status' => 'required',
             'title' => 'required',
             'bg_color' => 'required',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         Feature::create($request->except('image') + [
@@ -58,7 +58,7 @@ class AcnooFeatureController extends Controller
             'status' => 'required',
             'title' => 'required|string',
             'bg_color' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $feature->update($request->except('image') + [

@@ -33,7 +33,7 @@ class AcnooClientController extends Controller
         $request->validate([
             'status' => 'required',
             'title' => 'required',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         Client::create($request->except('image') + [
@@ -56,7 +56,7 @@ class AcnooClientController extends Controller
         $request->validate([
             'status' => 'required',
             'title' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $client->update($request->except('image') + [
