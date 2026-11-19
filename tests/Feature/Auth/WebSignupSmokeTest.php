@@ -165,6 +165,28 @@ class WebSignupSmokeTest extends TestCase
         $this->assertGuest();
     }
 
+    // S12 — bypass cerrado: remember_token null + otp '0000' ya no autentica
+    public function test_otp_submit_with_null_token_and_zero_otp_returns_400(): void
+    {
+        // Arrange
+        $user = User::factory()->landlord()->create([
+            'email' => 'john@example.test',
+            'remember_token' => null,
+            'email_verified_at' => now()->addHour(),
+        ]);
+
+        // Act
+        $response = $this->postJson('/otp-submit', [
+            'otp' => '0000',
+            'email' => $user->email,
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $this->assertGuest();
+        $this->assertNull($user->fresh()->remember_token);
+    }
+
     public function test_signup_with_existing_setupped_email_returns_406(): void
     {
         // Arrange

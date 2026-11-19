@@ -222,7 +222,7 @@ class RegistrationController extends Controller
             ], 404);
         }
 
-        if ($user->remember_token == $request->otp) {
+        if ($user->remember_token !== null && hash_equals((string) $user->remember_token, (string) $request->otp)) {
             if ($user->email_verified_at > now()) {
 
                 Auth::login($user);
