@@ -61,7 +61,7 @@ class WebSignupSmokeTest extends TestCase
         $response = $this->postJson('/signup', [
             'name' => 'John Landlord',
             'email' => 'john@example.test',
-            'password' => 'password',
+            'password' => 'Password123',
             'plan_id' => 1,
         ]);
 
@@ -87,7 +87,7 @@ class WebSignupSmokeTest extends TestCase
         $response = $this->postJson('/signup', [
             'name' => 'John Landlord',
             'email' => 'john@example.test',
-            'password' => 'password',
+            'password' => 'Password123',
         ]);
 
         // Assert
@@ -187,6 +187,24 @@ class WebSignupSmokeTest extends TestCase
         $this->assertNull($user->fresh()->remember_token);
     }
 
+    // S13 — contraseña débil rechazada (política Password)
+    public function test_signup_with_weak_password_returns_422(): void
+    {
+        // Arrange
+        $this->otpOption('off');
+
+        // Act
+        $response = $this->postJson('/signup', [
+            'name' => 'John Landlord',
+            'email' => 'weak@example.test',
+            'password' => 'password',
+        ]);
+
+        // Assert
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['password']);
+    }
+
     public function test_signup_with_existing_setupped_email_returns_406(): void
     {
         // Arrange
@@ -197,7 +215,7 @@ class WebSignupSmokeTest extends TestCase
         $response = $this->postJson('/signup', [
             'name' => 'John Landlord',
             'email' => $user->email,
-            'password' => 'password',
+            'password' => 'Password123',
         ]);
 
         // Assert
@@ -210,7 +228,7 @@ class WebSignupSmokeTest extends TestCase
         // Act
         $response = $this->postJson('/signup', [
             'email' => 'john@example.test',
-            'password' => 'password',
+            'password' => 'Password123',
         ]);
 
         // Assert
@@ -228,7 +246,7 @@ class WebSignupSmokeTest extends TestCase
         $response = $this->postJson('/signup', [
             'name' => 'John Landlord',
             'email' => 'john@example.test',
-            'password' => 'password',
+            'password' => 'Password123',
         ]);
 
         // Assert

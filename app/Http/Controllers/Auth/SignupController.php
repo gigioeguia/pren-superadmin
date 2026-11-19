@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Validation\Rules\Password;
 
 class SignupController extends Controller
 {
@@ -20,7 +21,7 @@ class SignupController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'password' => 'required|min:6|max:100',
+            'password' => Password::required(),
             'email' => 'required|email',
         ]);
 
