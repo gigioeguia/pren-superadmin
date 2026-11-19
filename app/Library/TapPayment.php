@@ -3,6 +3,7 @@
 namespace App\Library;
 
 use App\Models\Gateway;
+use App\Support\ErrorMessage;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -79,7 +80,7 @@ class TapPayment
             // Redirect the user to Tap's payment page
             return redirect($responseBody['transaction']['url']);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => __(ErrorMessage::GENERIC)], 500);
         }
     }
 
@@ -112,7 +113,7 @@ class TapPayment
                 return redirect(self::redirect_if_payment_faild());
             }
         } catch (\Exception $e) {
-            session()->put('payment_msg', $e->getMessage());
+            session()->put('payment_msg', __(ErrorMessage::PAYMENT));
 
             return redirect(self::redirect_if_payment_faild());
         }

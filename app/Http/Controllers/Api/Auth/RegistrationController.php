@@ -7,6 +7,7 @@ use App\Mail\WelcomeMail;
 use App\Models\Plan;
 use App\Models\PlanSubscribe;
 use App\Models\User;
+use App\Support\ErrorMessage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -175,12 +176,13 @@ class RegistrationController extends Controller
             ]);
 
         } catch (\Throwable $th) {
+            report($th);
 
             DB::rollBack();
 
             return response()->json([
                 'message' => 'Something went wrong. Please contact the admin.',
-                'error' => $th->getMessage(),
+                'error' => __(ErrorMessage::GENERIC),
             ], 403);
         }
     }

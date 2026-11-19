@@ -10,6 +10,7 @@ use App\Models\RefundRequest;
 use App\Models\Rent;
 use App\Models\SecurityDeposit;
 use App\Models\User;
+use App\Support\ErrorMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ViewErrorBag;
@@ -151,10 +152,11 @@ class AcnooRefundRequestController extends Controller
             sendNotification($refund_request->id, notify_users([$refund_request->tenant->id, $refund_request->landlord->id]), landlord_url: route('landlord.refund-request.index', ['id' => $refund_request->id]), landlord_msg: __('Tenant has approved the refund request.Refund marked as a paid'), tenant_msg: __('Your refund has been approved'));
 
         } catch (\Throwable $th) {
+            report($th);
             DB::rollBack();
 
             return response()->json([
-                'message' => $th->getMessage(),
+                'message' => __(ErrorMessage::TRANSACTION),
             ]);
         }
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Controller;
 use App\Mail\PasswordReset;
 use App\Models\User;
+use App\Support\ErrorMessage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -49,8 +50,10 @@ class ForgotPasswordController extends Controller
                 'message' => 'Password reset code has been sent to your email.',
             ]);
         } catch (\Exception $exception) {
+            report($exception);
+
             return response()->json([
-                'message' => $exception->getMessage(),
+                'message' => __(ErrorMessage::GENERIC),
             ], 422);
         }
     }

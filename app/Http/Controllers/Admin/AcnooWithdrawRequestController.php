@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Withdraw;
+use App\Support\ErrorMessage;
 use App\Traits\HasAcnooActions;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -114,9 +115,10 @@ class AcnooWithdrawRequestController extends Controller
                     'redirect' => route('admin.withdraw-request.index'),
                 ]);
             } catch (\Exception $e) {
+                report($e);
                 DB::rollback();
 
-                return response()->json(['error' => 'Transaction failed: '.$e->getMessage()], 500);
+                return response()->json(['error' => __(ErrorMessage::TRANSACTION)], 500);
             }
         } else {
             return response()->json(['message' => 'Withdrawal request not found'], 404);

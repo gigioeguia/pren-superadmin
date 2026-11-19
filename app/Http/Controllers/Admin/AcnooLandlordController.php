@@ -9,6 +9,7 @@ use App\Models\Plan;
 use App\Models\PlanSubscribe;
 use App\Models\User;
 use App\Models\UserDetail;
+use App\Support\ErrorMessage;
 use App\Traits\HasAcnooActions;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -158,11 +159,12 @@ class AcnooLandlordController extends Controller
                 'redirect' => route('admin.landlords.index'),
             ]);
         } catch (\Exception $e) {
+            report($e);
             DB::rollBack();
 
             return response()->json([
                 'message' => __('Landlord created failed.'),
-                'error' => $e->getMessage(),
+                'error' => __(ErrorMessage::GENERIC),
             ], 500);
         }
     }
@@ -253,11 +255,12 @@ class AcnooLandlordController extends Controller
                 'redirect' => route('admin.landlords.index'),
             ]);
         } catch (\Exception $e) {
+            report($e);
             DB::rollBack();
 
             return response()->json([
                 'message' => __('Landlord updated failed.'),
-                'error' => $e->getMessage(),
+                'error' => __(ErrorMessage::GENERIC),
             ], 500);
         }
     }
@@ -294,10 +297,11 @@ class AcnooLandlordController extends Controller
                 'redirect' => route('admin.landlords.index'),
             ]);
         } catch (\Exception $e) {
+            report($e);
             DB::rollBack();
 
             return response()->json([
-                'message' => 'Something went wrong: '.$e->getMessage(),
+                'message' => __(ErrorMessage::GENERIC),
             ], 500);
         }
     }
@@ -337,10 +341,11 @@ class AcnooLandlordController extends Controller
                 'redirect' => route('admin.landlords.index'),
             ]);
         } catch (\Exception $e) {
+            report($e);
             DB::rollBack();
 
             return response()->json([
-                'message' => 'Something went wrong: '.$e->getMessage(),
+                'message' => __(ErrorMessage::GENERIC),
             ], 500);
         }
     }

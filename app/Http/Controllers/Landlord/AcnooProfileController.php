@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Landlord;
 use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\ErrorMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -131,11 +132,12 @@ class AcnooProfileController extends Controller
                 'redirect' => route('landlord.profile.index'),
             ]);
         } catch (\Exception $e) {
+            report($e);
             DB::rollBack();
 
             return response()->json([
                 'message' => __('Profile updated failed.'),
-                'error' => $e->getMessage(),
+                'error' => __(ErrorMessage::GENERIC),
             ], 500);
         }
     }

@@ -3,6 +3,7 @@
 namespace App\Library;
 
 use App\Models\Gateway;
+use App\Support\ErrorMessage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 
@@ -125,7 +126,7 @@ class Instamojo
                 return redirect(Instamojo::redirect_if_payment_faild());
             }
         } catch (\Throwable $th) {
-            Session::flash('error', $th->getMessage());
+            Session::flash('error', __(ErrorMessage::PAYMENT));
             Session::forget('instamojo_credentials');
 
             return redirect(Instamojo::redirect_if_payment_faild());

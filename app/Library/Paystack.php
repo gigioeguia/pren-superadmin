@@ -121,7 +121,7 @@ class Paystack
             $err = null;
         } catch (Throwable $e) {
             $response = null;
-            $err = $e->getMessage();
+            $err = true;
         }
 
         if ($err) {

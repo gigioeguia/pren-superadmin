@@ -13,6 +13,7 @@ use App\Models\Rent;
 use App\Models\SecurityDeposit;
 use App\Models\Unit;
 use App\Models\User;
+use App\Support\ErrorMessage;
 use App\Traits\HasAcnooActions;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -189,6 +190,7 @@ class AcnooRentInvitationController extends Controller
                 'redirect' => route('landlord.rents.index'),
             ]);
         } catch (\Exception $e) {
+            report($e);
             DB::rollBack();
 
             return response()->json(['message' => 'Something went wrong'], 500);
@@ -247,7 +249,9 @@ class AcnooRentInvitationController extends Controller
                 return response()->json(['message' => 'Security Deposit is unpaid.'], 400);
             }
         } catch (\Exception $e) {
-            return response()->json(['message' => 'An unexpected error occurred.', 'error' => $e->getMessage()], 500);
+            report($e);
+
+            return response()->json(['message' => __(ErrorMessage::GENERIC), 'error' => __(ErrorMessage::GENERIC)], 500);
         }
     }
 

@@ -3,6 +3,7 @@
 namespace App\Library;
 
 use App\Models\Gateway;
+use App\Support\ErrorMessage;
 use FedaPay\FedaPay;
 use FedaPay\Transaction;
 use Illuminate\Http\Request;
@@ -72,7 +73,7 @@ class FedaPayGateway
 
             return redirect($token->url);
         } catch (\Exception $e) {
-            session()->put('payment_msg', $e->getMessage());
+            session()->put('payment_msg', __(ErrorMessage::PAYMENT));
 
             return redirect(self::redirect_if_payment_failed());
         }

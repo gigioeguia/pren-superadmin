@@ -26,6 +26,7 @@ class SystemSettingController extends Controller
         $request->validate([
             'SESSION_LIFETIME' => 'required|integer',
             'service_account_credentials' => 'mimes:json,txt|max:100',
+            'APP_DEBUG' => app()->isLocal() ? 'nullable' : 'in:0,false,off',
         ]);
 
         if ($request->hasFile('service_account_credentials')) {
