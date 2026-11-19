@@ -112,7 +112,7 @@ class LandlordAcnooActionsSmokeTest extends TestCase
         Storage::disk($disk)->put('properties/202/floorplan.jpg', 'img');
 
         // Act
-        $response = $this->actingAs($landlord)->postJson('/landlord/properties/filter', [
+        $response = $this->actingAs($landlord)->postJson('/landlord/properties/delete-all', [
             'ids' => [$property->id],
         ]);
 
@@ -154,7 +154,7 @@ class LandlordAcnooActionsSmokeTest extends TestCase
         ]);
 
         // Act
-        $response = $this->actingAs($landlord)->postJson('/landlord/properties/filter', [
+        $response = $this->actingAs($landlord)->postJson('/landlord/properties/delete-all', [
             'ids' => [$property->id],
         ]);
 
@@ -188,15 +188,9 @@ class LandlordAcnooActionsSmokeTest extends TestCase
         $this->assertDatabaseMissing('amenities', ['id' => $foreign->id]);
     }
 
-    /**
-     * @group characterization
-     */
-    public function test_filter_route_runs_delete_all_due_to_crossed_route(): void
+    public function test_landlord_properties_filter_does_not_delete(): void
     {
-        // Expected to fail after Phase 3.6 (Seg-15 fix) — update to secure
-        // behavior when it fails: routes/landlord.php:15 cruza
-        // properties/filter -> deleteAll, por lo que "filtrar" BORRA. El fix
-        // de rutas hará que este POST filtre en lugar de borrar.
+        // H5: tras el fix de Seg-15, filtrar no borra.
         // Arrange
         $landlord = $this->landlordWithSubscription();
         $property = Property::factory()->create(['landlord_id' => $landlord->id]);
@@ -204,12 +198,26 @@ class LandlordAcnooActionsSmokeTest extends TestCase
 
         // Act
         $response = $this->actingAs($landlord)->postJson('/landlord/properties/filter', [
-            'ids' => [$property->id],
-        ]);
+            'search' => '',
+        ], ['X-Requested-With' => 'XMLHttpRequest']);
 
-        // Assert — documenta la ruta cruzada: el filter borra
+        // Assert — el filter no borra
         $response->assertOk();
-        $this->assertDatabaseMissing('properties', ['id' => $property->id]);
+        $this->assertDatabaseHas('properties', ['id' => $property->id]);
+    }
+
+    public function test_landlord_property_route_names_map_to_correct_methods(): void
+    {
+        // H8: regresión de nombres de ruta.
+        $filterRoute = app('router')->getRoutes()->getByName('landlord.properties.filter');
+        $deleteAllRoute = app('router')->getRoutes()->getByName('landlord.properties.delete-all');
+
+        $this->assertNotNull($filterRoute);
+        $this->assertNotNull($deleteAllRoute);
+        $this->assertStringContainsString('acnooFilter', $filterRoute->getActionName());
+        $this->assertStringContainsString('deleteAll', $deleteAllRoute->getActionName());
+        $this->assertStringContainsString('properties/filter', $filterRoute->uri());
+        $this->assertStringContainsString('properties/delete-all', $deleteAllRoute->uri());
     }
 
     public function test_routed_actions_are_provided_by_the_trait(): void
