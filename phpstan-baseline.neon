@@ -1706,16 +1706,6 @@ parameters:
 			path: app/Http/Controllers/PaymentController.php
 
 		-
-			message: "#^Access to property \\$email on an unknown class App\\\\Models\\\\Api\\\\Tenant\\.$#"
-			count: 1
-			path: app/Http/Middleware/DemoMode.php
-
-		-
-			message: "#^Access to property \\$email on an unknown class App\\\\Models\\\\Api\\\\User\\.$#"
-			count: 1
-			path: app/Http/Middleware/DemoMode.php
-
-		-
 			message: "#^Access to an undefined property App\\\\Models\\\\PlanSubscribe\\:\\:\\$plan\\.$#"
 			count: 1
 			path: app/Http/Middleware/ExpiredMiddleware.php

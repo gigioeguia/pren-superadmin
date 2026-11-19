@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -11,7 +12,7 @@ class DemoMode
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (env('DEMO_MODE', false)) {
+        if (app()->environment('demo')) {
             $adminDisabledRoutes = [
                 'admin.blogs.delete-all',
                 'admin.blogs.status',
@@ -189,7 +190,7 @@ class DemoMode
 
             if (in_array(Route::currentRouteName(), $adminDisabledRoutes)) {
                 return response()->json(['message' => 'This action is disabled in demo mode.'], 499);
-            } elseif (auth()->check() && auth()->user()->email == 'landlord@acnoo.com' && in_array(Route::currentRouteName(), $landlordDisabledRoutes)) {
+            } elseif (auth()->check() && (auth()->user() instanceof User) && auth()->user()->is_demo === true && in_array(Route::currentRouteName(), $landlordDisabledRoutes)) {
                 return response()->json(['message' => 'This action is disabled in demo account. Please sign up your own account for full access.'], 499);
             }
         }

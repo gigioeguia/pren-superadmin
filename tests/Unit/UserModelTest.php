@@ -13,4 +13,11 @@ class UserModelTest extends TestCase
 
         $this->assertNotContains('role', $user->getFillable());
     }
+
+    public function test_is_demo_is_not_mass_assignable(): void
+    {
+        $user = new User;
+
+        $this->assertNotContains('is_demo', $user->getFillable());
+    }
 }
