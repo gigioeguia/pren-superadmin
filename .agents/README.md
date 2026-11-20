@@ -15,7 +15,8 @@ Carpeta de convenciones, especificaciones, skills y decisiones que rigen cómo t
 │   ├── spec-tests-smoke-fase0.md
 │   ├── spec-phpstan-pint-ci-fase0.md
 │   ├── spec-trait-acnoo-fase0.md
-│   └── spec-unificar-capas-services-fase4.md
+│   ├── spec-unificar-capas-services-fase4.md
+│   └── spec-inyectar-request-fase4.md
 ├── skills/                    # procedimientos operacionales
 │   ├── crear-spec.md
 │   ├── revisar-spec.md

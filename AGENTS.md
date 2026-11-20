@@ -74,7 +74,7 @@ Run a single test: `php artisan test tests/Feature/Auth/WebLoginSmokeTest.php`
 ## Gotchas
 
 - `env()` is called directly inside `app/` code (Helpers, Library, Controllers). It breaks under `php artisan config:cache` (returns null). Use `config()` for any new code.
-- `acnooFilter()` uses the global `request()` helper instead of injected `Request` — some controllers forget to inject `Request` (e.g. `Api/AcnooWithdrawController::index`).
+- No usar el helper global `request()` en `app/Http/Controllers/`, `app/Http/Middleware/` ni `app/Exports/`: inyectar `Request $request` (Fase 4 / 4.4). Los controladores ya inyectan `Request $request`; los gateways de `app/Library/` siguen usando `request()->expectsJson()` (pendiente, Fase 4.6).
 - `User->role` is a plain string column AND `User` uses Spatie `HasRoles`. Two parallel role systems.
 - `User` `$fillable` includes `role`, `balance`, `is_setupped`, `plan_subscribe_id` — mass-assignable.
 - `safiull/laravel-installer` adds a `/install` route and `CheckToken` middleware in the `web` group.
