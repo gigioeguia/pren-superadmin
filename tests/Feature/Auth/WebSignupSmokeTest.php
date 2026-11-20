@@ -36,20 +36,17 @@ class WebSignupSmokeTest extends TestCase
     }
 
     /**
-     * env('MAIL_USERNAME') lee $_ENV/$_SERVER/getenv en runtime:
-     * se unsetean para simular la ausencia del dato (S8).
+     * config('mail.username') se sobrescribe en runtime para simular la
+     * ausencia del dato (S8).
      */
     private function withoutMailUsername(): void
     {
-        unset($_ENV['MAIL_USERNAME'], $_SERVER['MAIL_USERNAME']);
-        putenv('MAIL_USERNAME');
+        config(['mail.username' => null]);
     }
 
     private function restoreMailUsernameEnv(): void
     {
-        $_ENV['MAIL_USERNAME'] = self::MAIL_USERNAME;
-        $_SERVER['MAIL_USERNAME'] = self::MAIL_USERNAME;
-        putenv('MAIL_USERNAME='.self::MAIL_USERNAME);
+        config(['mail.username' => self::MAIL_USERNAME]);
     }
 
     public function test_signup_with_otp_off_creates_landlord_and_logs_in(): void
@@ -252,5 +249,48 @@ class WebSignupSmokeTest extends TestCase
         // Assert
         $response->assertStatus(406)
             ->assertJsonPath('message', __('Mail service is not configured. Please contact your administrator.'));
+    }
+
+    public function test_signup_with_queue_mail_false_sends_synchronously(): void
+    {
+        // Arrange
+        $this->otpOption('on');
+        config(['mail.queue' => false]);
+        Mail::fake();
+
+        // Act
+        $response = $this->postJson('/signup', [
+            'name' => 'John Landlord',
+            'email' => 'john@example.test',
+            'password' => 'Password123',
+        ]);
+
+        // Assert
+        $response->assertOk()
+            ->assertJsonPath('openModal', true);
+
+        Mail::assertSent(WelcomeMail::class);
+        Mail::assertNotQueued(WelcomeMail::class);
+    }
+
+    public function test_signup_with_queue_mail_true_queues_mail(): void
+    {
+        // Arrange
+        $this->otpOption('on');
+        config(['mail.queue' => true]);
+        Mail::fake();
+
+        // Act
+        $response = $this->postJson('/signup', [
+            'name' => 'John Landlord',
+            'email' => 'john@example.test',
+            'password' => 'Password123',
+        ]);
+
+        // Assert
+        $response->assertOk()
+            ->assertJsonPath('openModal', true);
+
+        Mail::assertQueued(WelcomeMail::class);
     }
 }

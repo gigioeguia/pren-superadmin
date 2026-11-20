@@ -35,13 +35,14 @@ class SystemSettingController extends Controller
         }
 
         $APP_NAME = Str::slug($request->APP_NAME);
+        $conn = (string) config('database.default');
         $txt = 'APP_NAME='.$APP_NAME.'
         APP_ENV=local
-        APP_KEY='.env('APP_KEY').'
+        APP_KEY='.(string) config('app.key').'
         APP_DEBUG='.$request->APP_DEBUG.'
         APP_URL='.url('/').'
-        SITE_KEY='.env('SITE_KEY').'
-        AUTHORIZED_KEY='.env('AUTHORIZED_KEY').'
+        SITE_KEY='.(string) config('app.site_key').'
+        AUTHORIZED_KEY='.(string) config('app.authorized_key').'
 
         CONTENT_EDITOR='.$request->CONTENT_EDITOR.'
         ANALYTICS_VIEW_ID='.$request->ANALYTICS_VIEW_ID.'
@@ -50,12 +51,12 @@ class SystemSettingController extends Controller
         UNSUBSCRIBE_AFTER_DAYS='.$request->UNSUBSCRIBE_AFTER_DAYS.'
 
 
-        DB_CONNECTION='.env('DB_CONNECTION').'
-        DB_HOST='.env('DB_HOST').'
-        DB_PORT='.env('DB_PORT').'
-        DB_DATABASE='.env('DB_DATABASE').'
-        DB_USERNAME='.env('DB_USERNAME').'
-        DB_PASSWORD='.env('DB_PASSWORD').'
+        DB_CONNECTION='.$conn.'
+        DB_HOST='.(string) config("database.connections.{$conn}.host").'
+        DB_PORT='.(string) config("database.connections.{$conn}.port").'
+        DB_DATABASE='.(string) config("database.connections.{$conn}.database").'
+        DB_USERNAME='.(string) config("database.connections.{$conn}.username").'
+        DB_PASSWORD='.(string) config("database.connections.{$conn}.password").'
 
 
         QUEUE_MAIL='.$request->QUEUE_MAIL.'

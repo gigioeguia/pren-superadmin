@@ -152,4 +152,16 @@ return [
 
     'password_timeout' => 10800,
 
+    /*
+    |--------------------------------------------------------------------------
+    | OTP visibility time
+    |--------------------------------------------------------------------------
+    |
+    | Mirrors OTP_VISIBILITY_TIME. Nullable: each call-site applies its own
+    | fallback unit (minutes in most flows, seconds in otpResend).
+    |
+    */
+
+    'otp_visibility_time' => env('OTP_VISIBILITY_TIME'),
+
 ];

@@ -28,6 +28,8 @@
         <env name="DB_DATABASE" value="dbrentpro_test"/>
         <!-- SignupController/LoginController usan env('MAIL_USERNAME') de forma incondicional -->
         <env name="MAIL_USERNAME" value="smoke@test.local"/>
+        <env name="QUEUE_MAIL" value="false"/>
+        <env name="CACHE_LIFETIME" value="1800"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>

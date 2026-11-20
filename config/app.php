@@ -150,6 +150,10 @@ return [
 
     'key' => env('APP_KEY'),
 
+    'site_key' => env('SITE_KEY'),
+
+    'authorized_key' => env('AUTHORIZED_KEY'),
+
     'cipher' => 'AES-256-CBC',
 
     /*

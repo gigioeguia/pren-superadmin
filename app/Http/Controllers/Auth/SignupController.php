@@ -25,7 +25,7 @@ class SignupController extends Controller
             'email' => 'required|email',
         ]);
 
-        if (! env('MAIL_USERNAME')) {
+        if (! config('mail.username')) {
             return response()->json([
                 'message' => __('Mail service is not configured. Please contact your administrator.'),
             ], 406);
@@ -100,7 +100,7 @@ class SignupController extends Controller
             session()->put('user_id', $user->id);
             session()->put('plan_id', $request->plan_id);
 
-            if (env('QUEUE_MAIL')) {
+            if (config('mail.queue')) {
                 Mail::to($request->email)->queue(new WelcomeMail($data));
             } else {
                 Mail::to($request->email)->send(new WelcomeMail($data));
@@ -137,7 +137,7 @@ class SignupController extends Controller
         $time = $otpSettings['otp_expiration_time'] ?? null;
         $durationType = $otpSettings['otp_duration_type'] ?? 'minute';
 
-        $defaultFromEnv = env('OTP_VISIBILITY_TIME', 3);
+        $defaultFromEnv = (int) (config('auth.otp_visibility_time') ?? 3);
 
         if (empty($time)) {
             return $defaultFromEnv * 60;
@@ -240,15 +240,15 @@ class SignupController extends Controller
         ]);
 
         $code = random_int(100000, 999999);
-        $expire = now()->addSeconds(env('OTP_VISIBILITY_TIME') ?? 60);
+        $expire = now()->addSeconds((int) (config('auth.otp_visibility_time') ?? 60));
 
         $data = [
             'code' => $code,
             'name' => $request->name,
         ];
 
-        if (env('MAIL_USERNAME')) {
-            if (env('QUEUE_MAIL')) {
+        if (config('mail.username')) {
+            if (config('mail.queue')) {
                 Mail::to($request->email)->queue(new WelcomeMail($data));
             } else {
                 Mail::to($request->email)->send(new WelcomeMail($data));
