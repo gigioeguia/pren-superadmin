@@ -26,4 +26,14 @@ class Plan extends Model
     protected $casts = ([
         'features' => 'json',
     ]);
+
+    public function durationInDays(): int
+    {
+        return match ($this->duration_type) {
+            'month' => (int) $this->duration * 30,
+            'year' => (int) $this->duration * 365,
+            'day' => (int) $this->duration,
+            default => 0,
+        };
+    }
 }

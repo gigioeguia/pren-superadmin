@@ -122,15 +122,7 @@ class PaymentController extends Controller
             DB::beginTransaction();
             try {
                 $attachment = $request->attachment ? $this->upload($request, 'attachment') : null;
-                $duration = 0;
-                // in days
-                if ($plan->duration_type == 'month') {
-                    $duration = $plan->duration * 30;
-                } elseif ($plan->duration_type == 'year') {
-                    $duration = $plan->duration * 365;
-                } elseif ($plan->duration_type == 'day') {
-                    $duration = $plan->duration;
-                }
+                $duration = $plan->durationInDays();
 
                 PlanSubscribe::create([
                     'user_id' => $user->id,
@@ -333,14 +325,7 @@ class PaymentController extends Controller
 
             if ($payment_type == 'subscription') {
                 $admin = User::whereIn('role', ['superadmin', 'admin'])->first();
-                $duration = 0;
-                if ($plan->duration_type == 'month') {
-                    $duration = $plan->duration * 30;
-                } elseif ($plan->duration_type == 'year') {
-                    $duration = $plan->duration * 365;
-                } elseif ($plan->duration_type == 'day') {
-                    $duration = $plan->duration;
-                }
+                $duration = $plan->durationInDays();
 
                 $subscribe = PlanSubscribe::create([
                     'user_id' => $user->id,
