@@ -4,7 +4,7 @@ titulo: "Upgrade Laravel 10 → 11 y PHP 8.2 → 8.3 (Fase 4 / 4.1)"
 estado: Implementado
 fecha: 2026-11-19
 origen: .analisis/plan/plan-accion.md (Fase 4 / 4.1) — DT-C2
-cobertura: Upgrade de framework (10.50 → 11.x) y runtime (8.2 → 8.3) preservando la estructura Laravel 10; suite smoke (59 casos) + PHPStan nivel 5 (baseline regenerado) + Pint + build frontend en verde sobre PHP 8.3
+cobertura: Upgrade de framework (10.50 → 11.x) y runtime (8.2 → 8.3) preservando la estructura Laravel 10; suite completa (183 tests) + PHPStan nivel 5 (baseline regenerado) + Pint + build frontend en verde sobre PHP 8.3
 ---
 
 # Spec — Upgrade Laravel 10 → 11 y PHP 8.2 → 8.3 (Fase 4 / 4.1)
@@ -30,7 +30,7 @@ Pasar el stack a una versión con soporte de seguridad (Laravel 11 + PHP 8.3) si
 - `config/sanctum.php`: actualizar claves de middleware a `authenticate_session` / `encrypt_cookies` / `validate_csrf_token` con las clases de Sanctum 4.
 - Publicar migraciones de Sanctum 4 (`php artisan vendor:publish --tag=sanctum-migrations`) y verificar que no colisionan con las existentes.
 - Migraciones: actualizar `->double($col, total, places)` a `->double($col)` y `->float($col, total, places)` a `->float($col, precision: ...)` según la nueva API de L11; corregir la migración `2025_09_13_131437_add_new_field_to_multiple_table.php` para retener modificadores en `->change()`.
-- `phpstan.neon.dist`: `phpVersion: 8300` y Larastan 3.x; regenerar `phpstan-baseline.neon` una sola vez.
+- `phpstan.neon.dist`: `phpVersion: 80300` y Larastan 3.x; regenerar `phpstan-baseline.neon` una sola vez.
 - CI (`.github/workflows/ci.yml`): `setup-php` 8.3 en los 4 jobs; mantener MySQL 8 y el marcador `vendor/autoload1.php`.
 - Tooling local: instalar PHP 8.3 con extensiones `mbstring, pdo_mysql, gd, zip` para validar en el mismo runtime que CI.
 - Carbon 2 se mantiene (no forzar Carbon 3).
@@ -109,7 +109,7 @@ AGENTS.md                                        # sección Tooling: PHP 8.3, La
   $table->longText('phone')->nullable()->change();
   ```
   (L11 descarta atributos no declarados al modificar columna.)
-- **`phpstan.neon.dist`:** `phpVersion: 8300`; Larastan 3.x.
+- **`phpstan.neon.dist`:** `phpVersion: 80300`; Larastan 3.x.
 - **CI:** todos los jobs a `php-version: '8.3'`.
 
 ---
@@ -119,13 +119,13 @@ AGENTS.md                                        # sección Tooling: PHP 8.3, La
 Fijadas, no negociables salvo volver el spec a `Borrador`:
 
 - **Estructura:** se preserva la estructura Laravel 10 (Kernels, `RouteServiceProvider`, `Handler`, `Console/Kernel`). Laravel 11 la soporta explícitamente y la guía oficial no recomienda migrarla.
-- **Runtime objetivo:** PHP 8.3 (`^8.3` en `composer.json`, `phpVersion: 8300` en PHPStan, CI en 8.3). Laravel 11 soporta 8.2–8.4; se elige 8.3 por el plan.
+- **Runtime objetivo:** PHP 8.3 (`^8.3` en `composer.json`, `phpVersion: 80300` en PHPStan, CI en 8.3). Laravel 11 soporta 8.2–8.4; se elige 8.3 por el plan.
 - **Carbon:** se mantiene Carbon 2 (L11 soporta ambas versiones).
 - **Dependencias secundarias:** se mantienen versiones actuales salvo `collision` (requerido ^8.1); compatibilidad se verifica en CI.
 - **Baseline de PHPStan:** se regenera una sola vez por el upgrade de framework (excepción justificada). La regla de un solo uso se mantiene para PRs posteriores; el conteo de errores congelados se documenta en el PR.
 - **Migraciones:** se actualizan las llamadas `double()`/`float()` a la nueva API en lugar de squash, para mantener el historial de migraciones.
 - **Sanctum:** se actualiza a 4.0, se publican sus migraciones y se ajustan las claves de middleware en `config/sanctum.php`.
-- **Tests:** sin tests nuevos de aplicación; se reutiliza la suite smoke (59 casos) como red de regresión. PHPStan/Pint/build como verificaciones de tooling.
+- **Tests:** sin tests nuevos de aplicación; se reutiliza la suite completa (183 tests) como red de regresión. PHPStan/Pint/build como verificaciones de tooling.
 - **Mocks/entorno:** tests corren sobre MySQL 8 (`dbrentpro_test`), `RefreshDatabase`/migraciones; CI exporta `DB_HOST/DB_USERNAME/DB_PASSWORD`.
 
 ---
@@ -154,7 +154,7 @@ Prefijo `F` (feature transversal). **Total: 12 verificaciones (F1–F12).**
 
 | ID | Escenario | Dado | Cuando | Entonces |
 |----|-----------|------|--------|----------|
-| F7 | Suite smoke completa | 59 casos | `php artisan test` sobre PHP 8.3 | 59/59 en verde |
+| F7 | Suite completa | todos los tests | `php artisan test` sobre PHP 8.3 | 183/183 en verde |
 | F8 | Sin regresión de auth/pagos | policies y rutas intactas | suite smoke | tests de auth (L/A), pagos (P), guards (G/H) en verde |
 
 ### 6.4 Calidad estática y estilo
@@ -174,20 +174,20 @@ Ninguno: este spec no documenta bugs de aplicación; valida un upgrade de infrae
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `composer.json` con `php: ^8.3`, `laravel/framework: ^11.0`, `laravel/sanctum: ^4.0`, `nunomaduro/collision: ^8.1`, `nunomaduro/larastan: ^3.0`; `composer.lock` actualizado (F1).
-- [ ] `config/app.php` incluye `ConcurrencyServiceProvider` (F3).
-- [ ] `config/sanctum.php` usa las claves de Sanctum 4 (F5).
-- [ ] Migraciones de Sanctum 4 publicadas y sin conflicto (F5).
-- [ ] Todas las llamadas `double()`/`float()` actualizadas a la API L11; `migrate:fresh --seed` exitoso (F4, F6).
-- [ ] Migración `2025_09_13_131437` retiene modificadores en `change()` (F6).
-- [ ] `phpstan.neon.dist` con `phpVersion: 8300` y Larastan 3.x; baseline regenerado con conteo documentado (F9, F10).
-- [ ] CI con `setup-php 8.3` en los 4 jobs (F2).
-- [ ] PHP 8.3 instalado localmente con extensiones requeridas (P2).
-- [ ] Suite smoke 59/59 en verde sobre PHP 8.3 (F7, F8).
-- [ ] `vendor/bin/pint --test` exit 0 (F11).
-- [ ] `npm run build` exit 0 (F12).
-- [ ] `AGENTS.md` actualizado (stack Laravel 11 / PHP 8.3, comandos).
-- [ ] Evidencia de CI en verde (link al run) sobre el PR de implementación.
+- [x] `composer.json` con `php: ^8.3`, `laravel/framework: ^11.0`, `laravel/sanctum: ^4.0`, `nunomaduro/collision: ^8.1`, `nunomaduro/larastan: ^3.0`; `composer.lock` actualizado (F1).
+- [x] `config/app.php` incluye `ConcurrencyServiceProvider` (F3).
+- [x] `config/sanctum.php` usa las claves de Sanctum 4 (F5).
+- [x] Migraciones de Sanctum 4 publicadas y sin conflicto (F5).
+- [x] Todas las llamadas `double()`/`float()` actualizadas a la API L11; `migrate:fresh --seed` exitoso (F4, F6).
+- [x] Migración `2025_09_13_131437` retiene modificadores en `change()` (F6).
+- [x] `phpstan.neon.dist` con `phpVersion: 80300` y Larastan 3.x; baseline regenerado con conteo documentado (F9, F10).
+- [x] CI con `setup-php 8.3` en los 3 jobs con PHP (F2).
+- [x] PHP 8.3 instalado localmente (8.3.37) con extensiones; suite y PHPStan/Pint verdes (P2).
+- [x] Suite completa en verde: 183 passed (F7, F8).
+- [x] `vendor/bin/pint --test` exit 0 (F11).
+- [x] `npm run build` exit 0 (F12).
+- [x] `AGENTS.md` actualizado (stack Laravel 11 / PHP 8.3, comandos).
+- [x] Evidencia de CI en verde: PR #32, run https://github.com/gigioeguia/pren-superadmin/actions/runs/44665903511 (tests, static-analysis, style, frontend-build = success).
 
 ---
 
@@ -214,7 +214,7 @@ Ninguno: este spec no documenta bugs de aplicación; valida un upgrade de infrae
 - Migraciones float/double + change(): 0.5–1 día
 - Larastan 3.x + baseline + PHPStan target: 0.5–1 día
 - CI a PHP 8.3 + instalación local PHP 8.3: 0.5 día
-- Validación completa (tests 59/59, pint, build) + documentación AGENTS.md: 0.5–1 día
+- Validación completa (tests 183/183, pint, build) + documentación AGENTS.md: 0.5–1 día
 - **Total: 2.5–4.5 días**
 
 ---
