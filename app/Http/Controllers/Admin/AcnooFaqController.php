@@ -91,10 +91,10 @@ class AcnooFaqController extends Controller
 
     protected function acnooQuery(Request $request): Builder
     {
-        return Faq::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('question', 'like', '%'.request('search').'%')
-                    ->orWhere('answer', 'like', '%'.request('search').'%');
+        return Faq::when($request->input('search'), function ($q) use ($request) {
+            $q->where(function ($q) use ($request) {
+                $q->where('question', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('answer', 'like', '%'.$request->input('search').'%');
             });
         })
             ->latest();

@@ -78,9 +78,9 @@ class AcnooRefundReasonController extends Controller
 
     protected function acnooQuery(Request $request): Builder
     {
-        return RefundReason::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $search = request('search');
+        return RefundReason::when($request->input('search'), function ($q) use ($request) {
+            $q->where(function ($q) use ($request) {
+                $search = $request->input('search');
                 $q->where('reason', 'like', '%'.$search.'%');
             });
         })

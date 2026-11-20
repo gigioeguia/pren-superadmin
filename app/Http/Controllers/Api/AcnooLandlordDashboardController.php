@@ -191,8 +191,8 @@ class AcnooLandlordDashboardController extends Controller
             'status' => $status,
             'max_value' => (int) max($income_amount, $expense_amount),
             'min_value' => (int) min($income_amount, $expense_amount),
-            'income_amount_data' => $this->formatData($period, $income_data, $format),
-            'expense_amount_data' => $this->formatData($period, $expense_data, $format),
+            'income_amount_data' => $this->formatData($request, $period, $income_data, $format),
+            'expense_amount_data' => $this->formatData($request, $period, $expense_data, $format),
         ];
 
         return response()->json([
@@ -201,11 +201,11 @@ class AcnooLandlordDashboardController extends Controller
         ]);
     }
 
-    private function formatData($period, $datas, $format)
+    private function formatData(Request $request, $period, $datas, $format)
     {
         $rows = [];
         foreach ($period as $date) {
-            if (request('duration') == 'yearly') {
+            if ($request->input('duration') == 'yearly') {
                 $key = $date->format($format);
                 $dateKey = $date->format('Y-m'); // For lookup purposes
                 $amount = $datas->filter(function ($value, $key) use ($dateKey) {

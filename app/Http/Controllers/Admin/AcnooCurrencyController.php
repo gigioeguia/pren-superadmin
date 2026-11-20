@@ -149,12 +149,12 @@ class AcnooCurrencyController extends Controller
 
     protected function acnooQuery(Request $request): Builder
     {
-        return Currency::orderBy('is_default', 'desc')->orderBy('status', 'desc')->when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('name', 'like', '%'.request('search').'%')
-                    ->orWhere('country_name', 'like', '%'.request('search').'%')
-                    ->orWhere('code', 'like', '%'.request('search').'%')
-                    ->orWhere('symbol', 'like', '%'.request('search').'%');
+        return Currency::orderBy('is_default', 'desc')->orderBy('status', 'desc')->when($request->input('search'), function ($q) use ($request) {
+            $q->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('country_name', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('code', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('symbol', 'like', '%'.$request->input('search').'%');
             });
         })
             ->latest();

@@ -109,10 +109,10 @@ class AcnooHighlightController extends Controller
 
     protected function acnooQuery(Request $request): Builder
     {
-        return Highlight::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('short_title', 'like', '%'.request('search').'%')
-                    ->orWhere('title', 'like', '%'.request('search').'%');
+        return Highlight::when($request->input('search'), function ($q) use ($request) {
+            $q->where(function ($q) use ($request) {
+                $q->where('short_title', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('title', 'like', '%'.$request->input('search').'%');
             });
         })
             ->latest();

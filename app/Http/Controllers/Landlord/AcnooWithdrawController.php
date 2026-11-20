@@ -119,8 +119,8 @@ class AcnooWithdrawController extends Controller
     {
         return Withdraw::with(['account_info.withdraw_method:id,name'])
             ->where('user_id', auth()->id())
-            ->when(request('search'), function ($q) {
-                $search = request('search');
+            ->when($request->input('search'), function ($q) use ($request) {
+                $search = $request->input('search');
 
                 $q->where('amount', 'like', '%'.$search.'%')
                     ->orWhere('charge', 'like', '%'.$search.'%')

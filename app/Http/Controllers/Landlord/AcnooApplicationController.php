@@ -162,9 +162,9 @@ class AcnooApplicationController extends Controller
 
         return Application::with(['tenant:id,name', 'property:id,puid', 'property.propertyDetail:property_id,property_info', 'unit:id,unit_name'])
             ->whereIn('property_id', $property)
-            ->when(request('search'), function ($q) {
-                $q->where(function ($q) {
-                    $search = request('search');
+            ->when($request->input('search'), function ($q) use ($request) {
+                $q->where(function ($q) use ($request) {
+                    $search = $request->input('search');
                     $q->whereHas('tenant', function ($query) use ($search) {
                         $query->where('name', 'like', '%'.$search.'%');
                     })

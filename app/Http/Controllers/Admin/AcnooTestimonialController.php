@@ -104,11 +104,11 @@ class AcnooTestimonialController extends Controller
 
     protected function acnooQuery(Request $request): Builder
     {
-        return Testimonial::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('client_name', 'like', '%'.request('search').'%')
-                    ->orWhere('work_at', 'like', '%'.request('search').'%')
-                    ->orWhere('star', 'like', '%'.request('search').'%');
+        return Testimonial::when($request->input('search'), function ($q) use ($request) {
+            $q->where(function ($q) use ($request) {
+                $q->where('client_name', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('work_at', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('star', 'like', '%'.$request->input('search').'%');
             });
         })
             ->latest();

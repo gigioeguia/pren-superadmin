@@ -135,13 +135,13 @@ class AcnooWithdrawRequestController extends Controller
     protected function acnooQuery(Request $request): Builder
     {
         return Withdraw::with(['account_info:id,method_id', 'account_info.withdraw_method:id,name,charge_type', 'user:id,name'])
-            ->when(request('search'), function ($q) {
-                $q->where('amount', 'like', '%'.request('search').'%')
-                    ->orWhere('charge', 'like', '%'.request('search').'%')
-                    ->orWhere('status', 'like', '%'.request('search').'%');
+            ->when($request->input('search'), function ($q) use ($request) {
+                $q->where('amount', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('charge', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('status', 'like', '%'.$request->input('search').'%');
 
-                $q->orWhereHas('user', function ($q) {
-                    $q->where('name', 'like', '%'.request('search').'%');
+                $q->orWhereHas('user', function ($q) use ($request) {
+                    $q->where('name', 'like', '%'.$request->input('search').'%');
                 });
             })
             ->when($request->id, function ($query) use ($request) {

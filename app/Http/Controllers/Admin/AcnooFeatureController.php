@@ -101,9 +101,9 @@ class AcnooFeatureController extends Controller
 
     protected function acnooQuery(Request $request): Builder
     {
-        return Feature::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('title', 'like', '%'.request('search').'%');
+        return Feature::when($request->input('search'), function ($q) use ($request) {
+            $q->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%'.$request->input('search').'%');
             });
         })
             ->latest();

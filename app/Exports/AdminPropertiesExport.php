@@ -4,10 +4,13 @@ namespace App\Exports;
 
 use App\Models\Property;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Concerns\FromView;
 
 class AdminPropertiesExport implements FromView
 {
+    public function __construct(private Request $request) {}
+
     public function view(): View
     {
         $properties = Property::with([
@@ -16,8 +19,8 @@ class AdminPropertiesExport implements FromView
             'propertyDetail:property_id,property_info',
             'units.rent',
         ])
-            ->when(request('id'), function ($query) {
-                $query->where('id', request('id'));
+            ->when($this->request->input('id'), function ($query) {
+                $query->where('id', $this->request->input('id'));
             })
             ->withCount([
                 'units as total_unit',

@@ -14,12 +14,12 @@ use Illuminate\Support\ViewErrorBag;
 
 class AcnooWithdrawController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $withdraws = Withdraw::select('id', 'user_method_id', 'status', 'created_at', 'amount')->with('account_info:id,method_id', 'account_info.withdraw_method:id,name')->where('user_id', auth()->id())
-            ->when(request('from_date') && request('to_date'), function ($q) {
-                $q->whereDate('created_at', '>=', request('from_date'));
-                $q->whereDate('created_at', '<=', request('to_date'));
+            ->when($request->input('from_date') && $request->input('to_date'), function ($q) use ($request) {
+                $q->whereDate('created_at', '>=', $request->input('from_date'));
+                $q->whereDate('created_at', '<=', $request->input('to_date'));
             })
             ->paginate($request->per_page ?? 10);
 

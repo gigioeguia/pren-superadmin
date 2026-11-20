@@ -99,9 +99,9 @@ class AcnooClientController extends Controller
 
     protected function acnooQuery(Request $request): Builder
     {
-        return Client::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('title', 'like', '%'.request('search').'%');
+        return Client::when($request->input('search'), function ($q) use ($request) {
+            $q->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%'.$request->input('search').'%');
             });
         })
             ->latest();

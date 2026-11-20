@@ -109,9 +109,9 @@ class AcnooMaintenanceController extends Controller
         $property = Property::where('landlord_id', auth()->id())->get('id');
 
         return Maintenance::with(['tenant:id,name,phone', 'labor:id,name', 'property'])->whereIn('property_id', $property)
-            ->when(request('search'), function ($q) {
-                $q->where(function ($q) {
-                    $search = request('search');
+            ->when($request->input('search'), function ($q) use ($request) {
+                $q->where(function ($q) use ($request) {
+                    $search = $request->input('search');
                     $q->where('title', 'like', '%'.$search.'%')
                         ->orwhere('description', 'like', '%'.$search.'%')
                         ->orwhere('notes', 'like', '%'.$search.'%')

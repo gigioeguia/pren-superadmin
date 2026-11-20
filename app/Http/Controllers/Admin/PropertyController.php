@@ -213,13 +213,13 @@ class PropertyController extends Controller
         ]);
     }
 
-    public function exportExcel()
+    public function exportExcel(Request $request)
     {
-        return Excel::download(new AdminPropertiesExport, 'properties.xlsx');
+        return Excel::download(new AdminPropertiesExport($request), 'properties.xlsx');
     }
 
-    public function exportCsv()
+    public function exportCsv(Request $request)
     {
-        return Excel::download(new AdminPropertiesExport, 'properties.csv');
+        return Excel::download(new AdminPropertiesExport($request), 'properties.csv');
     }
 }

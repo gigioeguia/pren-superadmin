@@ -9,7 +9,7 @@ class SetLocale
 {
     public function handle(Request $request, Closure $next)
     {
-        if (request()->is('/') || request()->is('login')) {
+        if ($request->is('/') || $request->is('login')) {
             if (! file_exists(storage_path('installed'))) {
                 return redirect('install');
             }

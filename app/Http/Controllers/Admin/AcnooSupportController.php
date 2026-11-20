@@ -115,9 +115,9 @@ class AcnooSupportController extends Controller
             ->withCount(['supportMessages as unread_count' => function ($q) use ($adminId) {
                 $q->where('is_read', false)->where('receiver_id', $adminId);
             }])
-            ->when(request('search'), function ($q) {
-                $q->where(function ($q) {
-                    $search = request('search');
+            ->when($request->input('search'), function ($q) use ($request) {
+                $q->where(function ($q) use ($request) {
+                    $search = $request->input('search');
                     $q->where('name', 'like', '%'.$search.'%');
                 });
             })

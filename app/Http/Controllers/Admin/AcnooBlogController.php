@@ -121,9 +121,9 @@ class AcnooBlogController extends Controller
 
     protected function acnooQuery(Request $request): Builder
     {
-        return Blog::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('title', 'like', '%'.request('search').'%');
+        return Blog::when($request->input('search'), function ($q) use ($request) {
+            $q->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%'.$request->input('search').'%');
             });
         })
             ->latest();

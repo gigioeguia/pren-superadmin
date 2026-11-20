@@ -23,13 +23,13 @@ class PaymentController extends Controller
     use HasUploader;
 
     // security deposit & rent payment gateway
-    public function DepositRentPayment($id)
+    public function DepositRentPayment(Request $request, $id)
     {
-        if (request('payment_type') == 'security_deposit') {
+        if ($request->input('payment_type') == 'security_deposit') {
             $plan = SecurityDeposit::findOrFail($id);
             session()->put('payment_type', 'security_deposit');
             $tenant_id = $plan->tenant_id;
-        } elseif (request('payment_type') == 'rent_payment') {
+        } elseif ($request->input('payment_type') == 'rent_payment') {
             $plan = RentPayment::findOrFail($id);
             session()->put('payment_type', 'rent_payment');
             $tenant_id = $plan->rent()->first()?->getAttribute('tenant_id');
@@ -44,14 +44,14 @@ class PaymentController extends Controller
 
         $gateways = Gateway::with('currency:id,code,rate,symbol,position')->where(['status' => 1, 'is_manual' => 0])->get();
 
-        session()->put('platform', request('platform') ?? 'web');
+        session()->put('platform', $request->input('platform') ?? 'web');
         session()->put('user_id', $tenant_id);
 
         return view('payments.online_payment', compact('gateways', 'plan'));
     }
 
     // subscription payment gateways
-    public function index(string $id, string $landlord_id)
+    public function index(Request $request, string $id, string $landlord_id)
     {
         $plan = Plan::findOrFail($id);
 
@@ -61,13 +61,13 @@ class PaymentController extends Controller
             abort(403);
         }
 
-        if (request('platform') == 'app') {
+        if ($request->input('platform') == 'app') {
             $gateways = Gateway::with('currency:id,code,rate,symbol,position')->where(['status' => 1, 'is_manual' => 0])->get();
         } else {
             $gateways = Gateway::with('currency:id,code,rate,symbol,position')->get();
         }
 
-        session()->put('platform', request('platform') ?? 'web');
+        session()->put('platform', $request->input('platform') ?? 'web');
         session()->put('user_id', $landlord_id);
         session()->put('payment_type', 'subscription');
 
@@ -461,15 +461,15 @@ class PaymentController extends Controller
         return redirect(route('order.status', ['status' => 'failed', 'message' => $payment_msg ?? __('Transaction failed for invalid credentials, Please try again later or contact with admin.')]));
     }
 
-    public function orderStatus()
+    public function orderStatus(Request $request)
     {
         if (session('platform') == 'web' && session('payment_type') == 'subscription') {
-            return redirect(route('landlord.subscriptions.index'))->with('message', request('message') ?? __('New subscription order successfully.'));
+            return redirect(route('landlord.subscriptions.index'))->with('message', $request->input('message') ?? __('New subscription order successfully.'));
         }
 
         session()->forget('platform');
         session()->forget('payment_type');
 
-        return request('status');
+        return $request->input('status');
     }
 }
