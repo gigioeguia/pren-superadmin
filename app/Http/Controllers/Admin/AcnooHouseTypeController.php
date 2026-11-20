@@ -78,9 +78,9 @@ class AcnooHouseTypeController extends Controller
 
     protected function acnooQuery(Request $request): Builder
     {
-        return HouseType::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $search = request('search');
+        return HouseType::when($request->input('search'), function ($q) use ($request) {
+            $q->where(function ($q) use ($request) {
+                $search = $request->input('search');
                 $q->where('name', 'like', '%'.$search.'%');
             });
         })

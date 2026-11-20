@@ -21,10 +21,10 @@ class AcnooTenantApplicationController extends Controller
     public function index(Request $request)
     {
         $data = Application::with(['tenant:id,name,image,email', 'property:id,puid,address_info,cover_image,landlord_id', 'property.propertyDetail:property_id,property_info', 'property.landlord:id,name', 'unit'])
-            ->when(request('status') !== null, function ($q) {
-                $q->where('status', request('status'));
+            ->when($request->input('status') !== null, function ($q) use ($request) {
+                $q->where('status', $request->input('status'));
             })
-            ->when(auth()->user()->role == 'landlord' || request('landlord_id'), function ($q) {
+            ->when(auth()->user()->role == 'landlord' || $request->input('landlord_id'), function ($q) {
                 $q->whereHas('property', function ($query) {
                     $query->where('landlord_id', auth()->id());
                 });
@@ -34,22 +34,22 @@ class AcnooTenantApplicationController extends Controller
             })
             ->when($request->has('search') && $request->search !== null, function ($query) use ($request) {
                 $search = $request->search;
-                $query->where(function ($q) use ($search) {
+                $query->where(function ($q) use ($search, $request) {
                     $q->where('start_date', 'like', '%'.$search.'%')
                         ->orWhere('end_date', 'like', '%'.$search.'%')
-                        ->orwhereHas('property.landlord', function ($landlord) {
-                            $landlord->where('name', 'like', '%'.request('search').'%');
+                        ->orwhereHas('property.landlord', function ($landlord) use ($request) {
+                            $landlord->where('name', 'like', '%'.$request->input('search').'%');
                         })
-                        ->orwhereHas('tenant', function ($tenant) {
-                            $tenant->where('name', 'like', '%'.request('search').'%')
-                                ->orWhere('email', 'like', '%'.request('search').'%');
+                        ->orwhereHas('tenant', function ($tenant) use ($request) {
+                            $tenant->where('name', 'like', '%'.$request->input('search').'%')
+                                ->orWhere('email', 'like', '%'.$request->input('search').'%');
                         })
-                        ->orwhereHas('property.propertyDetail', function ($propertyDetail) {
-                            $propertyDetail->where('property_info', 'like', '%'.request('search').'%');
+                        ->orwhereHas('property.propertyDetail', function ($propertyDetail) use ($request) {
+                            $propertyDetail->where('property_info', 'like', '%'.$request->input('search').'%');
                         })
-                        ->orwhereHas('property', function ($property) {
-                            $property->where('address_info', 'like', '%'.request('search').'%')
-                                ->orWhere('puid', 'like', '%'.request('search').'%');
+                        ->orwhereHas('property', function ($property) use ($request) {
+                            $property->where('address_info', 'like', '%'.$request->input('search').'%')
+                                ->orWhere('puid', 'like', '%'.$request->input('search').'%');
                         });
                 });
             })

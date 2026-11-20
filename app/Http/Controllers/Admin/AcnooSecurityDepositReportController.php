@@ -43,22 +43,22 @@ class AcnooSecurityDepositReportController extends Controller
     protected function acnooQuery(Request $request): Builder
     {
         return SecurityDeposit::with(['tenant:id,name', 'property:id,puid', 'property.propertyDetail:id,property_id,property_info', 'gateway:id,name'])
-            ->when(request('search'), function ($q) {
-                $q->where('invoice_no', 'like', '%'.request('search').'%')
-                    ->orWhere('status', 'like', '%'.request('search').'%')
-                    ->orWhere('total_amount', 'like', '%'.request('search').'%')
-                    ->orWhere('utility_advance', 'like', '%'.request('search').'%');
+            ->when($request->input('search'), function ($q) use ($request) {
+                $q->where('invoice_no', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('status', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('total_amount', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('utility_advance', 'like', '%'.$request->input('search').'%');
 
-                $q->orWhereHas('tenant', function ($q) {
-                    $q->where('name', 'like', '%'.request('search').'%');
+                $q->orWhereHas('tenant', function ($q) use ($request) {
+                    $q->where('name', 'like', '%'.$request->input('search').'%');
                 });
 
-                $q->orWhereHas('gateway', function ($q) {
-                    $q->where('name', 'like', '%'.request('search').'%');
+                $q->orWhereHas('gateway', function ($q) use ($request) {
+                    $q->where('name', 'like', '%'.$request->input('search').'%');
                 });
 
-                $q->orWhereHas('property.propertyDetail', function ($q) {
-                    $q->where('property_info', 'like', '%'.request('search').'%');
+                $q->orWhereHas('property.propertyDetail', function ($q) use ($request) {
+                    $q->where('property_info', 'like', '%'.$request->input('search').'%');
                 });
             })
             ->latest();

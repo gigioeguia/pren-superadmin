@@ -91,9 +91,9 @@ class AcnooLaborController extends Controller
     {
         return Labor::with('landlord')
             ->where('landlord_id', auth()->id())
-            ->when(request('search'), function ($q) {
-                $q->where(function ($q) {
-                    $search = request('search');
+            ->when($request->input('search'), function ($q) use ($request) {
+                $q->where(function ($q) use ($request) {
+                    $search = $request->input('search');
                     $q->where('name', 'like', '%'.$search.'%')
                         ->orwhere('email', 'like', '%'.$search.'%')
                         ->orwhere('phone', 'like', '%'.$search.'%')

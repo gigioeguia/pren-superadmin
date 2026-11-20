@@ -38,11 +38,11 @@ class AcnooCommentController extends Controller
 
     protected function acnooQuery(Request $request): Builder
     {
-        return Comment::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('name', 'like', '%'.request('search').'%')
-                    ->orWhere('email', 'like', '%'.request('search').'%')
-                    ->orWhere('comment', 'like', '%'.request('search').'%');
+        return Comment::when($request->input('search'), function ($q) use ($request) {
+            $q->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('email', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('comment', 'like', '%'.$request->input('search').'%');
             });
         })
             ->latest();

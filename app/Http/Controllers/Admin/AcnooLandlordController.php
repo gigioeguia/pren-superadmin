@@ -367,9 +367,9 @@ class AcnooLandlordController extends Controller
     {
         return User::with('user_details')
             ->where('role', 'landlord')
-            ->when(request('search'), function ($q) {
-                $q->where(function ($q) {
-                    $search = request('search');
+            ->when($request->input('search'), function ($q) use ($request) {
+                $q->where(function ($q) use ($request) {
+                    $search = $request->input('search');
                     $q->where('name', 'like', '%'.$search.'%')
                         ->orwhere('email', 'like', '%'.$search.'%')
                         ->orWhereHas('user_details', function ($query) use ($search) {

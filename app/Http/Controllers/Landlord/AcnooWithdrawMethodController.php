@@ -109,10 +109,10 @@ class AcnooWithdrawMethodController extends Controller
     {
         return UserMethod::with('withdraw_method:id,name')
             ->where('user_id', auth()->id())
-            ->when(request('search'), function ($query) {
-                $query->where('account_no', 'like', '%'.request('search').'%')
-                    ->orWhereHas('withdraw_method', function ($q) {
-                        $q->where('name', 'like', '%'.request('search').'%');
+            ->when($request->input('search'), function ($query) use ($request) {
+                $query->where('account_no', 'like', '%'.$request->input('search').'%')
+                    ->orWhereHas('withdraw_method', function ($q) use ($request) {
+                        $q->where('name', 'like', '%'.$request->input('search').'%');
                     });
             })
             ->latest();

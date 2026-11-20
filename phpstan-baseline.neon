@@ -744,11 +744,6 @@ parameters:
 			count: 3
 			path: app/Http/Controllers/Api/AcnooWithdrawController.php
 
-		-
-			message: '#^Variable \$request on left side of \?\? is never defined\.$#'
-			identifier: nullCoalesce.variable
-			count: 1
-			path: app/Http/Controllers/Api/AcnooWithdrawController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\UserMethod\:\:\$withdraw_method\.$#'

@@ -21,16 +21,16 @@ class AcnooRentController extends Controller
     {
         $query = Rent::select('id', 'monthly_rent', 'utility_bill', 'total_amount', 'start_date', 'end_date', 'status', 'landlord_id', 'tenant_id', 'property_id', 'unit_id')
             ->with('tenant:id,name,unique_id', 'landlord:id,name', 'property:id,category_id,address_info,rent_info', 'property.propertyDetail:property_id,property_info', 'unit:id,unit_name,min_rental_value,min_rental_unit')
-            ->when(auth()->user()->role == 'landlord' || request('landlord_id'), function ($q) {
-                $q->where('landlord_id', request('landlord_id') ?? auth()->id());
+            ->when(auth()->user()->role == 'landlord' || $request->input('landlord_id'), function ($q) use ($request) {
+                $q->where('landlord_id', $request->input('landlord_id') ?? auth()->id());
             })
             ->when(auth()->user()->role == 'tenant', function ($q) {
                 $q->where('tenant_id', auth()->id());
             })
-            ->when(request('status'), function ($q) {
-                $q->where('status', request('status'));
+            ->when($request->input('status'), function ($q) use ($request) {
+                $q->where('status', $request->input('status'));
             })
-            ->when(request('status') == 'expired', function ($q) {
+            ->when($request->input('status') == 'expired', function ($q) {
                 $q->whereDate('start_date', '<=', Carbon::today())
                     ->whereDate('end_date', '>=', Carbon::today());
             })
@@ -40,8 +40,8 @@ class AcnooRentController extends Controller
                 ->when(auth()->user()->role == 'tenant', function ($q) {
                     $q->where('tenant_id', auth()->id());
                 })
-                ->when(request('status'), function ($q) {
-                    $q->where('status', request('status'));
+                ->when($request->input('status'), function ($q) use ($request) {
+                    $q->where('status', $request->input('status'));
                 })
                 ->get();
             $responseData = [

@@ -45,13 +45,13 @@ class AcnooMessageController extends Controller
 
     protected function acnooQuery(Request $request): Builder
     {
-        return Message::when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('name', 'like', '%'.request('search').'%')
-                    ->orWhere('phone', 'like', '%'.request('search').'%')
-                    ->orWhere('email', 'like', '%'.request('search').'%')
-                    ->orWhere('company_name', 'like', '%'.request('search').'%')
-                    ->orWhere('message', 'like', '%'.request('search').'%');
+        return Message::when($request->input('search'), function ($q) use ($request) {
+            $q->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('phone', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('email', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('company_name', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('message', 'like', '%'.$request->input('search').'%');
             });
         })
             ->latest();

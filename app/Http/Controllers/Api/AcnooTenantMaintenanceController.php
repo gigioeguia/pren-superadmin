@@ -30,14 +30,14 @@ class AcnooTenantMaintenanceController extends Controller
 
             ->when($request->has('search') && $request->search !== null, function ($query) use ($request) {
                 $search = $request->search;
-                $query->where(function ($q) use ($search) {
+                $query->where(function ($q) use ($search, $request) {
                     $q->where('title', 'like', '%'.$search.'%')
                         ->orWhere('description', 'like', '%'.$search.'%')
-                        ->orwhereHas('property.propertyDetail', function ($propertyDetail) {
-                            $propertyDetail->where('property_info', 'like', '%'.request('search').'%');
+                        ->orwhereHas('property.propertyDetail', function ($propertyDetail) use ($request) {
+                            $propertyDetail->where('property_info', 'like', '%'.$request->input('search').'%');
                         })
-                        ->orwhereHas('tenant', function ($tenant) {
-                            $tenant->where('name', 'like', '%'.request('search').'%');
+                        ->orwhereHas('tenant', function ($tenant) use ($request) {
+                            $tenant->where('name', 'like', '%'.$request->input('search').'%');
                         });
                 });
             })

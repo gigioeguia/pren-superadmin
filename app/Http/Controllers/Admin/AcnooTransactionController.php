@@ -36,14 +36,14 @@ class AcnooTransactionController extends Controller
     protected function acnooQuery(Request $request): Builder
     {
         return Transaction::with('paidBy:id,name', 'gateway:id,name')
-            ->when(request('search'), function ($q) {
-                $q->where('amount', 'like', '%'.request('search').'%')
-                    ->orWhere('uid', 'like', '%'.request('search').'%')
-                    ->orWhere('amount', 'like', '%'.request('search').'%')
-                    ->orWhere('payment_type', 'like', '%'.request('search').'%');
+            ->when($request->input('search'), function ($q) use ($request) {
+                $q->where('amount', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('uid', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('amount', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('payment_type', 'like', '%'.$request->input('search').'%');
 
-                $q->orWhereHas('gateway', function ($q) {
-                    $q->where('name', 'like', '%'.request('search').'%');
+                $q->orWhereHas('gateway', function ($q) use ($request) {
+                    $q->where('name', 'like', '%'.$request->input('search').'%');
                 });
             })
             ->latest();

@@ -146,12 +146,12 @@ class UserController extends Controller
 
     protected function acnooQuery(Request $request): Builder
     {
-        return User::whereNotIn('role', ['superadmin', 'staff', 'shop-owner'])->when(request('search'), function ($q) {
-            $q->where(function ($q) {
-                $q->where('name', 'like', '%'.request('search').'%')
-                    ->orWhere('email', 'like', '%'.request('search').'%')
-                    ->orWhere('role', 'like', '%'.request('search').'%')
-                    ->orWhere('phone', 'like', '%'.request('search').'%');
+        return User::whereNotIn('role', ['superadmin', 'staff', 'shop-owner'])->when($request->input('search'), function ($q) use ($request) {
+            $q->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('email', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('role', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('phone', 'like', '%'.$request->input('search').'%');
             });
         })
             ->latest();

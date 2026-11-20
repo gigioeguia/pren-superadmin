@@ -84,8 +84,8 @@ class AcnooAmenityController extends Controller
     protected function acnooQuery(Request $request): Builder
     {
         return Amenity::with('landlord:id,name')
-            ->when(request('search'), function ($q) {
-                $search = request('search');
+            ->when($request->input('search'), function ($q) use ($request) {
+                $search = $request->input('search');
                 $q->where(function ($q) use ($search) {
                     $q->where('name', 'like', '%'.$search.'%');
                     $q->orWhereHas('landlord', function ($landlordQuery) use ($search) {
