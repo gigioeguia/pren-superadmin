@@ -19,18 +19,6 @@ parameters:
 			path: app/Console/Commands/RentPaymentGenerate.php
 
 		-
-			message: '#^Relation ''plan_subscribe'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminLandlordExport.php
-
-		-
-			message: '#^Relation ''user_details'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminLandlordExport.php
-
-		-
 			message: '#^Relation ''account_info'' is not found in App\\Models\\Withdraw model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
@@ -43,121 +31,7 @@ parameters:
 			path: app/Exports/AdminLandlordWithdrawReportExport.php
 
 		-
-			message: '#^Relation ''category'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminPropertiesExport.php
-
-		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminPropertiesExport.php
-
-		-
-			message: '#^Relation ''propertyDetail'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminPropertiesExport.php
-
-		-
-			message: '#^Relation ''units'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Exports/AdminPropertiesExport.php
-
-		-
-			message: '#^Relation ''deposit'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminRefundRequestReportExport.php
-
-		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminRefundRequestReportExport.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminRefundRequestReportExport.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminRefundRequestReportExport.php
-
-		-
-			message: '#^Relation ''gateway'' is not found in App\\Models\\RentPayment model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminRentPaymentExport.php
-
-		-
-			message: '#^Relation ''rent'' is not found in App\\Models\\RentPayment model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminRentPaymentExport.php
-
-		-
-			message: '#^Relation ''gateway'' is not found in App\\Models\\RentPayment model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminRentPaymentReportExport.php
-
-		-
-			message: '#^Relation ''rent'' is not found in App\\Models\\RentPayment model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminRentPaymentReportExport.php
-
-		-
-			message: '#^Relation ''gateway'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminSecurityDepositExport.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminSecurityDepositExport.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminSecurityDepositExport.php
-
-		-
-			message: '#^Relation ''gateway'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminSecurityDepositReportExport.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminSecurityDepositReportExport.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminSecurityDepositReportExport.php
-
-		-
 			message: '#^Relation ''gateway'' is not found in App\\Models\\PlanSubscribe model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminSubscriptionExport.php
-
-		-
-			message: '#^Relation ''plan'' is not found in App\\Models\\PlanSubscribe model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Exports/AdminSubscriptionExport.php
@@ -175,28 +49,10 @@ parameters:
 			path: app/Exports/AdminSubscriptionReportExport.php
 
 		-
-			message: '#^Relation ''plan'' is not found in App\\Models\\PlanSubscribe model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminSubscriptionReportExport.php
-
-		-
 			message: '#^Relation ''user'' is not found in App\\Models\\PlanSubscribe model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Exports/AdminSubscriptionReportExport.php
-
-		-
-			message: '#^Relation ''rents'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 5
-			path: app/Exports/AdminTenantExport.php
-
-		-
-			message: '#^Relation ''user_details'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminTenantExport.php
 
 		-
 			message: '#^Relation ''account_info'' is not found in App\\Models\\Withdraw model\.$#'
@@ -271,55 +127,7 @@ parameters:
 			path: app/Exports/LandlordMaintenanceReportExport.php
 
 		-
-			message: '#^Relation ''category'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/LandlordPropertiesExport.php
-
-		-
-			message: '#^Relation ''propertyDetail'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/LandlordPropertiesExport.php
-
-		-
-			message: '#^Relation ''units'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Exports/LandlordPropertiesExport.php
-
-		-
-			message: '#^Relation ''deposit'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/LandlordRefundRequestExport.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/LandlordRefundRequestExport.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/LandlordRefundRequestExport.php
-
-		-
 			message: '#^Relation ''landlord'' is not found in App\\Models\\Rent model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/LandlordRentInvitationExport.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\Rent model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Exports/LandlordRentInvitationExport.php
-
-		-
-			message: '#^Relation ''rent'' is not found in App\\Models\\Property model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Exports/LandlordRentInvitationExport.php
@@ -335,48 +143,6 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Exports/LandlordRentInvitationExport.php
-
-		-
-			message: '#^Relation ''user_details'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/LandlordRentInvitationExport.php
-
-		-
-			message: '#^Relation ''rent'' is not found in App\\Models\\RentPayment model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Exports/LandlordRentPaymentExport.php
-
-		-
-			message: '#^Relation ''gateway'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/LandlordSecurityDepositExport.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/LandlordSecurityDepositExport.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/LandlordSecurityDepositExport.php
-
-		-
-			message: '#^Relation ''rents'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/LandlordTenantExport.php
-
-		-
-			message: '#^Relation ''user_details'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/LandlordTenantExport.php
 
 		-
 			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
@@ -439,30 +205,6 @@ parameters:
 			path: app/Http/Controllers/Admin/AcnooAdminDashboardController.php
 
 		-
-			message: '#^Relation ''deposit'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/AcnooAdminDashboardController.php
-
-		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/AcnooAdminDashboardController.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Admin/AcnooAdminDashboardController.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/AcnooAdminDashboardController.php
-
-		-
 			message: '#^Relation ''user'' is not found in App\\Models\\Withdraw model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
@@ -479,24 +221,6 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 3
 			path: app/Http/Controllers/Admin/AcnooFacilityController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$user_details\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Admin/AcnooLandlordController.php
-
-		-
-			message: '#^Relation ''plan_subscribe'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/AcnooLandlordController.php
-
-		-
-			message: '#^Relation ''user_details'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Admin/AcnooLandlordController.php
 
 		-
 			message: '#^Relation ''account_info'' is not found in App\\Models\\Withdraw model\.$#'
@@ -523,66 +247,6 @@ parameters:
 			path: app/Http/Controllers/Admin/AcnooProfileController.php
 
 		-
-			message: '#^Relation ''user_details'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/AcnooProfileController.php
-
-		-
-			message: '#^Relation ''deposit'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Admin/AcnooRefundRequestController.php
-
-		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Admin/AcnooRefundRequestController.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 5
-			path: app/Http/Controllers/Admin/AcnooRefundRequestController.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Admin/AcnooRefundRequestController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\RentPayment\:\:\$rent\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Admin/AcnooRentPaymentController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Admin/AcnooRentPaymentController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Admin/AcnooRentPaymentController.php
-
-		-
-			message: '#^Relation ''gateway'' is not found in App\\Models\\RentPayment model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Admin/AcnooRentPaymentController.php
-
-		-
-			message: '#^Relation ''rent'' is not found in App\\Models\\RentPayment model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Admin/AcnooRentPaymentController.php
-
-		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.expr
 			count: 1
@@ -595,88 +259,10 @@ parameters:
 			path: app/Http/Controllers/Admin/AcnooRentPaymentGenerateController.php
 
 		-
-			message: '#^Relation ''rent'' is not found in App\\Models\\RentPayment model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/AcnooRentPaymentGenerateController.php
-
-		-
 			message: '#^Variable \$charge on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.variable
 			count: 1
 			path: app/Http/Controllers/Admin/AcnooRentPaymentGenerateController.php
-
-		-
-			message: '#^Relation ''gateway'' is not found in App\\Models\\RentPayment model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Admin/AcnooRentPaymentReportController.php
-
-		-
-			message: '#^Relation ''rent'' is not found in App\\Models\\RentPayment model\.$#'
-			identifier: larastan.relationExistence
-			count: 5
-			path: app/Http/Controllers/Admin/AcnooRentPaymentReportController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\SecurityDeposit\:\:\$landlord\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Admin/AcnooSecurityDepositController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\SecurityDeposit\:\:\$tenant\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Admin/AcnooSecurityDepositController.php
-
-		-
-			message: '#^Relation ''gateway'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Admin/AcnooSecurityDepositController.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Admin/AcnooSecurityDepositController.php
-
-		-
-			message: '#^Relation ''rent'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Admin/AcnooSecurityDepositController.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Admin/AcnooSecurityDepositController.php
-
-		-
-			message: '#^Relation ''gateway'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Admin/AcnooSecurityDepositReportController.php
-
-		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/AcnooSecurityDepositReportController.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Admin/AcnooSecurityDepositReportController.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Admin/AcnooSecurityDepositReportController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\PlanSubscribe\:\:\$user\.$#'
@@ -697,12 +283,6 @@ parameters:
 			path: app/Http/Controllers/Admin/AcnooSubscriptionController.php
 
 		-
-			message: '#^Relation ''plan'' is not found in App\\Models\\PlanSubscribe model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Admin/AcnooSubscriptionController.php
-
-		-
 			message: '#^Relation ''user'' is not found in App\\Models\\PlanSubscribe model\.$#'
 			identifier: larastan.relationExistence
 			count: 4
@@ -710,12 +290,6 @@ parameters:
 
 		-
 			message: '#^Relation ''gateway'' is not found in App\\Models\\PlanSubscribe model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Admin/AcnooSubscriptionReportController.php
-
-		-
-			message: '#^Relation ''plan'' is not found in App\\Models\\PlanSubscribe model\.$#'
 			identifier: larastan.relationExistence
 			count: 3
 			path: app/Http/Controllers/Admin/AcnooSubscriptionReportController.php
@@ -737,42 +311,6 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 4
 			path: app/Http/Controllers/Admin/AcnooSupportController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$landlord\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Admin/AcnooTenantController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$user_details\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Admin/AcnooTenantController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Admin/AcnooTenantController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Admin/AcnooTenantController.php
-
-		-
-			message: '#^Relation ''rents'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 11
-			path: app/Http/Controllers/Admin/AcnooTenantController.php
-
-		-
-			message: '#^Relation ''user_details'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 5
-			path: app/Http/Controllers/Admin/AcnooTenantController.php
 
 		-
 			message: '#^If condition is always true\.$#'
@@ -901,72 +439,6 @@ parameters:
 			path: app/Http/Controllers/Admin/PropertyController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Property\:\:\$landlord\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Admin/PropertyController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Property\:\:\$units\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Admin/PropertyController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Property\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Property\>\:\:\$propertyDetail\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Admin/PropertyController.php
-
-		-
-			message: '#^If condition is always true\.$#'
-			identifier: if.alwaysTrue
-			count: 2
-			path: app/Http/Controllers/Admin/PropertyController.php
-
-		-
-			message: '#^Relation ''category'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 5
-			path: app/Http/Controllers/Admin/PropertyController.php
-
-		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Admin/PropertyController.php
-
-		-
-			message: '#^Relation ''propertyDetail'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 6
-			path: app/Http/Controllers/Admin/PropertyController.php
-
-		-
-			message: '#^Relation ''rent'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/PropertyController.php
-
-		-
-			message: '#^Relation ''units'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 7
-			path: app/Http/Controllers/Admin/PropertyController.php
-
-		-
-			message: '#^Right side of && is always true\.$#'
-			identifier: booleanAnd.rightAlwaysTrue
-			count: 1
-			path: app/Http/Controllers/Admin/PropertyController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>floorplan_image" in empty\(\) is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/Admin/PropertyController.php
-
-		-
 			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
 			identifier: larastan.noEnvCallsOutsideOfConfig
 			count: 9
@@ -979,57 +451,15 @@ parameters:
 			path: app/Http/Controllers/Admin/UserController.php
 
 		-
-			message: '#^Access to property \$business_id on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AcnooExpenseController.php
-
-		-
-			message: '#^Access to property \$business_id on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AcnooExpenseController.php
-
-		-
 			message: '#^Relation ''property'' is not found in App\\Models\\Favorite model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Api/AcnooFavoriteController.php
 
 		-
-			message: '#^Access to property \$business_id on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AcnooIncomeCategoryController.php
-
-		-
-			message: '#^Access to property \$business_id on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AcnooIncomeCategoryController.php
-
-		-
-			message: '#^Access to property \$business_id on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AcnooIncomeController.php
-
-		-
-			message: '#^Access to property \$business_id on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AcnooIncomeController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Labor\:\:\$landlord\.$#'
 			identifier: property.notFound
 			count: 2
-			path: app/Http/Controllers/Api/AcnooLaborController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\PlanSubscribe\:\:\$plan\.$#'
-			identifier: property.notFound
-			count: 1
 			path: app/Http/Controllers/Api/AcnooLaborController.php
 
 		-
@@ -1123,24 +553,6 @@ parameters:
 			path: app/Http/Controllers/Api/AcnooNotificationController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\PlanSubscribe\:\:\$plan\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AcnooPropertyController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Property\:\:\$propertyDetail\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Api/AcnooPropertyController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Property\:\:\$units\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AcnooPropertyController.php
-
-		-
 			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
 			identifier: class.notFound
 			count: 1
@@ -1153,136 +565,10 @@ parameters:
 			path: app/Http/Controllers/Api/AcnooPropertyController.php
 
 		-
-			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 4
-			path: app/Http/Controllers/Api/AcnooPropertyController.php
-
-		-
-			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 4
-			path: app/Http/Controllers/Api/AcnooPropertyController.php
-
-		-
-			message: '#^Access to property \$user_details on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AcnooPropertyController.php
-
-		-
-			message: '#^Access to property \$user_details on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AcnooPropertyController.php
-
-		-
-			message: '#^Relation ''category'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 5
-			path: app/Http/Controllers/Api/AcnooPropertyController.php
-
-		-
-			message: '#^Relation ''favorite'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/AcnooPropertyController.php
-
-		-
-			message: '#^Relation ''house_type'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Api/AcnooPropertyController.php
-
-		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 5
-			path: app/Http/Controllers/Api/AcnooPropertyController.php
-
-		-
-			message: '#^Relation ''propertyDetail'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 6
-			path: app/Http/Controllers/Api/AcnooPropertyController.php
-
-		-
-			message: '#^Relation ''rent'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 6
-			path: app/Http/Controllers/Api/AcnooPropertyController.php
-
-		-
 			message: '#^Relation ''tenant'' is not found in App\\Models\\Review model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Api/AcnooPropertyController.php
-
-		-
-			message: '#^Relation ''units'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/AcnooPropertyController.php
-
-		-
-			message: '#^Right side of && is always true\.$#'
-			identifier: booleanAnd.rightAlwaysTrue
-			count: 1
-			path: app/Http/Controllers/Api/AcnooPropertyController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\RefundRequest\:\:\$landlord\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/AcnooRefundRequestController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\RefundRequest\:\:\$tenant\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/AcnooRefundRequestController.php
-
-		-
-			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/AcnooRefundRequestController.php
-
-		-
-			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/AcnooRefundRequestController.php
-
-		-
-			message: '#^Relation ''deposit'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/AcnooRefundRequestController.php
-
-		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/AcnooRefundRequestController.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/AcnooRefundRequestController.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/AcnooRefundRequestController.php
-
-		-
-			message: '#^Variable \$request on left side of \?\? is never defined\.$#'
-			identifier: nullCoalesce.variable
-			count: 1
-			path: app/Http/Controllers/Api/AcnooRefundRequestController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Rent\:\:\$landlord\.$#'
@@ -1321,12 +607,6 @@ parameters:
 			path: app/Http/Controllers/Api/AcnooRentController.php
 
 		-
-			message: '#^Relation ''property'' is not found in App\\Models\\Rent model\.$#'
-			identifier: larastan.relationExistence
-			count: 5
-			path: app/Http/Controllers/Api/AcnooRentController.php
-
-		-
 			message: '#^Relation ''rent_payments'' is not found in App\\Models\\Rent model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
@@ -1354,36 +634,6 @@ parameters:
 			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
 			identifier: class.notFound
 			count: 2
-			path: app/Http/Controllers/Api/AcnooRentPaymentController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/AcnooRentPaymentController.php
-
-		-
-			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/AcnooRentPaymentController.php
-
-		-
-			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/AcnooRentPaymentController.php
-
-		-
-			message: '#^Relation ''rent'' is not found in App\\Models\\RentPayment model\.$#'
-			identifier: larastan.relationExistence
-			count: 8
-			path: app/Http/Controllers/Api/AcnooRentPaymentController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 2
 			path: app/Http/Controllers/Api/AcnooReviewController.php
 
 		-
@@ -1391,36 +641,6 @@ parameters:
 			identifier: class.notFound
 			count: 2
 			path: app/Http/Controllers/Api/AcnooReviewController.php
-
-		-
-			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/AcnooSecurityDepositController.php
-
-		-
-			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/AcnooSecurityDepositController.php
-
-		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/AcnooSecurityDepositController.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/AcnooSecurityDepositController.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/AcnooSecurityDepositController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Application\:\:\$property\.$#'
@@ -1477,45 +697,15 @@ parameters:
 			path: app/Http/Controllers/Api/AcnooTenantApplicationController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\PlanSubscribe\:\:\$plan\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AcnooTenantController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$user_details\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AcnooTenantController.php
-
-		-
 			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
 			identifier: class.notFound
-			count: 2
+			count: 1
 			path: app/Http/Controllers/Api/AcnooTenantController.php
 
 		-
 			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
 			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/AcnooTenantController.php
-
-		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 2
-			path: app/Http/Controllers/Api/AcnooTenantController.php
-
-		-
-			message: '#^Relation ''rents'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/AcnooTenantController.php
-
-		-
-			message: '#^Relation ''user_details'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
+			count: 1
 			path: app/Http/Controllers/Api/AcnooTenantController.php
 
 		-
@@ -1813,12 +1003,6 @@ parameters:
 			path: app/Http/Controllers/Api/UserController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$user_details\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/UserController.php
-
-		-
 			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
 			identifier: class.notFound
 			count: 2
@@ -1827,18 +1011,6 @@ parameters:
 		-
 			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
 			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/UserController.php
-
-		-
-			message: '#^Relation ''plan_subscribe'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Api/UserController.php
-
-		-
-			message: '#^Relation ''user_details'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
 			count: 2
 			path: app/Http/Controllers/Api/UserController.php
 
@@ -1883,30 +1055,6 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 4
 			path: app/Http/Controllers/Landlord/AcnooApplicationController.php
-
-		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\ExpenseCategory model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Landlord/AcnooExpenseCategoryController.php
-
-		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\ExpenseCategory model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Landlord/AcnooExpenseController.php
-
-		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\IncomeCategory model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Landlord/AcnooIncomeCategoryController.php
-
-		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\IncomeCategory model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Landlord/AcnooIncomeController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Labor\:\:\$landlord\.$#'
@@ -1957,12 +1105,6 @@ parameters:
 			path: app/Http/Controllers/Landlord/AcnooMaintenanceReportController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$user_details\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Landlord/AcnooProfileController.php
-
-		-
 			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
 			identifier: class.notFound
 			count: 2
@@ -1981,69 +1123,9 @@ parameters:
 			path: app/Http/Controllers/Landlord/AcnooProfileController.php
 
 		-
-			message: '#^Relation ''user_details'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Landlord/AcnooProfileController.php
-
-		-
-			message: '#^Relation ''deposit'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Landlord/AcnooRefundRequestController.php
-
-		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Landlord/AcnooRefundRequestController.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 5
-			path: app/Http/Controllers/Landlord/AcnooRefundRequestController.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\RefundRequest model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Landlord/AcnooRefundRequestController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Rent\:\:\$amenities\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Rent\:\:\$amenity_names\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Rent\:\:\$facilities\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Rent\:\:\$facility_names\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Rent\:\:\$landlord\.$#'
 			identifier: property.notFound
 			count: 2
-			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Rent\:\:\$property\.$#'
-			identifier: property.notFound
-			count: 1
 			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
 
 		-
@@ -2056,18 +1138,6 @@ parameters:
 			message: '#^Relation ''landlord'' is not found in App\\Models\\Rent model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
-			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\Rent model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
-
-		-
-			message: '#^Relation ''rent'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
 			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
 
 		-
@@ -2095,88 +1165,22 @@ parameters:
 			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
 
 		-
-			message: '#^Relation ''units'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
-
-		-
-			message: '#^Relation ''user_details'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>amenities" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 2
+			count: 1
 			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>facilities" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 2
-			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
-
-		-
-			message: '#^Relation ''rent'' is not found in App\\Models\\RentPayment model\.$#'
-			identifier: larastan.relationExistence
-			count: 8
-			path: app/Http/Controllers/Landlord/AcnooRentPaymentController.php
-
-		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
 			count: 1
-			path: app/Http/Controllers/Landlord/AcnooSecurityDepositController.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Landlord/AcnooSecurityDepositController.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Landlord/AcnooSecurityDepositController.php
+			path: app/Http/Controllers/Landlord/AcnooRentInvitationController.php
 
 		-
 			message: '#^Relation ''sender'' is not found in App\\Models\\Support model\.$#'
 			identifier: larastan.relationExistence
 			count: 3
 			path: app/Http/Controllers/Landlord/AcnooSupportController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$user_details\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Landlord/AcnooTenantController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Landlord/AcnooTenantController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Landlord/AcnooTenantController.php
-
-		-
-			message: '#^Relation ''rents'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Landlord/AcnooTenantController.php
-
-		-
-			message: '#^Relation ''user_details'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 5
-			path: app/Http/Controllers/Landlord/AcnooTenantController.php
 
 		-
 			message: '#^Access to property \$balance on an unknown class App\\Models\\Api\\Tenant\.$#'
@@ -2311,12 +1315,6 @@ parameters:
 			path: app/Http/Controllers/Landlord/NotificationController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\PlanSubscribe\:\:\$plan\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Landlord/PropertyController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Property\:\:\$amenities\.$#'
 			identifier: property.notFound
 			count: 1
@@ -2325,72 +1323,6 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\Property\:\:\$facilities\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Landlord/PropertyController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Property\:\:\$landlord\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Landlord/PropertyController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Property\:\:\$propertyDetail\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Landlord/PropertyController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Property\:\:\$rent\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Landlord/PropertyController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Property\:\:\$units\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Landlord/PropertyController.php
-
-		-
-			message: '#^Relation ''category'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 5
-			path: app/Http/Controllers/Landlord/PropertyController.php
-
-		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Landlord/PropertyController.php
-
-		-
-			message: '#^Relation ''propertyDetail'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 6
-			path: app/Http/Controllers/Landlord/PropertyController.php
-
-		-
-			message: '#^Relation ''rent'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Landlord/PropertyController.php
-
-		-
-			message: '#^Relation ''units'' is not found in App\\Models\\Property model\.$#'
-			identifier: larastan.relationExistence
-			count: 6
-			path: app/Http/Controllers/Landlord/PropertyController.php
-
-		-
-			message: '#^Right side of && is always true\.$#'
-			identifier: booleanAnd.rightAlwaysTrue
-			count: 1
-			path: app/Http/Controllers/Landlord/PropertyController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>floorplan_image" in empty\(\) is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Landlord/PropertyController.php
 
@@ -2407,28 +1339,10 @@ parameters:
 			path: app/Http/Controllers/PaymentController.php
 
 		-
-			message: '#^Relation ''rent'' is not found in App\\Models\\RentPayment model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\SecurityDeposit model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/PaymentController.php
-
-		-
 			message: '#^Method App\\Http\\Middleware\\Authenticate\:\:redirectTo\(\) should return string\|null but return statement is missing\.$#'
 			identifier: return.missing
 			count: 1
 			path: app/Http/Middleware/Authenticate.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\PlanSubscribe\:\:\$plan\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Middleware/ExpiredMiddleware.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\PlanSubscribe\:\:\$will_expire\.$#'
@@ -2699,12 +1613,6 @@ parameters:
 			identifier: class.notFound
 			count: 1
 			path: app/Providers/WebsiteServiceProvider.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\RentPayment\:\:\$rent\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/AcnooLateFeeService.php
 
 		-
 			message: '#^Trait App\\Traits\\HasPermission is used zero times and is not analysed\.$#'

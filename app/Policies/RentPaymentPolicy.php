@@ -24,7 +24,7 @@ class RentPaymentPolicy
             return false;
         }
 
-        return $user->id === $rent->landlord_id || $user->id === $rent->tenant_id;
+        return $user->id === $rent->getAttribute('landlord_id') || $user->id === $rent->getAttribute('tenant_id');
     }
 
     public function view(User $user, RentPayment $payment): bool
@@ -36,14 +36,14 @@ class RentPaymentPolicy
     {
         $rent = $payment->rent()->first();
 
-        return $rent && $user->id === $rent->landlord_id;
+        return $rent && $user->id === $rent->getAttribute('landlord_id');
     }
 
     public function delete(User $user, RentPayment $payment): bool
     {
         $rent = $payment->rent()->first();
 
-        return $rent && $user->id === $rent->landlord_id;
+        return $rent && $user->id === $rent->getAttribute('landlord_id');
     }
 
     public function approve(User $user, RentPayment $payment): bool

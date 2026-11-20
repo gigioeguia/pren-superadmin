@@ -2,34 +2,20 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Channel;
 use App\Http\Controllers\Controller;
 use App\Models\RentPayment;
+use App\Services\RentPaymentService;
+use Illuminate\Http\Request;
 use Illuminate\Support\ViewErrorBag;
 
 class AcnooRentPaymentController extends Controller
 {
-    public function index()
+    public function __construct(protected RentPaymentService $service) {}
+
+    public function index(Request $request)
     {
-        $rent_payments = RentPayment::select('id', 'rent_id', 'invoice_no', 'charge', 'total_amount', 'subtotal_amount', 'payment_status', 'created_at')->with('rent:id,tenant_id,landlord_id,property_id', 'rent.tenant:id,name', 'rent.landlord:id,name', 'rent.property:id,puid', 'rent.property.propertyDetail:id,property_id,property_info')
-            ->when(auth()->user()->role == 'landlord', function ($query) {
-                $query->whereHas('rent', function ($query) {
-                    $query->where('landlord_id', auth()->user()->id);
-                });
-            })
-            ->when(auth()->user()->role == 'tenant', function ($query) {
-                $query->whereHas('rent', function ($query) {
-                    $query->where('tenant_id', auth()->user()->id);
-                });
-            })
-            ->when(request('payment_status'), function ($query) {
-                $query->where('payment_status', request('payment_status'));
-            })
-            ->when(request('from_date') && request('to_date'), function ($q) {
-                $q->whereDate('created_at', '>=', request('from_date'));
-                $q->whereDate('created_at', '<=', request('to_date'));
-            })
-            ->latest()
-            ->paginate(10);
+        $rent_payments = $this->service->listForChannel(Channel::Api, $request->user(), $request->all());
 
         return response()->json([
             'message' => 'Data fetched successfully',

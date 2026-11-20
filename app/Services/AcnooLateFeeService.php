@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Rent;
 use App\Models\RentPayment;
 use Carbon\Carbon;
 
@@ -9,24 +10,24 @@ class AcnooLateFeeService
 {
     public function applyLateFee(RentPayment $payment)
     {
-        $rent = $payment->rent;
-        $property = $rent->property;
+        $rent = $payment->rent()->first();
+        $property = ($rent instanceof Rent) ? $rent->property()->first() : null;
 
-        if (! $property || $payment->late_fee > 0 || $payment->payment_status === 'paid') {
+        if (! $property || (float) $payment->getAttribute('late_fee') > 0 || $payment->getAttribute('payment_status') === 'paid') {
             return; // Skip if not applicable
         }
 
         // due date: 1th of each rent month
-        if (! $payment->rent_year || ! $payment->rent_month) {
+        if (! $payment->getAttribute('rent_year') || ! $payment->getAttribute('rent_month')) {
             return;
         }
 
-        $monthNumber = Carbon::parse($payment->rent_month)->month;
-        $dueDate = Carbon::create((int) $payment->rent_year, $monthNumber, 1);
-        $graceDate = $dueDate->addDays($property->late_fee_after_days);
+        $monthNumber = Carbon::parse($payment->getAttribute('rent_month'))->month;
+        $dueDate = Carbon::create((int) $payment->getAttribute('rent_year'), $monthNumber, 1);
+        $graceDate = $dueDate->addDays((int) $property->getAttribute('late_fee_after_days'));
 
         if (Carbon::now()->greaterThan($graceDate)) {
-            $lateFee = $property->late_fee;
+            $lateFee = $property->getAttribute('late_fee');
 
             $payment->update([
                 'late_fee' => $lateFee ?? 0,

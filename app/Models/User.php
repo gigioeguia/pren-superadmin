@@ -3,6 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -53,37 +57,37 @@ class User extends Authenticatable
         });
     }
 
-    public function user_details()
+    public function user_details(): HasOne
     {
         return $this->hasOne(UserDetail::class);
     }
 
-    public function properties()
+    public function properties(): HasMany
     {
         return $this->hasMany(Property::class);
     }
 
-    public function tenants()
+    public function tenants(): HasMany
     {
         return $this->hasMany(User::class);
     }
 
-    public function rents()
+    public function rents(): HasMany
     {
         return $this->hasMany(Rent::class, 'tenant_id');
     }
 
-    public function maintenances()
+    public function maintenances(): HasManyThrough
     {
         return $this->hasManyThrough(Maintenance::class, Property::class, 'user_id', 'property_id');
     }
 
-    public function landlord()
+    public function landlord(): BelongsTo
     {
         return $this->belongsTo(User::class, 'landlord_id');
     }
 
-    public function plan_subscribe()
+    public function plan_subscribe(): BelongsTo
     {
         return $this->belongsTo(PlanSubscribe::class, 'plan_subscribe_id');
     }

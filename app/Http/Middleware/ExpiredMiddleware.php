@@ -111,30 +111,30 @@ class ExpiredMiddleware
         // Check if the property limit is exceeded
         if ($request->isMethod('post') && $request->routeIs('landlord.properties.store')) {
             $property_count = Property::where('landlord_id', $user_id)->count();
-            if ($plan->number_of_property !== -1 && $property_count >= $plan->number_of_property) {
+            if ($plan->getAttribute('number_of_property') !== -1 && $property_count >= $plan->getAttribute('number_of_property')) {
                 return $request->wantsJson()
-                    ? response()->json(__('Your property addition limit has been reached. Your current limit is '.$plan->number_of_property), 406)
-                    : redirect(route('landlord.subscriptions.index'))->with('error', __('Property limit exceeded. Your current limit is '.$plan->number_of_property));
+                    ? response()->json(__('Your property addition limit has been reached. Your current limit is '.$plan->getAttribute('number_of_property')), 406)
+                    : redirect(route('landlord.subscriptions.index'))->with('error', __('Property limit exceeded. Your current limit is '.$plan->getAttribute('number_of_property')));
             }
         }
 
         // Check if the labor limit is exceeded
         if ($request->isMethod('post') && $request->routeIs('landlord.labors.store')) {
             $labor_count = Labor::where('landlord_id', $user_id)->count();
-            if ($plan->number_of_labor !== -1 && $labor_count >= $plan->number_of_labor) {
+            if ($plan->getAttribute('number_of_labor') !== -1 && $labor_count >= $plan->getAttribute('number_of_labor')) {
                 return $request->wantsJson()
-                    ? response()->json(__('Your labor addition limit has been reached. Your current limit is '.$plan->number_of_labor), 406)
-                    : redirect(route('landlord.subscriptions.index'))->with('error', __('Labor limit exceeded. Your current limit is '.$plan->number_of_labor));
+                    ? response()->json(__('Your labor addition limit has been reached. Your current limit is '.$plan->getAttribute('number_of_labor')), 406)
+                    : redirect(route('landlord.subscriptions.index'))->with('error', __('Labor limit exceeded. Your current limit is '.$plan->getAttribute('number_of_labor')));
             }
         }
 
         // Check if the tenant limit is exceeded
         if ($request->isMethod('post') && $request->routeIs('landlord.tenants.store')) {
             $tenant_count = User::where([['landlord_id', $user_id], ['role', 'tenant']])->count();
-            if ($plan->number_of_tenant !== -1 && $tenant_count >= $plan->number_of_tenant) {
+            if ($plan->getAttribute('number_of_tenant') !== -1 && $tenant_count >= $plan->getAttribute('number_of_tenant')) {
                 return $request->wantsJson()
-                    ? response()->json(__('Your tenant addition limit has been reached. Your current limit is '.$plan->number_of_tenant), 406)
-                    : redirect(route('landlord.tenants.index'))->with('error', __('Tenant limit exceeded. Your current limit is '.$plan->number_of_tenant));
+                    ? response()->json(__('Your tenant addition limit has been reached. Your current limit is '.$plan->getAttribute('number_of_tenant')), 406)
+                    : redirect(route('landlord.tenants.index'))->with('error', __('Tenant limit exceeded. Your current limit is '.$plan->getAttribute('number_of_tenant')));
             }
         }
 

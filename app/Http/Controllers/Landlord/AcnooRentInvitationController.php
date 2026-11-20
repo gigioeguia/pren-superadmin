@@ -208,18 +208,23 @@ class AcnooRentInvitationController extends Controller
         ])
             ->findOrFail($id);
 
-        if ($rent->property?->category_id == 6) {
+        $property = $rent->property()->first();
+
+        if ($property instanceof Property && $property->category_id == 6) {
             $unitFacilityIds = $rent->unit?->facilities ?? [];
-            $rent->facility_names = Facility::whereIn('id', $unitFacilityIds)->pluck('name', 'id');
+            $rent->setAttribute('facility_names', Facility::whereIn('id', $unitFacilityIds)->pluck('name', 'id'));
 
             $unitAmenityIds = $rent->unit?->amenities ?? [];
-            $rent->amenity_names = Amenity::whereIn('id', $unitAmenityIds)->pluck('name', 'id');
+            $rent->setAttribute('amenity_names', Amenity::whereIn('id', $unitAmenityIds)->pluck('name', 'id'));
         } else {
-            $facilityIds = $rent->property?->propertyDetail?->facilities ?? [];
-            $rent->facilities = Facility::whereIn('id', $facilityIds)->pluck('name', 'id');
+            $propertyDetail = ($property instanceof Property) ? $property->propertyDetail()->first() : null;
+            $facilityIds = $propertyDetail ? $propertyDetail->getAttribute('facilities') : [];
+            $facilityIds = is_array($facilityIds) ? $facilityIds : [];
+            $rent->setAttribute('facilities', Facility::whereIn('id', $facilityIds)->pluck('name', 'id'));
 
-            $amenityIds = $rent->property?->propertyDetail?->amenities ?? [];
-            $rent->amenities = Amenity::whereIn('id', $amenityIds)->pluck('name', 'id');
+            $amenityIds = $propertyDetail ? $propertyDetail->getAttribute('amenities') : [];
+            $amenityIds = is_array($amenityIds) ? $amenityIds : [];
+            $rent->setAttribute('amenities', Amenity::whereIn('id', $amenityIds)->pluck('name', 'id'));
         }
 
         return view('landlord.rents.view', compact('rent'));

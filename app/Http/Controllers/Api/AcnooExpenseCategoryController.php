@@ -2,28 +2,29 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Channel;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ExpenseCategory\StoreExpenseCategoryRequest;
+use App\Http\Requests\ExpenseCategory\UpdateExpenseCategoryRequest;
 use App\Models\ExpenseCategory;
+use App\Services\ExpenseCategoryService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class AcnooExpenseCategoryController extends Controller
 {
+    public function __construct(protected ExpenseCategoryService $service) {}
+
     public function index(Request $request)
     {
-        $expense_categories = ExpenseCategory::where('landlord_id', auth()->id())
-            ->when(request('search'), function ($query) {
-                $query->where('name', 'like', '%'.request('search').'%');
-            })
-            ->latest();
-        if ($request->has('no_paginate') && $request->no_paginate == true) {
-            $expense_categories = $expense_categories->select('id', 'name')->get();
+        $actor = $request->user();
+        $categories = $this->service->listForChannel(Channel::Api, $actor, $request->all());
+
+        if ($request->has('no_paginate') && $request->no_paginate) {
             $responseData = [
-                'data' => $expense_categories,
+                'data' => array_values($categories->items()),
             ];
         } else {
-            $expense_categories = $expense_categories->paginate(10);
-            $responseData = $expense_categories;
+            $responseData = $categories;
         }
 
         return response()->json([
@@ -32,47 +33,22 @@ class AcnooExpenseCategoryController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreExpenseCategoryRequest $request)
     {
-        $request->validate([
-            'name' => [
-                'required',
-                Rule::unique('expense_categories')->where(function ($query) {
-                    return $query->where('landlord_id', auth()->id());
-                }),
-            ],
-            'description' => 'nullable|string',
-        ]);
-
-        $data = ExpenseCategory::create($request->except('landlord_id') + [
-            'landlord_id' => auth()->id(),
-        ]);
+        $actor = $request->user();
+        $category = $this->service->store($request->validated(), Channel::Api, $actor);
 
         return response()->json([
             'message' => __('Data saved successfully.'),
-            'data' => $data,
+            'data' => $category,
         ]);
     }
 
-    public function update(Request $request, string $id)
+    public function update(UpdateExpenseCategoryRequest $request, string $id)
     {
         $category = ExpenseCategory::findOrFail($id);
-
-        $request->validate([
-            'name' => [
-                'required',
-                Rule::unique('expense_categories')
-                    ->ignore($category->id)
-                    ->where(function ($query) {
-                        return $query->where('landlord_id', auth()->id());
-                    }),
-            ],
-            'description' => 'nullable|string',
-        ]);
-
-        $category->update($request->except('landlord_id') + [
-            'landlord_id' => auth()->id(),
-        ]);
+        $actor = $request->user();
+        $category = $this->service->update($category, $request->validated(), Channel::Api, $actor);
 
         return response()->json([
             'message' => __('Data updated successfully.'),
@@ -83,7 +59,7 @@ class AcnooExpenseCategoryController extends Controller
     public function destroy(string $id)
     {
         $category = ExpenseCategory::findOrFail($id);
-        $category->delete();
+        $this->service->delete($category, Channel::Api);
 
         return response()->json([
             'message' => __('Data deleted successfully.'),

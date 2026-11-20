@@ -2,42 +2,29 @@
 
 namespace App\Http\Controllers\Landlord;
 
+use App\Enums\Channel;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ExpenseCategory\StoreExpenseCategoryRequest;
+use App\Http\Requests\ExpenseCategory\UpdateExpenseCategoryRequest;
 use App\Models\ExpenseCategory;
-use App\Traits\HasAcnooActions;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\ExpenseCategoryService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class AcnooExpenseCategoryController extends Controller
 {
-    use HasAcnooActions;
+    public function __construct(protected ExpenseCategoryService $service) {}
 
     public function index()
     {
-        $expense_categories = ExpenseCategory::with('landlord')->where('landlord_id', auth()->id())->latest()->paginate(10);
+        $expense_categories = $this->service->listForChannel(Channel::Landlord, auth()->user(), ['per_page' => 10]);
 
         return view('landlord.expense-categories.index', compact('expense_categories'));
     }
 
-    public function store(Request $request)
+    public function store(StoreExpenseCategoryRequest $request)
     {
-        $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('expense_categories')->where(function ($query) {
-                    return $query->where('landlord_id', auth()->id());
-                }),
-            ],
-            'description' => 'nullable|string',
-        ]);
-
-        ExpenseCategory::create($request->except('landlord_id') + [
-            'landlord_id' => auth()->id(),
-        ]);
+        $actor = $request->user();
+        $this->service->store($request->validated(), Channel::Landlord, $actor);
 
         return response()->json([
             'message' => __('Expense Category saved successfully.'),
@@ -45,25 +32,11 @@ class AcnooExpenseCategoryController extends Controller
         ]);
     }
 
-    public function update(Request $request, string $id)
+    public function update(UpdateExpenseCategoryRequest $request, string $id)
     {
         $category = ExpenseCategory::findOrFail($id);
-
-        $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('expense_categories')->ignore($category->id)->where(function ($query) {
-                    return $query->where('landlord_id', auth()->id());
-                }),
-            ],
-            'description' => 'nullable|string',
-        ]);
-
-        $category->update($request->except('landlord_id') + [
-            'landlord_id' => auth()->id(),
-        ]);
+        $actor = $request->user();
+        $this->service->update($category, $request->validated(), Channel::Landlord, $actor);
 
         return response()->json([
             'message' => __('Expense Category updated successfully.'),
@@ -74,7 +47,7 @@ class AcnooExpenseCategoryController extends Controller
     public function destroy(string $id)
     {
         $category = ExpenseCategory::findOrFail($id);
-        $category->delete();
+        $this->service->delete($category, Channel::Landlord);
 
         return response()->json([
             'message' => __('Expense Category Deleted Successfully'),
@@ -82,46 +55,10 @@ class AcnooExpenseCategoryController extends Controller
         ]);
     }
 
-    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
-
-    protected function acnooModel(): string
+    public function acnooFilter(Request $request)
     {
-        return ExpenseCategory::class;
-    }
+        $expense_categories = $this->service->listForChannel(Channel::Landlord, auth()->user(), array_merge($request->all(), ['per_page' => 20]));
 
-    protected function acnooQuery(Request $request): Builder
-    {
-        return ExpenseCategory::with('landlord')->where('landlord_id', auth()->id())->when(request('search'), function ($q) use ($request) {
-            $q->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%'.$request->search.'%')
-                    ->orWhere('description', 'like', '%'.$request->search.'%');
-            });
-        })
-            ->latest();
-    }
-
-    protected function acnooView(): string
-    {
-        return 'landlord.expense-categories.datas';
-    }
-
-    protected function acnooViewData(LengthAwarePaginator $rows): array
-    {
-        return ['expense_categories' => $rows];
-    }
-
-    protected function acnooRedirectRoute(): string
-    {
-        return 'landlord.expense-categories.index';
-    }
-
-    protected function acnooStatusMessage(): string
-    {
-        return 'Expense Category';
-    }
-
-    protected function acnooDeleteMessage(): string
-    {
-        return __('Selected Expense Category Deleted Successfully');
+        return view('landlord.expense-categories.datas', ['expense_categories' => $expense_categories]);
     }
 }

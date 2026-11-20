@@ -2,43 +2,22 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Helpers\HasUploader;
+use App\Enums\Channel;
 use App\Http\Controllers\Controller;
 use App\Models\Property;
 use App\Models\RefundReason;
 use App\Models\RefundRequest;
-use App\Models\Rent;
 use App\Models\SecurityDeposit;
-use App\Models\User;
-use App\Support\ErrorMessage;
+use App\Services\RefundRequestService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\ViewErrorBag;
 
 class AcnooRefundRequestController extends Controller
 {
-    use HasUploader;
+    public function __construct(protected RefundRequestService $service) {}
 
-    public function index()
+    public function index(Request $request)
     {
-        $refund_requests = RefundRequest::with(['property:id,puid', 'property.propertyDetail:id,property_id,property_info', 'landlord:id,name', 'tenant:id,name', 'deposit:id,invoice_no,deposit_amount,utility_advance,rent_advance,total_amount'])
-            ->when(auth()->user()->role == 'tenant', function ($query) {
-                $query->where('tenant_id', auth()->id());
-            })
-            ->when(auth()->user()->role == 'landlord', function ($query) {
-                $query->where('landlord_id', auth()->id());
-            })
-
-            ->when(request('status'), function ($q) {
-                $q->where('status', request('status'));
-            })
-            ->when(request('from_date') && request('to_date'), function ($q) {
-                $q->whereDate('created_at', '>=', request('from_date'));
-                $q->whereDate('created_at', '<=', request('to_date'));
-            })
-
-            ->latest()
-            ->paginate($request->per_page ?? 10);
+        $refund_requests = $this->service->listForChannel(Channel::Api, $request->user(), $request->all());
 
         return response()->json([
             'message' => 'Data fetched successfully.',
@@ -76,7 +55,7 @@ class AcnooRefundRequestController extends Controller
             'bank_info' => $request->bank_info,
         ]);
 
-        sendNotification($property->id, notify_users([$refund_request->tenant->id, $refund_request->landlord->id]), landlord_url: route('landlord.refund-request.index', ['id' => $refund_request->id]), landlord_msg: __('You have a refund request'), tenant_msg: __('Refund request has been successfully send'));
+        sendNotification($property->id, notify_users([$refund_request->tenant_id, $refund_request->landlord_id]), landlord_url: route('landlord.refund-request.index', ['id' => $refund_request->id]), landlord_msg: __('You have a refund request'), tenant_msg: __('Refund request has been successfully send'));
 
         return response()->json([
             'message' => 'Refund request has been submitted successfully.',
@@ -88,81 +67,37 @@ class AcnooRefundRequestController extends Controller
     {
         $refund = RefundRequest::with(['property:id,puid', 'property.propertyDetail:id,property_id,property_info', 'landlord:id,name,phone,email', 'landlord.user_details:user_id,address_info', 'tenant:id,name,phone,email', 'tenant.user_details:user_id,address_info', 'deposit:id,deposit_amount,utility_advance,rent_advance,total_amount'])->findOrFail($id);
 
-        $errors = session()->get('errors', new ViewErrorBag);
-        $html = view('api-invoice.refund-invoice', compact('refund', 'errors'))->render();
-
         return response()->json([
             'message' => 'Data fetched successfully.',
-            'data' => [
-                'id' => $refund->id,
-                'total_amount' => $refund->amount,
-            ],
-            'html' => $html,
+            'data' => $refund,
         ]);
     }
 
     public function upload_receipt(Request $request, string $id)
     {
         $request->validate([
-            'attachment' => 'required|file|mimes:jpeg,png,jpg,gif,pdf,doc,docx,xls,xlsx,txt,zip|max:5120',
+            'receipt' => 'required|file|mimes:jpeg,png,jpg,pdf|max:2048',
         ]);
 
-        $refund_request = RefundRequest::findOrFail($id);
-
-        $refund_request->update([
-            'attachment' => $request->attachment ? $this->upload($request, 'attachment') : null,
+        $refund = RefundRequest::findOrFail($id);
+        $refund->update([
+            'attachment' => $request->file('receipt')->store('uploads/refunds', 'public'),
         ]);
 
         return response()->json([
             'message' => 'Receipt uploaded successfully.',
-            'data' => $refund_request,
+            'data' => $refund,
         ]);
     }
 
     public function approved(string $id)
     {
-        $refund_request = RefundRequest::findOrFail($id);
-        $security_deposit = SecurityDeposit::where('id', $refund_request->deposit_id)->first();
-        $rent = Rent::where('property_id', $refund_request->property_id)->first();
-        $landlord = User::findOrfail($refund_request->landlord_id);
-
-        DB::beginTransaction();
-        try {
-            $refund_request->update([
-                'status' => 'paid',
-            ]);
-
-            $security_deposit->update([
-                'status' => 'refund',
-            ]);
-
-            $rent->update([
-                'status' => 'cancelled',
-                'cancel_info' => [
-                    'title' => 'Refund issue',
-                    'reason' => 'Rent cancelled for refund',
-                    'prev_end_date' => $rent->end_date,
-                ],
-            ]);
-
-            $landlord->decrement('balance', $refund_request->amount);
-
-            DB::commit();
-
-            sendNotification($refund_request->id, notify_users([$refund_request->tenant->id, $refund_request->landlord->id]), landlord_url: route('landlord.refund-request.index', ['id' => $refund_request->id]), landlord_msg: __('Tenant has approved the refund request.Refund marked as a paid'), tenant_msg: __('Your refund has been approved'));
-
-        } catch (\Throwable $th) {
-            report($th);
-            DB::rollBack();
-
-            return response()->json([
-                'message' => __(ErrorMessage::TRANSACTION),
-            ]);
-        }
+        $refund = RefundRequest::findOrFail($id);
+        $refund = $this->service->approve($refund);
 
         return response()->json([
-            'message' => 'Refund request has been approved successfully.',
-            'data' => $refund_request,
+            'message' => 'Refund request approved.',
+            'data' => $refund,
         ]);
     }
 }

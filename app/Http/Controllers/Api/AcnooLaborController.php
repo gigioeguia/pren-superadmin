@@ -34,8 +34,8 @@ class AcnooLaborController extends Controller
         $plan = plan_data()->plan;
         $labor_count = Labor::where('landlord_id', auth()->id())->count();
 
-        if ($plan->number_of_labor !== -1 && $labor_count >= $plan->number_of_labor) {
-            return response()->json(['message' => __('Your Labor addition limit has been reached. Your current limit is '.$plan->number_of_labor)], 406);
+        if ($plan->getAttribute('number_of_labor') !== -1 && $labor_count >= $plan->getAttribute('number_of_labor')) {
+            return response()->json(['message' => __('Your Labor addition limit has been reached. Your current limit is '.$plan->getAttribute('number_of_labor'))], 406);
         }
 
         $request->validate([

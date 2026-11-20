@@ -227,7 +227,6 @@ class LandlordAcnooActionsSmokeTest extends TestCase
         // el override documentado (§12) sigue definido localmente.
         $fromTrait = [
             AcnooAmenityController::class => ['acnooFilter', 'deleteAll', 'status'],
-            PropertyController::class => ['acnooFilter', 'status', 'exportExcel', 'exportCsv'],
         ];
 
         // Act & Assert

@@ -32,7 +32,7 @@ class PaymentController extends Controller
         } elseif (request('payment_type') == 'rent_payment') {
             $plan = RentPayment::findOrFail($id);
             session()->put('payment_type', 'rent_payment');
-            $tenant_id = $plan->rent()->first()?->tenant_id;
+            $tenant_id = $plan->rent()->first()?->getAttribute('tenant_id');
         } else {
             return back()->with('error', __('Wrong Payment type provided!'));
         }
@@ -435,7 +435,7 @@ class PaymentController extends Controller
             $rentPayment = RentPayment::findOrFail($request->payment_id);
             $rent = $rentPayment->rent()->first();
 
-            if (! $rent || auth()->id() !== (int) $rent->tenant_id) {
+            if (! $rent || auth()->id() !== (int) $rent->getAttribute('tenant_id')) {
                 abort(403);
             }
 

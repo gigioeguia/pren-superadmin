@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Property extends Model
 {
@@ -28,47 +31,47 @@ class Property extends Model
         );
     }
 
-    public function landlord()
+    public function landlord(): BelongsTo
     {
         return $this->belongsTo(User::class, 'landlord_id');
     }
 
-    public function propertyDetail()
+    public function propertyDetail(): HasOne
     {
         return $this->hasOne(PropertyDetail::class, 'property_id');
     }
 
-    public function units()
+    public function units(): HasMany
     {
         return $this->hasMany(Unit::class, 'property_id');
     }
 
-    public function category()
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    public function house_type()
+    public function house_type(): BelongsTo
     {
         return $this->belongsTo(HouseType::class, 'house_type_id');
     }
 
-    public function reviews()
+    public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
     }
 
-    public function favorite()
+    public function favorite(): HasOne
     {
         return $this->hasOne(Favorite::class);
     }
 
-    public function rent()
+    public function rent(): HasOne
     {
         return $this->hasOne(Rent::class);
     }
 
-    public function maintenances()
+    public function maintenances(): HasMany
     {
         return $this->hasMany(Maintenance::class);
     }

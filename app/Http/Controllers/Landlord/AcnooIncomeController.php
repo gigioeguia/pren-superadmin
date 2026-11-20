@@ -2,86 +2,32 @@
 
 namespace App\Http\Controllers\Landlord;
 
-use App\Exports\LandlordIncomeExport;
+use App\Enums\Channel;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Income\StoreIncomeRequest;
+use App\Http\Requests\Income\UpdateIncomeRequest;
 use App\Models\Income;
 use App\Models\IncomeCategory;
-use App\Traits\HasAcnooActions;
-use Carbon\Carbon;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\IncomeService;
 use Illuminate\Http\Request;
 
 class AcnooIncomeController extends Controller
 {
-    use HasAcnooActions {
-        status as protected;
-    }
+    public function __construct(protected IncomeService $service) {}
 
     public function index()
     {
-        $income_categories = IncomeCategory::with('landlord:id,name')->whereStatus(1)->where('landlord_id', auth()->id())->latest()->get();
-        $incomes = Income::with(['category:id,name', 'landlord:id,name'])->where('landlord_id', auth()->id())->latest()->paginate(10);
-        $total_income = Income::where('landlord_id', auth()->id())->sum('amount');
+        $income_categories = IncomeCategory::whereStatus(1)->where('landlord_id', auth()->id())->latest()->get();
+        $incomes = $this->service->listForChannel(Channel::Landlord, auth()->user(), ['per_page' => 10]);
+        $total_income = $this->service->totalForChannel(Channel::Landlord, auth()->user(), []);
 
         return view('landlord.incomes.index', compact('incomes', 'income_categories', 'total_income'));
     }
 
     public function acnooFilter(Request $request)
     {
-        $incomes = Income::with(['category:id,name', 'landlord:id,name'])
-            ->where('landlord_id', auth()->id());
-
-        if ($request->filled('search')) {
-            $incomes->where(function ($query) use ($request) {
-                $query->where('amount', 'like', '%'.$request->search.'%')
-                    ->orWhere('income_for', 'like', '%'.$request->search.'%')
-                    ->orWhere('payment_type', 'like', '%'.$request->search.'%')
-                    ->orWhere('reference_no', 'like', '%'.$request->search.'%')
-                    ->orWhere('income_date', 'like', '%'.$request->search.'%')
-                    ->orWhereHas('category', function ($query) use ($request) {
-                        $query->where('name', 'like', '%'.$request->search.'%');
-                    });
-            });
-        }
-
-        if ($request->filled('custom_days') && $request->custom_days !== 'custom_date' && $request->custom_days !== 'all') {
-            switch ($request->custom_days) {
-                case 'today':
-                    $incomes->whereDate('income_date', Carbon::today());
-                    break;
-                case 'yesterday':
-                    $incomes->whereDate('income_date', Carbon::yesterday());
-                    break;
-                case 'last_seven_days':
-                    $incomes->whereBetween('income_date', [Carbon::now()->subDays(6)->startOfDay(), Carbon::now()->endOfDay()]);
-                    break;
-                case 'last_thirty_days':
-                    $incomes->whereBetween('income_date', [Carbon::now()->subDays(29)->startOfDay(), Carbon::now()->endOfDay()]);
-                    break;
-                case 'current_month':
-                    $incomes->whereMonth('income_date', Carbon::now()->month)
-                        ->whereYear('income_date', Carbon::now()->year);
-                    break;
-                case 'last_month':
-                    $incomes->whereMonth('income_date', Carbon::now()->subMonth()->month)
-                        ->whereYear('income_date', Carbon::now()->subMonth()->year);
-                    break;
-                case 'current_year':
-                    $incomes->whereYear('income_date', Carbon::now()->year);
-                    break;
-            }
-        }
-
-        if ($request->custom_days === 'custom_date' && $request->filled(['from_date', 'to_date'])) {
-            $incomes->whereBetween('income_date', [$request->from_date, $request->to_date]);
-        }
-
-        $incomes->latest();
-
-        $total_income = $incomes->sum('amount');
-
-        $incomes = $incomes->paginate($request->per_page ?? 10);
+        $incomes = $this->service->listForChannel(Channel::Landlord, auth()->user(), array_merge($request->all(), ['per_page' => $request->per_page ?? 10]));
+        $total_income = $this->service->totalForChannel(Channel::Landlord, auth()->user(), $request->all());
 
         if ($request->ajax()) {
             return response()->json([
@@ -93,28 +39,10 @@ class AcnooIncomeController extends Controller
         return redirect(url()->previous());
     }
 
-    public function store(Request $request)
+    public function store(StoreIncomeRequest $request)
     {
-        $request->validate([
-            'amount' => 'required|numeric',
-            'payment_type' => 'required|string',
-            'income_for' => 'required|string',
-            'reference_no' => 'nullable|string',
-            'income_date' => 'nullable|string',
-            'note' => 'nullable|string',
-            'income_category_id' => 'required|exists:income_categories,id',
-        ]);
-
-        Income::create([
-            'amount' => $request->amount,
-            'income_for' => $request->income_for,
-            'reference_no' => $request->reference_no,
-            'income_date' => $request->income_date,
-            'payment_type' => $request->payment_type,
-            'note' => $request->note,
-            'income_category_id' => $request->income_category_id,
-            'landlord_id' => auth()->id(),
-        ]);
+        $actor = $request->user();
+        $this->service->store($request->validated(), Channel::Landlord, $actor);
 
         return response()->json([
             'message' => __('Income created successfully.'),
@@ -122,30 +50,11 @@ class AcnooIncomeController extends Controller
         ]);
     }
 
-    public function update(Request $request, string $id)
+    public function update(UpdateIncomeRequest $request, string $id)
     {
-        $request->validate([
-            'amount' => 'required|numeric',
-            'payment_type' => 'required|string',
-            'income_for' => 'required|string',
-            'reference_no' => 'nullable|string',
-            'income_date' => 'nullable|string',
-            'note' => 'nullable|string',
-            'income_category_id' => 'required|exists:income_categories,id',
-        ]);
-
         $income = Income::findOrFail($id);
-
-        $income->update([
-            'amount' => $request->amount,
-            'income_for' => $request->income_for,
-            'reference_no' => $request->reference_no,
-            'income_date' => $request->income_date,
-            'payment_type' => $request->payment_type,
-            'note' => $request->note,
-            'income_category_id' => $request->income_category_id,
-            'landlord_id' => auth()->id(),
-        ]);
+        $actor = $request->user();
+        $this->service->update($income, $request->validated(), Channel::Landlord, $actor);
 
         return response()->json([
             'message' => __('Income updated successfully.'),
@@ -156,60 +65,22 @@ class AcnooIncomeController extends Controller
     public function destroy(string $id)
     {
         $income = Income::findOrFail($id);
-        $income->delete();
+        $this->service->delete($income, Channel::Landlord);
 
         return response()->json([
-            'message' => 'Income deleted successfully',
+            'message' => __('Income deleted successfully.'),
             'redirect' => route('landlord.incomes.index'),
         ]);
     }
 
-    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
-
-    protected function acnooModel(): string
+    public function deleteAll(Request $request)
     {
-        return Income::class;
-    }
+        $actor = $request->user();
+        $this->service->deleteMany($request->ids ?? [], Channel::Landlord, $actor);
 
-    protected function acnooQuery(Request $request): Builder
-    {
-        return Income::with(['category:id,name', 'landlord:id,name'])
-            ->where('landlord_id', auth()->id())
-            ->latest();
-    }
-
-    protected function acnooView(): string
-    {
-        return 'landlord.incomes.datas';
-    }
-
-    protected function acnooViewData(LengthAwarePaginator $rows): array
-    {
-        return ['incomes' => $rows];
-    }
-
-    protected function acnooDeleteMessage(): string
-    {
-        return 'Selected income deleted successfully';
-    }
-
-    protected function acnooRedirectRoute(): string
-    {
-        return 'landlord.incomes.index';
-    }
-
-    protected function acnooExport(Request $request): object
-    {
-        return new LandlordIncomeExport;
-    }
-
-    protected function acnooExcelFilename(): string
-    {
-        return 'landlord-incomes';
-    }
-
-    protected function acnooCsvFilename(): string
-    {
-        return 'landlord-incomes';
+        return response()->json([
+            'message' => __('Selected Income Deleted Successfully'),
+            'redirect' => route('landlord.incomes.index'),
+        ]);
     }
 }
