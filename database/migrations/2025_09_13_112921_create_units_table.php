@@ -31,15 +31,15 @@ return new class extends Migration
             $table->longText('images')->nullable();
 
             // Rent-related
-            $table->double('monthly_rent', 10, 2)->default(0);
-            $table->double('sale_amount', 10, 2)->default(0);
+            $table->double('monthly_rent')->default(0);
+            $table->double('sale_amount')->default(0);
             $table->string('min_rental_value')->nullable();
             $table->string('min_rental_unit')->nullable();
-            $table->double('security_deposit', 10, 2)->default(0);
+            $table->double('security_deposit')->default(0);
             $table->string('security_deposit_value')->nullable();
             $table->string('security_deposit_unit')->nullable();
-            $table->double('utility_deposit', 10, 2)->default(0);
-            $table->double('late_fee', 10, 2)->default(0);
+            $table->double('utility_deposit')->default(0);
+            $table->double('late_fee')->default(0);
             $table->integer('late_fee_after_days')->default(0);
             $table->timestamps();
         });

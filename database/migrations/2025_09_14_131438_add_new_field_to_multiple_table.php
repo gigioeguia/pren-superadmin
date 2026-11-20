@@ -18,8 +18,8 @@ return new class extends Migration
 
         Schema::table('properties', function (Blueprint $table) {
             $table->string('type')->nullable()->after('status');
-            $table->double('sale_amount', 10, 2)->default(0)->after('security_deposit');
-            $table->double('late_fee', 10, 2)->default(0)->after('sale_amount');
+            $table->double('sale_amount')->default(0)->after('security_deposit');
+            $table->double('late_fee')->default(0)->after('sale_amount');
             $table->integer('late_fee_after_days')->default(0)->after('late_fee');
         });
 

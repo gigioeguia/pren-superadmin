@@ -1,8 +1,8 @@
 # AGENTS.md
 
-Laravel 10.50 / PHP 8.2 SaaS for property rental management (roles: `superadmin`, `admin`, `landlord`, `tenant`). Multi-tenant by landlord; payments via 11 gateways.
+Laravel 11.x / PHP 8.3 SaaS for property rental management (roles: `superadmin`, `admin`, `landlord`, `tenant`). Multi-tenant by landlord; payments via 11 gateways.
 
-> Laravel 10 and PHP 8.2 are past security support. Remediation plan lives in `.analisis/plan/plan-accion.md`.
+> Stack actualizado a Laravel 11.x / PHP 8.3 (Fase 4 / 4.1). Plan de remediación restante en `.analisis/plan/plan-accion.md`.
 
 ## Commands
 
@@ -82,7 +82,7 @@ Run a single test: `php artisan test tests/Feature/Auth/WebLoginSmokeTest.php`
 
 ## Tooling
 
-- **PHPStan (Larastan 2.x)**: `composer analyse` — level 5, paths `app/`, target PHP 8.2 (`phpVersion: 80200`), incluye `phpstan-baseline.neon` con 709 errores legacy congelados.
+- **PHPStan (Larastan 3.x)**: `composer analyse` — level 5, paths `app/`, target PHP 8.3 (`phpVersion: 80300`), incluye `phpstan-baseline.neon` con 910 errores legacy congelados.
 - **Baseline rule**: the baseline is single-use. Regenerating it to make a PR pass is forbidden; only with documented justification + diff review of the file in the PR. New/modified code errors must fail.
 - **Pint (preset laravel)**: `composer lint` (test mode, CI-enforced) / `composer lint:fix` (auto-fix). Config in `pint.json`.
 - **CI**: `.github/workflows/ci.yml` — 4 jobs on push to `main` + PRs: `tests` (MySQL 8 service over `dbrentpro_test`), `static-analysis` (phpstan), `style` (pint), `frontend-build` (npm ci + build). Note: the `tests` job must recreate the `vendor/autoload1.php` marker after `composer install`.

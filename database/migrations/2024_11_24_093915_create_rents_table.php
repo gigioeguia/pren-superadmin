@@ -18,9 +18,9 @@ return new class extends Migration
             $table->foreignId('landlord_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('tenant_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('property_id')->nullable()->constrained()->nullOnDelete();
-            $table->double('monthly_rent', 10, 2)->nullable()->default(0);
-            $table->double('utility_bill', 10, 2)->nullable()->default(0);
-            $table->double('total_amount', 10, 2)->default(0);
+            $table->double('monthly_rent')->nullable()->default(0);
+            $table->double('utility_bill')->nullable()->default(0);
+            $table->double('total_amount')->default(0);
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->string('landlord_agreement')->nullable();

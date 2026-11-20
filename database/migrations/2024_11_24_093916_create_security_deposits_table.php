@@ -21,12 +21,12 @@ return new class extends Migration
             $table->foreignId('gateway_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('rent_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('property_id')->nullable()->constrained('properties')->nullOnDelete();
-            $table->double('deposit_amount', 10, 2)->default(0);
-            $table->double('rent_advance', 10, 2)->default(0);
-            $table->double('utility_advance', 10, 2)->default(0);
-            $table->double('total_amount', 10, 2)->default(0);
-            $table->double('charge', 10, 2)->default(0);
-            $table->double('landlord_balance', 10, 2)->default(0); // After the charge, the amount will be added to the landlord's balance.
+            $table->double('deposit_amount')->default(0);
+            $table->double('rent_advance')->default(0);
+            $table->double('utility_advance')->default(0);
+            $table->double('total_amount')->default(0);
+            $table->double('charge')->default(0);
+            $table->double('landlord_balance')->default(0); // After the charge, the amount will be added to the landlord's balance.
             $table->timestamp('payment_date')->nullable();
             $table->string('status')->nullable(); // paid || unpaid || refund || rejected || pending
             $table->longText('payment_data')->nullable(); // json format
