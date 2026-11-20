@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->string('country_name')->nullable();
             $table->string('code')->unique();
-            $table->double('rate', 10, 2)->nullable();
+            $table->double('rate')->nullable();
             $table->string('symbol')->nullable();
             $table->string('position')->nullable();
             $table->boolean('status')->default(1);

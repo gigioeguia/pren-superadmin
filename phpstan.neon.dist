@@ -8,4 +8,4 @@ parameters:
         - app
     # El analisis targetea PHP 8.2 (contrato de composer.json), aunque el
     # CLI local/CI sea superior. Evita falsos resultados por version de runtime.
-    phpVersion: 80200
+    phpVersion: 80300

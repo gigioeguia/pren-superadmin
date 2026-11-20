@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('subscriptionName')->nullable();
             $table->integer('duration')->default(0);
             $table->string('duration_type', 50)->nullable(); // day, month, year
-            $table->double('offerPrice', 10, 2)->default(0);
-            $table->double('subscriptionPrice', 10, 2)->nullable();
+            $table->double('offerPrice')->default(0);
+            $table->double('subscriptionPrice')->nullable();
             $table->integer('number_of_property')->default(-1); // -1 for unlimited
             $table->integer('number_of_tenant')->default(-1);
             $table->integer('number_of_labor')->default(-1);

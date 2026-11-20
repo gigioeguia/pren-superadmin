@@ -18,11 +18,11 @@ return new class extends Migration
             $table->string('invoice_no')->nullable();
             $table->foreignId('rent_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('gateway_id')->nullable()->constrained()->nullOnDelete();
-            $table->double('monthly_rent', 10, 2)->default(0);
-            $table->double('utility_bill', 10, 2)->default(0);
-            $table->double('charge', 10, 2)->default(0);
-            $table->double('subtotal_amount', 10, 2)->default(0);
-            $table->double('total_amount', 10, 2)->default(0);
+            $table->double('monthly_rent')->default(0);
+            $table->double('utility_bill')->default(0);
+            $table->double('charge')->default(0);
+            $table->double('subtotal_amount')->default(0);
+            $table->double('total_amount')->default(0);
             $table->string('rent_month')->nullable();
             $table->string('rent_year')->nullable();
             $table->timestamp('payment_date')->nullable();

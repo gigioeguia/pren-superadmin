@@ -1,7 +1,7 @@
 ---
 id: spec-upgrade-laravel-php-fase4
 titulo: "Upgrade Laravel 10 → 11 y PHP 8.2 → 8.3 (Fase 4 / 4.1)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-19
 origen: .analisis/plan/plan-accion.md (Fase 4 / 4.1) — DT-C2
 cobertura: Upgrade de framework (10.50 → 11.x) y runtime (8.2 → 8.3) preservando la estructura Laravel 10; suite smoke (59 casos) + PHPStan nivel 5 (baseline regenerado) + Pint + build frontend en verde sobre PHP 8.3
@@ -232,4 +232,35 @@ Ninguno: este spec no documenta bugs de aplicación; valida un upgrade de infrae
 
 ## 11. Revisión
 
-Pendiente de `revisar-spec` antes de pasar a `Aprobado`.
+Revisado sin hallazgos altos (H1–H3 medios resueltos en implementación). Aprobado por el decisor.
+
+---
+
+## 12. Notas de implementación (2026-11-20)
+
+Implementado en rama `spec/upgrade-laravel-php-fase4-impl`.
+
+### Desviaciones menores
+
+| # | Punto | Detalle |
+|---|-------|---------|
+| D1 | `phpVersion` en `phpstan.neon.dist` | El spec indicaba `8300`; el valor correcto para PHP 8.3 es `80300` (formato `Mmmpp` de PHPStan). |
+| D2 | Conteo de tests | La suite actual tiene **183** tests (no 59, cifra histórica de Fase 0). DoD se verificó con `php artisan test` completo. |
+| D3 | `config/sanctum.php` | Pint eliminó el import no usado de `VerifyCsrfToken`/`EncryptCookies`; se usan clases FQCN en el array. |
+| D4 | `database/seeders/UserSeeder.php` | Se añadió `is_demo => '0'` al segundo usuario para igualar columnas (bug preexistente que rompía `migrate:fresh --seed`). |
+| D5 | `phpstan-baseline.neon` | Regenerado una vez con Larastan 3.x: **910 errores** congelados (vs 709 previos). Regla de un solo uso se mantiene. |
+| D6 | `nunomaduro/larastan` | El paquete está marcado como abandonado en favor de `larastan/larastan`; se mantiene la línea 3.x por compatibilidad con el spec. |
+
+### Evidencia (DoD)
+
+- `composer install` exitoso sobre PHP 8.4 (proxy de 8.3; CI en 8.3).
+- `php artisan migrate:fresh --seed` exit 0.
+- `php artisan test` → **183 passed** (478 assertions), 43.4 s.
+- `vendor/bin/phpstan analyse` → `[OK] No errors` (nivel 5, baseline 910).
+- `vendor/bin/pint --test` → `passed`.
+- `npm run build` → exit 0, `public/build/manifest.json` generado.
+- CI actualizado a `setup-php 8.3` en los 4 jobs.
+
+### Cierre
+
+Estado → `Implementado`: DoD §7 tachado completo. Pendiente post-merge: activar branch protection (settings GitHub).
