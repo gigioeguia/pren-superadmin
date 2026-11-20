@@ -4,7 +4,7 @@ SaaS de gestión de alquileres de propiedades. Roles: `superadmin`, `admin`, `la
 
 ## Stack
 
-- **Backend:** Laravel 10.50, PHP 8.2, MySQL 8, Sanctum (API), Spatie Permission
+- **Backend:** Laravel 11.x, PHP 8.3, MySQL 8, Sanctum (API), Spatie Permission
 - **Frontend:** Blade + Bootstrap, Vite 3, laravel-vite-plugin
 - **Pagos:** 11 gateways en `app/Library/` (Stripe, Mollie, Razorpay, FedaPay, Paystack, Flutterwave, Instamojo, Toyyibpay, Thawani, Tap, Billplz)
 
@@ -49,7 +49,7 @@ Precondiciones, mocks obligatorios y cobertura de endpoints: ver [`tests/README.
 ## Seguridad conocida
 
 - `npm audit` reporta 2 advisory **dev-only** (vite GHSA-15r9, high; esbuild GHSA-67mh, moderate) que solo afectan al dev server local. **No** ejecutar `npm audit fix --force` (instalaría vite@8, breaking change). La remediación es la migración planificada del stack de build (ítem 4.5 del plan de acción).
-- Laravel 10 y PHP 8.2 sin soporte de seguridad: el plan de remediación por fases (26 vulnerabilidades, 28 ítems de deuda) vive en `.analisis/plan/plan-accion.md` (carpeta gitignored, solo local). Estado actual: Fases 0–3 implementadas en su mayoría; ver `plan-accion.md` para el detalle.
+- Laravel 11 y PHP 8.3 (Fase 4 / 4.1 implementado). El plan de remediación por fases (26 vulnerabilidades, 28 ítems de deuda) vive en `.analisis/plan/plan-accion.md` (carpeta gitignored, solo local). Estado actual: Fases 0–3 implementadas; Fase 4: 4.1–4.4 implementados (4.5–4.10 pendientes); ver `plan-accion.md` para el detalle.
 
 ## Documentación interna
 
