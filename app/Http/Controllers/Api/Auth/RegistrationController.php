@@ -124,7 +124,7 @@ class RegistrationController extends Controller
                 ]);
             }
 
-            if (env('QUEUE_MAIL')) {
+            if (config('mail.queue')) {
                 Mail::to($request->email)->queue(new WelcomeMail($data));
             } else {
                 Mail::to($request->email)->send(new WelcomeMail($data));
@@ -200,7 +200,7 @@ class RegistrationController extends Controller
         $time = $otpSettings['otp_expiration_time'] ?? null;
         $durationType = $otpSettings['otp_duration_type'] ?? 'minute';
 
-        $defaultFromEnv = env('OTP_VISIBILITY_TIME', 3);
+        $defaultFromEnv = (int) (config('auth.otp_visibility_time') ?? 3);
 
         if (empty($time)) {
             return $defaultFromEnv * 60;

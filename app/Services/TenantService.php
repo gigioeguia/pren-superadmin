@@ -164,7 +164,7 @@ class TenantService
 
             if ($channel === Channel::Api) {
                 $code = random_int(100000, 999999);
-                $expire = now()->addMinutes((int) (getenv('OTP_VISIBILITY_TIME') ?: 3));
+                $expire = now()->addMinutes((int) (config('auth.otp_visibility_time') ?? 3));
                 $user->update([
                     'remember_token' => $code,
                     'email_verified_at' => $expire,
@@ -177,7 +177,7 @@ class TenantService
                     'name' => $data['name'] ?? null,
                 ];
 
-                if (getenv('QUEUE_MAIL')) {
+                if (config('mail.queue')) {
                     Mail::to($data['email'])->queue(new WelcomeMail($mailData));
                 } else {
                     Mail::to($data['email'])->send(new WelcomeMail($mailData));

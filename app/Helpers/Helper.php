@@ -26,7 +26,7 @@ function getArrow(float|int $last, float|int $current): string
 
 function cache_remember(string $key, callable $callback, int $ttl = 1800): mixed
 {
-    return cache()->remember($key, env('CACHE_LIFETIME', $ttl), $callback);
+    return cache()->remember($key, (int) config('cache.lifetime', $ttl), $callback);
 }
 
 function get_option(string $key): mixed

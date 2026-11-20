@@ -40,7 +40,7 @@ class ForgotPasswordController extends Controller
         ];
 
         try {
-            if (env('QUEUE_MAIL')) {
+            if (config('mail.queue')) {
                 Mail::to($request->email)->queue(new PasswordReset($data));
             } else {
                 Mail::to($request->email)->send(new PasswordReset($data));
@@ -70,8 +70,8 @@ class ForgotPasswordController extends Controller
             'code' => $code,
         ];
 
-        if (env('MAIL_USERNAME')) {
-            if (env('QUEUE_MAIL')) {
+        if (config('mail.username')) {
+            if (config('mail.queue')) {
                 Mail::to($request->email)->queue(new PasswordReset($data));
             } else {
                 Mail::to($request->email)->send(new PasswordReset($data));

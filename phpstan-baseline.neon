@@ -181,12 +181,6 @@ parameters:
 			path: app/Helpers/Helper.php
 
 		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 1
-			path: app/Helpers/Helper.php
-
-		-
 			message: '#^Function expectedItemId\(\) should return string but returns int\.$#'
 			identifier: return.type
 			count: 1
@@ -407,12 +401,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Admin/PropertyController.php
-
-		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 9
-			path: app/Http/Controllers/Admin/SystemSettingController.php
 
 		-
 			message: '#^Parameter \#1 \$ids of method Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany\<Illuminate\\Database\\Eloquent\\Model,Illuminate\\Database\\Eloquent\\Model,Illuminate\\Database\\Eloquent\\Relations\\Pivot,string\>\:\:sync\(\) expects array\|Illuminate\\Database\\Eloquent\\Model\|Illuminate\\Support\\Collection, int\|string given\.$#'
@@ -811,18 +799,6 @@ parameters:
 			path: app/Http/Controllers/Api/AcnooWithdrawMethodController.php
 
 		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 3
-			path: app/Http/Controllers/Api/Auth/ForgotPasswordController.php
-
-		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 2
-			path: app/Http/Controllers/Api/Auth/RegistrationController.php
-
-		-
 			message: '#^Access to property \$email on an unknown class App\\Models\\Api\\Tenant\.$#'
 			identifier: class.notFound
 			count: 1
@@ -931,12 +907,6 @@ parameters:
 			path: app/Http/Controllers/Api/Auth/SigninController.php
 
 		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 3
-			path: app/Http/Controllers/Api/Auth/SigninController.php
-
-		-
 			message: '#^If condition is always true\.$#'
 			identifier: if.alwaysTrue
 			count: 2
@@ -971,12 +941,6 @@ parameters:
 			identifier: class.notFound
 			count: 3
 			path: app/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 6
-			path: app/Http/Controllers/Auth/SignupController.php
 
 		-
 			message: '#^If condition is always true\.$#'
@@ -1409,18 +1373,6 @@ parameters:
 			identifier: property.notFound
 			count: 2
 			path: app/Library/Toyyibpay.php
-
-		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 2
-			path: app/Mail/PasswordReset.php
-
-		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 2
-			path: app/Mail/WelcomeMail.php
 
 		-
 			message: '#^Class Illuminate\\Support\\Str referenced with incorrect case\: illuminate\\Support\\Str\.$#'

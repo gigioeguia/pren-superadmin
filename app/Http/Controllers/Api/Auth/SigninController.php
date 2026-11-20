@@ -30,14 +30,14 @@ class SigninController extends Controller
             if ($user->remember_token && ! $user->is_setupped) { // If user didn't verify email
 
                 $code = random_int(100000, 999999);
-                $expire = now()->addMinutes(env('OTP_VISIBILITY_TIME') ?? 3);
+                $expire = now()->addMinutes((int) (config('auth.otp_visibility_time') ?? 3));
                 $data = [
                     'code' => $code,
                     'name' => $request->name,
                 ];
 
-                if (env('MAIL_USERNAME')) {
-                    if (env('QUEUE_MAIL')) {
+                if (config('mail.username')) {
+                    if (config('mail.queue')) {
                         Mail::to($request->email)->queue(new WelcomeMail($data));
                     } else {
                         Mail::to($request->email)->send(new WelcomeMail($data));

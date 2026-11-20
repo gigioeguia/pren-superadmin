@@ -99,6 +99,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Mail username (configured flag) and queue toggle
+    |--------------------------------------------------------------------------
+    |
+    | `username` mirrors MAIL_USERNAME and is used as a "mail is configured"
+    | flag. `queue` controls whether outgoing mail is queued (QUEUE_MAIL).
+    |
+    */
+
+    'username' => env('MAIL_USERNAME'),
+
+    'queue' => (bool) env('QUEUE_MAIL', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Markdown Mail Settings
     |--------------------------------------------------------------------------
     |
