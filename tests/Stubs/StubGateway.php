@@ -13,7 +13,7 @@ class StubGateway
     /** Datos del ultimo make_payment recibido (para asserts). */
     public static array $lastPaymentData = [];
 
-    public static function make_payment(array $data)
+    public static function make_payment(array $data, bool $expectsJson = false)
     {
         static::$lastPaymentData = $data;
 

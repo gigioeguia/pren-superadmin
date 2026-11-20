@@ -184,7 +184,7 @@ class PaymentController extends Controller
         session()->put('gateway_id', $gateway->id);
         session()->put('amount', $amount);
 
-        $redirect = $gateway->namespace::make_payment($payment_data);
+        $redirect = $gateway->namespace::make_payment($payment_data, $request->expectsJson());
 
         return $redirect;
     }

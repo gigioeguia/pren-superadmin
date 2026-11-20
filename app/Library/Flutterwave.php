@@ -3,6 +3,7 @@
 namespace App\Library;
 
 use App\Models\Gateway;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -38,7 +39,7 @@ class Flutterwave
         return url('payment/flutterwave');
     }
 
-    public static function make_payment($array)
+    public static function make_payment($array, bool $expectsJson = false)
     {
         $amount = $array['pay_amount'];
         $gateway = Gateway::findOrFail($array['gateway_id']);
@@ -124,30 +125,30 @@ class Flutterwave
             if (isset($response['status']) && $response['status'] == 'success') {
                 $url = $response['data']['link'];
 
-                return request()->expectsJson() ?
+                return $expectsJson ?
                     $url : redirect($url);
             } else {
                 Session::forget('flutterwave_credentials');
 
-                return request()->expectsJson() ?
+                return $expectsJson ?
                     Flutterwave::redirect_if_payment_faild() :
                     redirect(Flutterwave::redirect_if_payment_faild());
             }
         } catch (Throwable $th) {
             Session::forget('flutterwave_credentials');
 
-            return request()->expectsJson() ?
+            return $expectsJson ?
                 Flutterwave::redirect_if_payment_faild() :
                 redirect(Flutterwave::redirect_if_payment_faild());
         }
     }
 
-    public function status()
+    public function status(Request $request)
     {
         if (! Session::has('flutterwave_credentials')) {
             return abort(404);
         }
-        $response = Request()->all();
+        $response = $request->all();
         $payment_id = $response['transaction_id'] ?? $response['tx_ref'] ?? null;
         $info = Session::get('flutterwave_credentials');
         $cred['secret_key'] = $info['secret_key'];
@@ -174,7 +175,7 @@ class Flutterwave
             Session::forget('flutterwave_credentials');
             Session::put('payment_info', $data);
 
-            return request()->expectsJson() ?
+            return $request->expectsJson() ?
                 Flutterwave::redirect_if_payment_success() :
                 redirect(Flutterwave::redirect_if_payment_success());
         } else {
@@ -182,7 +183,7 @@ class Flutterwave
             Session::put('payment_info', $data);
             Session::forget('flutterwave_credentials');
 
-            return request()->expectsJson() ?
+            return $request->expectsJson() ?
                 Flutterwave::redirect_if_payment_faild() :
                 redirect(Flutterwave::redirect_if_payment_faild());
         }

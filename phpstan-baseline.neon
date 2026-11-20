@@ -168,11 +168,6 @@ parameters:
 			count: 1
 			path: app/Exports/LandlordWithdrawMethodExport.php
 
-		-
-			message: '#^Access to an undefined property App\\Models\\Gateway\:\:\$currency\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Helpers/Helper.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\PlanSubscribe\:\:\$will_expire\.$#'
@@ -183,12 +178,6 @@ parameters:
 		-
 			message: '#^Function expectedItemId\(\) should return string but returns int\.$#'
 			identifier: return.type
-			count: 1
-			path: app/Helpers/Helper.php
-
-		-
-			message: '#^Parameter \#1 \$amount of function convert_to_default_amount expects float\|int, bool given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Helpers/Helper.php
 

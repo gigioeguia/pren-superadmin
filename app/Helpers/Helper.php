@@ -7,6 +7,7 @@ use App\Models\Option;
 use App\Models\PlanSubscribe;
 use App\Models\User;
 use App\Notifications\SendNotification;
+use App\Support\Payment;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Date;
@@ -46,71 +47,32 @@ function formatted_time(string $time, string $format = 'h:i A'): ?string
 
 function currency_format(float|int $amount, string $type = 'icon', int $decimals = 2, ?Currency $currency = null): string
 {
-    $amount = number_format($amount, $decimals);
-    $currency = $currency ?? default_currency();
-
-    $symbolOrCode = ($type === 'icon' || $type === 'symbol') ? $currency->symbol : $currency->code;
-
-    return $currency->position === 'right'
-        ? "{$amount} {$symbolOrCode}"
-        : "{$symbolOrCode} {$amount}";
+    return App\Support\Currency::format($amount, $type, $decimals, $currency);
 }
 
 function currency()
 {
-    $defaultCurrency = Currency::where('is_default', 1)->first();
-
-    if ($defaultCurrency) {
-        return (object) [
-            'name' => $defaultCurrency->name,
-            'rate' => $defaultCurrency->rate,
-            'code' => $defaultCurrency->code,
-            'symbol' => $defaultCurrency->symbol,
-            'position' => $defaultCurrency->position,
-        ];
-    }
-
-    return default_currency();
+    return App\Support\Currency::currency();
 }
 
 function convert_money(float|int $amount, Currency $currency, bool $multiply = true): float|int
 {
-    if ($currency->code === default_currency('code')) {
-        return $amount;
-    }
-
-    return $multiply ? $amount * $currency->rate : $amount / $currency->rate;
+    return App\Support\Currency::convert($amount, $currency, $multiply);
 }
 
 function payable(float|int $amount, Gateway $gateway): float|int
 {
-    if ($gateway->currency->code === default_currency('code')) {
-        return $amount + $gateway->charge;
-    }
-
-    return (convert_to_default_amount($gateway->charge, $gateway->currency) * $gateway->currency->rate) + $gateway->charge;
+    return Payment::payable($amount, $gateway);
 }
 
 function convert_to_default_amount(float|int $amount, Currency $currency): float|int
 {
-    return $amount * $currency->rate;
+    return App\Support\Currency::convertToDefault($amount, $currency);
 }
 
 function default_currency(?string $key = null, ?Currency $currency = null): mixed
 {
-    $currency = $currency ?? cache_remember('default_currency', function () {
-        return Currency::where('is_default', 1)->first() ?? (object) [
-            'name' => 'US Dollar',
-            'code' => 'USD',
-            'rate' => 1,
-            'symbol' => '$',
-            'position' => 'left',
-            'status' => true,
-            'is_default' => true,
-        ];
-    });
-
-    return $key ? $currency->$key : $currency;
+    return App\Support\Currency::default($key, $currency);
 }
 
 function notify_users(array $users = []): Collection

@@ -26,7 +26,7 @@ class StripeGateway
         }
     }
 
-    public static function make_payment($array)
+    public static function make_payment($array, bool $expectsJson = false)
     {
         $amount = $array['pay_amount'];
         $gateway = Gateway::findOrFail($array['gateway_id']);
