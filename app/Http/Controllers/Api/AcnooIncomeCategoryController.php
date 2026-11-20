@@ -2,29 +2,29 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Channel;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\IncomeCategory\StoreIncomeCategoryRequest;
+use App\Http\Requests\IncomeCategory\UpdateIncomeCategoryRequest;
 use App\Models\IncomeCategory;
+use App\Services\IncomeCategoryService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class AcnooIncomeCategoryController extends Controller
 {
+    public function __construct(protected IncomeCategoryService $service) {}
+
     public function index(Request $request)
     {
-        $income_categories = IncomeCategory::where('business_id', auth()->user()->business_id)
-            ->when(request('search'), function ($query) {
-                $query->where('name', 'like', '%'.request('search').'%');
-            })
-            ->latest();
+        $actor = $request->user();
+        $categories = $this->service->listForChannel(Channel::Api, $actor, $request->all());
 
-        if ($request->has('no_paginate') && $request->no_paginate == true) {
-            $income_categories = $income_categories->select('id', 'name')->get();
+        if ($request->has('no_paginate') && $request->no_paginate) {
             $responseData = [
-                'data' => $income_categories,
+                'data' => array_values($categories->items()),
             ];
         } else {
-            $income_categories = $income_categories->paginate(10);
-            $responseData = $income_categories;
+            $responseData = $categories;
         }
 
         return response()->json([
@@ -33,45 +33,22 @@ class AcnooIncomeCategoryController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreIncomeCategoryRequest $request)
     {
-        $request->validate([
-            'name' => [
-                'required',
-                Rule::unique('income_categories')->where(function ($query) {
-                    return $query->where('landlord_id', auth()->id());
-                }),
-            ],
-            'description' => 'nullable|string',
-        ]);
-
-        $data = IncomeCategory::create($request->except('landlord_id') + [
-            'landlord_id' => auth()->id(),
-        ]);
+        $actor = $request->user();
+        $category = $this->service->store($request->validated(), Channel::Api, $actor);
 
         return response()->json([
             'message' => __('Data saved successfully.'),
-            'data' => $data,
+            'data' => $category,
         ]);
     }
 
-    public function update(Request $request, string $id)
+    public function update(UpdateIncomeCategoryRequest $request, string $id)
     {
         $category = IncomeCategory::findOrFail($id);
-
-        $request->validate([
-            'name' => [
-                'required',
-                Rule::unique('income_categories')->where(function ($query) {
-                    return $query->where('landlord_id', auth()->id());
-                }),
-            ],
-            'description' => 'nullable|string',
-        ]);
-
-        $category->update($request->except('landlord_id') + [
-            'landlord_id' => auth()->id(),
-        ]);
+        $actor = $request->user();
+        $category = $this->service->update($category, $request->validated(), Channel::Api, $actor);
 
         return response()->json([
             'message' => __('Data updated successfully.'),
@@ -82,7 +59,7 @@ class AcnooIncomeCategoryController extends Controller
     public function destroy(string $id)
     {
         $category = IncomeCategory::findOrFail($id);
-        $category->delete();
+        $this->service->delete($category, Channel::Api);
 
         return response()->json([
             'message' => __('Data deleted successfully.'),

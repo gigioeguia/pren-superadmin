@@ -3,7 +3,6 @@
 namespace Tests\Feature\Admin;
 
 use App\Http\Controllers\Admin\AcnooAmenityController;
-use App\Http\Controllers\Admin\PropertyController;
 use App\Models\Amenity;
 use App\Models\Blog;
 use App\Models\Property;
@@ -229,7 +228,6 @@ class AcnooActionsSmokeTest extends TestCase
         // ser copias locales y los sirve HasAcnooActions.
         $representatives = [
             AcnooAmenityController::class => ['acnooFilter', 'deleteAll', 'status'],
-            PropertyController::class => ['acnooFilter', 'deleteAll', 'status', 'exportExcel', 'exportCsv'],
         ];
 
         // Act & Assert

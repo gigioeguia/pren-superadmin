@@ -2,27 +2,22 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Channel;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Income\StoreIncomeRequest;
+use App\Http\Requests\Income\UpdateIncomeRequest;
 use App\Models\Income;
+use App\Services\IncomeService;
 use Illuminate\Http\Request;
 
 class AcnooIncomeController extends Controller
 {
-    public function index()
+    public function __construct(protected IncomeService $service) {}
+
+    public function index(Request $request)
     {
-        $data = Income::with('category:id,name')->where('business_id', auth()->user()->business_id)
-            ->when(request('income_category_id'), function ($query) {
-                $query->where('income_category_id', request('income_category_id'));
-            })
-            ->when(request('search'), function ($query) {
-                $query->where('incomeFor', 'like', '%'.request('search').'%')
-                    ->orWhere('amount', 'like', '%'.request('search').'%')
-                    ->orWhereHas('category', function ($query) {
-                        $query->where('name', 'like', '%'.request('search').'%');
-                    });
-            })
-            ->latest()
-            ->paginate(10);
+        $actor = $request->user();
+        $data = $this->service->listForChannel(Channel::Api, $actor, $request->all());
 
         return response()->json([
             'message' => __('Data fetched successfully.'),
@@ -30,21 +25,10 @@ class AcnooIncomeController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreIncomeRequest $request)
     {
-        $request->validate([
-            'amount' => 'required|numeric',
-            'payment_type' => 'required|string',
-            'income_for' => 'nullable|string',
-            'reference_no' => 'nullable|string',
-            'income_date' => 'required|date',
-            'note' => 'nullable|string',
-            'income_category_id' => 'required|exists:income_categories,id',
-        ]);
-
-        $data = Income::create($request->except('landlord_id') + [
-            'landlord_id' => auth()->id(),
-        ]);
+        $actor = $request->user();
+        $data = $this->service->store($request->validated(), Channel::Api, $actor);
 
         return response()->json([
             'message' => __('Income saved successfully.'),
@@ -52,23 +36,11 @@ class AcnooIncomeController extends Controller
         ]);
     }
 
-    public function update(Request $request, string $id)
+    public function update(UpdateIncomeRequest $request, string $id)
     {
-        $request->validate([
-            'amount' => 'required|numeric',
-            'payment_type' => 'required|string',
-            'income_for' => 'nullable|string',
-            'reference_no' => 'nullable|string',
-            'income_date' => 'required|date',
-            'note' => 'nullable|string',
-            'income_category_id' => 'required|exists:income_categories,id',
-        ]);
-
         $income = Income::findOrFail($id);
-
-        $income->update($request->except('landlord_id') + [
-            'landlord_id' => auth()->id(),
-        ]);
+        $actor = $request->user();
+        $income = $this->service->update($income, $request->validated(), Channel::Api, $actor);
 
         return response()->json([
             'message' => __('Income updated successfully.'),
@@ -78,9 +50,8 @@ class AcnooIncomeController extends Controller
 
     public function destroy(string $id)
     {
-
         $income = Income::findOrFail($id);
-        $income->delete();
+        $this->service->delete($income, Channel::Api);
 
         return response()->json([
             'message' => __('Income deleted successfully.'),

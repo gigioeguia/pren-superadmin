@@ -2,43 +2,24 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Exports\AdminSecurityDepositExport;
+use App\Enums\Channel;
 use App\Http\Controllers\Controller;
 use App\Models\SecurityDeposit;
-use App\Models\Transaction;
-use App\Models\User;
-use App\Support\ErrorMessage;
-use App\Traits\HasAcnooActions;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\SecurityDepositService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class AcnooSecurityDepositController extends Controller
 {
-    use HasAcnooActions;
-
-    public function __construct()
+    public function __construct(protected SecurityDepositService $service)
     {
-        $this->middleware('permission:security-deposit-read')->only('index', 'acnooFilter', 'file_download', 'exportExcel', 'exportCsv');
-        $this->middleware('permission:security-deposit-update')->only('approve', 'rejected');
+        $this->middleware('permission:security-deposits-read')->only('index');
+        $this->middleware('permission:security-deposits-update')->only('approve', 'rejected');
     }
 
     public function index()
     {
-        $security_deposits = SecurityDeposit::with([
-            'tenant:id,name',
-            'property:id',
-            'property.propertyDetail:id,property_id,property_info',
-            'gateway:id,name',
-            'rent:id,tenant_id,property_id',
-            'rent.tenant:id,name',
-            'rent.property:id,puid',
-            'rent.property.propertyDetail:id,property_id,property_info',
-        ])
-            ->latest()
-            ->paginate(10);
+        $security_deposits = $this->service->listForChannel(Channel::Admin, auth()->user(), ['per_page' => 10]);
 
         return view('admin.security-deposits.index', compact('security_deposits'));
     }
@@ -48,7 +29,6 @@ class AcnooSecurityDepositController extends Controller
         $security_deposit = SecurityDeposit::findOrFail($id);
         $this->authorize('fileDownload', $security_deposit);
 
-        // Check if attachment exists in notes
         $filePath = $security_deposit->payment_data['payment_receipt'] ?? null;
 
         if (empty($filePath) || ! Storage::exists($filePath)) {
@@ -61,149 +41,30 @@ class AcnooSecurityDepositController extends Controller
     public function approve(string $id)
     {
         $security_deposit = SecurityDeposit::findOrFail($id);
-        $this->authorize('approve', $security_deposit);
-        $landlord = User::where('id', $security_deposit->landlord_id)->first();
+        $this->authorize('update', $security_deposit);
 
-        if ($security_deposit->status == 'pending') {
-            DB::beginTransaction();
-            try {
-                Transaction::create([
-                    'paid_by' => auth()->id(),
-                    'received_by' => $landlord->id,
-                    'gateway_id' => $security_deposit->gateway_id,
-                    'security_deposit_id' => $security_deposit->id,
-                    'date' => today(),
-                    'type' => 'debit',
-                    'payment_type' => 'security_deposit',
-                    'amount' => $security_deposit->landlord_balance ?? 0,
-                    'charge' => $security_deposit->charge ?? 0,
-                    'notes' => $security_deposit->payment_data['payment_note'] ?? '',
-                    'file' => $security_deposit->payment_data['payment_receipt'] ?? '',
-                ]);
-
-                $landlord->update([
-                    'balance' => $landlord->balance + $security_deposit->landlord_balance,
-                ]);
-
-                $security_deposit->update([
-                    'status' => 'paid',
-                ]);
-
-                DB::commit();
-
-                sendNotification(
-                    $security_deposit->id,
-                    notify_users([$security_deposit->landlord->id, $security_deposit->tenant->id]),
-                    admin_url: route('admin.security-deposits.index', ['id' => $security_deposit->id]),
-                    landlord_url: route('landlord.security-deposits.index', ['id' => $security_deposit->id]),
-                    admin_msg: __('A security deposit has been approved.'),
-                    landlord_msg: __('The tenant’s security deposit has been approved.'),
-                    tenant_msg: __('Your security deposit has been approved successfully.')
-                );
-
-                return response()->json([
-                    'message' => 'Security deposit approved',
-                    'redirect' => route('admin.security-deposits.index'),
-                ]);
-            } catch (\Throwable $th) {
-                report($th);
-                DB::rollBack();
-
-                return response()->json([
-                    'message' => __(ErrorMessage::TRANSACTION),
-                ]);
-            }
-        } else {
-            return response()->json([
-                'message' => 'The security deposit is still unpaid and cannot be approved at this time.',
-                'redirect' => route('admin.security-deposits.index'),
-            ], 400);
-        }
-    }
-
-    public function rejected(Request $request, string $id)
-    {
-        $security_deposit = SecurityDeposit::findOrFail($id);
-        $this->authorize('reject', $security_deposit);
-        $security_deposit->update([
-            'note' => $request->note,
-            'status' => 'rejected',
-        ]);
-
-        sendNotification($security_deposit->id, notify_users([$security_deposit->landlord->id, $security_deposit->tenant->id]), admin_url: route('admin.security-deposits.index', ['id' => $security_deposit->id]), landlord_url: route('landlord.security-deposits.index', ['id' => $security_deposit->id]), admin_msg: __('A security deposit has been rejected.'), landlord_msg: __('The tenant’s security deposit has been rejected.'), tenant_msg: __('Your security deposit has been rejected.'));
+        $this->service->approve($security_deposit);
 
         return response()->json([
-            'message' => 'Security deposit Rejected',
+            'message' => __('Security Deposit Approved successfully'),
             'redirect' => route('admin.security-deposits.index'),
         ]);
     }
 
-    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
-
-    protected function acnooModel(): string
+    public function rejected(Request $request, string $id)
     {
-        return SecurityDeposit::class;
-    }
+        $request->validate([
+            'meta.reason' => 'required|string|max:255',
+        ]);
 
-    protected function acnooQuery(Request $request): Builder
-    {
-        return SecurityDeposit::with([
-            'tenant:id,name',
-            'property:id',
-            'property.propertyDetail:id,property_id,property_info',
-            'gateway:id,name',
-            'rent:id,tenant_id,property_id',
-            'rent.tenant:id,name',
-            'rent.property:id,puid',
-            'rent.property.propertyDetail:id,property_id,property_info',
-        ])->when(request('search'), function ($q) {
-            $q->where('invoice_no', 'like', '%'.request('search').'%')
-                ->orWhere('status', 'like', '%'.request('search').'%')
-                ->orWhere('total_amount', 'like', '%'.request('search').'%')
-                ->orWhere('utility_advance', 'like', '%'.request('search').'%');
+        $security_deposit = SecurityDeposit::findOrFail($id);
+        $this->authorize('update', $security_deposit);
 
-            $q->orWhereHas('tenant', function ($q) {
-                $q->where('name', 'like', '%'.request('search').'%');
-            });
+        $this->service->reject($security_deposit, $request->input('meta.reason'));
 
-            $q->orWhereHas('gateway', function ($q) {
-                $q->where('name', 'like', '%'.request('search').'%');
-            });
-
-            $q->orWhereHas('property.propertyDetail', function ($q) {
-                $q->where('property_info', 'like', '%'.request('search').'%');
-            });
-        })
-            ->latest();
-    }
-
-    protected function acnooView(): string
-    {
-        return 'admin.security-deposits.datas';
-    }
-
-    protected function acnooViewData(LengthAwarePaginator $rows): array
-    {
-        return ['security_deposits' => $rows];
-    }
-
-    protected function acnooPerPage(): int
-    {
-        return 20;
-    }
-
-    protected function acnooExport(Request $request): object
-    {
-        return new AdminSecurityDepositExport;
-    }
-
-    protected function acnooExcelFilename(): string
-    {
-        return 'security-deposits';
-    }
-
-    protected function acnooCsvFilename(): string
-    {
-        return 'security-deposits';
+        return response()->json([
+            'message' => __('Security Deposit Rejected successfully'),
+            'redirect' => route('admin.security-deposits.index'),
+        ]);
     }
 }

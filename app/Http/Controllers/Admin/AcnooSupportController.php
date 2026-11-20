@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\Channel;
 use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\Support;
 use App\Models\User;
+use App\Services\SupportService;
 use Illuminate\Http\Request;
 
 class AcnooSupportController extends Controller
 {
     use HasUploader;
 
-    public function __construct()
+    public function __construct(protected SupportService $service)
     {
         $this->middleware('permission:supports-read')->only('index', 'getDetailsMsg', 'acnooFilter');
         $this->middleware('permission:supports-create')->only('reply');
@@ -84,46 +86,11 @@ class AcnooSupportController extends Controller
             'file' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf,doc,docx,xls,xlsx,txt,zip|max:10240',
         ]);
 
-        $filePath = null;
-        $fileExtension = null;
-        $fileSize = null;
-
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $filePath = $this->upload($request, 'file');
-            $fileExtension = $file->getClientOriginalExtension();
-            $fileSize = $file->getSize();
-        }
-
-        // Determine conversation root if exists
-        $parent = null;
-        if ($request->id) {
-            $parent = Support::find($request->id);
-        } else {
-            // Try to find latest message between the two to set as parent
-            $parent = Support::where(function ($q) use ($request) {
-                $q->where('sender_id', auth()->id())
-                    ->where('receiver_id', $request->receiver_id);
-            })
-                ->orWhere(function ($q) use ($request) {
-                    $q->where('sender_id', $request->receiver_id)
-                        ->where('receiver_id', auth()->id());
-                })
-                ->orderBy('created_at', 'asc')
-                ->first();
-        }
-
-        Support::create([
-            'sender_id' => auth()->id(),
-            'receiver_id' => $request->receiver_id,
+        $this->service->storeMessage([
             'message' => $request->message,
-            'parent_id' => $parent->id ?? null,
-            'file' => $filePath,
-            'file_info' => [
-                'ext' => $fileExtension,
-                'size' => $fileSize,
-            ],
-        ]);
+            'receiver_id' => $request->receiver_id,
+            'id' => $request->id,
+        ], Channel::Admin, auth()->user(), $request->file('file'));
 
         return response()->json([
             'message' => 'Message sent successfully',

@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\Channel;
 use App\Exports\AdminWithdrawMethodExport;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\WithdrawMethod\StoreWithdrawMethodRequest;
+use App\Http\Requests\WithdrawMethod\UpdateWithdrawMethodRequest;
 use App\Models\Currency;
 use App\Models\WithdrawMethod;
-use App\Traits\HasAcnooActions;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\WithdrawMethodService;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AcnooWithdrawMethodController extends Controller
 {
-    use HasAcnooActions;
-
-    public function __construct()
+    public function __construct(protected WithdrawMethodService $service)
     {
         $this->middleware('permission:withdraw-methods-read')->only('index', 'acnooFilter', 'exportExcel', 'exportCsv');
         $this->middleware('permission:withdraw-methods-create')->only('create', 'store');
@@ -25,7 +25,7 @@ class AcnooWithdrawMethodController extends Controller
 
     public function index()
     {
-        $withdrawMethods = WithdrawMethod::with('currency:id,name')->latest()->paginate(20);
+        $withdrawMethods = $this->service->listForChannel(Channel::Admin, auth()->user(), ['per_page' => 20]);
 
         return view('admin.withdraw-method.index', compact('withdrawMethods'));
     }
@@ -37,39 +37,9 @@ class AcnooWithdrawMethodController extends Controller
         return view('admin.withdraw-method.create', compact('currencies'));
     }
 
-    public function store(Request $request)
+    public function store(StoreWithdrawMethodRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'currency_id' => 'required|exists:currencies,id',
-            'min_amount' => 'required|numeric',
-            'max_amount' => 'required|numeric',
-            'charge' => 'required|numeric',
-            'charge_type' => 'required|string',
-            'instructions' => 'nullable|string',
-            'meta.input.*' => [
-                'required',
-                'regex:/^[a-zA-Z_ ]+$/',
-                'max:255',
-            ],
-        ]);
-
-        $rawInputs = $request->input('meta.input', []);
-        $replace = array_map(function ($input) {
-            $input = strtolower($input);
-            $input = preg_replace('/\s+/', '_', trim($input)); // replace space with underscore
-
-            return $input;
-        }, $rawInputs);
-
-        $request->merge([
-            'meta' => [
-                'label' => $request->input('meta.label'),
-                'input' => $replace,
-            ],
-        ]);
-
-        WithdrawMethod::create($request->all());
+        $this->service->store($request->validated());
 
         return response()->json([
             'message' => __('Payment Method Created successfully'),
@@ -84,33 +54,9 @@ class AcnooWithdrawMethodController extends Controller
         return view('admin.withdraw-method.edit', compact('withdrawMethod', 'currencies'));
     }
 
-    public function update(Request $request, WithdrawMethod $withdrawMethod)
+    public function update(UpdateWithdrawMethodRequest $request, WithdrawMethod $withdrawMethod)
     {
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'min_amount' => 'required|numeric',
-            'max_amount' => 'required|numeric',
-            'charge' => 'required|numeric',
-            'instructions' => 'nullable|string',
-        ]);
-
-        $rawInputs = $request->input('meta.input', []);
-        $replace = array_map(function ($input) {
-            $input = strtolower($input);
-            $input = preg_replace('/\s+/', '_', trim($input)); // replace space with underscore
-
-            return $input;
-        }, $rawInputs);
-
-        $request->merge([
-            'meta' => [
-                'label' => $request->input('meta.label'),
-                'input' => $replace,
-            ],
-        ]);
-
-        $withdrawMethod->update($request->all());
+        $this->service->update($withdrawMethod, $request->validated());
 
         return response()->json([
             'message' => __('Payment Method Updated successfully'),
@@ -120,7 +66,7 @@ class AcnooWithdrawMethodController extends Controller
 
     public function destroy(WithdrawMethod $withdrawMethod)
     {
-        $withdrawMethod->delete();
+        $this->service->delete($withdrawMethod);
 
         return response()->json([
             'message' => __('Withdraw Method Deleted Successfully'),
@@ -128,71 +74,30 @@ class AcnooWithdrawMethodController extends Controller
         ]);
     }
 
-    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
-
-    protected function acnooModel(): string
+    public function acnooFilter(Request $request)
     {
-        return WithdrawMethod::class;
+        $withdrawMethods = $this->service->listForChannel(Channel::Admin, auth()->user(), array_merge($request->all(), ['per_page' => 20]));
+
+        return view('admin.withdraw-method.datas', ['withdrawMethods' => $withdrawMethods]);
     }
 
-    protected function acnooQuery(Request $request): Builder
+    public function deleteAll(Request $request)
     {
-        return WithdrawMethod::with('currency:id,name')
-            ->when(request('search'), function ($q) {
-                $q->where('name', 'like', '%'.request('search').'%')
-                    ->orWhere('min_amount', 'like', '%'.request('search').'%')
-                    ->orWhere('max_amount', 'like', '%'.request('search').'%')
-                    ->orWhere('charge', 'like', '%'.request('search').'%');
+        $this->service->deleteMany($request->ids ?? []);
 
-                $q->orWhereHas('currency', function ($q) {
-                    $q->where('name', 'like', '%'.request('search').'%');
-                });
-            })
-            ->latest();
+        return response()->json([
+            'message' => __('Selected Items deleted successfully.'),
+            'redirect' => route('admin.withdraw-methods.index'),
+        ]);
     }
 
-    protected function acnooView(): string
+    public function exportExcel()
     {
-        return 'admin.withdraw-method.datas';
+        return Excel::download(new AdminWithdrawMethodExport, 'withdraw-methods.xlsx');
     }
 
-    protected function acnooViewData(LengthAwarePaginator $rows): array
+    public function exportCsv()
     {
-        return ['withdrawMethods' => $rows];
-    }
-
-    protected function acnooPerPage(): int
-    {
-        return 20;
-    }
-
-    protected function acnooDeleteMessage(): string
-    {
-        return __('Selected Items deleted successfully.');
-    }
-
-    protected function acnooRedirectRoute(): string
-    {
-        return 'admin.withdraw-methods.index';
-    }
-
-    protected function acnooStatusMessage(): string
-    {
-        return 'withdrawMethod';
-    }
-
-    protected function acnooExport(Request $request): object
-    {
-        return new AdminWithdrawMethodExport;
-    }
-
-    protected function acnooExcelFilename(): string
-    {
-        return 'withdraw-methods';
-    }
-
-    protected function acnooCsvFilename(): string
-    {
-        return 'withdraw-methods';
+        return Excel::download(new AdminWithdrawMethodExport, 'withdraw-methods.csv');
     }
 }

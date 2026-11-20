@@ -2,50 +2,32 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Channel;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Expense\StoreExpenseRequest;
+use App\Http\Requests\Expense\UpdateExpenseRequest;
 use App\Models\Expense;
+use App\Services\ExpenseService;
 use Illuminate\Http\Request;
 
 class AcnooExpenseController extends Controller
 {
-    public function index()
+    public function __construct(protected ExpenseService $service) {}
+
+    public function index(Request $request)
     {
-        $data = Expense::with('category:id,name')
-            ->where('business_id', auth()->user()->business_id)
-            ->when(request('expense_category_id'), function ($query) {
-                $query->where('expense_category_id', request('expense_category_id'));
-            })
-            ->when(request('search'), function ($query) {
-                $query->where('expanseFor', 'like', '%'.request('search').'%')
-                    ->orWhere('amount', 'like', '%'.request('search').'%')
-                    ->orWhereHas('category', function ($query) {
-                        $query->where('name', 'like', '%'.request('search').'%');
-                    });
-            })
-            ->latest()
-            ->paginate(10);
+        $expenses = $this->service->listForChannel(Channel::Api, $request->user(), $request->all());
 
         return response()->json([
             'message' => __('Data fetched successfully.'),
-            'data' => $data,
+            'data' => $expenses,
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreExpenseRequest $request)
     {
-        $request->validate([
-            'amount' => 'required|numeric',
-            'payment_type' => 'required|string',
-            'expense_for' => 'nullable|string',
-            'reference_no' => 'nullable|string',
-            'expense_date' => 'required|date',
-            'note' => 'nullable|string',
-            'expense_category_id' => 'required|exists:expense_categories,id',
-        ]);
-
-        $data = Expense::create($request->except('landlord_id') + [
-            'landlord_id' => auth()->id(),
-        ]);
+        $actor = $request->user();
+        $data = $this->service->store($request->validated(), Channel::Api, $actor);
 
         return response()->json([
             'message' => __('Expense saved successfully.'),
@@ -53,24 +35,11 @@ class AcnooExpenseController extends Controller
         ]);
     }
 
-    public function update(Request $request, string $id)
+    public function update(UpdateExpenseRequest $request, string $id)
     {
-
-        $request->validate([
-            'amount' => 'required|numeric',
-            'payment_type' => 'required|string',
-            'expense_for' => 'nullable|string',
-            'reference_no' => 'nullable|string',
-            'expense_date' => 'required|date',
-            'note' => 'nullable|string',
-            'expense_category_id' => 'required|exists:expense_categories,id',
-        ]);
-
         $expense = Expense::findOrFail($id);
-
-        $expense->update($request->except('landlord_id') + [
-            'landlord_id' => auth()->id(),
-        ]);
+        $actor = $request->user();
+        $expense = $this->service->update($expense, $request->validated(), Channel::Api, $actor);
 
         return response()->json([
             'message' => __('Expense updated successfully.'),
@@ -80,9 +49,8 @@ class AcnooExpenseController extends Controller
 
     public function destroy(string $id)
     {
-
         $expense = Expense::findOrFail($id);
-        $expense->delete();
+        $this->service->delete($expense, Channel::Api);
 
         return response()->json([
             'message' => __('Expense deleted successfully.'),

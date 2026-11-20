@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SecurityDeposit extends Model
 {
@@ -29,36 +30,32 @@ class SecurityDeposit extends Model
         'note',
     ];
 
-    public function landlord()
+    public function landlord(): BelongsTo
     {
-
         return $this->belongsTo(User::class, 'landlord_id');
     }
 
-    public function tenant()
+    public function tenant(): BelongsTo
     {
-
         return $this->belongsTo(User::class, 'tenant_id');
     }
 
-    public function property()
+    public function property(): BelongsTo
     {
-
         return $this->belongsTo(Property::class);
     }
 
-    public function unit()
+    public function unit(): BelongsTo
     {
         return $this->belongsTo(Unit::class, 'unit_id');
     }
 
-    public function gateway()
+    public function gateway(): BelongsTo
     {
-
         return $this->belongsTo(Gateway::class);
     }
 
-    public function rent()
+    public function rent(): BelongsTo
     {
         return $this->belongsTo(Rent::class);
     }

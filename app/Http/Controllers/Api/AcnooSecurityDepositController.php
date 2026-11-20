@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Channel;
 use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\Gateway;
@@ -9,6 +10,7 @@ use App\Models\Plan;
 use App\Models\PlanSubscribe;
 use App\Models\RentPayment;
 use App\Models\SecurityDeposit;
+use App\Services\SecurityDepositService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ViewErrorBag;
@@ -17,24 +19,11 @@ class AcnooSecurityDepositController extends Controller
 {
     use HasUploader;
 
+    public function __construct(protected SecurityDepositService $service) {}
+
     public function index(Request $request)
     {
-        $security_deposit = SecurityDeposit::with(['property:id,puid', 'property.propertyDetail:property_id,property_info', 'landlord:id,name,phone', 'tenant:id,name'])
-            ->when(auth()->user()->role == 'landlord', function ($q) {
-                $q->where('landlord_id', auth()->id());
-            })
-            ->when(auth()->user()->role == 'tenant', function ($q) {
-                $q->where('tenant_id', auth()->id());
-            })
-            ->when(request('status'), function ($q) {
-                $q->where('status', request('status'));
-            })
-            ->when(request('from_date') && request('to_date'), function ($q) {
-                $q->whereDate('created_at', '>=', request('from_date'));
-                $q->whereDate('created_at', '<=', request('to_date'));
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 10);
+        $security_deposit = $this->service->listForChannel(Channel::Api, $request->user(), $request->all());
 
         return response()->json([
             'message' => __('Data fetched successfully.'),

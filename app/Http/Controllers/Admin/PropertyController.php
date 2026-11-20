@@ -2,32 +2,24 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\Channel;
 use App\Exports\AdminPropertiesExport;
-use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Property\StorePropertyRequest;
+use App\Http\Requests\Property\UpdatePropertyRequest;
 use App\Models\Amenity;
 use App\Models\Category;
 use App\Models\Facility;
 use App\Models\HouseType;
 use App\Models\Property;
-use App\Models\PropertyDetail;
-use App\Models\Unit;
 use App\Models\User;
-use App\Traits\HasAcnooActions;
-use Carbon\Carbon;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\PropertyService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PropertyController extends Controller
 {
-    use HasAcnooActions;
-    use HasUploader;
-
-    public function __construct()
+    public function __construct(protected PropertyService $service)
     {
         $this->middleware('permission:properties-read')->only('index', 'show', 'acnooFilter', 'exportExcel', 'exportCsv', 'propertySuccess', 'getFacilities', 'getAmenities');
         $this->middleware('permission:properties-create')->only('create', 'store');
@@ -37,26 +29,7 @@ class PropertyController extends Controller
 
     public function index()
     {
-        $properties = Property::with([
-            'category:id,name',
-            'landlord:id,name',
-            'propertyDetail:property_id,property_info',
-            'units.rent',
-        ])
-            ->when(request('id'), function ($query) {
-                $query->where('id', request('id'));
-            })
-            ->withCount([
-                'units as total_unit',
-                'units as total_available_unit' => function ($query) {
-                    $query->whereDoesntHave('rent', function ($q) {
-                        $q->whereIn('status', ['active', 'processing']);
-                    });
-                },
-            ])
-            ->latest()
-            ->paginate(10);
-
+        $properties = $this->service->listForChannel(Channel::Admin, auth()->user(), ['per_page' => 10]);
         $categories = Category::all();
 
         return view('admin.properties.index', compact('properties', 'categories'));
@@ -64,16 +37,12 @@ class PropertyController extends Controller
 
     public function getFacilities($landlordId)
     {
-        $facilities = Facility::where('landlord_id', $landlordId)->get();
-
-        return response()->json($facilities);
+        return response()->json($this->service->facilitiesForLandlord($landlordId));
     }
 
     public function getAmenities($landlordId)
     {
-        $amenities = Amenity::where('landlord_id', $landlordId)->get();
-
-        return response()->json($amenities);
+        return response()->json($this->service->amenitiesForLandlord($landlordId));
     }
 
     public function create()
@@ -89,178 +58,34 @@ class PropertyController extends Controller
         return view('admin.properties.create', compact('categories', 'countries', 'house_types', 'phone_codes', 'landlords'));
     }
 
-    public function store(Request $request)
+    public function store(StorePropertyRequest $request)
     {
-        $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'landlord_id' => 'required|exists:users,id',
-            'house_type_id' => 'nullable|exists:house_types,id',
-            'state' => 'nullable',
-            'city' => 'nullable',
-            'building_name' => 'nullable',
-            'utility_deposit' => 'nullable|numeric',
-            'security_deposit' => 'nullable|numeric',
-            'residential_type' => 'nullable',
-            'address' => 'nullable',
-            'postcode' => 'nullable|numeric',
-            'floor_rang' => 'nullable|string',
-            'bedroom' => 'nullable|string',
-            'bathroom' => 'nullable|string',
-            'property_size' => 'nullable|numeric',
-            'furnishing' => 'nullable',
-            'facility' => 'nullable',
-            'amenity' => 'nullable',
-            'property_title' => 'nullable',
-            'property_description' => 'nullable',
-            'property_rent' => 'nullable|numeric',
-            'full_name' => 'required|string',
-            'phone' => 'required|array',
-            'email' => 'nullable|email',
-            'property_type' => 'nullable|string',
-            'land_size' => 'nullable|numeric',
-            'unit_size' => 'nullable|numeric',
-            'unit_number' => 'nullable|string',
-            'country' => 'nullable|string',
-            'room_size' => 'nullable|string',
-            'tenant_preference' => 'nullable',
-            'cover_image.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'floorplan_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        $actor = $request->user();
+        $data = $request->validated();
+        $data['unit_files'] = $request->file('units');
+
+        $property = $this->service->store($data, Channel::Admin, $actor, $data['landlord_id'] ?? null);
+
+        return response()->json([
+            'message' => 'Property saved successfully',
+            'redirect' => route('admin.properties.success', $property->id),
         ]);
-
-        try {
-            DB::beginTransaction();
-            $property = Property::create([
-                'landlord_id' => $request->landlord_id,
-                'category_id' => $request->category_id,
-                'house_type_id' => $request->house_type_id,
-                'type' => $request->type,
-                'building_name' => $request->building_name,
-                'utility_deposit' => $request->utility_deposit ?? 0,
-                'security_deposit' => $request->security_deposit ?? 0,
-                'sale_amount' => $request->sale_amount ?? 0,
-                'late_fee' => $request->late_fee ?? 0,
-                'late_fee_after_days' => $request->late_fee_after_days ?? 0,
-                'cover_image' => $request->cover_image ? $this->multipleUpload($request, 'cover_image') : null,
-                'room_info' => $request->room_info,
-                'rent_info' => $request->rent_info,
-                'address_info' => $request->address_info,
-                'status' => 1,
-            ]);
-
-            PropertyDetail::create([
-                'property_id' => $property->id,
-                'furnishing' => $request->furnishing,
-                'facilities' => $request->facilities,
-                'parking_lot' => $request->parking_lot,
-                'amenities' => $request->amenities,
-                'full_name' => $request->full_name,
-                'phone' => $request->phone,
-                'email' => $request->email,
-                'floorplan_image' => $request->floorplan_image ? $this->upload($request, 'floorplan_image') : null,
-                'residential_type' => $request->residential_type,
-                'property_type' => $request->property_type,
-                'property_info' => $request->property_info,
-                'tenant_preference' => $request->tenant_preference,
-            ]);
-
-            if ($request->category_id == 6) {
-                if ($request->has('units') && is_array($request->units)) {
-                    $unitFiles = $request->file('units');
-                    foreach ($request->units as $index => $unitData) {
-
-                        $images = isset($unitFiles[$index]['images'])
-                        ? $this->multipleUploadArray($unitFiles[$index]['images'])
-                        : null;
-
-                        Unit::create([
-                            'property_id' => $property->id,
-                            'unit_name' => $unitData['unit_name'] ?? 'test',
-                            'floor_range' => $unitData['floor_range'] ?? null,
-                            'bedroom' => $unitData['bedroom'] ?? null,
-                            'bathroom' => $unitData['bathroom'] ?? null,
-                            'kitchen' => $unitData['kitchen'] ?? null,
-                            'balcony' => $unitData['balcony'] ?? null,
-                            'condition' => $unitData['condition'] ?? null,
-                            'parking_lot' => $unitData['parking_lot'] ?? null,
-                            'unit_size' => $unitData['unit_size'] ?? null,
-                            'facilities' => $unitData['facilities'] ?? null,
-                            'amenities' => $unitData['amenities'] ?? null,
-                            'tenant_preference' => $unitData['tenant_preference'] ?? null,
-                            'description' => $unitData['description'] ?? null,
-                            'images' => $images,
-                            'monthly_rent' => $unitData['monthly_rent'] ?? 0,
-                            'sale_amount' => $unitData['sale_amount'] ?? 0,
-                            'security_deposit' => $unitData['security_deposit'] ?? 0,
-                            'utility_deposit' => $unitData['utility_deposit'] ?? 0,
-                            'late_fee' => $unitData['late_fee'] ?? 0,
-                            'late_fee_after_days' => $unitData['late_fee_after_days'] ?? 0,
-                            'min_rental_value' => $unitData['min_rental_value'] ?? null,
-                            'min_rental_unit' => $unitData['min_rental_unit'] ?? null,
-                            'security_deposit_value' => $unitData['security_deposit_value'] ?? null,
-                            'security_deposit_unit' => $unitData['security_deposit_unit'] ?? null,
-                        ]);
-                    }
-                }
-            }
-
-            DB::commit();
-
-            sendNotification(
-                $property->id,
-                notify_users([$property->landlord->id]),
-                admin_url: route('admin.properties.index', ['id' => $property->id]),
-                landlord_url: route('landlord.properties.index', ['id' => $property->id]),
-                admin_msg: __('A new property has been created.'),
-                landlord_msg: __('Your property has been successfully added.')
-            );
-
-            return response()->json([
-                'message' => 'Property saved successfully',
-                'redirect' => route('admin.properties.success', $property->id),
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return response()->json([
-                'message' => 'Something went wrong',
-            ]);
-        }
-
     }
 
     public function show(string $id)
     {
-        $property = Property::with([
-            'category:id,name',
-            'propertyDetail',
-            'units',
-            'landlord:id,name',
-            'rent' => function ($query) {
-                $query->select('property_id', 'status')
-                    ->whereDate('start_date', '<=', Carbon::today())
-                    ->whereDate('end_date', '>=', Carbon::today());
-            },
-            'units' => function ($q) {
-                $q->withCount([
-                    'rent as is_booked' => function ($rent) {
-                        $rent->where('status', 'active')
-                            ->whereDate('start_date', '<=', Carbon::today())
-                            ->whereDate('end_date', '>=', Carbon::today());
-                    },
-                ]);
-            },
-        ])->findOrFail($id);
-
+        $property = Property::findOrFail($id);
         $this->authorize('view', $property);
+
+        $property = $this->service->loadForShow($property, Channel::Admin);
 
         if ($property->category_id == 6) {
             foreach ($property->units as $unit) {
                 $unitFacilityIds = $unit->facilities ?? [];
-                $unit->facility_names = Facility::whereIn('id', $unitFacilityIds)->pluck('name', 'id');
+                $unit->setAttribute('facility_names', Facility::whereIn('id', $unitFacilityIds)->pluck('name', 'id'));
 
                 $unitAmenityIds = $unit->amenities ?? [];
-                $unit->amenity_names = Amenity::whereIn('id', $unitAmenityIds)->pluck('name', 'id');
+                $unit->setAttribute('amenity_names', Amenity::whereIn('id', $unitAmenityIds)->pluck('name', 'id'));
             }
         } else {
             $facilityIds = $property->propertyDetail->facilities ?? [];
@@ -290,220 +115,21 @@ class PropertyController extends Controller
         return view('admin.properties.edit', compact('categories', 'house_types', 'phone_codes', 'countries', 'property', 'landlords'));
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdatePropertyRequest $request, $id)
     {
-        $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'house_type_id' => 'nullable|exists:house_types,id',
-            'landlord_id' => ['required', Rule::exists('users', 'id')->where('role', 'landlord')],
-            'state' => 'nullable',
-            'city' => 'nullable',
-            'building_name' => 'nullable',
-            'utility_deposit' => 'nullable|numeric',
-            'security_deposit' => 'nullable|numeric',
-            'residential_type' => 'nullable',
-            'address' => 'nullable',
-            'postcode' => 'nullable|numeric',
-            'floor_rang' => 'nullable|string',
-            'bedroom' => 'nullable|string',
-            'bathroom' => 'nullable|string',
-            'property_size' => 'nullable|numeric',
-            'furnishing' => 'nullable',
-            'facilities' => 'nullable',
-            'amenities' => 'nullable',
-            'property_title' => 'nullable',
-            'property_description' => 'nullable',
-            'property_rent' => 'nullable|numeric',
-            'full_name' => 'required|string',
-            'phone' => 'required|array',
-            'email' => 'nullable|email',
-            'house_type' => 'nullable|string',
-            'property_type' => 'nullable|string',
-            'land_size' => 'nullable|numeric',
-            'unit_size' => 'nullable|numeric',
-            'unit_number' => 'nullable|string',
-            'country' => 'nullable|string',
-            'room_size' => 'nullable|string',
-            'tenant_preference' => 'nullable',
-            'cover_image.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'floorplan_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        $property = Property::findOrFail($id);
+        $this->authorize('update', $property);
+
+        $actor = $request->user();
+        $data = $request->validated();
+        $data['unit_files'] = $request->file('units');
+
+        $property = $this->service->update($property, $data, Channel::Admin, $actor);
+
+        return response()->json([
+            'message' => 'Property updated successfully',
+            'redirect' => route('admin.properties.index'),
         ]);
-
-        try {
-            DB::beginTransaction();
-
-            $property = Property::findOrFail($id);
-            $this->authorize('update', $property);
-
-            // cover image
-            if ($request->cover_removed_images) {
-                $cover_prev_images = array_diff($property->cover_image ?? [], $request->cover_removed_images);
-                foreach ($request->cover_removed_images as $image) {
-                    if (Storage::exists($image)) {
-                        Storage::delete($image);
-                    }
-                }
-
-                $cover_prev_images = array_values($cover_prev_images);
-            } else {
-                $cover_prev_images = $property->cover_image ?? [];
-            }
-
-            $cover_new_images = $request->cover_image ? $this->multipleUpload($request, 'cover_image') : [];
-
-            $cover_merged_images = array_merge($cover_prev_images, $cover_new_images);
-
-            if ($request->hasFile('floorplan_image')) {
-                if ($property->propertyDetail->floorplan_image) {
-                    Storage::deleteDirectory(dirname($property->propertyDetail->floorplan_image));
-                }
-                $floorplan_image = $this->upload($request, 'floorplan_image');
-            } else {
-                $floorplan_image = $property->propertyDetail->floorplan_image;
-            }
-
-            $property->update([
-                'landlord_id' => $request->landlord_id,
-                'category_id' => $request->category_id,
-                'house_type_id' => $request->house_type_id,
-                'type' => $request->type,
-                'building_name' => $request->building_name,
-                'utility_deposit' => $request->utility_deposit ?? 0,
-                'security_deposit' => $request->security_deposit ?? 0,
-                'sale_amount' => $request->sale_amount ?? 0,
-                'late_fee' => $request->late_fee ?? 0,
-                'late_fee_after_days' => $request->late_fee_after_days ?? 0,
-                'cover_image' => $cover_merged_images,
-                'room_info' => $request->room_info,
-                'rent_info' => $request->rent_info,
-                'address_info' => $request->address_info,
-            ]);
-
-            $property->propertyDetail()->update([
-                'property_id' => $property->id,
-                'furnishing' => $request->furnishing,
-                'facilities' => $request->facilities,
-                'parking_lot' => $request->parking_lot,
-                'amenities' => $request->amenities,
-                'full_name' => $request->full_name,
-                'phone' => $request->phone,
-                'email' => $request->email,
-                'floorplan_image' => $floorplan_image,
-                'residential_type' => $request->residential_type,
-                'property_type' => $request->property_type,
-                'property_info' => $request->property_info,
-                'tenant_preference' => $request->tenant_preference,
-            ]);
-
-            $receivedUnitIds = collect($request->units)
-                ->pluck('unit_id')
-                ->filter()
-                ->toArray();
-
-            $existingUnitIds = $property->units()->pluck('id')->toArray();
-
-            $unitsToDeleteIds = array_diff($existingUnitIds, $receivedUnitIds);
-
-            if (! empty($unitsToDeleteIds)) {
-                $unitsToDelete = Unit::whereIn('id', $unitsToDeleteIds)->get(['id', 'images']);
-
-                foreach ($unitsToDelete as $u) {
-                    if (! empty($u->images) && is_array($u->images)) {
-                        foreach ($u->images as $imgPath) {
-                            if ($imgPath && Storage::exists($imgPath)) {
-                                Storage::delete($imgPath);
-                            }
-                        }
-                    }
-                }
-
-                Unit::whereIn('id', $unitsToDeleteIds)->delete();
-            }
-
-            if ($request->category_id == 6 && $request->has('units') && is_array($request->units)) {
-                $unitFiles = $request->file('units');
-
-                foreach ($request->units as $index => $unitData) {
-                    if (empty($unitData['unit_id']) && empty($unitData['unit_name'])) {
-                        continue;
-                    }
-
-                    $unit = ! empty($unitData['unit_id']) ? Unit::find($unitData['unit_id']) : new Unit;
-                    if (! $unit) {
-                        $unit = new Unit;
-                    }
-
-                    // existing images for this unit
-                    $unit_prev_images = $unit->images ?? [];
-
-                    if (! empty($unitData['remove_images']) && is_array($unitData['remove_images'])) {
-                        $unit_prev_images = array_diff($unit->images ?? [], $unitData['remove_images']);
-
-                        foreach ($unitData['remove_images'] as $image) {
-                            if (Storage::exists($image)) {
-                                Storage::delete($image);
-                            }
-                        }
-
-                        $unit_prev_images = array_values($unit_prev_images);
-                    } else {
-                        $unit_prev_images = $unit->images ?? [];
-                    }
-
-                    $new_images = [];
-                    if (isset($unitFiles[$index]['images']) && is_array($unitFiles[$index]['images'])) {
-                        $new_images = $this->multipleUploadArray($unitFiles[$index]['images']);
-                    }
-
-                    $merged_images = array_merge($unit_prev_images, $new_images);
-
-                    $unit->fill([
-                        'property_id' => $property->id,
-                        'unit_name' => $unitData['unit_name'] ?? null,
-                        'floor_range' => $unitData['floor_range'] ?? null,
-                        'bedroom' => $unitData['bedroom'] ?? null,
-                        'bathroom' => $unitData['bathroom'] ?? null,
-                        'kitchen' => $unitData['kitchen'] ?? null,
-                        'balcony' => $unitData['balcony'] ?? null,
-                        'condition' => $unitData['condition'] ?? null,
-                        'parking_lot' => $unitData['parking_lot'] ?? null,
-                        'unit_size' => $unitData['unit_size'] ?? null,
-                        'facilities' => $unitData['facilities'] ?? null,
-                        'amenities' => $unitData['amenities'] ?? null,
-                        'tenant_preference' => $unitData['tenant_preference'] ?? null,
-                        'description' => $unitData['description'] ?? null,
-                        'images' => $merged_images,
-                        'monthly_rent' => $unitData['monthly_rent'] ?? 0,
-                        'sale_amount' => $unitData['sale_amount'] ?? 0,
-                        'security_deposit' => $unitData['security_deposit'] ?? 0,
-                        'utility_deposit' => $unitData['utility_deposit'] ?? 0,
-                        'late_fee' => $unitData['late_fee'] ?? 0,
-                        'late_fee_after_days' => $unitData['late_fee_after_days'] ?? 0,
-                        'min_rental_value' => $unitData['min_rental_value'] ?? null,
-                        'min_rental_unit' => $unitData['min_rental_unit'] ?? null,
-                        'security_deposit_value' => $unitData['security_deposit_value'] ?? null,
-                        'security_deposit_unit' => $unitData['security_deposit_unit'] ?? null,
-                    ]);
-
-                    $unit->save();
-                }
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'message' => 'Property updated successfully',
-                'redirect' => route('admin.properties.index'),
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return response()->json([
-                'message' => 'Something went wrong',
-            ], 500);
-        }
-
     }
 
     public function propertySuccess(string $id)
@@ -518,29 +144,7 @@ class PropertyController extends Controller
         $property = Property::findOrFail($id);
         $this->authorize('delete', $property);
 
-        if (! empty($property->cover_image)) {
-            foreach ($property->cover_image as $image) {
-                $oldImagePath = dirname($image);
-                Storage::deleteDirectory($oldImagePath);
-            }
-        }
-
-        if (! empty($property->propertyDetail->floorplan_image)) {
-            $oldImagePath = dirname($property->propertyDetail->floorplan_image);
-            Storage::deleteDirectory($oldImagePath);
-        }
-
-        foreach ($property->units as $unit) {
-            if (! empty($unit->images)) {
-                foreach ($unit->images as $image) {
-                    if ($image && Storage::exists($image)) {
-                        Storage::delete($image);
-                    }
-                }
-            }
-        }
-
-        $property->delete();
+        $this->service->delete($property, Channel::Admin);
 
         return response()->json([
             'message' => __('Property deleted successfully'),
@@ -555,170 +159,67 @@ class PropertyController extends Controller
         ]);
 
         $property = Property::findOrFail($id);
+        $this->authorize('update', $property);
 
-        if ($property) {
+        $property = $this->service->reject($property, $request->input('meta.reason'));
 
-            $meta = $property->meta ?? [];
-
-            $meta['reason'] = $request->input('meta.reason');
-
-            $property->update([
-                'status' => '3',
-                'meta' => $meta,
-            ]);
-
-            return response()->json([
-                'message' => 'Property rejected successfully',
-                'redirect' => route('admin.properties.show', $property->id),
-            ]);
-        } else {
-            return response()->json(['message' => 'Property rejected Not Found'], 404);
-        }
+        return response()->json([
+            'message' => 'Property rejected successfully',
+            'redirect' => route('admin.properties.show', $property->id),
+        ]);
     }
 
     public function approve(string $id)
     {
         $property = Property::findOrFail($id);
+        $this->authorize('update', $property);
 
-        if ($property) {
+        $property = $this->service->approve($property);
 
-            $property->update([
-                'status' => '1',
-            ]);
-
-            return response()->json([
-                'message' => 'Property Approved successfully',
-                'redirect' => route('admin.properties.show', $property->id),
-            ]);
-        } else {
-            return response()->json(['message' => 'Property Not Found'], 404);
-        }
+        return response()->json([
+            'message' => 'Property Approved successfully',
+            'redirect' => route('admin.properties.show', $property->id),
+        ]);
     }
 
-    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
-
-    protected function acnooModel(): string
+    public function acnooFilter(Request $request)
     {
-        return Property::class;
+        $properties = $this->service->listForChannel(Channel::Admin, auth()->user(), array_merge($request->all(), ['per_page' => 20]));
+
+        return view('admin.properties.datas', ['properties' => $properties]);
     }
 
-    protected function acnooQuery(Request $request): Builder
+    public function status(Request $request, string $id)
     {
-        return Property::with(['category:id,name', 'landlord:id,name', 'propertyDetail:property_id,property_info', 'units.rent'])
-            ->withCount([
-                'units as total_unit',
-                'units as total_available_unit' => function ($query) {
-                    $query->whereDoesntHave('rent', function ($q) {
-                        $q->whereIn('status', ['active', 'processing']);
-                    });
-                },
-            ])
-            ->when(request('category_id'), function ($q) {
-                $q->where('category_id', request('category_id'));
-            })
-            ->when(request('search'), function ($q) {
-                $q->where('rent_info', 'like', '%'.request('search').'%')
-                    ->orwhere('puid', 'like', '%'.request('search').'%')
-                    ->orWhere('address_info->address', 'like', '%'.request('search').'%')
-                    ->orWhere('address_info->state', 'like', '%'.request('search').'%')
-                    ->orWhere('address_info->city', 'like', '%'.request('search').'%')
-                    ->orWhere('rent_info->monthly_rent', 'like', '%'.request('search').'%');
+        $property = Property::findOrFail($id);
+        $this->authorize('update', $property);
 
-                $q->orWhereHas('category', function ($q) {
-                    $q->where('name', 'like', '%'.request('search').'%');
-                });
+        $this->service->setStatus($property, $request->status ?? $request->input('status'));
 
-                $q->orWhereHas('propertyDetail', function ($q) {
-                    $q->where('property_info', 'like', '%'.request('search').'%');
-                });
-            })
-            ->latest();
+        return response()->json([
+            'message' => 'Status Updated',
+            'redirect' => route('admin.properties.index'),
+        ]);
     }
 
-    protected function acnooView(): string
+    public function deleteAll(Request $request)
     {
-        return 'admin.properties.datas';
+        $actor = $request->user();
+        $this->service->deleteMany($request->ids ?? [], Channel::Admin, $actor);
+
+        return response()->json([
+            'message' => __('Selected property deleted successfully'),
+            'redirect' => route('admin.properties.index'),
+        ]);
     }
 
-    protected function acnooViewData(LengthAwarePaginator $rows): array
+    public function exportExcel()
     {
-        return ['properties' => $rows];
+        return Excel::download(new AdminPropertiesExport, 'properties.xlsx');
     }
 
-    protected function acnooPerPage(): int
+    public function exportCsv()
     {
-        return 20;
-    }
-
-    protected function acnooDeletesRowByRow(): bool
-    {
-        return true;
-    }
-
-    protected function deletingAcnooRow($row): array
-    {
-        $cleanup = [];
-
-        if (! empty($row->cover_image)) {
-            foreach ($row->cover_image as $image) {
-                $dir = dirname($image);
-                $cleanup[] = fn () => Storage::deleteDirectory($dir);
-            }
-        }
-
-        $propertyDetail = $row->propertyDetail;
-        if (! empty($propertyDetail?->floorplan_image)) {
-            $dir = dirname($propertyDetail->floorplan_image);
-            $cleanup[] = fn () => Storage::deleteDirectory($dir);
-        }
-
-        $unitImages = [];
-        foreach ($row->units as $unit) {
-            foreach ($unit->images ?? [] as $image) {
-                if ($image) {
-                    $unitImages[] = $image;
-                }
-            }
-        }
-        if ($unitImages !== []) {
-            $cleanup[] = fn () => Storage::delete($unitImages);
-        }
-
-        return $cleanup;
-    }
-
-    protected function acnooDeleteMessage(): string
-    {
-        return __('Selected property deleted successfully');
-    }
-
-    protected function acnooRedirectRoute(): string
-    {
-        return 'admin.properties.index';
-    }
-
-    protected function acnooStatusMessage(): string
-    {
-        return 'Status Updated';
-    }
-
-    protected function acnooStatusRedirectRoute(): string
-    {
-        return 'admin.properties.index';
-    }
-
-    protected function acnooExport(Request $request): object
-    {
-        return new AdminPropertiesExport;
-    }
-
-    protected function acnooExcelFilename(): string
-    {
-        return 'properties';
-    }
-
-    protected function acnooCsvFilename(): string
-    {
-        return 'properties';
+        return Excel::download(new AdminPropertiesExport, 'properties.csv');
     }
 }

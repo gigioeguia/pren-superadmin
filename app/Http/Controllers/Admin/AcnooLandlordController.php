@@ -276,15 +276,18 @@ class AcnooLandlordController extends Controller
                 Storage::delete($landlord->image);
             }
 
-            $userDetail = $landlord->user_details;
+            $userDetail = $landlord->user_details()->first();
 
             if ($userDetail) {
-                if (file_exists($userDetail->mykad['front_image'])) {
-                    Storage::delete($userDetail->mykad['front_image']);
+                $frontImage = $userDetail->getAttribute('mykad')['front_image'] ?? null;
+                $backImage = $userDetail->getAttribute('mykad')['back_image'] ?? null;
+
+                if ($frontImage && file_exists($frontImage)) {
+                    Storage::delete($frontImage);
                 }
 
-                if (file_exists($userDetail->mykad['back_image'])) {
-                    Storage::delete($userDetail->mykad['back_image']);
+                if ($backImage && file_exists($backImage)) {
+                    Storage::delete($backImage);
                 }
             }
 
@@ -318,14 +321,17 @@ class AcnooLandlordController extends Controller
                     Storage::delete($landlord->image);
                 }
 
-                $userDetail = $landlord->user_details;
+                $userDetail = $landlord->user_details()->first();
 
                 if ($userDetail) {
-                    if (file_exists($userDetail->mykad['front_image'])) {
-                        Storage::delete($userDetail->mykad['front_image']);
+                    $frontImage = $userDetail->getAttribute('mykad')['front_image'] ?? null;
+                    $backImage = $userDetail->getAttribute('mykad')['back_image'] ?? null;
+
+                    if ($frontImage && file_exists($frontImage)) {
+                        Storage::delete($frontImage);
                     }
-                    if (file_exists($userDetail->mykad['back_image'])) {
-                        Storage::delete($userDetail->mykad['back_image']);
+                    if ($backImage && file_exists($backImage)) {
+                        Storage::delete($backImage);
                     }
 
                     $userDetail->delete();

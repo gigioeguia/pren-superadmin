@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RefundRequest extends Model
 {
@@ -23,33 +24,28 @@ class RefundRequest extends Model
         'bank_info',
     ];
 
-    public function deposit()
+    public function deposit(): BelongsTo
     {
-
         return $this->belongsTo(SecurityDeposit::class);
     }
 
-    public function property()
+    public function property(): BelongsTo
     {
-
         return $this->belongsTo(Property::class);
     }
 
-    public function landlord()
+    public function landlord(): BelongsTo
     {
-
         return $this->belongsTo(User::class, 'landlord_id');
     }
 
-    public function tenant()
+    public function tenant(): BelongsTo
     {
-
         return $this->belongsTo(User::class, 'tenant_id');
     }
 
-    public function refund_reson()
+    public function refund_reson(): BelongsTo
     {
-
         return $this->belongsTo(RefundReason::class);
     }
 

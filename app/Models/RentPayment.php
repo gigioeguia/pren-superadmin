@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RentPayment extends Model
 {
@@ -32,12 +33,12 @@ class RentPayment extends Model
         'note',
     ];
 
-    public function rent()
+    public function rent(): BelongsTo
     {
         return $this->belongsTo(Rent::class);
     }
 
-    public function gateway()
+    public function gateway(): BelongsTo
     {
         return $this->belongsTo(Gateway::class);
     }

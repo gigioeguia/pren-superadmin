@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Channel;
 use App\Http\Controllers\Controller;
+use App\Services\NotificationService;
 
 class AcnooNotificationController extends Controller
 {
+    public function __construct(protected NotificationService $service) {}
+
     public function index()
     {
-        $notifications = auth()->user()->unreadNotifications;
+        $notifications = $this->service->listForChannel(Channel::Api, auth()->user(), []);
 
         return response()->json([
             'message' => 'Data fetched successfully',
@@ -18,7 +22,7 @@ class AcnooNotificationController extends Controller
 
     public function readAll()
     {
-        auth()->user()->unreadNotifications()->update(['read_at' => now()]);
+        $this->service->markAllRead(auth()->user());
 
         return response()->json([
             'message' => 'Mark all read successfully',
