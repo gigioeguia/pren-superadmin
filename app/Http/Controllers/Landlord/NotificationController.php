@@ -2,41 +2,26 @@
 
 namespace App\Http\Controllers\Landlord;
 
+use App\Enums\Channel;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
+    public function __construct(protected NotificationService $service) {}
+
     public function mtIndex()
     {
-        $notifications = auth()->user()->notifications()
-            ->whereDate('created_at', today())
-            ->latest()
-            ->get();
+        $notifications = $this->service->listForChannel(Channel::Landlord, auth()->user(), ['today' => true]);
 
         return view('landlord.notifications.index', compact('notifications'));
     }
 
     public function acnooFilter(Request $request)
     {
-        $notifications = auth()->user()->notifications()->when(request('days') == 'daily', function ($q) {
-            $q->whereDate('created_at', now()->format('Y-m-d'));
-        })
-            ->when(request('days') == 'weekly', function ($q) {
-                $q->whereDate('created_at', '>=', now()->subDays(6)->format('Y-m-d'));
-            })
-            ->when(request('days') == '15_days', function ($q) {
-                $q->whereDate('created_at', '>=', now()->subDays(15)->format('Y-m-d'));
-            })
-            ->when(request('days') == 'monthly', function ($q) {
-                $q->whereMonth('created_at', now()->format('m'));
-            })
-            ->when(request('days') == 'yearly', function ($q) {
-                $q->whereYear('created_at', now()->format('Y'));
-            })
-            ->latest()
-            ->get();
+        $notifications = $this->service->listForChannel(Channel::Landlord, auth()->user(), $request->all());
 
         return response()->json([
             'data' => view('landlord.notifications.datas', compact('notifications'))->render(),
@@ -47,13 +32,11 @@ class NotificationController extends Controller
     {
         $notify = Notification::find($id);
         if ($notify) {
-            $notify->read_at = now();
-            $notify->save();
+            $this->service->markAsRead($notify);
 
             $user = auth()->user();
             $data = $notify->data;
 
-            // Redirect based on user role
             if ($user->role === 'landlord') {
                 if (! empty($data['landlord_url'])) {
                     return redirect($data['landlord_url']);
@@ -62,7 +45,6 @@ class NotificationController extends Controller
                 }
             }
 
-            // fallback
             return redirect('/');
         }
 
@@ -71,7 +53,7 @@ class NotificationController extends Controller
 
     public function mtReadAll()
     {
-        auth()->user()->unreadNotifications()->update(['read_at' => now()]);
+        $this->service->markAllRead(auth()->user());
 
         return back();
     }

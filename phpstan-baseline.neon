@@ -385,36 +385,6 @@ parameters:
 			path: app/Http/Controllers/Admin/NotificationController.php
 
 		-
-			message: '#^Call to method notifications\(\) on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Admin/NotificationController.php
-
-		-
-			message: '#^Call to method notifications\(\) on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Admin/NotificationController.php
-
-		-
-			message: '#^Call to method unreadNotifications\(\) on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Admin/NotificationController.php
-
-		-
-			message: '#^Call to method unreadNotifications\(\) on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Admin/NotificationController.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: app/Http/Controllers/Admin/NotificationController.php
-
-		-
 			message: '#^Call to method unreadNotifications\(\) on an unknown class App\\Models\\Api\\Tenant\.$#'
 			identifier: class.notFound
 			count: 1
@@ -527,30 +497,6 @@ parameters:
 			identifier: class.notFound
 			count: 1
 			path: app/Http/Controllers/Api/AcnooLandlordMaintenanceController.php
-
-		-
-			message: '#^Access to property \$unreadNotifications on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AcnooNotificationController.php
-
-		-
-			message: '#^Access to property \$unreadNotifications on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AcnooNotificationController.php
-
-		-
-			message: '#^Call to method unreadNotifications\(\) on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AcnooNotificationController.php
-
-		-
-			message: '#^Call to method unreadNotifications\(\) on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AcnooNotificationController.php
 
 		-
 			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
@@ -1179,7 +1125,7 @@ parameters:
 		-
 			message: '#^Relation ''sender'' is not found in App\\Models\\Support model\.$#'
 			identifier: larastan.relationExistence
-			count: 3
+			count: 2
 			path: app/Http/Controllers/Landlord/AcnooSupportController.php
 
 		-
@@ -1286,30 +1232,6 @@ parameters:
 
 		-
 			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Landlord/NotificationController.php
-
-		-
-			message: '#^Call to method notifications\(\) on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Landlord/NotificationController.php
-
-		-
-			message: '#^Call to method notifications\(\) on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Landlord/NotificationController.php
-
-		-
-			message: '#^Call to method unreadNotifications\(\) on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Landlord/NotificationController.php
-
-		-
-			message: '#^Call to method unreadNotifications\(\) on an unknown class App\\Models\\Api\\User\.$#'
 			identifier: class.notFound
 			count: 1
 			path: app/Http/Controllers/Landlord/NotificationController.php

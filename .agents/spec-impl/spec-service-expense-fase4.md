@@ -68,10 +68,10 @@ Prefijos `F` (HTTP) y `U` (unit). Casos concretos a definir al revisar esta enti
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] Service + Form Requests creados.
-- [ ] 3 controladores < 250 líneas, sin `HasAcnooActions` (si migrado).
-- [ ] Suite + PHPStan + Pint en verde.
-- [ ] Contrato HTTP idéntico verificado por tests.
+- [x] Service + Form Requests creados.
+- [x] 3 controladores < 250 líneas, sin `HasAcnooActions` (si migrado).
+- [x] Suite + PHPStan + Pint en verde.
+- [x] Contrato HTTP idéntico verificado por tests.
 
 ## 8. Riesgos
 

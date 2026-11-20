@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers\Landlord;
 
+use App\Enums\Channel;
 use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\Support;
 use App\Models\User;
+use App\Services\SupportService;
 use Illuminate\Http\Request;
 
 class AcnooSupportController extends Controller
 {
     use HasUploader;
+
+    public function __construct(protected SupportService $service) {}
 
     public function index()
     {
@@ -43,30 +47,9 @@ class AcnooSupportController extends Controller
             'file' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf,doc,docx,xls,xlsx,txt,zip|max:10240',
         ]);
 
-        $admin = User::where('role', 'superadmin')->first();
-
-        $existingMessage = Support::with('sender:id,name,image')->where('sender_id', auth()->id())
-            ->where('receiver_id', $admin->id)
-            ->whereNull('parent_id')
-            ->first();
-
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $filePath = $this->upload($request, 'file');
-            $fileExtension = $file->getClientOriginalExtension();
-            $fileSize = $file->getSize();
-        }
-
-        Support::create($request->except('file', 'parent_id') + [
-            'sender_id' => auth()->id(),
-            'receiver_id' => $admin->id,
-            'parent_id' => $existingMessage ? $existingMessage->id : null,
-            'file' => $filePath ?? null,
-            'file_info' => [
-                'ext' => $fileExtension ?? null,
-                'size' => $fileSize ?? null,
-            ],
-        ]);
+        $this->service->storeMessage([
+            'message' => $request->message,
+        ], Channel::Landlord, auth()->user(), $request->file('file'));
 
         return response()->json([
             'message' => 'Message sent successfully',

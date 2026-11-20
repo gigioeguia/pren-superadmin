@@ -2,46 +2,29 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\Channel;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
-    public function __construct()
+    public function __construct(protected NotificationService $service)
     {
         $this->middleware('permission:notifications-read')->only('mtIndex', 'mtView', 'mtReadAll', 'acnooFilter');
     }
 
     public function mtIndex()
     {
-        $notifications = auth()->user()->notifications()
-            ->whereDate('created_at', today())
-            ->latest()
-            ->get();
+        $notifications = $this->service->listForChannel(Channel::Admin, auth()->user(), ['today' => true]);
 
         return view('admin.notifications.index', compact('notifications'));
     }
 
     public function acnooFilter(Request $request)
     {
-        $notifications = auth()->user()->notifications()->when(request('days') == 'daily', function ($q) {
-            $q->whereDate('created_at', now()->format('Y-m-d'));
-        })
-            ->when(request('days') == 'weekly', function ($q) {
-                $q->whereDate('created_at', '>=', now()->subDays(6)->format('Y-m-d'));
-            })
-            ->when(request('days') == '15_days', function ($q) {
-                $q->whereDate('created_at', '>=', now()->subDays(15)->format('Y-m-d'));
-            })
-            ->when(request('days') == 'monthly', function ($q) {
-                $q->whereMonth('created_at', now()->format('m'));
-            })
-            ->when(request('days') == 'yearly', function ($q) {
-                $q->whereYear('created_at', now()->format('Y'));
-            })
-            ->latest()
-            ->get();
+        $notifications = $this->service->listForChannel(Channel::Admin, auth()->user(), $request->all());
 
         return response()->json([
             'data' => view('admin.notifications.datas', compact('notifications'))->render(),
@@ -52,8 +35,7 @@ class NotificationController extends Controller
     {
         $notify = Notification::find($id);
         if ($notify) {
-            $notify->read_at = now();
-            $notify->save();
+            $this->service->markAsRead($notify);
 
             $user = auth()->user();
             $data = $notify->data;
@@ -66,16 +48,15 @@ class NotificationController extends Controller
                 }
             }
 
-            // fallback
-            return redirect('/');
-
             return back()->with('error', __('Permission denied.'));
         }
+
+        return back()->with('error', __('Permission denied.'));
     }
 
     public function mtReadAll()
     {
-        auth()->user()->unreadNotifications()->update(['read_at' => now()]);
+        $this->service->markAllRead(auth()->user());
 
         return back();
     }

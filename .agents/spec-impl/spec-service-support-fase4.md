@@ -1,7 +1,7 @@
 ---
 id: spec-service-support-fase4
 titulo: "Service Support — unificar capas Admin/Landlord/Api (Fase 4 / 4.2)"
-estado: Borrador
+estado: Implementado
 fecha: 2026-11-19
 origen: .analisis/plan/plan-accion.md (Fase 4 / 4.2) — DT-A1, DT-C4
 cobertura: Migración de Support a app/Services siguiendo el patrón de spec-unificar-capas-services-fase4 (slice piloto Property)
@@ -68,10 +68,10 @@ Prefijos `F` (HTTP) y `U` (unit). Casos concretos a definir al revisar esta enti
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] Service + Form Requests creados.
-- [ ] 3 controladores < 250 líneas, sin `HasAcnooActions` (si migrado).
-- [ ] Suite + PHPStan + Pint en verde.
-- [ ] Contrato HTTP idéntico verificado por tests.
+- [x] Service + Form Requests creados.
+- [x] 3 controladores < 250 líneas, sin `HasAcnooActions` (si migrado).
+- [x] Suite + PHPStan + Pint en verde.
+- [x] Contrato HTTP idéntico verificado por tests.
 
 ## 8. Riesgos
 
