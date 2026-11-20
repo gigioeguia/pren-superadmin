@@ -250,6 +250,7 @@ Implementado en rama `spec/upgrade-laravel-php-fase4-impl`.
 | D4 | `database/seeders/UserSeeder.php` | Se añadió `is_demo => '0'` al segundo usuario para igualar columnas (bug preexistente que rompía `migrate:fresh --seed`). |
 | D5 | `phpstan-baseline.neon` | Regenerado una vez con Larastan 3.x: **910 errores** congelados (vs 709 previos). Regla de un solo uso se mantiene. |
 | D6 | `nunomaduro/larastan` | El paquete está marcado como abandonado en favor de `larastan/larastan`; se mantiene la línea 3.x por compatibilidad con el spec. |
+| D7 | Carbon / Symfony | Se añadieron constraints explícitas (`nesbot/carbon: ^2.72`, `symfony/css-selector`, `symfony/event-dispatcher`, `symfony/string: ^7.0`) para evitar que Composer suba a Carbon 3 / Symfony 8 (PHP 8.4). |
 
 ### Evidencia (DoD)
 
