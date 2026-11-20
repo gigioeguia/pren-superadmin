@@ -17,8 +17,12 @@ class AcnooLateFeeService
         }
 
         // due date: 1th of each rent month
+        if (! $payment->rent_year || ! $payment->rent_month) {
+            return;
+        }
+
         $monthNumber = Carbon::parse($payment->rent_month)->month;
-        $dueDate = Carbon::create($payment->rent_year, $monthNumber, 1);
+        $dueDate = Carbon::create((int) $payment->rent_year, $monthNumber, 1);
         $graceDate = $dueDate->addDays($property->late_fee_after_days);
 
         if (Carbon::now()->greaterThan($graceDate)) {
