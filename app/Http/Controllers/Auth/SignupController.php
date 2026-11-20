@@ -170,14 +170,7 @@ class SignupController extends Controller
 
             if ($plan_price <= 0) {
                 // Calculate duration
-                $duration = 0;
-                if ($plan->duration_type === 'month') {
-                    $duration = $plan->duration * 30;
-                } elseif ($plan->duration_type === 'year') {
-                    $duration = $plan->duration * 365;
-                } elseif ($plan->duration_type === 'day') {
-                    $duration = $plan->duration;
-                }
+                $duration = $plan->durationInDays();
 
                 // Create free subscription directly
                 $subscribe = PlanSubscribe::create([

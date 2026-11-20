@@ -43,6 +43,8 @@ Run a single test: `php artisan test tests/Feature/Auth/WebLoginSmokeTest.php`
 
 `app/Helpers/Helper.php` is loaded globally (no namespace). Available everywhere: `get_option()`, `default_currency()`, `currency_format()`, `convert_money()`, `cache_remember()`, `notify_users()`, `sendNotification()`, `plan_data()`, `languages()`, `demoReset()`. Check here before assuming a function is missing.
 
+Desde Fase 4 / 4.6 la lógica de moneda y OTP vive en clases inyectables del contenedor: `App\Support\Currency` (`format`, `currency`, `default`, `convert`, `convertToDefault`), `App\Support\Payment` (`payable`) y `App\Support\Otp` (`visibilityTimeInSeconds`). Los helpers globales `currency_format`, `currency`, `default_currency`, `convert_money`, `convert_to_default_amount` y `payable` son delegadores delgados a esas clases. Los gateways de `app/Library/` ya no usan `request()`; reciben `bool $expectsJson` en `make_payment($data, $expectsJson = false)`.
+
 ## Service providers
 
 - `WebsiteServiceProvider` registers `app('website')` singleton (first row of `Website` model).

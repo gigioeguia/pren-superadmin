@@ -68,14 +68,7 @@ class AcnooSecurityDepositController extends Controller
 
                 if ($request->payment_type == 'subscription') {
                     $plan = Plan::findOrFail($id);
-                    $duration = 0;
-                    if ($plan->duration_type == 'month') {
-                        $duration = $plan->duration * 30;
-                    } elseif ($plan->duration_type == 'year') {
-                        $duration = $plan->duration * 365;
-                    } elseif ($plan->duration_type == 'day') {
-                        $duration = $plan->duration;
-                    }
+                    $duration = $plan->durationInDays();
 
                     PlanSubscribe::create([
                         'user_id' => auth()->id(),

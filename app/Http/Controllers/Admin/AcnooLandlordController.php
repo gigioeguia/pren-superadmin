@@ -115,14 +115,7 @@ class AcnooLandlordController extends Controller
             // Assign free plan if available
             if ($free_plan) {
                 // in days
-                $duration = 0;
-                if ($free_plan->duration_type == 'month') {
-                    $duration = $free_plan->duration * 30;
-                } elseif ($free_plan->duration_type == 'year') {
-                    $duration = $free_plan->duration * 365;
-                } elseif ($free_plan->duration_type == 'day') {
-                    $duration = $free_plan->duration;
-                }
+                $duration = $free_plan->durationInDays();
 
                 $subscribe = PlanSubscribe::create([
                     'plan_id' => $free_plan->id,
