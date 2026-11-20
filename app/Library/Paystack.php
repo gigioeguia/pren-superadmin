@@ -51,7 +51,7 @@ class Paystack
         abort(404);
     }
 
-    public static function make_payment($array)
+    public static function make_payment($array, bool $expectsJson = false)
     {
         $amount = $array['pay_amount'];
         $gateway = Gateway::findOrFail($array['gateway_id']);
@@ -99,7 +99,7 @@ class Paystack
 
         Session::put('paystack_credentials', $data);
 
-        return request()->expectsJson() ? route('paystack.view') : redirect()->route('paystack.view');
+        return $expectsJson ? route('paystack.view') : redirect()->route('paystack.view');
     }
 
     public function status(Request $request)
@@ -151,7 +151,7 @@ class Paystack
                     Session::forget('paystack_credentials');
                     Session::put('payment_info', $pay_data);
 
-                    return request()->expectsJson() ?
+                    return $request->expectsJson() ?
                         Paystack::redirect_if_payment_success() :
                         redirect(Paystack::redirect_if_payment_success());
                 }
@@ -161,7 +161,7 @@ class Paystack
         }
         Session::forget('paystack_credentials');
 
-        return request()->expectsJson() ?
+        return $request->expectsJson() ?
             Paystack::redirect_if_payment_faild() :
             redirect(Paystack::redirect_if_payment_faild());
     }

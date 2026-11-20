@@ -46,7 +46,7 @@ class Razorpay
         abort(404);
     }
 
-    public static function make_payment($array)
+    public static function make_payment($array, bool $expectsJson = false)
     {
         $amount = $array['pay_amount'];
         $gateway = Gateway::findOrFail($array['gateway_id']);
@@ -99,7 +99,7 @@ class Razorpay
 
         Session::put('razorpay_response', $response);
 
-        return request()->expectsJson() ? route('razorpay.view') : redirect()->route('razorpay.view');
+        return $expectsJson ? route('razorpay.view') : redirect()->route('razorpay.view');
     }
 
     public static function get_response()
@@ -172,7 +172,7 @@ class Razorpay
                 Session::put('payment_info', $data);
                 Session::forget('razorpay_credentials');
 
-                return request()->expectsJson() ?
+                return $request->expectsJson() ?
                     Razorpay::redirect_if_payment_success() :
                     redirect(Razorpay::redirect_if_payment_success());
             } else {
@@ -180,7 +180,7 @@ class Razorpay
                 Session::put('payment_info', $data);
                 Session::forget('razorpay_credentials');
 
-                return request()->expectsJson() ?
+                return $request->expectsJson() ?
                     Razorpay::redirect_if_payment_faild() :
                     redirect(Razorpay::redirect_if_payment_faild());
             }

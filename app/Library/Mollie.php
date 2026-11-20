@@ -38,7 +38,7 @@ class Mollie
         return url('payment/mollie');
     }
 
-    public static function make_payment($array)
+    public static function make_payment($array, bool $expectsJson = false)
     {
         $amount = $array['pay_amount'];
         $gateway = Gateway::findOrFail($array['gateway_id']);
@@ -91,12 +91,12 @@ class Mollie
 
             Session::put('pay_id', $payment->id);
 
-            return request()->expectsJson() ?
+            return $expectsJson ?
                 $payment->getCheckoutUrl() : redirect($payment->getCheckoutUrl());
         } catch (\Exception $e) {
             throw $e;
 
-            return request()->expectsJson() ? Mollie::redirect_if_payment_faild() : redirect(Mollie::redirect_if_payment_faild());
+            return $expectsJson ? Mollie::redirect_if_payment_faild() : redirect(Mollie::redirect_if_payment_faild());
         }
     }
 
@@ -117,7 +117,7 @@ class Mollie
                 Session::forget('pay_id');
                 Session::forget('mollie_credentials');
 
-                return request()->expectsJson() ? Mollie::redirect_if_payment_faild() : redirect(Mollie::redirect_if_payment_faild());
+                return $request->expectsJson() ? Mollie::redirect_if_payment_faild() : redirect(Mollie::redirect_if_payment_faild());
             }
 
             if (is_array($payment) && ($payment['status'] ?? null) === 'paid') {
@@ -135,13 +135,13 @@ class Mollie
                 Session::forget('mollie_credentials');
                 Session::put('payment_info', $data);
 
-                return request()->expectsJson() ? Mollie::redirect_if_payment_success() : redirect(Mollie::redirect_if_payment_success());
+                return $request->expectsJson() ? Mollie::redirect_if_payment_success() : redirect(Mollie::redirect_if_payment_success());
             }
 
             Session::forget('pay_id');
             Session::forget('mollie_credentials');
 
-            return request()->expectsJson() ? Mollie::redirect_if_payment_faild() : redirect(Mollie::redirect_if_payment_faild());
+            return $request->expectsJson() ? Mollie::redirect_if_payment_faild() : redirect(Mollie::redirect_if_payment_faild());
         }
         abort(404);
     }

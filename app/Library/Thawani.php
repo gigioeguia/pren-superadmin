@@ -40,7 +40,7 @@ class Thawani
         return url('payment/thawani');
     }
 
-    public static function make_payment($array)
+    public static function make_payment($array, bool $expectsJson = false)
     {
         $amount = $array['pay_amount'];
         $gateway = Gateway::findOrFail($array['gateway_id']);
@@ -130,7 +130,7 @@ class Thawani
 
         Session::put('thawani_credentials', $data);
 
-        return request()->expectsJson() ?
+        return $expectsJson ?
             $url :
             redirect($url);
     }
@@ -166,7 +166,7 @@ class Thawani
             Session::forget('thawani_credentials');
             Session::put('payment_info', $data);
 
-            return request()->expectsJson() ?
+            return $request->expectsJson() ?
                 thawani::redirect_if_payment_success() :
                 redirect(thawani::redirect_if_payment_success());
         } else {
@@ -174,7 +174,7 @@ class Thawani
             Session::put('payment_info', $data);
             Session::forget('thawani_credentials');
 
-            return request()->expectsJson() ?
+            return $request->expectsJson() ?
                 thawani::redirect_if_payment_faild() :
                 redirect(thawani::redirect_if_payment_faild());
         }

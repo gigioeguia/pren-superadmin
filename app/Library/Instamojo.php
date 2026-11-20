@@ -4,6 +4,7 @@ namespace App\Library;
 
 use App\Models\Gateway;
 use App\Support\ErrorMessage;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 
@@ -36,7 +37,7 @@ class Instamojo
         return url('payment/instamojo');
     }
 
-    public static function make_payment($array)
+    public static function make_payment($array, bool $expectsJson = false)
     {
         $amount = $array['pay_amount'];
         $gateway = Gateway::findOrFail($array['gateway_id']);
@@ -133,12 +134,12 @@ class Instamojo
         }
     }
 
-    public function status()
+    public function status(Request $request)
     {
         if (! Session::has('instamojo_credentials')) {
             return abort(404);
         }
-        $response = Request()->all();
+        $response = $request->all();
         $payment_id = $response['payment_id'] ?? null;
         $info = Session::get('instamojo_credentials');
 

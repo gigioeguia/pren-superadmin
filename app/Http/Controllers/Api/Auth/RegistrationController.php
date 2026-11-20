@@ -8,6 +8,7 @@ use App\Models\Plan;
 use App\Models\PlanSubscribe;
 use App\Models\User;
 use App\Support\ErrorMessage;
+use App\Support\Otp;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +20,8 @@ use Illuminate\Validation\Rules\Password;
 
 class RegistrationController extends Controller
 {
+    public function __construct(protected Otp $otp) {}
+
     public function maanRegistration(Request $request): JsonResponse
     {
         $request->validate([
@@ -56,7 +59,7 @@ class RegistrationController extends Controller
 
             if ($otpStatus === 'on') {
 
-                $expireSeconds = $this->getOtpTimeInSeconds();
+                $expireSeconds = $this->otp->visibilityTimeInSeconds();
 
                 $expire = now()->addSeconds($expireSeconds);
 
@@ -185,28 +188,6 @@ class RegistrationController extends Controller
                 'error' => __(ErrorMessage::GENERIC),
             ], 403);
         }
-    }
-
-    public function getOtpTimeInSeconds()
-    {
-        $otpSettings = get_option('email-varification') ?? [];
-
-        $otpStatus = $otpSettings['otp_status'] ?? 'off';
-
-        if ($otpStatus === 'off') {
-            return 0;
-        }
-
-        $time = $otpSettings['otp_expiration_time'] ?? null;
-        $durationType = $otpSettings['otp_duration_type'] ?? 'minute';
-
-        $defaultFromEnv = (int) (config('auth.otp_visibility_time') ?? 3);
-
-        if (empty($time)) {
-            return $defaultFromEnv * 60;
-        }
-
-        return $durationType === 'minute' ? $time * 60 : (int) $time;
     }
 
     public function submitOtp(Request $request)

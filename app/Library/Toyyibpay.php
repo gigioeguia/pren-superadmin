@@ -3,6 +3,7 @@
 namespace App\Library;
 
 use App\Models\Gateway;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -38,7 +39,7 @@ class Toyyibpay
         return url('payment/toyyibpay');
     }
 
-    public static function make_payment($array)
+    public static function make_payment($array, bool $expectsJson = false)
     {
         $amount = $array['pay_amount'];
         $gateway = Gateway::findOrFail($array['gateway_id']);
@@ -119,20 +120,20 @@ class Toyyibpay
             $billcode = $response[0]['BillCode'];
             $url = $url.$billcode;
 
-            return request()->expectsJson() ? $url : redirect($url);
+            return $expectsJson ? $url : redirect($url);
         } catch (Throwable $th) {
-            return request()->expectsJson() ?
+            return $expectsJson ?
                 Toyyibpay::redirect_if_payment_faild() :
                 redirect(Toyyibpay::redirect_if_payment_faild());
         }
     }
 
-    public function status()
+    public function status(Request $request)
     {
         if (! Session::has('toyyibpay_credentials')) {
             return abort(404);
         }
-        $response = Request()->all();
+        $response = $request->all();
         $payment_id = $response['billcode'] ?? null;
         $info = Session::get('toyyibpay_credentials');
 
@@ -163,7 +164,7 @@ class Toyyibpay
                 Session::forget('toyyibpay_credentials');
                 Session::put('payment_info', $data);
 
-                return request()->expectsJson() ?
+                return $request->expectsJson() ?
                     Toyyibpay::redirect_if_payment_success() :
                     redirect(Toyyibpay::redirect_if_payment_success());
             }
@@ -175,7 +176,7 @@ class Toyyibpay
         Session::put('payment_info', $data);
         Session::forget('toyyibpay_credentials');
 
-        return request()->expectsJson() ?
+        return $request->expectsJson() ?
             Toyyibpay::redirect_if_payment_faild() :
             redirect(Toyyibpay::redirect_if_payment_faild());
     }
