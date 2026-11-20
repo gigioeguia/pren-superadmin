@@ -1,7 +1,7 @@
 ---
 id: spec-upgrade-laravel-php-fase4
 titulo: "Upgrade Laravel 10 → 11 y PHP 8.2 → 8.3 (Fase 4 / 4.1)"
-estado: Borrador
+estado: Aprobado
 fecha: 2026-11-19
 origen: .analisis/plan/plan-accion.md (Fase 4 / 4.1) — DT-C2
 cobertura: Upgrade de framework (10.50 → 11.x) y runtime (8.2 → 8.3) preservando la estructura Laravel 10; suite smoke (59 casos) + PHPStan nivel 5 (baseline regenerado) + Pint + build frontend en verde sobre PHP 8.3
