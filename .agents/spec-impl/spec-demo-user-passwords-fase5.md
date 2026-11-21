@@ -1,7 +1,7 @@
 ---
 id: spec-demo-user-passwords-fase5
 titulo: "Credenciales demo no predecibles: config-driven con fallback aleatorio (Fase 5 / 5.2)"
-estado: Borrador
+estado: Aprobado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.2) — .analisis/seguridad.md (Seg-19, parte UserSeeder) — .agents/spec-impl/spec-password-policy-fase3.md (policy 3.2)
 cobertura: Migración de las 4 credenciales demo (superadmin/admin/landlord/tenant, 3 fuentes reales: PermissionSeeder + UserFactory x2) a config('demo.user_password') con fallback aleatoria impresa al crear; clase App\Support\DemoCredentials; tests U1-U2/F1-F3; README/AGENTS.md/.env.example commiteados; cierre documental local (plan-accion 5.2, Seg-19)
