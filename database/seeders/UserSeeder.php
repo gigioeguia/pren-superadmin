@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\UserDetail;
+use App\Support\DemoCredentials;
 use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
@@ -13,11 +14,19 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $landlord = User::whereEmail('landlord@acnoo.com')->first()
-            ?? User::factory()->demoLandlord()->create();
+        $landlord = User::whereEmail('landlord@acnoo.com')->first();
 
-        $tenant = User::whereEmail('tenant@acnoo.com')->first()
-            ?? User::factory()->demoTenant()->create(['landlord_id' => $landlord->id]);
+        if (! $landlord) {
+            $landlord = User::factory()->demoLandlord()->create();
+            $this->announceGeneratedPassword('landlord@acnoo.com');
+        }
+
+        $tenant = User::whereEmail('tenant@acnoo.com')->first();
+
+        if (! $tenant) {
+            $tenant = User::factory()->demoTenant()->create(['landlord_id' => $landlord->id]);
+            $this->announceGeneratedPassword('tenant@acnoo.com');
+        }
 
         UserDetail::updateOrCreate(['user_id' => $landlord->id], [
             'mykad' => [
@@ -89,5 +98,16 @@ class UserSeeder extends Seeder
             'created_at' => '2025-09-23 10:00:13',
             'updated_at' => '2025-09-23 10:00:13',
         ]);
+    }
+
+    /**
+     * Imprime el password demo solo si la cuenta se acaba de crear y el
+     * valor fue generado (config vacía); re-seed silencioso (Fase 5 / 5.2).
+     */
+    private function announceGeneratedPassword(string $email): void
+    {
+        if ($generated = DemoCredentials::generatedFor($email)) {
+            $this->command?->info("[demo] {$email} / {$generated} (password aleatorio: no se vuelve a mostrar)");
+        }
     }
 }
