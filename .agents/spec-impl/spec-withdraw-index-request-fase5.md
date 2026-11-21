@@ -1,10 +1,10 @@
 ---
 id: spec-withdraw-index-request-fase5
 titulo: "Cierre Seg-20: `AcnooWithdrawController::index` ya corregido en 4.4 — test de regresión HTTP y sellado documental (Fase 5 / 5.3)"
-estado: Borrador
+estado: Implementado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.3) — .analisis/seguridad.md (Seg-20) — .agents/spec-impl/spec-inyectar-request-fase4.md (absorción)
-cobertura: Cierre del bug Seg-20 (`index` usaba `$request->per_page` sin inyectar `Request` → error en runtime): documenta la absorción por Fase 4 / 4.4 (commit ea07c87), añade la anti-regresión que 4.4 dejó como "Inspección" (test HTTP F1–F3: per_page, rango de fechas, scoping por user_id), sella los documentos que aún listan el hallazgo como vivo (seguridad.md #20, plan-accion 5.3, índice .agents/README.md) y actualiza los conteos de suite 254→257 en README.md, tests/README.md y AGENTS.md
+cobertura: Cierre del bug Seg-20 (`index` usaba `$request->per_page` sin inyectar `Request` → error en runtime): documenta la absorción por Fase 4 / 4.4 (commit ea07c87), añade la anti-regresión que 4.4 dejó como "Inspección" (test HTTP F1–F3: per_page, rango de fechas, scoping por user_id), sella los documentos que aún listan el hallazgo como vivo (seguridad.md #20, plan-accion 5.3, índice .agents/README.md) y actualiza los conteos de suite 254→262 en README.md, tests/README.md y AGENTS.md
 ---
 
 # Spec — Cierre Seg-20: `AcnooWithdrawController::index` ya corregido en 4.4 — test de regresión HTTP y sellado documental (Fase 5 / 5.3)
@@ -34,7 +34,7 @@ Cerrar el ítem 5.3 (Seg-20) sin re-implementar lo ya hecho: el fix (`Api\AcnooW
   - `.analisis/seguridad.md` — #20 con anotación inline "cerrado (2026-11-21…)" (patrón #19, l.131).
   - `.analisis/plan/plan-accion.md` — fila 5.3 con referencia a este spec (patrón filas 5.1/5.2) + línea nueva en "Métricas de éxito" + nota del typo `'meassage'` en fila 5.10.
   - `.agents/README.md` — índice: sección fase5 (3 specs; hoy los 2 existentes no figuran).
-- **Conteos de suite**: `README.md` (raíz, l.55 "254 tests"), `tests/README.md` (nota l.10 + snapshot l.104) y `AGENTS.md` (l.15) — 254 → 257 casos. `tests/README.md` además: línea `Withdraw/` en el árbol de estructura y mini-sección "## Withdraw (Fase 5 / 5.3)" con F1–F3 (patrón de las secciones Throttle/Permisos admin).
+- **Conteos de suite**: `README.md` (raíz, l.55 "254 tests"), `tests/README.md` (nota l.10 + snapshot l.104) y `AGENTS.md` (l.15) — 254 → **262** casos (base real 259 + F1–F3; los conteos seguían en 254 por reconciliación pendiente de 5.2 — riesgo §8 materializado). `tests/README.md` además: línea `Withdraw/` en el árbol de estructura y mini-sección "## Withdraw (Fase 5 / 5.3)" con F1–F3 (patrón de las secciones Throttle/Permisos admin).
 
 ### OUT
 
@@ -68,10 +68,10 @@ Cerrar el ítem 5.3 (Seg-20) sin re-implementar lo ya hecho: el fix (`Api\AcnooW
 tests/Feature/Withdraw/WithdrawIndexSmokeTest.php   # NUEVO: F1–F3
 
 .agents/README.md                                    # MODIFICADO: índice — sección fase5 (3 specs), conteo 45 → 48 (commiteado con este spec)
-README.md                                            # MODIFICADO: "suite completa (254 tests)" → 257 (l.55)
-tests/README.md                                      # MODIFICADO: conteos l.10/l.104 → 257; línea Withdraw/ en el árbol
+README.md                                            # MODIFICADO: "suite completa (254 tests)" → 262 (l.55)
+tests/README.md                                      # MODIFICADO: conteos l.10/l.104 → 262; línea Withdraw/ en el árbol
                                                      #              + mini-sección "## Withdraw (Fase 5 / 5.3)" con F1–F3
-AGENTS.md                                            # MODIFICADO: "suite completa (254 casos)" → 257 (l.15)
+AGENTS.md                                            # MODIFICADO: "suite completa (254 casos)" → 262 (l.15)
 
 .analisis/ (gitignored — edición local, sin commit)
   seguridad.md                                      # MODIFICADO: #20 → cerrado
@@ -90,7 +90,7 @@ Sin cambios en `app/`, `routes/`, `database/`.
 - **Datos:** `Withdraw::create([...])` directo (no existe `WithdrawFactory`); fechas de F2 por asignación directa (`$withdraw->created_at = Carbon::parse(...); $withdraw->save()`) porque `created_at` no es fillable.
 - **Grupos:** `@group smoke` en la clase; `@group security` además en F3 (scoping por `user_id`).
 - **No asertar `'meassage'`** (typo diferido, OUT): el test aserta status + `data` (shape/conteo), nunca la key de mensaje.
-- **Estados del spec:** Borrador → Revisado → Aprobado (la conversación de grilling hace de revisión/decisión) → Implementado con DoD tachado **dentro del mismo PR** (Q8a). Rama única `spec/withdraw-index-request-fase5-impl`; commits separados `spec(agents)` (spec + índice) y `test(withdraw)` (test + conteos en README raíz, tests/README y AGENTS.md).
+- **Estados del spec:** Borrador → Revisado → Aprobado (la conversación de grilling hace de revisión/decisión) → Implementado con DoD tachado. **Desviación vs Q8a** ("DoD tachado dentro del mismo PR"): el spec se mergeó temprano vía PR #48 (rama `-impl`, aún en Borrador) desde fuera de la sesión, por lo que la implementación aterriza en la rama de seguimiento `spec/withdraw-index-request-fase5-revision`; commits separados `spec(agents)` (estados + cierre) y `test(withdraw)` (test + conteos en README raíz, tests/README y AGENTS.md).
 
 ---
 
@@ -114,15 +114,15 @@ Ninguno: el typo `'meassage'` no se caracteriza — diferido (OUT, candidato 5.1
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] F1–F3 implementados y en verde: `php artisan test tests/Feature/Withdraw/WithdrawIndexSmokeTest.php`.
-- [ ] Firma `index(Request $request)` intacta en `Api\AcnooWithdrawController` (inspección).
-- [ ] Suite completa en verde: 257 casos (254 + F1–F3).
-- [ ] `composer analyse` sin nuevas entradas vs baseline; `composer lint` limpio.
-- [ ] `seguridad.md` #20 anotado como cerrado (patrón inline de #19).
-- [ ] `plan-accion.md`: fila 5.3 referenciando este spec + línea en "Métricas de éxito" + nota del typo en fila 5.10.
-- [ ] `.agents/README.md` índice con sección fase5 (3 specs) y conteo 48.
-- [ ] `README.md` (raíz), `tests/README.md` y `AGENTS.md` con conteo 257; `tests/README.md` con línea `Withdraw/` en el árbol y mini-sección F1–F3.
-- [ ] Rama `spec/withdraw-index-request-fase5-impl` + PR review (squash merge, 1 aprobación + CI); sin push a `main`.
+- [x] F1–F3 implementados y en verde: corrida focal 3 passed (8 assertions); suite completa 262 passed (814 assertions).
+- [x] Firma `index(Request $request)` intacta en `Api\AcnooWithdrawController` (inspección; en `main` desde `ea07c87`).
+- [x] Suite completa en verde: **262 casos** (259 base real + F1–F3; los conteos documentales decían 254 porque los 5 tests del spec 5.2 / PR #47 nunca se reconciliaron — riesgo §8 materializado; conteos fijados con la salida real de `php artisan test`).
+- [x] `composer analyse` sin nuevas entradas vs baseline ([OK] 293/293); `composer lint` limpio (passed).
+- [x] `seguridad.md` #20 anotado como cerrado (patrón inline de #19; edición local, gitignored).
+- [x] `plan-accion.md`: fila 5.3 "Cerrado" + línea en "Métricas de éxito" + nota del typo en fila 5.10 (edición local, gitignored).
+- [x] `.agents/README.md` índice con sección fase5 (3 specs) y conteo 48 (PR #48, mergeado).
+- [x] `README.md` (raíz), `tests/README.md` y `AGENTS.md` con conteo 262; `tests/README.md` con línea `Withdraw/` en el árbol y mini-sección F1–F3.
+- [x] Rama `spec/withdraw-index-request-fase5-revision` (la `-impl` original se mergeó temprano vía PR #48 con el spec en Borrador — desviación documentada en §5) + PR de implementación; sin push a `main` (squash + 1 aprobación + CI al merge).
 
 ---
 
@@ -132,7 +132,7 @@ Ninguno: el typo `'meassage'` no se caracteriza — diferido (OUT, candidato 5.1
 |--------|---------|------------|
 | `created_at` asignado manualmente podría sobreescribirse (hook `created` del modelo re-save) | Bajo | El hook `booted()` solo fija `invoice_no` al crear; asignar la fecha después del `create()` |
 | `per_page` leído vía magic `__get` (`$request->per_page`) y no `input()` | Bajo | Comportamiento vigente; F1 lo fija como contrato observable |
-| Conteos 254/257 se desincronizan si se mergean otros tests antes de este PR | Bajo | Recalcular con la salida real de `php artisan test` al cerrar el PR |
+| Conteos se desincronizan si se mergean otros tests antes de este PR | Bajo | **Materializado (2026-11-21):** base real 259 (5 tests del spec 5.2, PR #47, nunca reconciliados) → conteos fijados en 262 con la salida real de `php artisan test` |
 | Convención "no spec para cambios triviales" (spec-conventions) aplicada retrospectivamente | Bajo | Adjudicada en Q8 del grilling: gana el precedente Fase 5 (trazabilidad por ítem de plan); documentada en §5 |
 
 **Pendiente de decisión:** ninguno (Q1–Q9 del grilling 2026-11-21).
@@ -169,7 +169,7 @@ Ninguno: el typo `'meassage'` no se caracteriza — diferido (OUT, candidato 5.1
    $withdraw->created_at = Carbon::parse('2026-11-10');
    $withdraw->save();
    ```
-2. **F1:** `assertJsonCount(5, 'data')` — `paginate(5)` con 7 filas propias.
+2. **F1–F3 — rutas de aserción:** el controlador devuelve el paginador completo bajo la key `data`, así que los items viven en `data.data`: F1 usa `assertJsonCount(5, 'data.data')` + `assertJsonPath('data.per_page', 5)` (`paginate(5)` con 7 filas propias); F2/F3 cuentan sobre `'data.data'` y F3 además `assertJsonPath('data.data.0.id', $withdrawA->id)`.
 3. **Auth:** `Sanctum::actingAs($landlord, ['*'])` (rutas bajo `auth:sanctum`, sin middleware de rol — el scoping lo hace el controlador con `auth()->id()`).
 4. **Verificación rápida:**
    ```bash
