@@ -160,15 +160,16 @@ class PermissionSeeder extends Seeder
             $role->permissions()->sync($permissions);
 
             $this->command->info("Creating '{$key}' user");
-            // Create default user for each role
+            // Create default user for each role (idempotent by email, spec 4.10)
             $generated_role = str($key)->remove(' ')->lower();
-            $user = User::create([
+            $user = User::firstOrCreate([
+                'email' => $generated_role.'@acnoo.com',
+            ], [
                 'role' => $generated_role,
                 'name' => ucwords(str_replace('_', ' ', $key)),
                 'password' => bcrypt($generated_role),
-                'email' => $generated_role.'@acnoo.com',
-                'plan_subscribe_id' => $generated_role == 'landlord' ? 1 : null,
-                'will_expire' => $generated_role == 'landlord' ? now()->addDays(30) : null,
+                'plan_subscribe_id' => null,
+                'will_expire' => null,
                 'email_verified_at' => now(),
             ]);
 

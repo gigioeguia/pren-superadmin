@@ -141,11 +141,16 @@ function demoReset(): bool
         return false;
     }
 
-    DB::table('properties')->where('landlord_id', 3)->delete();
-    DB::table('expense_categories')->where('landlord_id', 3)->delete();
-    DB::table('income_categories')->where('landlord_id', 3)->delete();
-    DB::table('expenses')->where('landlord_id', 3)->delete();
-    DB::table('incomes')->where('landlord_id', 3)->delete();
+    // El landlord demo se resuelve por is_demo, nunca por id fijo (spec 4.10 / D4).
+    $demoLandlordIds = User::demoLandlords()->pluck('id');
+
+    if ($demoLandlordIds->isNotEmpty()) {
+        DB::table('properties')->whereIn('landlord_id', $demoLandlordIds)->delete();
+        DB::table('expense_categories')->whereIn('landlord_id', $demoLandlordIds)->delete();
+        DB::table('income_categories')->whereIn('landlord_id', $demoLandlordIds)->delete();
+        DB::table('expenses')->whereIn('landlord_id', $demoLandlordIds)->delete();
+        DB::table('incomes')->whereIn('landlord_id', $demoLandlordIds)->delete();
+    }
 
     Artisan::call('db:seed', ['--class' => 'DemoSeeder']);
 

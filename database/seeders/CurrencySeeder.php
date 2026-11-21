@@ -168,6 +168,8 @@ class CurrencySeeder extends Seeder
             ['name' => 'Zimbabwe Gold', 'country_name' => 'Zimbabwe', 'code' => 'ZWG', 'rate' => 25.333, 'symbol' => 'ZWL', 'position' => 'right', 'status' => 1, 'is_default' => 0],
         ];
 
-        Currency::insert($currencies);
+        foreach ($currencies as $currency) {
+            Currency::firstOrCreate(['code' => $currency['code']], $currency);
+        }
     }
 }

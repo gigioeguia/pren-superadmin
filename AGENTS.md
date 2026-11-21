@@ -71,7 +71,9 @@ Desde Fase 4 / 4.6 la lógica de moneda y OTP vive en clases inyectables del con
 
 ## Seeders
 
-`DatabaseSeeder` calls 24 seeders **in order**; `PermissionSeeder` must run before role-dependent ones. `UserSeeder` inserts demo users with known passwords (see `comand.txt` at repo root, which is tracked in git — do not commit real credentials there).
+`DatabaseSeeder` calls 24 seeders **in order**; `PermissionSeeder` must run before role-dependent ones. Demo users have known passwords (`superadmin@acnoo.com`/`superadmin`, `admin@acnoo.com`/`admin`, `landlord@acnoo.com`/`landlord`, `tenant@acnoo.com`/`tenant`) — non-predictable passwords are pending (Fase 5 / 5.2).
+
+**Convención (Fase 4 / 4.10, DT-M9):** seeders idempotentes por clave natural (`firstOrCreate`: `email`/`code`/`name`/`key`/`slug`); re-ejecutar `db:seed` sobre una DB ya poblada no duplica. Prohibido reintroducir IDs numéricos literales (`landlord_id => 3`), rutas a archivos no trackeados (`uploads/...`) o `env()` en `database/seeders/` — lo vigila el arch-test `tests/Unit/Seeders/SeedersArchTest.php`. El dataset demo vive en `database/seeders/DemoDataset.php` y lo siembra el trait `Concerns/SeedsDemoData` (consumido por Property/Income/Expense/DemoSeeder; PropertyDetail/Unit viajan bajo guard seed-if-absent porque `puid` se auto-genera en un hook del modelo). El landlord demo se resuelve por `User::demoLandlords()` (flag `is_demo`), nunca por id — `demoReset()` incluida. `FedaPayGatewaySeeder` fue eliminado (huérfano con credencial sandbox embebida); la key quedó en git history — rotarla si algún entorno la usó.
 
 ## Gotchas
 

@@ -18,6 +18,8 @@ class ClientSeeder extends Seeder
             ['title' => 'Green House', 'image' => 'uploads/25/10-999/1760178965.svg', 'status' => '1', 'created_at' => '2025-10-11 16:36:05', 'updated_at' => '2025-10-11 16:36:05'],
         ];
 
-        Client::insert($clients);
+        foreach ($clients as $client) {
+            Client::firstOrCreate(['title' => $client['title']], $client);
+        }
     }
 }

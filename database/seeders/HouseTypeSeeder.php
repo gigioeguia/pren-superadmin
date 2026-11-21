@@ -21,6 +21,8 @@ class HouseTypeSeeder extends Seeder
             ['name' => 'Semi-Detached House', 'status' => '1', 'created_at' => '2024-12-11 08:57:44', 'updated_at' => '2024-12-11 08:57:44'],
         ];
 
-        HouseType::insert($house_types);
+        foreach ($house_types as $houseType) {
+            HouseType::firstOrCreate(['name' => $houseType['name']], $houseType);
+        }
     }
 }

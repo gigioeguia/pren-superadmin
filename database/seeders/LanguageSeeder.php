@@ -113,6 +113,8 @@ class LanguageSeeder extends Seeder
             ['name' => 'Honduras(Spanish)', 'icon' => 'flags/hn.svg', 'code' => 'hn-es', 'order' => 101, 'is_default' => 0, 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
         ];
 
-        Language::insert($languages);
+        foreach ($languages as $language) {
+            Language::firstOrCreate(['code' => $language['code']], $language);
+        }
     }
 }

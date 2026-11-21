@@ -19,6 +19,8 @@ class FaqSeeder extends Seeder
             ['question' => 'Is the platform mobile-friendly?', 'answer' => 'Yes — the platform is fully responsive and mobile-friendly. You can access all features, view reports, manage tenants, and track rent payments directly from your smartphone or tablet, giving you full control over your properties anytime, anywhere.', 'status' => '1', 'created_at' => '2025-06-30 13:02:03', 'updated_at' => '2025-06-30 13:02:03'],
         ];
 
-        Faq::insert($faqs);
+        foreach ($faqs as $faq) {
+            Faq::firstOrCreate(['question' => $faq['question']], $faq);
+        }
     }
 }
