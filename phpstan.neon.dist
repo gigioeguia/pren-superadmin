@@ -6,6 +6,6 @@ parameters:
     level: 5
     paths:
         - app
-    # El analisis targetea PHP 8.2 (contrato de composer.json), aunque el
+    # El analisis targetea PHP 8.3 (contrato de composer.json), aunque el
     # CLI local/CI sea superior. Evita falsos resultados por version de runtime.
     phpVersion: 80300
