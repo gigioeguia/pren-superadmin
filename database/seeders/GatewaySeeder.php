@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Currency;
 use App\Models\Gateway;
 use Illuminate\Database\Seeder;
 
@@ -12,18 +13,18 @@ class GatewaySeeder extends Seeder
      */
     public function run(): void
     {
+        $currencyIds = Currency::whereIn('code', ['USD', 'XOF', 'NGN', 'INR', 'MYR', 'OMR', 'SAR'])
+            ->pluck('id', 'code');
+
         $gateways = [
             [
                 'name' => 'Stripe',
-                'currency_id' => '4',
+                'currency_id' => $currencyIds['USD'],
                 'mode' => 'Sandbox',
                 'status' => '1',
                 'charge' => '2',
                 'image' => null,
-                'data' => json_encode([
-                    'stripe_key' => env('STRIPE_KEY', 'pk_test_default'),
-                    'stripe_secret' => env('STRIPE_SECRET', 'sk_test_default'),
-                ]),
+                'data' => config('gateways.credentials.stripe'),
                 'manual_data' => null,
                 'is_manual' => '0',
                 'accept_img' => '0',
@@ -38,14 +39,12 @@ class GatewaySeeder extends Seeder
 
             [
                 'name' => 'Mollie',
-                'currency_id' => '4',
+                'currency_id' => $currencyIds['USD'],
                 'mode' => 'Sandbox',
                 'status' => '1',
                 'charge' => '2',
                 'image' => null,
-                'data' => json_encode([
-                    'api_key' => env('MOLLIE_API_KEY', 'test_default'),
-                ]),
+                'data' => config('gateways.credentials.mollie'),
                 'manual_data' => null,
                 'is_manual' => '0',
                 'accept_img' => '0',
@@ -60,14 +59,12 @@ class GatewaySeeder extends Seeder
 
             [
                 'name' => 'FedaPay',
-                'currency_id' => 117,
+                'currency_id' => $currencyIds['XOF'],
                 'mode' => 'Sandbox',
                 'status' => '1',
                 'charge' => '2',
                 'image' => null,
-                'data' => json_encode([
-                    'api_key' => env('FEDAPAY_API_KEY', 'sk_sandbox_default'),
-                ]),
+                'data' => config('gateways.credentials.fedapay'),
                 'manual_data' => null,
                 'is_manual' => '0',
                 'accept_img' => '0',
@@ -82,15 +79,12 @@ class GatewaySeeder extends Seeder
 
             [
                 'name' => 'Paystack',
-                'currency_id' => '98',
+                'currency_id' => $currencyIds['NGN'],
                 'mode' => 'Sandbox',
                 'status' => '1',
                 'charge' => '2',
                 'image' => null,
-                'data' => json_encode([
-                    'public_key' => env('PAYSTACK_PUBLIC_KEY', 'pk_test_default'),
-                    'secret_key' => env('PAYSTACK_SECRET_KEY', 'sk_test_default'),
-                ]),
+                'data' => config('gateways.credentials.paystack'),
                 'manual_data' => null,
                 'is_manual' => '0',
                 'accept_img' => '0',
@@ -105,15 +99,12 @@ class GatewaySeeder extends Seeder
 
             [
                 'name' => 'Razorpay',
-                'currency_id' => '60',
+                'currency_id' => $currencyIds['INR'],
                 'mode' => 'Sandbox',
                 'status' => '1',
                 'charge' => '2',
                 'image' => null,
-                'data' => json_encode([
-                    'key_id' => env('RAZORPAY_KEY_ID', 'rzp_test_default'),
-                    'key_secret' => env('RAZORPAY_KEY_SECRET', 'default_secret'),
-                ]),
+                'data' => config('gateways.credentials.razorpay'),
                 'manual_data' => null,
                 'is_manual' => '0',
                 'accept_img' => '0',
@@ -128,15 +119,12 @@ class GatewaySeeder extends Seeder
 
             [
                 'name' => 'Instamojo',
-                'currency_id' => '60',
+                'currency_id' => $currencyIds['INR'],
                 'mode' => 'Sandbox',
                 'status' => '1',
                 'charge' => '2',
                 'image' => null,
-                'data' => json_encode([
-                    'x_api_key' => env('INSTAMOJO_API_KEY', 'test_default'),
-                    'x_auth_token' => env('INSTAMOJO_AUTH_TOKEN', 'test_default'),
-                ]),
+                'data' => config('gateways.credentials.instamojo'),
                 'manual_data' => null,
                 'is_manual' => '0',
                 'accept_img' => '0',
@@ -151,15 +139,12 @@ class GatewaySeeder extends Seeder
 
             [
                 'name' => 'Toyyibpay',
-                'currency_id' => '82',
+                'currency_id' => $currencyIds['MYR'],
                 'mode' => 'Sandbox',
                 'status' => '1',
                 'charge' => '2',
                 'image' => null,
-                'data' => json_encode([
-                    'user_secret_key' => env('TOYYIBPAY_SECRET_KEY', 'default_key'),
-                    'cateogry_code' => env('TOYYIBPAY_CATEGORY_CODE', 'default_code'),
-                ]),
+                'data' => config('gateways.credentials.toyyibpay'),
                 'manual_data' => null,
                 'is_manual' => '0',
                 'accept_img' => '0',
@@ -174,17 +159,12 @@ class GatewaySeeder extends Seeder
 
             [
                 'name' => 'Flutterwave',
-                'currency_id' => '98',
+                'currency_id' => $currencyIds['NGN'],
                 'mode' => 'Sandbox',
                 'status' => '1',
                 'charge' => '2',
                 'image' => null,
-                'data' => json_encode([
-                    'public_key' => env('FLUTTERWAVE_PUBLIC_KEY', 'FLWPUBK_TEST-default'),
-                    'secret_key' => env('FLUTTERWAVE_SECRET_KEY', 'FLWSECK_TEST-default'),
-                    'encryption_key' => env('FLUTTERWAVE_ENCRYPTION_KEY', 'FLWSECK_TEST-default'),
-                    'payment_options' => 'card',
-                ]),
+                'data' => config('gateways.credentials.flutterwave') + ['payment_options' => 'card'],
                 'manual_data' => null,
                 'is_manual' => '0',
                 'accept_img' => '0',
@@ -199,15 +179,12 @@ class GatewaySeeder extends Seeder
 
             [
                 'name' => 'Thawani',
-                'currency_id' => '101',
+                'currency_id' => $currencyIds['OMR'],
                 'mode' => 'Sandbox',
                 'status' => '1',
                 'charge' => '2',
                 'image' => null,
-                'data' => json_encode([
-                    'secret_key' => env('THAWANI_SECRET_KEY', 'default_key'),
-                    'publishable_key' => env('THAWANI_PUBLISHABLE_KEY', 'default_key'),
-                ]),
+                'data' => config('gateways.credentials.thawani'),
                 'manual_data' => null,
                 'is_manual' => '0',
                 'accept_img' => '0',
@@ -222,15 +199,12 @@ class GatewaySeeder extends Seeder
 
             [
                 'name' => 'Tap Payment',
-                'currency_id' => 116,
+                'currency_id' => $currencyIds['SAR'],
                 'mode' => 'Sandbox',
                 'status' => '1',
                 'charge' => 2,
                 'image' => null,
-                'data' => json_encode([
-                    'secret_key' => env('TAP_SECRET_KEY', 'sk_test_default'),
-                    'currency' => 'SAR',
-                ]),
+                'data' => config('gateways.credentials.tap') + ['currency' => 'SAR'],
                 'manual_data' => null,
                 'is_manual' => '0',
                 'accept_img' => '0',
@@ -245,15 +219,12 @@ class GatewaySeeder extends Seeder
 
             [
                 'name' => 'Billplz',
-                'currency_id' => '82',
+                'currency_id' => $currencyIds['MYR'],
                 'mode' => 'Sandbox',
                 'status' => '1',
                 'charge' => 2,
                 'image' => null,
-                'data' => json_encode([
-                    'api_key' => env('BILLPLZ_API_KEY', 'default_key'),
-                    'collection_id' => env('BILLPLZ_COLLECTION_ID', 'default_id'),
-                ]),
+                'data' => config('gateways.credentials.billplz'),
                 'manual_data' => null,
                 'is_manual' => '0',
                 'accept_img' => '0',
@@ -268,13 +239,13 @@ class GatewaySeeder extends Seeder
 
             [
                 'name' => 'Offline',
-                'currency_id' => '4',
+                'currency_id' => $currencyIds['USD'],
                 'mode' => 'Sandbox',
                 'status' => '1',
                 'charge' => '0',
                 'image' => null,
-                'data' => '',
-                'manual_data' => '{"bank_info":{"bank_name":"May Bank","acc_holder":"FIRDAUS GROUP SDN BHD","acc_number":"562548543851"},"label":["Payment Note"],"is_required":["0"]}',
+                'data' => [],
+                'manual_data' => ['bank_info' => ['bank_name' => 'May Bank', 'acc_holder' => 'FIRDAUS GROUP SDN BHD', 'acc_number' => '562548543851'], 'label' => ['Payment Note'], 'is_required' => ['0']],
                 'is_manual' => '1',
                 'accept_img' => '1',
                 'namespace' => null,
@@ -287,6 +258,8 @@ class GatewaySeeder extends Seeder
             ],
         ];
 
-        Gateway::insert($gateways);
+        foreach ($gateways as $gateway) {
+            Gateway::firstOrCreate(['name' => $gateway['name']], $gateway);
+        }
     }
 }

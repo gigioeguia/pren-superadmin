@@ -2,40 +2,31 @@
 
 namespace Database\Seeders;
 
-use App\Models\Income;
-use App\Models\IncomeCategory;
+use App\Models\User;
+use Database\Seeders\Concerns\SeedsDemoData;
 use Illuminate\Database\Seeder;
 
 class IncomeSeeder extends Seeder
 {
+    use SeedsDemoData;
+
     public function run(): void
     {
-        $income_categories = [
-            ['landlord_id' => '3', 'name' => 'Rent Payment', 'description' => 'Monthly rental income from tenants.', 'status' => '1', 'created_at' => '2025-10-15 12:04:01', 'updated_at' => '2025-10-15 12:04:01'],
-            ['landlord_id' => '3', 'name' => 'Security Deposit', 'description' => 'Refundable or non-refundable deposit collected at lease signing', 'status' => '1', 'created_at' => '2025-10-15 12:04:16', 'updated_at' => '2025-10-15 12:04:16'],
-            ['landlord_id' => '3', 'name' => 'Maintenance Fees', 'description' => 'Additional charges for property upkeep or repairs.', 'status' => '1', 'created_at' => '2025-10-15 12:04:28', 'updated_at' => '2025-10-15 12:04:28'],
-            ['landlord_id' => '3', 'name' => 'Advertising Income', 'description' => 'Earnings from billboard or sign placements on the property.', 'status' => '1', 'created_at' => '2025-10-15 12:04:42', 'updated_at' => '2025-10-15 12:04:42'],
-            ['landlord_id' => '3', 'name' => 'Miscellaneous Income', 'description' => 'Other property-related revenue sources not listed above.', 'status' => '1', 'created_at' => '2025-10-15 12:05:44', 'updated_at' => '2025-10-15 12:05:44'],
+        $landlord = User::demoLandlords()->first();
 
-            ['landlord_id' => null, 'name' => 'Rent Payment', 'description' => 'Monthly rental income from tenants.', 'status' => '1', 'created_at' => '2025-10-15 12:04:01', 'updated_at' => '2025-10-15 12:04:01'],
-            ['landlord_id' => null, 'name' => 'Security Deposit', 'description' => 'Refundable or non-refundable deposit collected at lease signing', 'status' => '1', 'created_at' => '2025-10-15 12:04:16', 'updated_at' => '2025-10-15 12:04:16'],
-            ['landlord_id' => null, 'name' => 'Maintenance Fees', 'description' => 'Additional charges for property upkeep or repairs.', 'status' => '1', 'created_at' => '2025-10-15 12:04:28', 'updated_at' => '2025-10-15 12:04:28'],
-            ['landlord_id' => null, 'name' => 'Advertising Income', 'description' => 'Earnings from billboard or sign placements on the property.', 'status' => '1', 'created_at' => '2025-10-15 12:04:42', 'updated_at' => '2025-10-15 12:04:42'],
-            ['landlord_id' => null, 'name' => 'Miscellaneous Income', 'description' => 'Other property-related revenue sources not listed above.', 'status' => '1', 'created_at' => '2025-10-15 12:05:44', 'updated_at' => '2025-10-15 12:05:44'],
-        ];
+        if (! $landlord) {
+            $this->command?->warn('IncomeSeeder skipped: no demo landlord found.');
 
-        IncomeCategory::insert($income_categories);
+            return;
+        }
 
-        $incomes = [
-            ['amount' => '1200', 'income_category_id' => '1', 'landlord_id' => '3', 'income_for' => 'Tenant rent', 'payment_type' => 'card', 'reference_no' => 'TNR-3353', 'note' => null, 'income_date' => '2025-10-10 00:00:00', 'created_at' => '2025-10-15 12:07:47', 'updated_at' => '2025-10-15 12:08:46'],
-            ['amount' => '800', 'income_category_id' => '2', 'landlord_id' => '3', 'income_for' => 'Rent for Security Deposit', 'payment_type' => 'cash', 'reference_no' => 'SDP-3465', 'note' => null, 'income_date' => '2025-10-15 00:00:00', 'created_at' => '2025-10-15 12:09:26', 'updated_at' => '2025-10-15 12:09:26'],
-            ['amount' => '200.5', 'income_category_id' => '3', 'landlord_id' => '3', 'income_for' => 'House maintenance', 'payment_type' => 'mobile_payment', 'reference_no' => 'HMT-6674', 'note' => null, 'income_date' => '2025-10-16 00:00:00', 'created_at' => '2025-10-15 12:10:13', 'updated_at' => '2025-10-15 12:10:13'],
-
-            ['amount' => '1200', 'income_category_id' => '1', 'landlord_id' => null, 'income_for' => 'Tenant rent', 'payment_type' => 'card', 'reference_no' => 'TNR-3353', 'note' => null, 'income_date' => '2025-10-10 00:00:00', 'created_at' => '2025-10-15 12:07:47', 'updated_at' => '2025-10-15 12:08:46'],
-            ['amount' => '800', 'income_category_id' => '2', 'landlord_id' => null, 'income_for' => 'Rent for Security Deposit', 'payment_type' => 'cash', 'reference_no' => 'SDP-3465', 'note' => null, 'income_date' => '2025-10-15 00:00:00', 'created_at' => '2025-10-15 12:09:26', 'updated_at' => '2025-10-15 12:09:26'],
-            ['amount' => '200.5', 'income_category_id' => '3', 'landlord_id' => null, 'income_for' => 'House maintenance', 'payment_type' => 'mobile_payment', 'reference_no' => 'HMT-6674', 'note' => null, 'income_date' => '2025-10-16 00:00:00', 'created_at' => '2025-10-15 12:10:13', 'updated_at' => '2025-10-15 12:10:13'],
-        ];
-
-        Income::insert($incomes);
+        // Dos scopes: set global (landlord_id null) y landlord demo.
+        // Cada lote referencia sus PROPIAS categorías (fix cross-tenant, spec 4.10).
+        $this->seedDemoIncomes(
+            $landlord,
+            array_keys(DemoDataset::incomeCategories()),
+            array_keys(DemoDataset::incomes()),
+            [null, $landlord->id],
+        );
     }
 }

@@ -2,20 +2,38 @@
 
 namespace Database\Seeders;
 
+use App\Models\Gateway;
+use App\Models\Plan;
 use App\Models\PlanSubscribe;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class PlanSubscribeSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $plan_subscribes = [
-            ['user_id' => '3', 'plan_id' => '3', 'gateway_id' => 1, 'plan_name' => 'Economy', 'price' => '0', 'payment_status' => 'unpaid', 'duration' => '365', 'notes' => null, 'created_at' => now(), 'updated_at' => now()],
-        ];
+        $landlord = User::whereEmail('landlord@acnoo.com')->first();
+        $plan = Plan::where('subscriptionName', 'Economy')->first();
+        $gateway = Gateway::where('name', 'Stripe')->first();
 
-        PlanSubscribe::insert($plan_subscribes);
+        if (! $landlord || ! $plan || ! $gateway) {
+            $this->command?->warn('PlanSubscribeSeeder skipped: demo landlord, Economy plan or Stripe gateway not found.');
+
+            return;
+        }
+
+        PlanSubscribe::firstOrCreate([
+            'user_id' => $landlord->id,
+            'plan_id' => $plan->id,
+        ], [
+            'gateway_id' => $gateway->id,
+            'plan_name' => 'Economy',
+            'price' => '0',
+            'payment_status' => 'unpaid',
+            'duration' => '365',
+            'notes' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

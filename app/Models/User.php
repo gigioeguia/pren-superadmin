@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Observers\UserObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -45,6 +46,14 @@ class User extends Authenticatable
         'email_verified_at',
         'remember_token',
     ];
+
+    /**
+     * Cuentas landlord de demo (flag is_demo, Fase 3.5 / spec 4.10).
+     */
+    public static function demoLandlords(): Collection
+    {
+        return static::query()->where('is_demo', true)->where('role', 'landlord')->get();
+    }
 
     public function supportMessages()
     {

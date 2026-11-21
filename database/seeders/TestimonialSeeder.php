@@ -17,6 +17,8 @@ class TestimonialSeeder extends Seeder
             ['star' => '4', 'client_name' => 'Alim Patel', 'client_image' => 'uploads/25/10-932/1760168359.png', 'work_at' => 'HomeNest Properties', 'text' => 'I love how user-friendly the dashboard is. Tenants can pay rent online, submit maintenance issues, and communicate directly — everything works seamlessly, even on mobile.', 'created_at' => '2025-10-11 13:39:19', 'updated_at' => '2025-10-11 13:39:19'],
         ];
 
-        Testimonial::insert($testimonials);
+        foreach ($testimonials as $testimonial) {
+            Testimonial::firstOrCreate(['client_name' => $testimonial['client_name']], $testimonial);
+        }
     }
 }

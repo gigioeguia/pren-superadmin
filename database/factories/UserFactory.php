@@ -80,4 +80,53 @@ class UserFactory extends Factory
             $user->forceFill(['is_demo' => true])->save();
         });
     }
+
+    /**
+     * Landlord demo de UserSeeder: credenciales fijas (spec 4.10 / DT-M9).
+     * role/is_demo no son fillables y se fuerzan tras crear.
+     */
+    public function demoLandlord(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => 'Alex',
+            'email' => 'landlord@acnoo.com',
+            'image' => 'uploads/25/05-132/1748140914.jpeg',
+            'phone' => ['mobile_code' => '+880', 'mobile_no' => '01933445566'],
+            'password' => bcrypt('landlord'),
+            'unique_id' => '687324',
+            'is_setupped' => 1,
+            'balance' => 1000,
+            'profile_type' => null,
+            'subscriptionDate' => now(),
+            'will_expire' => now()->addYears(5),
+            'email_verified_at' => null,
+        ])->afterCreating(function (User $user): void {
+            $user->forceFill(['role' => 'landlord', 'is_demo' => true])->save();
+        });
+    }
+
+    /**
+     * Tenant demo de UserSeeder: credenciales fijas (spec 4.10 / DT-M9).
+     */
+    public function demoTenant(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => 'Britanni Edwards',
+            'email' => 'tenant@acnoo.com',
+            'phone' => ['mobile_code' => '+260', 'mobile_no' => '34'],
+            // hash literal de la fila original: password 'tenant'
+            'password' => '$2y$10$Ptk1xPUe6hg6Brstl8.XkOkL7arOFQv8N0dd4eDrv1MIF9ZXNW3rW',
+            'unique_id' => '000004',
+            'is_setupped' => 1,
+            'balance' => 0,
+            'profile_type' => 'company',
+            'subscriptionDate' => null,
+            'will_expire' => null,
+            'email_verified_at' => null,
+            'created_at' => '2025-09-23 10:00:13',
+            'updated_at' => '2025-09-23 10:00:13',
+        ])->afterCreating(function (User $user): void {
+            $user->forceFill(['role' => 'tenant'])->save();
+        });
+    }
 }

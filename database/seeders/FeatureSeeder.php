@@ -32,6 +32,8 @@ class FeatureSeeder extends Seeder
             ['title' => 'More Features...', 'bg_color' => '#f0e8ff', 'image' => 'uploads/25/10-126/1760171567.svg', 'status' => '1', 'created_at' => '2025-06-24 10:52:25', 'updated_at' => '2025-10-11 15:07:28'],
         ];
 
-        Feature::insert($features);
+        foreach ($features as $feature) {
+            Feature::firstOrCreate(['title' => $feature['title']], $feature);
+        }
     }
 }
