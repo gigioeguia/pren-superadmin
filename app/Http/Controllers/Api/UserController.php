@@ -47,19 +47,39 @@ class UserController extends Controller
 
         $user = User::findOrFail(auth()->id());
 
+        // Uploads antes de abrir la transacción; rutas viejas se borran tras el commit (Fase 4 / 4.8)
+        $oldPaths = [];
+
+        if ($request->hasFile('image')) {
+            if (! empty($user->image)) {
+                $oldPaths[] = $user->image;
+            }
+            $image = $this->upload($request, 'image');
+        } else {
+            $image = $user->image ?? null;
+        }
+
+        if ($request->hasFile('mykad.front_image')) {
+            if (! empty($user->user_details->mykad['front_image'])) {
+                $oldPaths[] = $user->user_details->mykad['front_image'];
+            }
+            $frontImage = $this->upload($request, 'mykad.front_image');
+        } else {
+            $frontImage = $user->user_details->mykad['front_image'] ?? null;
+        }
+
+        if ($request->hasFile('mykad.back_image')) {
+            if (! empty($user->user_details->mykad['back_image'])) {
+                $oldPaths[] = $user->user_details->mykad['back_image'];
+            }
+            $backImage = $this->upload($request, 'mykad.back_image');
+        } else {
+            $backImage = $user->user_details->mykad['back_image'] ?? null;
+        }
+
         DB::beginTransaction();
 
         try {
-
-            if ($request->hasFile('image')) {
-                if (! empty($user->image)) {
-                    $oldImagePath = $user->image;
-                    $this->deleteOldFile($oldImagePath);
-                }
-                $image = $this->upload($request, 'image');
-            } else {
-                $image = $user->image ?? null;
-            }
 
             $user->update([
                 'image' => $image,
@@ -69,26 +89,6 @@ class UserController extends Controller
                 'phone' => $request->input('phone'),
                 'profile_type' => $request->profile_type,
             ]);
-
-            if ($request->hasFile('mykad.front_image')) {
-                if (! empty($user->user_details->mykad['front_image'])) {
-                    $oldFrontImagePath = $user->user_details->mykad['front_image'];
-                    $this->deleteOldFile($oldFrontImagePath);
-                }
-                $frontImage = $this->upload($request, 'mykad.front_image');
-            } else {
-                $frontImage = $user->user_details->mykad['front_image'] ?? null;
-            }
-
-            if ($request->hasFile('mykad.back_image')) {
-                if (! empty($user->user_details->mykad['back_image'])) {
-                    $oldBackImagePath = $user->user_details->mykad['back_image'];
-                    $this->deleteOldFile($oldBackImagePath);
-                }
-                $backImage = $this->upload($request, 'mykad.back_image');
-            } else {
-                $backImage = $user->user_details->mykad['back_image'] ?? null;
-            }
 
             if ($user->user_details) {
                 $user->user_details->update([
@@ -127,6 +127,11 @@ class UserController extends Controller
             }
 
             DB::commit();
+
+            // Borrado best-effort tras el commit
+            foreach ($oldPaths as $path) {
+                $this->deleteOldFile($path);
+            }
 
             return response()->json([
                 'message' => __('Profile updated successfully.'),

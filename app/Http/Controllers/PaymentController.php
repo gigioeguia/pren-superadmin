@@ -119,9 +119,12 @@ class PaymentController extends Controller
             $request->validate([
                 'attachment' => 'required|file|mimes:jpg,jpeg,png|max:2048',
             ]);
+
+            // Upload antes de abrir la transacción (Fase 4 / 4.8)
+            $attachment = $request->attachment ? $this->upload($request, 'attachment') : null;
+
             DB::beginTransaction();
             try {
-                $attachment = $request->attachment ? $this->upload($request, 'attachment') : null;
                 $duration = $plan->durationInDays();
 
                 PlanSubscribe::create([
@@ -209,8 +212,6 @@ class PaymentController extends Controller
         }
 
         try {
-            DB::beginTransaction();
-
             $plan = session('plan');
             $user = session('user');
             $amount = session('amount');
@@ -264,6 +265,10 @@ class PaymentController extends Controller
             } else {
                 return redirect(route('order.status', ['status' => 'failed']))->with('error', __('Transaction failed for invalid credentials, Please try again later or contact with admin.'));
             }
+
+            // Verificación de pago completada: la transacción envuelve
+            // únicamente las escrituras DB (Fase 4 / 4.8).
+            DB::beginTransaction();
 
             if ($payment_type == 'security_deposit') {
                 $landlord = User::where('id', $plan->landlord_id)->first();

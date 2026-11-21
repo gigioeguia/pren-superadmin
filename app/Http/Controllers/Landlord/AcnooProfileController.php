@@ -41,30 +41,50 @@ class AcnooProfileController extends Controller
 
         $user = User::findOrFail($id);
 
+        // Comprobaciones y uploads antes de abrir la transacción (Fase 4 / 4.8)
+        if ($request->password || $request->current_password) {
+            if (Hash::check($request->current_password, $user->password)) {
+                $request->validate([
+                    'current_password' => 'required|string',
+                    'password' => 'nullable|string|confirmed',
+                ]);
+            } else {
+                return response()->json(__('Current Password does not match with old password'), 404);
+            }
+        }
+
+        $oldPaths = [];
+
+        if ($request->hasFile('image')) {
+            if (! empty($user->image)) {
+                $oldPaths[] = $user->image;
+            }
+            $image = $this->upload($request, 'image');
+        } else {
+            $image = $user->image ?? null;
+        }
+
+        if ($request->hasFile('mykad.front_image')) {
+            if (! empty($user->user_details->mykad['front_image'])) {
+                $oldPaths[] = $user->user_details->mykad['front_image'];
+            }
+            $frontImage = $this->upload($request, 'mykad.front_image');
+        } else {
+            $frontImage = $user->user_details->mykad['front_image'] ?? null;
+        }
+
+        if ($request->hasFile('mykad.back_image')) {
+            if (! empty($user->user_details->mykad['back_image'])) {
+                $oldPaths[] = $user->user_details->mykad['back_image'];
+            }
+            $backImage = $this->upload($request, 'mykad.back_image');
+        } else {
+            $backImage = $user->user_details->mykad['back_image'] ?? null;
+        }
+
         DB::beginTransaction();
 
         try {
-
-            if ($request->password || $request->current_password) {
-                if (Hash::check($request->current_password, $user->password)) {
-                    $request->validate([
-                        'current_password' => 'required|string',
-                        'password' => 'nullable|string|confirmed',
-                    ]);
-                } else {
-                    return response()->json(__('Current Password does not match with old password'), 404);
-                }
-            }
-
-            if ($request->hasFile('image')) {
-                if (! empty($user->image)) {
-                    $oldImagePath = $user->image;
-                    $this->deleteOldFile($oldImagePath);
-                }
-                $image = $this->upload($request, 'image');
-            } else {
-                $image = $user->image ?? null;
-            }
 
             $user->update([
                 'landlord_id' => auth()->user()->id,
@@ -76,26 +96,6 @@ class AcnooProfileController extends Controller
                 'profile_type' => $request->profile_type,
                 'password' => $request->password ? Hash::make($request->password) : $user->password,
             ]);
-
-            if ($request->hasFile('mykad.front_image')) {
-                if (! empty($user->user_details->mykad['front_image'])) {
-                    $oldFrontImagePath = $user->user_details->mykad['front_image'];
-                    $this->deleteOldFile($oldFrontImagePath);
-                }
-                $frontImage = $this->upload($request, 'mykad.front_image');
-            } else {
-                $frontImage = $user->user_details->mykad['front_image'] ?? null;
-            }
-
-            if ($request->hasFile('mykad.back_image')) {
-                if (! empty($user->user_details->mykad['back_image'])) {
-                    $oldBackImagePath = $user->user_details->mykad['back_image'];
-                    $this->deleteOldFile($oldBackImagePath);
-                }
-                $backImage = $this->upload($request, 'mykad.back_image');
-            } else {
-                $backImage = $user->user_details->mykad['back_image'] ?? null;
-            }
 
             // Before updating user details, ensure it exists
             $userDetails = $user->user_details;
@@ -126,6 +126,11 @@ class AcnooProfileController extends Controller
             }
 
             DB::commit();
+
+            // Borrado best-effort tras el commit
+            foreach ($oldPaths as $path) {
+                $this->deleteOldFile($path);
+            }
 
             return response()->json([
                 'message' => 'Profile update successfully',

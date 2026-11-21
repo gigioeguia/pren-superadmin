@@ -30,44 +30,45 @@ class RegistrationController extends Controller
             'email' => 'required|email',
         ]);
 
+        // Comprobaciones y cálculo de OTP antes de abrir la transacción (Fase 4 / 4.8)
+        // Find free plan
+        $free_plan = Plan::where('subscriptionPrice', '<=', 0)
+            ->orWhere('offerPrice', '<=', 0)
+            ->first();
+
+        // Check existing user
+        $existing_user = User::where('email', $request->email)->first();
+
+        if ($existing_user && $existing_user->is_setupped) {
+            return response()->json([
+                'message' => 'This email is already exists.',
+            ], 406);
+        }
+
+        // OTP settings
+        $otpSettings = get_option('email-varification') ?? [];
+        $otpStatus = $otpSettings['otp_status'] ?? 'off';
+
+        $code = random_int(100000, 999999);
+
+        $expire = null;
+        $data = null;
+
+        if ($otpStatus === 'on') {
+
+            $expireSeconds = $this->otp->visibilityTimeInSeconds();
+
+            $expire = now()->addSeconds($expireSeconds);
+
+            $data = [
+                'code' => $code,
+                'name' => $request->name,
+            ];
+        }
+
         DB::beginTransaction();
 
         try {
-
-            // Find free plan
-            $free_plan = Plan::where('subscriptionPrice', '<=', 0)
-                ->orWhere('offerPrice', '<=', 0)
-                ->first();
-
-            // Check existing user
-            $user = User::where('email', $request->email)->first();
-
-            if ($user && $user->is_setupped) {
-                return response()->json([
-                    'message' => 'This email is already exists.',
-                ], 406);
-            }
-
-            // OTP settings
-            $otpSettings = get_option('email-varification') ?? [];
-            $otpStatus = $otpSettings['otp_status'] ?? 'off';
-
-            $code = random_int(100000, 999999);
-
-            $expire = null;
-            $data = null;
-
-            if ($otpStatus === 'on') {
-
-                $expireSeconds = $this->otp->visibilityTimeInSeconds();
-
-                $expire = now()->addSeconds($expireSeconds);
-
-                $data = [
-                    'code' => $code,
-                    'name' => $request->name,
-                ];
-            }
 
             // Create or update user. `role` no es fillable; se fuerza por propiedad
             // directa tras la creación (Seg-4). El evento `creating` del modelo
@@ -119,12 +120,6 @@ class RegistrationController extends Controller
                 ]);
             }
 
-            if (config('mail.queue')) {
-                Mail::to($request->email)->queue(new WelcomeMail($data));
-            } else {
-                Mail::to($request->email)->send(new WelcomeMail($data));
-            }
-
             // assign free plan
             if ($free_plan) {
 
@@ -145,23 +140,6 @@ class RegistrationController extends Controller
 
             DB::commit();
 
-            Cache::forget('plan-data-'.$user->id);
-
-            sendNotification(
-                $user->id,
-                notify_users([$user->id]),
-                admin_url: route('admin.landlords.index', ['id' => $user->id]),
-                admin_msg: __('New landlord account has been created'),
-                landlord_msg: __('You account has been successfully created.'),
-                tenant_msg: __('You account has been successfully created.')
-            );
-
-            return response()->json([
-                'message' => 'An otp code has been sent to your email. Please check and confirm.',
-                'email' => $request->email,
-                'otp_required' => true,
-            ]);
-
         } catch (\Throwable $th) {
             report($th);
 
@@ -172,6 +150,30 @@ class RegistrationController extends Controller
                 'error' => __(ErrorMessage::GENERIC),
             ], 403);
         }
+
+        Cache::forget('plan-data-'.$user->id);
+
+        // Envío de OTP tras el commit (Fase 4 / 4.8): sin E/S de red en la transacción.
+        if (config('mail.queue')) {
+            Mail::to($request->email)->queue(new WelcomeMail($data));
+        } else {
+            Mail::to($request->email)->send(new WelcomeMail($data));
+        }
+
+        sendNotification(
+            $user->id,
+            notify_users([$user->id]),
+            admin_url: route('admin.landlords.index', ['id' => $user->id]),
+            admin_msg: __('New landlord account has been created'),
+            landlord_msg: __('You account has been successfully created.'),
+            tenant_msg: __('You account has been successfully created.')
+        );
+
+        return response()->json([
+            'message' => 'An otp code has been sent to your email. Please check and confirm.',
+            'email' => $request->email,
+            'otp_required' => true,
+        ]);
     }
 
     public function submitOtp(Request $request)

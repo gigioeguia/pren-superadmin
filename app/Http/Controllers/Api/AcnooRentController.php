@@ -126,6 +126,9 @@ class AcnooRentController extends Controller
         $calculated_charge = ($type === 'percentage') ? ($security_total_amount * $amount) / 100 : $amount;
         $final_total_amount = $security_total_amount;
 
+        // Upload antes de abrir la transacción (Fase 4 / 4.8)
+        $landlordAgreement = $request->landlord_agreement ? $this->upload($request, 'landlord_agreement') : null;
+
         DB::beginTransaction();
         try {
             $rent = Rent::create($request->except('landlord_agreement') + [
@@ -133,7 +136,7 @@ class AcnooRentController extends Controller
                 'utility_bill' => $utility_advance,
                 'monthly_rent' => $rent_advance,
                 'total_amount' => $rent_total_amount,
-                'landlord_agreement' => $request->landlord_agreement ? $this->upload($request, 'landlord_agreement') : null,
+                'landlord_agreement' => $landlordAgreement,
             ]);
 
             SecurityDeposit::create([
