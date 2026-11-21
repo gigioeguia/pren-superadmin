@@ -1,7 +1,7 @@
 ---
 id: spec-trust-hosts-fase5
 titulo: "Habilitar `TrustHosts` global: validación del Host header contra `APP_URL` (Fase 5 / 5.4)"
-estado: Borrador
+estado: Aprobado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.4) — .analisis/seguridad.md (Seg-21)
 cobertura: Cerrar Seg-21 descomentando `TrustHosts` en el stack global del Kernel y customizando su allowlist (`APP_URL` + subdominios; dev hosts solo en local/testing), con override de testabilidad que habilita el catálogo HTTP F1–F4 (host ajeno → 400), notas de despliegue (`.env.example`, README, AGENTS Gotchas) y conteos de suite verificados contra salida real (esperados 262+4=266). Sin válvula `TRUSTED_HOSTS` (decisión Q1): despliegues multi-dominio requieren editar `hosts()`
