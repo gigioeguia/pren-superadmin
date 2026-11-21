@@ -24,8 +24,8 @@ Route::post('properties/reject/{id}', [Admin\PropertyController::class, 'reject'
 Route::post('properties/approve/{id}', [Admin\PropertyController::class, 'approve'])->name('properties.approve');
 Route::get('properties-excel', [Admin\PropertyController::class, 'exportExcel'])->name('properties.excel');
 Route::get('properties-csv', [Admin\PropertyController::class, 'exportCsv'])->name('properties.csv');
-Route::get('properties/get-facilities/{landlordId}', [Admin\PropertyController::class, 'getFacilities']);
-Route::get('properties/get-amenities/{landlordId}', [Admin\PropertyController::class, 'getAmenities']);
+Route::get('properties/get-facilities/{landlordId}', [Admin\PropertyController::class, 'getFacilities'])->name('properties.get-facilities');
+Route::get('properties/get-amenities/{landlordId}', [Admin\PropertyController::class, 'getAmenities'])->name('properties.get-amenities');
 
 Route::resource('landlords', Admin\AcnooLandlordController::class);
 Route::post('landlords/filter', [Admin\AcnooLandlordController::class, 'acnooFilter'])->name('landlords.filter');
@@ -181,7 +181,6 @@ Route::resource('income-categories', Admin\AcnooIncomeCategoryController::class)
 Route::post('income-categories/filter', [Admin\AcnooIncomeCategoryController::class, 'acnooFilter'])->name('income-categories.filter');
 Route::post('income-categories/delete-all', [Admin\AcnooIncomeCategoryController::class, 'deleteAll'])->name('income-categories.delete-all');
 Route::post('income-categories/status/{id}', [Admin\AcnooIncomeCategoryController::class, 'status'])->name('income-categories.status');
-Route::post('income-categories/delete-all', [Admin\AcnooIncomeCategoryController::class, 'deleteAll'])->name('income-categories.delete-all');
 
 // Income
 Route::resource('incomes', Admin\AcnooIncomeController::class)->except('show');
@@ -268,6 +267,6 @@ Route::post('translations/bulk-update/{lang}', [Admin\TranslationController::cla
 Route::prefix('notifications')->controller(Admin\NotificationController::class)->name('notifications.')->group(function () {
     Route::get('/', 'mtIndex')->name('index');
     Route::get('/{id}', 'mtView')->name('mtView');
-    Route::get('view/all/', 'mtReadAll')->name('mtReadAll');
-    Route::post('notification/filter/', 'acnooFilter')->name('filter');
+    Route::get('view/all', 'mtReadAll')->name('mtReadAll');
+    Route::post('filter', 'acnooFilter')->name('filter');
 });

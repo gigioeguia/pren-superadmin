@@ -137,6 +137,6 @@ Route::resource('subscriptions', Landlord\SubscriptionController::class)->withou
 Route::prefix('notifications')->controller(Landlord\NotificationController::class)->name('notifications.')->group(function () {
     Route::get('/', 'mtIndex')->name('index');
     Route::get('/{id}', 'mtView')->name('mtView');
-    Route::get('view/all/', 'mtReadAll')->name('mtReadAll');
-    Route::post('notification/filter/', 'acnooFilter')->name('filter');
+    Route::get('view/all', 'mtReadAll')->name('mtReadAll');
+    Route::post('filter', 'acnooFilter')->name('filter');
 });
