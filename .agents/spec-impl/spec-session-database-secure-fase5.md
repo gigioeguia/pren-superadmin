@@ -1,7 +1,7 @@
 ---
 id: spec-session-database-secure-fase5
 titulo: "Session driver `database` + cookie `secure` inferida de `APP_URL` (Fase 5 / 5.5)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.5) — .analisis/seguridad.md (Seg-22, l.137)
 cobertura: Cerrar Seg-22 fijando `SESSION_DRIVER=database` como default de config (migración `sessions` estándar; `redis` soportado vía env sin añadir `predis`) e infiriendo la cookie `secure` de `APP_URL` (`env('SESSION_SECURE_COOKIE', str_starts_with(...))` — desacopla 5.5 de 5.6, válvula manual comentada en `.env.example`), con tests U1–U5 + F1–F2 sobre `dbrentpro_test` y residual operacional declarado (flip del `.env` de producción pendiente de evidencia, patrón 5.9). Decisiones selladas en grilling Q1–Q11 (2026-11-21).
@@ -152,7 +152,7 @@ Ninguno: no hay bug vigente que se espere romper — el fix ES este spec.
 - [x] Conteos **273** en `README.md`, `tests/README.md`, `AGENTS.md`; `tests/README.md` con `Unit/Config/` en el árbol + mini-sección "## Session (Fase 5 / 5.5)"; `.agents/README.md` índice fase5 (5 specs, conteo 50 — commiteado con el draft).
 - [x] Sin notas de despliegue nuevas en `README.md` (Q10) — conteos únicamente.
 - [x] Cierres locales `.analisis/` (gitignored): `seguridad.md` #22 → Mitigado + residual; `plan-accion.md` fila 5.5 + métrica (redacciones de la nota 4).
-- [ ] Rama `spec/session-database-secure-fase5-impl` + PR review (squash, 1 aprobación + CI); sin push a `main`; nada mergeado en Borrador.
+- [x] Rama `spec/session-database-secure-fase5-impl` + **PR #52** (squash, 1 aprobación + CI); sin push a `main`; nada mergeado en Borrador.
 
 ---
 
