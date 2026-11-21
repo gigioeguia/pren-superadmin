@@ -1,7 +1,7 @@
 ---
 id: spec-get-option-tipos-consistentes-fase5
 titulo: "Tipos consistentes en `get_option`: `App\Support\Options`, helper `: array` y guards en vistas (Fase 5 / 5.7)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.7) — .analisis/seguridad.md (Seg-24, l.141)
 cobertura: Cerrar Seg-24 estrechando `get_option` a `: array` (delegador delgado en nueva clase `App\Support\Options` con `array()`/`string()` y default tipado, nunca null), reparando los 38 accesos Blade sin guard (fila ausente/corrupta = 500 hoy), eliminando la key fantasma `logo_setting` de Flutterwave (logo nunca mostrado) y migrando el único consumidor escalar (`version` en sidebar) a `Options::string()`. Caché intacta (claves crudas + `OptionObserver`, 4.9). Catálogo U1–U11 + Pub1 + F1–F4 + G1–G2 (18 casos; suite esperada 283+18=301) + arch-test anti-reincidencia
@@ -176,17 +176,17 @@ Ninguno: no hay bug vigente que se espere romper — el fix (tipos + guards + lo
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `app/Support/Options.php` creado: `array()`/`string()` estáticos con default tipado + deriva silenciosa (Q2/Q9); `read()` privado vía `cache_remember(CacheKeys::option($key), ...)`; sin `env()`, sin `request()`.
-- [ ] `get_option(string $key): array` delegando en `Options::array($key)` — misma caché, claves e invalidación; 0 llamadores mixed restantes.
-- [ ] `Otp.php:9` vía `Options::array` sin `?? []`; `RegistrationController.php:48` sin `?? []`; guards internos intactos.
-- [ ] `Flutterwave.php:99` lee `general.logo` con fallback al asset; 0 referencias a `logo_setting` en `app/`+`resources/` (U11).
-- [ ] Sidebar l.773-775 vía `\App\Support\Options::string('version')`; `@if` + echo intactos (G1–G2 en verde).
-- [ ] 38 accesos con guard: 34 `?? ''` en las 10 vistas de §4 + 4 `?? null` en `Route::has(...)` de `header`/`common_header`; U10 en verde.
-- [ ] Catálogo completo en verde: U1–U11, Pub1, F1–F4, G1–G2 (18 casos) — suite **esperada 301** (283+18), verificada contra salida real de `php artisan test` (lección 5.3).
-- [ ] `composer analyse` sin nuevas entradas vs baseline; `composer lint` limpio.
-- [ ] Docs: `tests/README.md` (conteo 301, árbol con `Unit/Views/` y `Feature/Options/`, mini-sección), `AGENTS.md` (helpers: `get_option(): array` + `App\Support\Options` en clases Support), `.agents/README.md` (índice 51 → 52, fase5 6 → 7).
-- [ ] Cierres locales gitignored: `seguridad.md` #24 cerrado; `plan-accion.md` fila 5.7 + Métricas de éxito (redacciones en §Notas).
-- [ ] Rama `spec/get-option-tipos-consistentes-fase5-impl` + PR (squash, 1 aprobación + CI); sin push a `main`; nada mergeado en Borrador.
+- [x] `app/Support/Options.php` creado: `array()`/`string()` estáticos con default tipado + deriva silenciosa (Q2/Q9); `read()` privado vía `cache_remember(CacheKeys::option($key), ...)`; sin `env()`, sin `request()`.
+- [x] `get_option(string $key): array` delegando en `Options::array($key)` — misma caché, claves e invalidación; 0 llamadores mixed restantes (grep verificado).
+- [x] `Otp.php:9` vía `Options::array` sin `?? []`; `RegistrationController.php:48` sin `?? []`; guards internos intactos.
+- [x] `Flutterwave.php:99` lee `general.logo` con fallback al asset; 0 referencias a `logo_setting` en `app/`+`resources/` (U11 en verde).
+- [x] Sidebar l.773-775 vía `\App\Support\Options::string('version')`; `@if` + echo intactos (G1–G2 en verde).
+- [x] 38 accesos con guard: 34 `?? ''` en las 10 vistas de §4 + 4 `?? null` en `Route::has(...)` de `header`/`common_header`; U10 en verde.
+- [x] Catálogo completo en verde: U1–U11, Pub1, F1–F4, G1–G2 (18 casos) — suite **301 passed (1523 assertions)**, exacto 283+18, verificada contra salida real de `php artisan test` (lección 5.3).
+- [x] `composer analyse` sin nuevas entradas vs baseline ([OK] No errors); `composer lint` limpio (tras auto-fix de Pint: import en Helper, `use` redundante de CacheKeys en Options por mismo namespace).
+- [x] Docs: `tests/README.md` (conteo 301, árbol con `Unit/Views/` y `Feature/Options/`, mini-sección), `AGENTS.md` (helpers: `get_option(): array` + párrafo Support `Options` + conteo 301), `.agents/README.md` (índice 51 → 52, fase5 6 → 7, commiteado con el spec).
+- [x] Cierres locales gitignored: `seguridad.md` #24 cerrado; `plan-accion.md` fila 5.7 + Métricas de éxito (redacciones de §Notas aplicadas).
+- [x] Rama `spec/get-option-tipos-consistentes-fase5-impl` + PR #54 (squash, 1 aprobación + CI); sin push a `main`; nada mergeado en Borrador.
 
 ---
 
@@ -283,8 +283,8 @@ Ninguno: no hay bug vigente que se espere romper — el fix (tipos + guards + lo
    - `Flutterwave.php:99` → `$logo = get_option('general')['logo'] ?? asset('uploads/logo.png');`.
    - Sidebar → `@php $version = \App\Support\Options::string('version'); @endphp`.
 4. **Guards:** `{{ get_option('general')['app_name'] ?? '' }}` (idem `app_address`/`app_phone`/`app_email`); `Route::has($page_data['headings']['header_btn_link'] ?? null)` en `header:12,97` y `common_header:53,98`.
-5. **Redacciones de cierre (patrón 5.3/5.4):**
-   - `seguridad.md` #24 → añadir al final: "— **cerrado (2026-11-XX, spec `spec-get-option-tipos-consistentes-fase5`)**: `get_option(): array` delegando en `App\Support\Options` (`array`/`string`, default tipado, nunca null); 38 guards en vistas (sin options → render, no 500); `logo_setting` fantasma eliminada (logo vía `general.logo`); `version` escalar vía `Options::string`."
+5. **Redacciones de cierre (patrón 5.3/5.4, aplicadas 2026-11-21):**
+   - `seguridad.md` #24 → añadido: "— **cerrado (2026-11-XX, spec `spec-get-option-tipos-consistentes-fase5`)**: `get_option(): array` delegando en `App\Support\Options` (`array`/`string`, default tipado, nunca null); 38 guards en vistas (sin options → render, no 500); `logo_setting` fantasma eliminada (logo vía `general.logo`); `version` escalar vía `Options::string`."
    - `plan-accion.md` fila 5.7 → "**Cerrado (2026-11-XX):** spec `spec-get-option-tipos-consistentes-fase5` — helper `: array` + `App\Support\Options` con defaults tipados; 38 guards (Pub1, F1–F4 anti-regresión); arch-test U10–U11; `logo_setting` fuera; deuda viva: null-checks `service-charge` vía modelo."
    - `plan-accion.md` Métricas de éxito → línea nueva: "✅ `get_option` con tipos consistentes (`: array` + `App\Support\Options::string` para escalares) y vistas sin guard reparadas (Fase 5 / 5.7 — spec-get-option-tipos-consistentes-fase5, 2026-11-XX)".
    - `AGENTS.md` "Global helpers" → ajustar: `get_option()` (devuelve `array`; keys escalares vía `App\Support\Options::string()`), y añadir `Options` a la lista de clases Support de 4.6.
@@ -296,3 +296,7 @@ Ninguno: no hay bug vigente que se espere romper — el fix (tipos + guards + lo
    php artisan test tests/Feature/Options
    composer analyse && composer lint && php artisan test
    ```
+7. **Desviaciones menores (implementación, 2026-11-21):**
+   - **U9** usa `$option->update([...])` de **instancia**, no la mass-op `Option::where(...)->update()` del Cuando: la mass-op de builder no dispara observers (gotcha 4.9) y la invalidación no ocurriría. Entonces sin cambio — de hecho lo exige ("observer → `CacheKeys::forgetModel`").
+   - **F1–F4** (adaptación prevista en §8): el render directo no pasa por el middleware web, así que los tests comparten `$errors` vía `withViewErrors([])` (lo que haría `ShareErrorsFromSession`) y autentican `actingAs` donde la cadena lee `auth()->user()` — `api-invoice/rent-payment` l.81-93 (`role`) y el header de los masters admin/landlord (`role` l.58). Actores: tenant en F1, admin→landlord en F4 (dos renders, dos actores); F2/F3 no requieren auth (layout `blank`).
+   - Pint auto-fix (estilo, sin efecto semántico): `Helper.php` importa `App\Support\Options` (en vez del FQCN inline del sketch) y `Options.php` sin el `use` redundante de `CacheKeys` (mismo namespace).
