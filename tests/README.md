@@ -8,8 +8,8 @@ caracterizaciones nuevas): `.agents/spec-impl/spec-trait-acnoo-fase0.md`
 (Fase 0 / 0.3, DT-C3).
 
 > **Nota (2026-11-21):** la suite creció con las fases 1–5 y hoy totaliza
-> **266 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
-> spec 5.3 + 4 del spec 5.4). Este README documenta el origen smoke de Fase 0
+> **273 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
+> spec 5.3 + 4 del spec 5.4 + 7 del spec 5.5). Este README documenta el origen smoke de Fase 0
 > y las convenciones; los dominios añadidos se listan abajo.
 
 ## Cómo correr la suite
@@ -79,6 +79,7 @@ tests/
 ├── Stubs/StubGateway.php         # stub de gateway (Gateway->namespace), sin HTTP real
 ├── Unit/                         # unitarios: modelos (User, Plan), PropertyService,
 │   ├── Support/                  # CacheKeysTest (invalidación centralizada, 4.9)
+│   ├── Config/                   # SessionConfigTest U1–U5 (mapeo env→config, Fase 5 / 5.5)
 │   └── Seeders/                  # arch-tests U1–U3 + demoReset U4 (spec 4.10)
 └── Feature/
     ├── Auth/                     # L (login web), S (signup+OTP), R (reset), A (API)
@@ -92,7 +93,7 @@ tests/
     ├── Idor/                     # ownership smoke (Fase 2)
     ├── Seeders/                  # F1–F6 del spec 4.10
     ├── Withdraw/                 # regresión HTTP del index API (Fase 5 / 5.3, Seg-20)
-    ├── Security/                # TrustHosts: validación del Host header (Fase 5 / 5.4, Seg-21)
+    ├── Security/                # TrustHosts: Host header (Fase 5 / 5.4) + Session driver/cookie (Fase 5 / 5.5)
     └── HandlerGenericErrorSmokeTest.php  # Handler genérico sin fuga de mensaje (3.4)
 ```
 
@@ -104,7 +105,7 @@ Mocks obligatorios (ver `.agents/skills/testing-conventions.md`):
 ## Cobertura de endpoints críticos
 
 > Snapshot del catálogo smoke de **Fase 0** (52 endpoints críticos); la suite
-> total creció con las fases 1–5 (266 casos) sin renovar este conteo.
+> total creció con las fases 1–5 (273 casos) sin renovar este conteo.
 
 Criterio del spec: rutas de auth (web + API), pagos, status de gateways,
 CMS público, entradas de guards y maintenance.
@@ -147,6 +148,22 @@ Detalles operativos: el cliente de test normaliza la URI vía `url()` y
 `Request::create` sobrescribe `HTTP_HOST`, así que el Host custom se inyecta
 con request Symfony construida a mano (helper `getWithHost`); el `tearDown`
 resetea los patterns static de Symfony (`Request::setTrustedHosts([])`).
+
+## Session (Fase 5 / 5.5)
+
+Driver `database` + cookie `secure` (Seg-22): `U1`–`U5` (en
+`tests/Unit/Config/SessionConfigTest.php`) evalúan el archivo real
+`config/session.php` con env mutado — el reader de `env()` consulta
+`$_ENV` → `$_SERVER` → `getenv()` en cada lectura, así que las mutaciones
+son en caliente y el `tearDown` restaura las tres fuentes (el snapshot se
+toma tras el boot porque dotenv añade keys de `.env`). `F1` (flags
+`Secure; HttpOnly; SameSite=Lax` de la cookie con `session.secure=true`)
+y `F2` (login real con `DatabaseSessionHandler`: fila en `sessions` con
+`user_id` + segunda request replicando la cookie del response — guest iría
+a `login`, autenticado sin plan a `landlord.subscriptions.index` vía
+`ExpiredMiddleware`). Archivo feature:
+`tests/Feature/Security/SessionSmokeTest.php` — spec
+`spec-session-database-secure-fase5`.
 
 ## Desviaciones vs el catálogo del spec
 
