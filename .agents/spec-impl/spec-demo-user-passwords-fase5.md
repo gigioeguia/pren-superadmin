@@ -1,7 +1,7 @@
 ---
 id: spec-demo-user-passwords-fase5
 titulo: "Credenciales demo no predecibles: config-driven con fallback aleatorio (Fase 5 / 5.2)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.2) — .analisis/seguridad.md (Seg-19, parte UserSeeder) — .agents/spec-impl/spec-password-policy-fase3.md (policy 3.2)
 cobertura: Migración de las 4 credenciales demo (superadmin/admin/landlord/tenant, 3 fuentes reales: PermissionSeeder + UserFactory x2) a config('demo.user_password') con fallback aleatoria impresa al crear; clase App\Support\DemoCredentials; tests U1-U2/F1-F3; README/AGENTS.md/.env.example commiteados; cierre documental local (plan-accion 5.2, Seg-19)
@@ -124,14 +124,14 @@ Fijadas (grilling 2026-11-21, Q1–Q6), no negociables salvo volver el spec a `B
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `config/demo.php` creado y `DEMO_USER_PASSWORD=` documentada (vacía) en `.env.example`.
-- [ ] `App\Support\DemoCredentials` es la única fuente; grep en `database/` sin `bcrypt('superadmin'|'admin'|'landlord'|'tenant')` ni hashes literales demo.
-- [ ] U1–U2, F1–F3 en verde; suite completa (254+) en verde.
-- [ ] Arch-test U2 verde: 0 `env()` en `database/seeders/`.
-- [ ] README y AGENTS.md actualizados: 0 credenciales publicadas, modelo nuevo documentado.
-- [ ] Cierre documental local: `plan-accion.md` fila 5.2 → Implementado, fila 5.1 sin "hasta 5.2"; `seguridad.md` Seg-19 cerrado completo.
-- [ ] Riesgo residual Q6 (DBs ya sembradas) documentado en este spec y en README — sin mecanismo de rotación forzada.
-- [ ] PR (código + tests + docs) con CI verde (4 jobs); review y merge por squash.
+- [x] `config/demo.php` creado y `DEMO_USER_PASSWORD=` documentada (vacía) en `.env.example`.
+- [x] `App\Support\DemoCredentials` es la única fuente; grep en `database/` sin `bcrypt('superadmin'|'admin'|'landlord'|'tenant')` ni hashes literales demo (grep vacío, 2026-11-21).
+- [x] U1–U2, F1–F3 en verde (30 aserciones); suite completa en verde: **259 passed, 806 assertions, 0 fallos**; `composer lint` (pint) y `composer analyse` (phpstan) sin errores.
+- [x] Arch-test U2 verde: 0 `env()` en `database/seeders/` (grep vacío + suite en verde).
+- [x] README y AGENTS.md actualizados: 0 credenciales publicadas, modelo nuevo documentado (grep vacío sobre README/AGENTS.md).
+- [x] Cierre documental local: `plan-accion.md` fila 5.2 → Implementado (2026-11-21) y fila 5.1 con "desde 5.2"; `seguridad.md` Seg-19 cerrado completo (fila 19–26 actualizada).
+- [x] Riesgo residual Q6 (DBs ya sembradas) documentado en §8 y en README — sin mecanismo de rotación forzada.
+- [ ] PR (código + tests + docs) con CI verde (4 jobs); review y merge por squash — se tacha con el link del run al confirmarse (patrón `spec-upgrade-laravel-php-fase4`).
 
 ---
 
