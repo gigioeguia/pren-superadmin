@@ -11,12 +11,27 @@ Carpeta de convenciones, especificaciones, skills y decisiones que rigen cómo t
 ├── spec/                      # convenciones + plantilla para specs
 │   ├── spec-conventions.md
 │   └── spec-template.md
-├── spec-impl/                 # specs concretos (un archivo por spec)
-│   ├── spec-tests-smoke-fase0.md
-│   ├── spec-phpstan-pint-ci-fase0.md
-│   ├── spec-trait-acnoo-fase0.md
-│   ├── spec-unificar-capas-services-fase4.md
-│   └── spec-inyectar-request-fase4.md
+├── spec-impl/                 # specs concretos (45; un archivo por spec)
+│   │
+│   ├── fase0 (3):  spec-tests-smoke-fase0 · spec-phpstan-pint-ci-fase0 · spec-trait-acnoo-fase0
+│   ├── fase1 (6):  spec-admin-middleware-fase1 · spec-env-inseguro-fase1 · spec-registro-api-role-arbitrario-fase1 ·
+│   │               spec-reset-password-otp-fase1 · spec-rutas-artisan-publicas-fase1 · spec-webhooks-sin-firma-fase1
+│   ├── fase2 (6):  spec-deleteall-row-by-row-media-fase2 · spec-gateway-namespace-whitelist-fase2 ·
+│   │               spec-payment-controller-sin-user-id-fase2 · spec-payment-success-fase2 · spec-policies-fase2 ·
+│   │               spec-property-update-landlord-id-fase2
+│   ├── fase3 (8):  spec-bug-rutas-landlord-cruzadas-fase3 · spec-demo-reset-demomode-fase3 ·
+│   │               spec-no-exponer-error-message-fase3 · spec-otp-hash-equals-fase3 · spec-password-policy-fase3 ·
+│   │               spec-permission-middleware-admin-fase3 · spec-throttle-otp-login-fase3 ·
+│   │               spec-uploads-normalizar-extension-nombre-fase3
+│   ├── fase4 (21): spec-upgrade-laravel-php-fase4 · spec-vite-axios-fase4 ·
+│   │               spec-unificar-capas-services-fase4 (+11 hijos spec-service-*-fase4: expense, expensecategory,
+│   │               income, incomecategory, notification, refundrequest, rentpayment, securitydeposit, support,
+│   │               tenant, withdrawmethod) · spec-env-to-config-fase4 · spec-inyectar-request-fase4 ·
+│   │               spec-helpers-globales-clases-fase4 · spec-plan-duration-days-fase4 ·
+│   │               spec-db-transactions-no-external-io-fase4 · spec-cache-invalidacion-centralizada-fase4 ·
+│   │               spec-seeders-firstorcreate-fase4
+│   └── meta (1):   spec-reconciliacion-analisis-fase0-3
+│
 ├── skills/                    # procedimientos operacionales
 │   ├── crear-spec.md
 │   ├── revisar-spec.md
@@ -28,6 +43,8 @@ Carpeta de convenciones, especificaciones, skills y decisiones que rigen cómo t
 └── decisions/                 # Architectural Decision Records (ADRs)
     └── 0001-mysql-test-db.md
 ```
+
+> Índice regenerado 2026-11-21 (cierre de Fase 4): solo contenido trackeado; los archivos locales sin extensión bajo `skills/` (herramientas de agente) no se listan.
 
 ## Orden de lectura sugerido (para un agente nuevo)
 
