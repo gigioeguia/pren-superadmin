@@ -41,7 +41,7 @@ Run a single test: `php artisan test tests/Feature/Auth/WebLoginSmokeTest.php`
 
 ## Global helpers (autoloaded via composer `files`)
 
-`app/Helpers/Helper.php` is loaded globally (no namespace). Available everywhere: `get_option()`, `default_currency()`, `currency_format()`, `convert_money()`, `cache_remember()`, `notify_users()`, `sendNotification()`, `plan_data()`, `languages()`, `demoReset()`. Check here before assuming a function is missing.
+`app/Helpers/Helper.php` is loaded globally (no namespace). Available everywhere: `get_option()`, `default_currency()`, `currency_format()`, `convert_money()`, `cache_remember()`, `forgetModel()`, `notify_users()`, `sendNotification()`, `plan_data()`, `languages()`, `demoReset()`. Check here before assuming a function is missing.
 
 Desde Fase 4 / 4.6 la lógica de moneda y OTP vive en clases inyectables del contenedor: `App\Support\Currency` (`format`, `currency`, `default`, `convert`, `convertToDefault`), `App\Support\Payment` (`payable`) y `App\Support\Otp` (`visibilityTimeInSeconds`). Los helpers globales `currency_format`, `currency`, `default_currency`, `convert_money`, `convert_to_default_amount` y `payable` son delegadores delgados a esas clases. Los gateways de `app/Library/` ya no usan `request()`; reciben `bool $expectsJson` en `make_payment($data, $expectsJson = false)`.
 
@@ -76,6 +76,8 @@ Desde Fase 4 / 4.6 la lógica de moneda y OTP vive en clases inyectables del con
 ## Gotchas
 
 - **Transacciones sin E/S externa (Fase 4 / 4.8):** `DB::beginTransaction()` envuelve únicamente escrituras DB. Convención: uploads antes de abrir la tx; `Mail` y borrados de archivos viejos **después** del `DB::commit()` (rutas capturadas en arrays dentro de la tx, borrado best-effort); HTTP de gateways/Stripe y early returns de verificación fuera de la tx. No reintroducir `Mail::`/`make_payment`/uploads/`Storage::` entre `beginTransaction` y `commit`.
+
+- **Caché con invalidación centralizada (Fase 4 / 4.9, DT-M8):** toda invalidación pasa por `App\Support\CacheKeys::forgetModel()`; los 5 modelos cacheados (`Option`, `Language`, `Currency`, `PlanSubscribe`, `User`) llevan observers `#[ObservedBy]` (`saved`/`deleted`). Reglas: no reintroducir `Cache::forget`/`cache()->forget` en `app/` (el único `forget` permitido vive en `CacheKeys`); una mass-op de query builder sobre un modelo cacheado **no dispara observers** ⇒ llamar `forgetModel()` explícito en la misma acción, tras el commit (ej. `AcnooLanguageController::isDefault`); las claves son strings históricas intactas — construirlas siempre vía `CacheKeys`. La clave `plan-data-{user_id}` embebe datos de `PlanSubscribe` **y** `will_expire` de `User`: si `plan_data()` empieza a embeber de otro modelo, añadir su rama en `forgetModel()`.
 
 - `env()` is called directly inside `app/` code (Helpers, Library, Controllers). It breaks under `php artisan config:cache` (returns null). Use `config()` for any new code.
 - No usar el helper global `request()` en `app/Http/Controllers/`, `app/Http/Middleware/` ni `app/Exports/`: inyectar `Request $request` (Fase 4 / 4.4). Los controladores ya inyectan `Request $request`; los gateways de `app/Library/` reciben `bool $expectsJson` en `make_payment()` (Fase 4 / 4.6 implementado).
