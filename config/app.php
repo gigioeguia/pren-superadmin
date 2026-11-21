@@ -85,6 +85,10 @@ return [
 
     'asset_url' => env('ASSET_URL'),
 
+    // Seg-23 (Fase 5 / 5.6): redirect 302 http→https; proxies detrás de TLS-terminating LB.
+    'force_https' => env('FORCE_HTTPS', false),
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

@@ -12,7 +12,7 @@ npm install                       # allowScripts en package.json auto-aprueba el
 php artisan key:generate
 php artisan storage:link          # public/storage symlink is NOT committed
 php artisan migrate --seed        # runs 24 seeders in order (see DatabaseSeeder)
-php artisan test                  # suite completa (273 casos) over dbrentpro_test — see tests/README.md
+php artisan test                  # suite completa (283 casos) over dbrentpro_test — see tests/README.md
 npm run dev                       # vite (resources/css/app.css, resources/js/app.js)
 npm run build
 php artisan serve                 # local dev server
