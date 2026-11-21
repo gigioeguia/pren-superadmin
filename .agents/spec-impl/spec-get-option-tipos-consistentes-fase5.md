@@ -1,7 +1,7 @@
 ---
 id: spec-get-option-tipos-consistentes-fase5
 titulo: "Tipos consistentes en `get_option`: `App\Support\Options`, helper `: array` y guards en vistas (Fase 5 / 5.7)"
-estado: Borrador
+estado: Aprobado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.7) — .analisis/seguridad.md (Seg-24, l.141)
 cobertura: Cerrar Seg-24 estrechando `get_option` a `: array` (delegador delgado en nueva clase `App\Support\Options` con `array()`/`string()` y default tipado, nunca null), reparando los 38 accesos Blade sin guard (fila ausente/corrupta = 500 hoy), eliminando la key fantasma `logo_setting` de Flutterwave (logo nunca mostrado) y migrando el único consumidor escalar (`version` en sidebar) a `Options::string()`. Caché intacta (claves crudas + `OptionObserver`, 4.9). Catálogo U1–U11 + Pub1 + F1–F4 + G1–G2 (18 casos; suite esperada 283+18=301) + arch-test anti-reincidencia
