@@ -1,7 +1,7 @@
 ---
 id: spec-seeders-firstorcreate-fase4
 titulo: "Seeders sin IDs/rutas hardcodeadas"
-estado: Borrador
+estado: Aprobado
 fecha: 2026-11-20
 origen: .analisis/plan/plan-accion.md (Fase 4 / 4.10) + .analisis/deuda-tecnica.md (DT-M9)
 cobertura: 24 seeders de DatabaseSeeder + DemoSeeder + demoReset(); idempotencia por clave natural; 0 IDs/rutas frágiles; seed seguro sobre DB ya poblada
