@@ -7,6 +7,7 @@ use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\DemoMode;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\ExpiredMiddleware;
+use App\Http\Middleware\ForceHttps;
 use App\Http\Middleware\LandlordMiddleware;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RedirectIfAuthenticated;
@@ -48,6 +49,7 @@ class Kernel extends HttpKernel
     protected $middleware = [
         TrustHosts::class,
         TrustProxies::class,
+        ForceHttps::class,
         HandleCors::class,
         PreventRequestsDuringMaintenance::class,
         ValidatePostSize::class,
