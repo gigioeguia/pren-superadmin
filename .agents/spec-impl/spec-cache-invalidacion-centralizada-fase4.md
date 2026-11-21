@@ -1,7 +1,7 @@
 ---
 id: spec-cache-invalidacion-centralizada-fase4
 titulo: "Caché con invalidación centralizada (CacheKeys + Observers)"
-estado: Borrador
+estado: Implementado
 fecha: 2026-11-20
 origen: .analisis/plan/plan-accion.md (Fase 4 / 4.9, DT-M8)
 cobertura: 7/7 claves cacheadas con invalidación centralizada; 4/4 gaps de staleness con test; 18/18 forgets manuales eliminados
@@ -201,18 +201,18 @@ Ninguno. Decisión Q5: el comportamiento stale actual es el bug que este spec ro
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `App\Support\CacheKeys` con `option()/planData()/languages()/defaultCurrency()/forgetModel(Model): void`; `planData(int $userId)` sin valor default.
-- [ ] `cache_remember(string $key, callable $callback)` sin tercer parámetro; helper global `forgetModel(Model): void` delegando en `CacheKeys`.
-- [ ] 5 observers en `app/Observers/` registrados vía `#[ObservedBy]` en `Option`, `Language`, `Currency`, `PlanSubscribe`, `User`; eventos `saved` + `deleted`.
-- [ ] `grep -rn "Cache::forget\|cache()->forget" app/` devuelve 0 resultados (18/18 forgets eliminados).
-- [ ] `AcnooLanguageController::isDefault` llama `forgetModel()` tras la `DB::transaction` (única excepción masiva).
-- [ ] `PaymentController` sin forget dentro de la tx (convención 4.8 restaurada en ese punto).
-- [ ] 4 claves fantasma (`term-condition`, `privacy-policy`, `service-charge`, `reminder-messages`) sin forgets muertos; lecturas siguen directas a BD.
-- [ ] `.env.example` documenta `CACHE_LIFETIME=1800`.
-- [ ] Catálogo completo en verde: U1–U9, F1–F5, G1–G4, S1, P1 (20 casos).
-- [ ] Suite completa en verde; PHPStan nivel 5 sin nuevas entradas al baseline; `composer lint` limpio.
-- [ ] Tiempo total de la suite sin degradación (< 10 % de incremento).
-- [ ] `AGENTS.md` actualizado: sección caché/invalidación en gotchas (regla Q15a: mass-op sobre modelo cacheado ⇒ `forgetModel()` en la misma acción).
+- [x] `App\Support\CacheKeys` con `option()/planData()/languages()/defaultCurrency()/forgetModel(Model): void`; `planData(int $userId)` sin valor default.
+- [x] `cache_remember(string $key, callable $callback)` sin tercer parámetro; helper global `forgetModel(Model): void` delegando en `CacheKeys`.
+- [x] 5 observers en `app/Observers/` registrados vía `#[ObservedBy]` en `Option`, `Language`, `Currency`, `PlanSubscribe`, `User`; eventos `saved` + `deleted`.
+- [x] `grep -rn "Cache::forget\|cache()->forget" app/` devuelve resultados **solo en `app/Support/CacheKeys.php`** (punto único, Q11); 18/18 forgets de controladores eliminados (precisión en §11).
+- [x] `AcnooLanguageController::isDefault` llama `forgetModel()` tras la `DB::transaction` (única excepción masiva).
+- [x] `PaymentController` sin forget dentro de la tx (convención 4.8 restaurada en ese punto).
+- [x] 4 claves fantasma (`term-condition`, `privacy-policy`, `service-charge`, `reminder-messages`) sin forgets muertos; lecturas siguen directas a BD.
+- [x] `.env.example` documenta `CACHE_LIFETIME=1800`.
+- [x] Catálogo completo en verde: U1–U9, F1–F5, G1–G4, S1, P1 (20 casos).
+- [x] Suite completa en verde; PHPStan nivel 5 sin nuevas entradas al baseline; `composer lint` limpio.
+- [x] Tiempo total de la suite sin degradación (< 10 % de incremento).
+- [x] `AGENTS.md` actualizado: sección caché/invalidación en gotchas (regla Q15a: mass-op sobre modelo cacheado ⇒ `forgetModel()` en la misma acción).
 
 ---
 
@@ -252,3 +252,15 @@ Ninguno. Decisión Q5: el comportamiento stale actual es el bug que este spec ro
 - `.agents/spec-impl/spec-helpers-globales-clases-fase4.md` → patrón Support classes + helpers delgados
 - `.agents/spec/spec-conventions.md`, `.agents/spec/spec-template.md`
 - `AGENTS.md` → helpers globales / gotchas
+
+---
+
+## 11. Notas de implementación (2026-11-20)
+
+DoD verificado con evidencia:
+
+- **Suite:** 244/244 en verde (224 previos + 20 del catálogo). Baseline pre-cambio medido vía stash: 224 tests / 41.29 s → 244 tests / 41.68 s (**+0.9 %** — DoD de duración cumplido).
+- **PHPStan nivel 5:** sin nuevas entradas; se **eliminó** la entrada huérfana `if.alwaysTrue` de `AcnooTermConditionController` (baseline 910→909) — el código que cubría (el `if` muerto del forget fantasma de `term-condition`) fue borrado por este spec. Pint limpio.
+- **Precisión del DoD grep:** el único `cache()->forget` de `app/` vive en `CacheKeys::forgetModel()` — el punto único diseñado en Q11 debe poder llamar a `forget`; el DoD exige cero usos fuera de esa clase.
+- **Deferring after-commit descartado en implementación:** `ShouldHandleEventsAfterCommit` (verificado contra el código del framework: solo aplica a post-eventos como `saved`/`deleted`) rompería la observabilidad bajo `RefreshDatabase` — los callbacks difieren al commit real, que en tests es rollback, y los 20 tests del catálogo no verían la invalidación. Los observers invalidan en el momento del evento Eloquent; la carrera pre-commit que el deferring cerraría existe hoy igualmente (p.ej. el forget inside-tx de `PaymentController:367` pre-cambio) y quedó fuera del alcance fijado en Q2.
+- Normalizado typo de estado `Aprovado` → `Aprobado`.
