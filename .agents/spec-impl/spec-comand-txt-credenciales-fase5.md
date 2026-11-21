@@ -129,7 +129,7 @@ Este spec no cubre flujos HTTP; el catálogo adapta `Dado/Cuando/Entonces` a ver
 - [x] Métrica "`comand.txt` saneado/fuera de exposición y secretos rotados" en `✅` en `plan-accion.md` (2026-11-21) con referencia a este spec.
 - [x] `seguridad.md` (fila 19–26, Seg-19 y Referencia sensible), `deuda-tecnica.md` (DT-B9 y Referencia sensible) y `resumen-ejecutivo.md` actualizados (2026-11-21) — ninguna sección describe la acción como pendiente; la parte de `UserSeeder` queda explícitamente bajo 5.2.
 - [x] F8 en verde (2026-11-21): 0 pares email+password de `comand.txt` en HEAD, working tree y `.analisis/` — emails solo en este spec (sin passwords) y en `comand.txt` saneado; la única coincidencia de `1234567890` es un fixture de teléfono en `tests/Feature/Idor/PropertyOwnershipSmokeTest.php`, no un par credencial.
-- [ ] PR con este spec como único cambio de repo; CI verde — se tacha con el link del run al confirmarse (patrón `spec-upgrade-laravel-php-fase4`).
+- [x] PR con este spec como único cambio de repo (`git diff main...HEAD --stat` = 1 archivo, el spec); CI verde: PR #45, run https://github.com/gigioeguia/pren-superadmin/actions/runs/44873695707 (tests, static-analysis, style, frontend-build = success).
 
 ---
 
