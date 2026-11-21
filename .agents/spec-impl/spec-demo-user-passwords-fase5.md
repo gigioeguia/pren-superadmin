@@ -131,7 +131,7 @@ Fijadas (grilling 2026-11-21, Q1–Q6), no negociables salvo volver el spec a `B
 - [x] README y AGENTS.md actualizados: 0 credenciales publicadas, modelo nuevo documentado (grep vacío sobre README/AGENTS.md).
 - [x] Cierre documental local: `plan-accion.md` fila 5.2 → Implementado (2026-11-21) y fila 5.1 con "desde 5.2"; `seguridad.md` Seg-19 cerrado completo (fila 19–26 actualizada).
 - [x] Riesgo residual Q6 (DBs ya sembradas) documentado en §8 y en README — sin mecanismo de rotación forzada.
-- [ ] PR (código + tests + docs) con CI verde (4 jobs); review y merge por squash — se tacha con el link del run al confirmarse (patrón `spec-upgrade-laravel-php-fase4`).
+- [x] PR (código + tests + docs) con CI verde: PR #47, run https://github.com/gigioeguia/pren-superadmin/actions/runs/44920287642 (tests, static-analysis, style, frontend-build = success); merge por squash pendiente de review.
 
 ---
 
