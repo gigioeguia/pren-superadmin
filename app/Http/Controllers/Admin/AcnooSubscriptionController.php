@@ -10,7 +10,6 @@ use App\Traits\HasAcnooActions;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -91,8 +90,6 @@ class AcnooSubscriptionController extends Controller
                 ]);
 
                 DB::commit();
-
-                Cache::forget('plan-data-'.$subscribe->user_id);
 
                 sendNotification($subscribe->id, notify_users([$subscribe->user->id]), admin_url: route('admin.subscriptions.index', ['id' => $subscribe->id]), admin_msg: __('A new subscription has been activated.'), landlord_msg: __('Your subscription has been successfully activated. Enjoy the benefits!'));
 

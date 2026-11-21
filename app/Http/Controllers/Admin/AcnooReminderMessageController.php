@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Option;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class AcnooReminderMessageController extends Controller
 {
@@ -50,7 +49,6 @@ class AcnooReminderMessageController extends Controller
         ]);
 
         $message = Option::where('key', 'reminder-messages')->findOrFail($id);
-        Cache::forget($message->key);
         $message->update([
             'key' => 'reminder-messages',
             'value' => $request->except('_token', '_method'),
