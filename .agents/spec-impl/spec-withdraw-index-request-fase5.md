@@ -1,7 +1,7 @@
 ---
 id: spec-withdraw-index-request-fase5
 titulo: "Cierre Seg-20: `AcnooWithdrawController::index` ya corregido en 4.4 — test de regresión HTTP y sellado documental (Fase 5 / 5.3)"
-estado: Borrador
+estado: Aprobado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.3) — .analisis/seguridad.md (Seg-20) — .agents/spec-impl/spec-inyectar-request-fase4.md (absorción)
 cobertura: Cierre del bug Seg-20 (`index` usaba `$request->per_page` sin inyectar `Request` → error en runtime): documenta la absorción por Fase 4 / 4.4 (commit ea07c87), añade la anti-regresión que 4.4 dejó como "Inspección" (test HTTP F1–F3: per_page, rango de fechas, scoping por user_id), sella los documentos que aún listan el hallazgo como vivo (seguridad.md #20, plan-accion 5.3, índice .agents/README.md) y actualiza los conteos de suite 254→257 en README.md, tests/README.md y AGENTS.md
