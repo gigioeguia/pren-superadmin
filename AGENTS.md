@@ -12,7 +12,7 @@ npm install                       # allowScripts en package.json auto-aprueba el
 php artisan key:generate
 php artisan storage:link          # public/storage symlink is NOT committed
 php artisan migrate --seed        # runs 24 seeders in order (see DatabaseSeeder)
-php artisan test                  # smoke suite (59 cases) over dbrentpro_test — see tests/README.md
+php artisan test                  # suite completa (224 casos) over dbrentpro_test — see tests/README.md
 npm run dev                       # vite (resources/css/app.css, resources/js/app.js)
 npm run build
 php artisan serve                 # local dev server
@@ -52,9 +52,9 @@ Desde Fase 4 / 4.6 la lógica de moneda y OTP vive en clases inyectables del con
 
 ## Payments architecture
 
-- 11 gateways in `app/Library/` (Stripe, Mollie, Razorpay, FedaPay, Paystack, Flutterwave, Instamojo, Toyyibpay, Thawani, Tap, Billplz). Each class implements `make_payment(array $data)` and `status()`.
+- 11 gateways in `app/Library/` (Stripe, Mollie, Razorpay, FedaPay, Paystack, Flutterwave, Instamojo, Toyyibpay, Thawani, Tap, Billplz). Each class implements `make_payment(array $data, bool $expectsJson = false)` and `status()`.
 - Gateways are DB-driven: `Gateway->namespace` holds the class FQCN, invoked dynamically as `$gateway->namespace::make_payment($data)`. **Editing a gateway class requires updating the file, the DB row, and `config/gateways.php` (whitelist; Fase 2 / 2.5).** A namespace not whitelisted is blocked with `403` at invocation.
-- Payment URLs are signed (`signed` middleware) and `/payment/success` requires auth + gateway verification/idempotency (Fase 2 / 2.3–2.4); webhooks/callbacks are hardened (Fase 1 / 1.6).
+- Payment URLs are signed (`signed` middleware) and `/payment/success` requires auth + gateway verification/idempotency (Fase 2 / 2.3–2.4); webhooks/callbacks are hardened (Fase 1 / 1.6). Desde Fase 4 / 4.8 la verificación de pago (Stripe HTTP) y los early returns ocurren **antes** de abrir la transacción DB; la tx solo envuelve escrituras.
 - `.env.example` does **not** list the 11 gateway env vars (`STRIPE_KEY`, `STRIPE_SECRET`, `MOLLIE_API_KEY`, `FEDAPAY_API_KEY`, `PAYSTACK_*`, `RAZORPAY_*`, `INSTAMOJO_*`, `TOYYIBPAY_*`, `FLUTTERWAVE_*`, `THAWANI_*`, `TAP_*`, `BILLPLZ_*`). Copy from a working `.env`.
 - `DEMO_MODE` env enables `DemoMode` middleware, which blocks mutating routes (see `$adminDisabledRoutes` / `$landlordDisabledRoutes` in `app/Http/Middleware/DemoMode.php`). **Nota (Fase 3 / 3.5):** la activación ahora depende exclusivamente de `APP_ENV=demo` (`app()->environment('demo')`); `env('DEMO_MODE')` ya no se consulta. La restricción de landlords se basa en `users.is_demo`.
 
@@ -75,8 +75,10 @@ Desde Fase 4 / 4.6 la lógica de moneda y OTP vive en clases inyectables del con
 
 ## Gotchas
 
+- **Transacciones sin E/S externa (Fase 4 / 4.8):** `DB::beginTransaction()` envuelve únicamente escrituras DB. Convención: uploads antes de abrir la tx; `Mail` y borrados de archivos viejos **después** del `DB::commit()` (rutas capturadas en arrays dentro de la tx, borrado best-effort); HTTP de gateways/Stripe y early returns de verificación fuera de la tx. No reintroducir `Mail::`/`make_payment`/uploads/`Storage::` entre `beginTransaction` y `commit`.
+
 - `env()` is called directly inside `app/` code (Helpers, Library, Controllers). It breaks under `php artisan config:cache` (returns null). Use `config()` for any new code.
-- No usar el helper global `request()` en `app/Http/Controllers/`, `app/Http/Middleware/` ni `app/Exports/`: inyectar `Request $request` (Fase 4 / 4.4). Los controladores ya inyectan `Request $request`; los gateways de `app/Library/` siguen usando `request()->expectsJson()` (pendiente, Fase 4.6).
+- No usar el helper global `request()` en `app/Http/Controllers/`, `app/Http/Middleware/` ni `app/Exports/`: inyectar `Request $request` (Fase 4 / 4.4). Los controladores ya inyectan `Request $request`; los gateways de `app/Library/` reciben `bool $expectsJson` en `make_payment()` (Fase 4 / 4.6 implementado).
 - `User->role` is a plain string column AND `User` uses Spatie `HasRoles`. Two parallel role systems.
 - `User` `$fillable` includes `role`, `balance`, `is_setupped`, `plan_subscribe_id` — mass-assignable.
 - `safiull/laravel-installer` adds a `/install` route and `CheckToken` middleware in the `web` group.

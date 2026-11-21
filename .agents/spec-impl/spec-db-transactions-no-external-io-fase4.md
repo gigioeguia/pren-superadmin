@@ -1,7 +1,7 @@
 ---
 id: spec-db-transactions-no-external-io-fase4
 titulo: "Transacciones DB sin E/S externa (Fase 4 / 4.8)"
-estado: Aprobada
+estado: Implementado
 fecha: 2026-11-20
 origen: .analisis/plan/plan-accion.md (Fase 4 / 4.8) — DT-M5
 cobertura: Sacar Mail, HTTP (gateways/Stripe) y uploads/Storage de dentro de DB::beginTransaction en todos los sitios inventariados; transacción solo para escrituras DB.
@@ -64,7 +64,7 @@ Hacer que cada `DB::beginTransaction()` envuelva **únicamente escrituras DB**, 
 | I3 | `app/Services/TenantService.php` | `delete()` | `deleteOldFile` (Storage ×3) | Borrar archivos después del commit (best-effort) |
 | I4 | `app/Services/PropertyService.php` | `store()` | `multipleUploadArray` (cover/floorplan/unidades) | Subir antes; usar rutas calculadas dentro |
 | I5 | `app/Services/PropertyService.php` | `update()` | `multipleUploadArray`, `Storage::delete/deleteDirectory` | Subir antes; borrados después del commit (capturar rutas) |
-| I6 | `app/Http/Controllers/Api/Auth/SignupController.php` | `store()` (rama OTP) | `Mail::` | Mover `Mail` después de `DB::commit()` |
+| I6 | `app/Http/Controllers/Auth/SignupController.php` | `store()` (rama OTP) | `Mail::` | Mover `Mail` después de `DB::commit()` |
 | I7 | `app/Http/Controllers/Api/Auth/RegistrationController.php` | `maanRegistration()` | `Mail::` | Mover `Mail` después de `DB::commit()` |
 | I8 | `app/Http/Controllers/Api/UserController.php` | `update()` | `upload`, `deleteOldFile` (Storage) | Subir/borrar fuera; capturar rutas |
 | I9 | `app/Http/Controllers/Api/AcnooRentController.php` | `store()` | `upload` (landlord_agreement) | Subir antes del `beginTransaction` |
@@ -147,13 +147,25 @@ Ninguno nuevo. Los casos P12–P17 (pagos) y los smoke tests existentes sirven d
 
 ## 8. Criterios de aceptación (Definition of Done)
 
-- [ ] I1–I18 implementados según el inventario (§4) y el patrón (§6).
-- [ ] 0 llamadas a `Mail::`, `make_payment`, `->upload(`, `uploadFromFiles`, `multipleUploadArray` o `Storage::` entre `DB::beginTransaction()` y `DB::commit()`/`DB::rollBack()` en los archivos inventariados (verificación manual + grep por archivo).
-- [ ] `PaymentController::success()` abre la transacción solo tras la verificación de pago y los early returns.
-- [ ] `AcnooSecurityDepositController::offline_payment()` calcula el attachment una sola vez.
-- [ ] `php artisan test` en verde (F18).
-- [ ] `composer analyse` sin nuevos errores (F19).
-- [ ] `composer lint` limpio (F20).
+- [x] I1–I18 implementados según el inventario (§4) y el patrón (§6).
+- [x] 0 llamadas a `Mail::`, `make_payment`, `->upload(`, `uploadFromFiles`, `multipleUploadArray` o `Storage::` entre `DB::beginTransaction()` y `DB::commit()`/`DB::rollBack()` en los archivos inventariados (verificación manual + grep por archivo).
+- [x] `PaymentController::success()` abre la transacción solo tras la verificación de pago y los early returns.
+- [x] `AcnooSecurityDepositController::offline_payment()` calcula el attachment una sola vez.
+- [x] `php artisan test` en verde (F18) — 224 passed, 520 assertions.
+- [x] `composer analyse` sin nuevos errores (F19) — `[OK] No errors` vs baseline.
+- [x] `composer lint` limpio (F20) — passed.
+- [x] Build frontend intacto (F21) — `npm run build` OK, sin cambios de frontend.
+
+### Desviaciones detectadas durante la implementación
+
+| # | Sitio | Spec dice | Código real (implementado) |
+|---|-------|-----------|---------------------------|
+| D1 | I6 | `app/Http/Controllers/Api/Auth/SignupController.php` | El archivo real es `app/Http/Controllers/Auth/SignupController.php` (errata de ruta; mismo método `store()`, rama OTP). Ruta corregida en §4 e implementado en la real. |
+| D2 | I16/I17 | "Admin\AcnooLandlordController (×2)" (store/update) | El DoD por-archivo ("0 `Storage::` por archivo") obliga a cubrir también `destroy()`/`deleteAll()` del mismo controlador (no listados en §4). Se aplicó el mismo patrón: capturar rutas dentro de la tx, `file_exists`+`Storage::delete` tras el commit. Mismo archivo, sin improvisar archivos nuevos. |
+| D3 | Signup/Registration | Early return de "email ya existe" dentro de la tx (implícito en §4) | Movido **antes** de `DB::beginTransaction()`: mismo bug latente que §9 reconoce para `success()` (tx abierta sin commit/rollback). `DB::rollBack()` sin tx activa es no-op en Laravel 11 (guard `$toLevel < 0` en `ManagesTransactions`), seguro para los `findOrFail` previos a la tx. |
+| D4 | I10 | `payment_receipt` se sube dos veces (payment_data + notes.attachment, con huérfano) | Exigido por el propio DoD: un solo upload (`$receiptPath`) reutilizado en ambos payloads; desaparece el archivo huérfano. |
+
+Estado → `Implementado`: implementado vía PR #41 (rama `spec/db-transactions-no-external-io-fase4-impl`), DoD §8 verificado y tachado con evidencia (suite 224/520, PHPStan/Pint/build en verde), desviaciones D1–D4 documentadas arriba y decisiones pendientes de §9 resueltas conforme a lo propuesto.
 
 ## 9. Riesgos y decisiones pendientes
 
@@ -165,9 +177,9 @@ Ninguno nuevo. Los casos P12–P17 (pagos) y los smoke tests existentes sirven d
 | `success()` con early returns dentro de la transacción (bug latente) | Alto | Mover verificación antes de `beginTransaction` (F15) |
 | Regresión en flujos de pago/auth/properties | Alto | Suite de smoke tests + P12–P17 + PHPStan/Pint |
 
-**Pendiente de decisión:**
-- Si los borrados de archivos viejos en `update()` deben capturarse en un array (recomendado) o ejecutarse inline antes del commit (no recomendado). Este spec propone capturar y ejecutar tras commit.
-- Si `TenantService::delete()` debe borrar archivos antes o después de `$user->delete()` (este spec propone después del commit, capturando rutas antes).
+**Pendiente de decisión — resuelto en la implementación (PR #41):**
+- Borrados de archivos viejos en `update()`: **capturar en array y ejecutar tras el commit** (opción recomendada), implementado en `TenantService::update`, `PropertyService::update`, `UserController::profileSetUp`, `AcnooProfileController` (landlord/admin) y `AcnooLandlordController::update`.
+- `TenantService::delete()`: **borrar después del commit**, capturando rutas antes de abrir la transacción (implementado así).
 
 ## 10. Estimación
 
