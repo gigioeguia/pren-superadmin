@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Support\DemoCredentials;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -162,16 +163,22 @@ class PermissionSeeder extends Seeder
             $this->command->info("Creating '{$key}' user");
             // Create default user for each role (idempotent by email, spec 4.10)
             $generated_role = str($key)->remove(' ')->lower();
+            $email = $generated_role.'@acnoo.com';
             $user = User::firstOrCreate([
-                'email' => $generated_role.'@acnoo.com',
+                'email' => $email,
             ], [
                 'role' => $generated_role,
                 'name' => ucwords(str_replace('_', ' ', $key)),
-                'password' => bcrypt($generated_role),
+                // Password demo: config o aleatoria (Fase 5 / 5.2)
+                'password' => DemoCredentials::hash(DemoCredentials::password($email)),
                 'plan_subscribe_id' => null,
                 'will_expire' => null,
                 'email_verified_at' => now(),
             ]);
+
+            if ($user->wasRecentlyCreated && ($generated = DemoCredentials::generatedFor($email))) {
+                $this->command->info("[demo] {$email} / {$generated} (password aleatorio: no se vuelve a mostrar)");
+            }
 
             $user->assignRole($role);
         }

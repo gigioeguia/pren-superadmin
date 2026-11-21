@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\User;
+use App\Support\DemoCredentials;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -82,7 +83,8 @@ class UserFactory extends Factory
     }
 
     /**
-     * Landlord demo de UserSeeder: credenciales fijas (spec 4.10 / DT-M9).
+     * Landlord demo de UserSeeder (spec 4.10 / DT-M9).
+     * Password vía App\Support\DemoCredentials: config o aleatoria (Fase 5 / 5.2).
      * role/is_demo no son fillables y se fuerzan tras crear.
      */
     public function demoLandlord(): static
@@ -92,7 +94,7 @@ class UserFactory extends Factory
             'email' => 'landlord@acnoo.com',
             'image' => 'uploads/25/05-132/1748140914.jpeg',
             'phone' => ['mobile_code' => '+880', 'mobile_no' => '01933445566'],
-            'password' => bcrypt('landlord'),
+            'password' => DemoCredentials::hash(DemoCredentials::password('landlord@acnoo.com')),
             'unique_id' => '687324',
             'is_setupped' => 1,
             'balance' => 1000,
@@ -106,7 +108,8 @@ class UserFactory extends Factory
     }
 
     /**
-     * Tenant demo de UserSeeder: credenciales fijas (spec 4.10 / DT-M9).
+     * Tenant demo de UserSeeder (spec 4.10 / DT-M9).
+     * Password vía App\Support\DemoCredentials: config o aleatoria (Fase 5 / 5.2).
      */
     public function demoTenant(): static
     {
@@ -114,8 +117,7 @@ class UserFactory extends Factory
             'name' => 'Britanni Edwards',
             'email' => 'tenant@acnoo.com',
             'phone' => ['mobile_code' => '+260', 'mobile_no' => '34'],
-            // hash literal de la fila original: password 'tenant'
-            'password' => '$2y$10$Ptk1xPUe6hg6Brstl8.XkOkL7arOFQv8N0dd4eDrv1MIF9ZXNW3rW',
+            'password' => DemoCredentials::hash(DemoCredentials::password('tenant@acnoo.com')),
             'unique_id' => '000004',
             'is_setupped' => 1,
             'balance' => 0,

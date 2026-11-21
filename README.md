@@ -36,14 +36,12 @@ php artisan serve
 
 ## Credenciales demo
 
-`migrate --seed` crea 4 usuarios demo con passwords predecibles — **solo para evaluación local, nunca en producción** (contraseñas no predecibles pendientes, ítem 5.2 del plan):
+`migrate --seed` crea 4 usuarios demo (`superadmin@` / `admin@` / `landlord@` / `tenant@acnoo.com`) — **solo para evaluación local, nunca en producción**. Sus passwords **no son predecibles** (ítem 5.2 del plan, implementado):
 
-| Email | Password | Rol |
-|---|---|---|
-| `superadmin@acnoo.com` | `superadmin` | superadmin |
-| `admin@acnoo.com` | `admin` | admin |
-| `landlord@acnoo.com` | `landlord` | landlord (demo) |
-| `tenant@acnoo.com` | `tenant` | tenant |
+- Si fijas `DEMO_USER_PASSWORD` en tu `.env` antes de sembrar, los 4 usuarios usan ese valor.
+- Si la dejas vacía, se genera una aleatoria por usuario y se **imprime en consola al crearlas** — cópialas entonces: un re-seed no las vuelve a mostrar.
+
+Despliegues sembrados con versiones previas conservan los passwords antiguos (`superadmin`/`admin`/`landlord`/`tenant`): rotar o desactivar esas cuentas en cualquier despliegue real.
 
 ## Workflow de contribución
 
@@ -65,7 +63,7 @@ Precondiciones, mocks obligatorios y cobertura de endpoints: ver [`tests/README.
 
 - `npm audit` reporta **0 vulnerabilidades** tras la migración del stack de build a Vite 6 (ítem 4.5 del plan, implementado). **No** ejecutar `npm audit fix --force` (instalaría versiones breaking).
 - Laravel 11 y PHP 8.3 con **Fase 4 completa (4.1–4.10)**. El plan de remediación por fases (26 vulnerabilencias, 28 ítems de deuda) vive en `.analisis/plan/plan-accion.md` (carpeta gitignored, solo local). Estado actual: Fases 0–4 implementadas; Fase 5 (higiene) ongoing — ver `plan-accion.md` para el detalle.
-- Los 4 usuarios demo tienen passwords predecibles (ver arriba): rotarlos/desactivarlos en cualquier despliegue real (ítem 5.2).
+- Passwords demo **no predecibles** (ítem 5.2 implementado, ver "Credenciales demo"): `DEMO_USER_PASSWORD` en `.env` o aleatorias impresas al sembrar. Instancias sembradas con versiones previas: rotar/desactivar las cuentas demo.
 
 ## Documentación interna
 
