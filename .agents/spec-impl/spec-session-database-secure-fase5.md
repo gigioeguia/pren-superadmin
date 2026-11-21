@@ -140,18 +140,18 @@ Ninguno: no hay bug vigente que se espere romper — el fix ES este spec.
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `config/session.php`: las 2 líneas del §2 IN; `http_only`, `same_site`, `encrypt`, `lifetime` intactos (inspección).
-- [ ] Migración `sessions` con el schema estándar de `session:table`; `php artisan migrate` en verde; corre bajo `RefreshDatabase` sin errores.
-- [ ] `.env.example` l.28 `SESSION_DRIVER=database` + `# SESSION_SECURE_COOKIE=` comentada con explicación de una línea (válvula, Q11).
-- [ ] `.env` local con `SESSION_DRIVER=database` (sin commit — lo verifica el implementador en su entorno).
-- [ ] U1–U5 en verde (focal: 5 passed); `$_ENV` restaurado en `tearDown`.
-- [ ] F1–F2 en verde (focal: 2 passed).
-- [ ] Suite completa: esperados **273 passed** (266+7), **verificados contra salida real** de `php artisan test` (lección 5.3).
-- [ ] `phpunit.xml` sin cambios (la suite existente corre con `array`/`http://localhost`).
-- [ ] `composer analyse` sin nuevas entradas vs baseline; `composer lint` limpio.
-- [ ] Conteos **273** en `README.md`, `tests/README.md`, `AGENTS.md`; `tests/README.md` con `Unit/Config/` en el árbol + mini-sección "## Session (Fase 5 / 5.5)"; `.agents/README.md` índice fase5 (5 specs, conteo 50).
-- [ ] Sin notas de despliegue nuevas en `README.md` (Q10) — conteos únicamente.
-- [ ] Cierres locales `.analisis/` (gitignored): `seguridad.md` #22 → Mitigado + residual; `plan-accion.md` fila 5.5 + métrica (redacciones de la nota 4).
+- [x] `config/session.php`: las 2 líneas del §2 IN; `http_only`, `same_site`, `encrypt`, `lifetime` intactos (inspección: diff de exactamente 2 líneas).
+- [x] Migración `sessions` con el schema estándar de `session:table` (`2026_11_22_000415`); `php artisan migrate` en verde; corre bajo `RefreshDatabase` sin errores.
+- [x] `.env.example` l.28 `SESSION_DRIVER=database` + `# SESSION_SECURE_COOKIE=` comentada con explicación de una línea (válvula, Q11).
+- [x] `.env` local con `SESSION_DRIVER=database` (sin commit — verificado en el entorno del implementador).
+- [x] U1–U5 en verde (focal: 5 passed); `$_ENV`/`$_SERVER` restaurados en `tearDown` (snapshot tras el boot).
+- [x] F1–F2 en verde (focal: 2 passed).
+- [x] Suite completa: **273 passed (834 assertions)** — exacto 266+7, verificados contra salida real de `php artisan test`.
+- [x] `phpunit.xml` sin cambios (la suite existente corre con `array`/`http://localhost`).
+- [x] `composer analyse` sin nuevas entradas vs baseline ([OK]); `composer lint` limpio (tras auto-fix de `ordered_imports` en el feature test).
+- [x] Conteos **273** en `README.md`, `tests/README.md`, `AGENTS.md`; `tests/README.md` con `Unit/Config/` en el árbol + mini-sección "## Session (Fase 5 / 5.5)"; `.agents/README.md` índice fase5 (5 specs, conteo 50 — commiteado con el draft).
+- [x] Sin notas de despliegue nuevas en `README.md` (Q10) — conteos únicamente.
+- [x] Cierres locales `.analisis/` (gitignored): `seguridad.md` #22 → Mitigado + residual; `plan-accion.md` fila 5.5 + métrica (redacciones de la nota 4).
 - [ ] Rama `spec/session-database-secure-fase5-impl` + PR review (squash, 1 aprobación + CI); sin push a `main`; nada mergeado en Borrador.
 
 ---
