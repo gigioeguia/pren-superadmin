@@ -7,7 +7,9 @@ use App\Models\Option;
 use App\Models\PlanSubscribe;
 use App\Models\User;
 use App\Notifications\SendNotification;
+use App\Support\CacheKeys;
 use App\Support\Payment;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Date;
@@ -25,14 +27,19 @@ function getArrow(float|int $last, float|int $current): string
     return $current > $last ? 'up' : ($current < $last ? 'down' : 'same');
 }
 
-function cache_remember(string $key, callable $callback, int $ttl = 1800): mixed
+function cache_remember(string $key, callable $callback): mixed
 {
-    return cache()->remember($key, (int) config('cache.lifetime', $ttl), $callback);
+    return cache()->remember($key, (int) config('cache.lifetime', 1800), $callback);
+}
+
+function forgetModel(Model $model): void
+{
+    CacheKeys::forgetModel($model);
 }
 
 function get_option(string $key): mixed
 {
-    return cache_remember($key, fn () => Option::where('key', $key)->value('value') ?? []);
+    return cache_remember(CacheKeys::option($key), fn () => Option::where('key', $key)->value('value') ?? []);
 }
 
 function formatted_date(string $date, string $format = 'd M, Y'): ?string
@@ -105,8 +112,10 @@ function sendNotification(
 
 function plan_data(?string $landlord_id = null): ?PlanSubscribe
 {
-    return cache_remember('plan-data-'.($landlord_id ?? auth()->id()), function () use ($landlord_id) {
-        $planSubscribe = PlanSubscribe::where('user_id', $landlord_id ?? auth()->id())->latest()->first();
+    $userId = (int) ($landlord_id ?? auth()->id());
+
+    return cache_remember(CacheKeys::planData($userId), function () use ($userId) {
+        $planSubscribe = PlanSubscribe::where('user_id', $userId)->latest()->first();
 
         if ($planSubscribe) {
             $user = User::find($planSubscribe->user_id);
@@ -119,7 +128,7 @@ function plan_data(?string $landlord_id = null): ?PlanSubscribe
 
 function languages()
 {
-    return cache_remember('languages', function () {
+    return cache_remember(CacheKeys::languages(), function () {
         return Language::orderBy('order', 'asc')->where('status', 1)->get();
     });
 }
