@@ -11,7 +11,7 @@ Carpeta de convenciones, especificaciones, skills y decisiones que rigen cómo t
 ├── spec/                      # convenciones + plantilla para specs
 │   ├── spec-conventions.md
 │   └── spec-template.md
-├── spec-impl/                 # specs concretos (45; un archivo por spec)
+├── spec-impl/                 # specs concretos (48; un archivo por spec)
 │   │
 │   ├── fase0 (3):  spec-tests-smoke-fase0 · spec-phpstan-pint-ci-fase0 · spec-trait-acnoo-fase0
 │   ├── fase1 (6):  spec-admin-middleware-fase1 · spec-env-inseguro-fase1 · spec-registro-api-role-arbitrario-fase1 ·
@@ -30,6 +30,8 @@ Carpeta de convenciones, especificaciones, skills y decisiones que rigen cómo t
 │   │               spec-helpers-globales-clases-fase4 · spec-plan-duration-days-fase4 ·
 │   │               spec-db-transactions-no-external-io-fase4 · spec-cache-invalidacion-centralizada-fase4 ·
 │   │               spec-seeders-firstorcreate-fase4
+│   ├── fase5 (3):  spec-comand-txt-credenciales-fase5 · spec-demo-user-passwords-fase5 ·
+│   │               spec-withdraw-index-request-fase5
 │   └── meta (1):   spec-reconciliacion-analisis-fase0-3
 │
 ├── skills/                    # procedimientos operacionales
@@ -44,7 +46,7 @@ Carpeta de convenciones, especificaciones, skills y decisiones que rigen cómo t
     └── 0001-mysql-test-db.md
 ```
 
-> Índice regenerado 2026-11-21 (cierre de Fase 4): solo contenido trackeado; los archivos locales sin extensión bajo `skills/` (herramientas de agente) no se listan.
+> Índice regenerado 2026-11-21 (cierre de Fase 4; sección fase5 incorporada en `spec-withdraw-index-request-fase5`): solo contenido trackeado; los archivos locales sin extensión bajo `skills/` (herramientas de agente) no se listan.
 
 ## Orden de lectura sugerido (para un agente nuevo)
 
