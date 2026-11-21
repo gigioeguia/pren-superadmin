@@ -296,12 +296,6 @@ parameters:
 			path: app/Http/Controllers/Admin/AcnooSupportController.php
 
 		-
-			message: '#^If condition is always true\.$#'
-			identifier: if.alwaysTrue
-			count: 1
-			path: app/Http/Controllers/Admin/AcnooTermConditionController.php
-
-		-
 			message: '#^Relation ''gateway'' is not found in App\\Models\\Transaction model\.$#'
 			identifier: larastan.relationExistence
 			count: 3

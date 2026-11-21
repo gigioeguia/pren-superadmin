@@ -51,7 +51,7 @@ class Currency
 
     public static function default(?string $key = null, ?CurrencyModel $currency = null): mixed
     {
-        $currency = $currency ?? cache_remember('default_currency', function () {
+        $currency = $currency ?? cache_remember(CacheKeys::defaultCurrency(), function () {
             return CurrencyModel::where('is_default', 1)->first() ?? (object) [
                 'name' => 'US Dollar',
                 'code' => 'USD',

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Option;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class AcnooSettingsManagerController extends Controller
 {
@@ -41,8 +40,6 @@ class AcnooSettingsManagerController extends Controller
                 'otp_duration_type' => $otpDurationType,
             ]]
         );
-
-        Cache::forget('email-varification');
 
         return response()->json(__('Otp setting updated successfully.'));
     }

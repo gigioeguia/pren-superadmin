@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Option;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class AcnooPrivacyPolicyController extends Controller
 {
@@ -36,8 +35,6 @@ class AcnooPrivacyPolicyController extends Controller
                 'description' => $request->description,
             ]]
         );
-
-        Cache::forget($privacy_policy->key);
 
         return response()->json([
             'message' => __('Privacy policy updated successfully'),

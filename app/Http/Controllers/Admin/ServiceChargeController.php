@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Option;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class ServiceChargeController extends Controller
 {
@@ -29,8 +28,6 @@ class ServiceChargeController extends Controller
             'type' => 'required|string',
         ]);
         $service_charge = Option::findOrFail($id);
-
-        Cache::forget($service_charge->key);
 
         $service_charge->update([
             'value' => $request->except('_token', '_method') + [

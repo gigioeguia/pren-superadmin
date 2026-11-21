@@ -14,7 +14,6 @@ use App\Traits\HasAcnooActions;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -138,8 +137,6 @@ class AcnooLandlordController extends Controller
             }
 
             DB::commit();
-
-            Cache::forget('plan-data-'.$user->id);
 
             sendNotification(
                 $user->id,

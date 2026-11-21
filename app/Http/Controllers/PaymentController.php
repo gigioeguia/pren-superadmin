@@ -364,7 +364,6 @@ class PaymentController extends Controller
                 ]);
             }
 
-            Cache::forget('plan-data-'.$user->id);
             session()->put('payment_processed', true);
             session()->forget('plan');
             session()->forget('plan_id');

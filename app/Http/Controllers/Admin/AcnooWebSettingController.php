@@ -6,7 +6,6 @@ use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\Option;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class AcnooWebSettingController extends Controller
 {
@@ -69,8 +68,6 @@ class AcnooWebSettingController extends Controller
 
             ],
             ]);
-
-        Cache::forget('manage-pages');
 
         return response()->json(__('Pages updated successfully.'));
     }

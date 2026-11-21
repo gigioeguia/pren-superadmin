@@ -95,8 +95,6 @@ class AcnooCurrencyController extends Controller
             $currency->update(['is_default' => 1]);
         }
 
-        cache()->forget('default_currency');
-
         return redirect()->route('admin.currencies.index')->with('message', __('Default currency activated successfully'));
     }
 

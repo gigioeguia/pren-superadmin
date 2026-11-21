@@ -6,7 +6,6 @@ use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\Option;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class SettingController extends Controller
 {
@@ -41,7 +40,6 @@ class SettingController extends Controller
         ]);
 
         $general = Option::findOrFail($id);
-        Cache::forget($general->key);
 
         $general->update([
             'value' => $request->except('_token', '_method', 'logo', 'favicon', 'login_page_img') + [

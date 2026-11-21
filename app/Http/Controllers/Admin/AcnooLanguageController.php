@@ -10,7 +10,6 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator as LengthAwarePaginator
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -49,8 +48,6 @@ class AcnooLanguageController extends Controller
         Language::create($request->except('icon') + [
             'icon' => $request->icon ? $this->upload($request, 'icon') : null,
         ]);
-
-        Cache::forget('languages');
 
         $source = base_path('lang/en.json');
         $destination = base_path("lang/{$request->code}.json");
@@ -136,8 +133,6 @@ class AcnooLanguageController extends Controller
             'icon' => $request->icon ? $this->upload($request, 'icon', $language->icon) : $language->icon,
         ]);
 
-        Cache::forget('languages');
-
         return response()->json([
             'message' => __('Language updated successfully'),
             'redirect' => route('admin.languages.index'),
@@ -164,8 +159,6 @@ class AcnooLanguageController extends Controller
 
         $language->delete();
 
-        Cache::forget('languages');
-
         return response()->json([
             'message' => __('Language deleted successfully'),
             'redirect' => route('admin.languages.index'),
@@ -184,14 +177,13 @@ class AcnooLanguageController extends Controller
 
         $language->update(['status' => $request->status]);
 
-        // cache forget
-        Cache::forget('languages');
-
         return response()->json(['message' => __('Language')]);
     }
 
     public function isDefault(string $id)
     {
+        $language = Language::find($id);
+
         DB::transaction(function () use ($id) {
             Language::query()->update([
                 'is_default' => 0,
@@ -203,6 +195,12 @@ class AcnooLanguageController extends Controller
                 'created_at' => now(),
             ]);
         });
+
+        // Excepción masiva (spec 4.9, Q15a): los updates masivos no
+        // disparan observers; invalidación explícita tras el commit.
+        if ($language) {
+            forgetModel($language);
+        }
 
         return response()->json([
             'message' => __('Default language updated successfully'),
@@ -225,8 +223,6 @@ class AcnooLanguageController extends Controller
         }
 
         $languages->each->delete();
-
-        Cache::forget('languages');
 
         return response()->json([
             'message' => __('Selected Language deleted successfully'),

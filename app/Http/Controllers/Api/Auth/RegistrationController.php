@@ -12,7 +12,6 @@ use App\Support\Otp;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -107,8 +106,6 @@ class RegistrationController extends Controller
 
                 DB::commit();
 
-                Cache::forget('plan-data-'.$user->id);
-
                 Auth::login($user);
 
                 $token = $user->createToken('api-token')->plainTextToken;
@@ -150,8 +147,6 @@ class RegistrationController extends Controller
                 'error' => __(ErrorMessage::GENERIC),
             ], 403);
         }
-
-        Cache::forget('plan-data-'.$user->id);
 
         // Envío de OTP tras el commit (Fase 4 / 4.8): sin E/S de red en la transacción.
         if (config('mail.queue')) {
