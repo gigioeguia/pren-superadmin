@@ -187,12 +187,15 @@ class AcnooTenantApplicationController extends Controller
             ? ($base_total_amount * $amount) / 100
             : $amount;
 
+        // Upload antes de abrir la transacción (Fase 4 / 4.8)
+        $tenantAgreement = $request->tenant_agreement
+            ? $this->upload($request, 'tenant_agreement')
+            : null;
+
         DB::beginTransaction();
         try {
             $agreement_sign->update([
-                'tenant_agreement' => $request->tenant_agreement
-                    ? $this->upload($request, 'tenant_agreement')
-                    : null,
+                'tenant_agreement' => $tenantAgreement,
             ]);
 
             $security_deposit = null;

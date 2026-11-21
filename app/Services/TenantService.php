@@ -115,13 +115,25 @@ class TenantService
         $landlordId = $actor?->id;
         $isSetupped = $channel === Channel::Api ? 0 : 1;
 
+        // Uploads antes de abrir la transacción (Fase 4 / 4.8)
+        $image = null;
+        if (! empty($files['image'])) {
+            $image = $this->uploadFromFiles($files['image'], 'image');
+        }
+
+        $frontImage = null;
+        $backImage = null;
+        if (! empty($files['mykad_front'])) {
+            $frontImage = $this->uploadFromFiles($files['mykad_front'], 'mykad.front_image');
+        }
+        if (! empty($files['mykad_back'])) {
+            $backImage = $this->uploadFromFiles($files['mykad_back'], 'mykad.back_image');
+        }
+
+        $mailData = null;
+
         DB::beginTransaction();
         try {
-            $image = null;
-            if (! empty($files['image'])) {
-                $image = $this->uploadFromFiles($files['image'], 'image');
-            }
-
             $user = User::create([
                 'landlord_id' => $landlordId,
                 'image' => $image,
@@ -135,15 +147,6 @@ class TenantService
 
             $user->role = 'tenant';
             $user->save();
-
-            $frontImage = null;
-            $backImage = null;
-            if (! empty($files['mykad_front'])) {
-                $frontImage = $this->uploadFromFiles($files['mykad_front'], 'mykad.front_image');
-            }
-            if (! empty($files['mykad_back'])) {
-                $backImage = $this->uploadFromFiles($files['mykad_back'], 'mykad.back_image');
-            }
 
             UserDetail::create([
                 'user_id' => $user->id,
@@ -176,18 +179,21 @@ class TenantService
                     'code' => $code,
                     'name' => $data['name'] ?? null,
                 ];
-
-                if (config('mail.queue')) {
-                    Mail::to($data['email'])->queue(new WelcomeMail($mailData));
-                } else {
-                    Mail::to($data['email'])->send(new WelcomeMail($mailData));
-                }
             }
 
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
             throw $e;
+        }
+
+        // Mail tras el commit: sin E/S de red dentro de la transacción (Fase 4 / 4.8)
+        if ($mailData !== null) {
+            if (config('mail.queue')) {
+                Mail::to($data['email'])->queue(new WelcomeMail($mailData));
+            } else {
+                Mail::to($data['email'])->send(new WelcomeMail($mailData));
+            }
         }
 
         // notifications
@@ -215,17 +221,37 @@ class TenantService
 
     public function update(User $user, array $data, Channel $channel, ?User $actor, array $files = []): User
     {
+        $userDetail = $user->user_details instanceof UserDetail ? $user->user_details : null;
+
+        // Uploads antes de abrir la transacción; rutas viejas se borran tras el commit (Fase 4 / 4.8)
+        $oldPaths = [];
+
+        $image = $user->image;
+        if (! empty($files['image'])) {
+            if (! empty($user->image)) {
+                $oldPaths[] = $user->image;
+            }
+            $image = $this->uploadFromFiles($files['image'], 'image');
+        }
+
+        $frontImage = $userDetail?->mykad['front_image'] ?? null;
+        if (! empty($files['mykad_front'])) {
+            if ($frontImage) {
+                $oldPaths[] = $frontImage;
+            }
+            $frontImage = $this->uploadFromFiles($files['mykad_front'], 'mykad.front_image');
+        }
+
+        $backImage = $userDetail?->mykad['back_image'] ?? null;
+        if (! empty($files['mykad_back'])) {
+            if ($backImage) {
+                $oldPaths[] = $backImage;
+            }
+            $backImage = $this->uploadFromFiles($files['mykad_back'], 'mykad.back_image');
+        }
+
         DB::beginTransaction();
         try {
-            if (! empty($files['image'])) {
-                if (! empty($user->image)) {
-                    $this->deleteOldFile($user->image);
-                }
-                $image = $this->uploadFromFiles($files['image'], 'image');
-            } else {
-                $image = $user->image;
-            }
-
             $user->update([
                 'landlord_id' => $actor ? $actor->id : $user->landlord_id,
                 'image' => $image,
@@ -240,25 +266,7 @@ class TenantService
             $user->role = 'tenant';
             $user->save();
 
-            $userDetail = $user->user_details instanceof UserDetail ? $user->user_details : null;
             if ($userDetail) {
-                if (! empty($files['mykad_front'])) {
-                    if (! empty($userDetail->mykad['front_image'])) {
-                        $this->deleteOldFile($userDetail->mykad['front_image']);
-                    }
-                    $frontImage = $this->uploadFromFiles($files['mykad_front'], 'mykad.front_image');
-                } else {
-                    $frontImage = $userDetail->mykad['front_image'] ?? null;
-                }
-                if (! empty($files['mykad_back'])) {
-                    if (! empty($userDetail->mykad['back_image'])) {
-                        $this->deleteOldFile($userDetail->mykad['back_image']);
-                    }
-                    $backImage = $this->uploadFromFiles($files['mykad_back'], 'mykad.back_image');
-                } else {
-                    $backImage = $userDetail->mykad['back_image'] ?? null;
-                }
-
                 $userDetail->update([
                     'gender' => $data['gender'] ?? $userDetail->gender,
                     'birth_date' => $data['birth_date'] ?? $userDetail->birth_date,
@@ -299,25 +307,35 @@ class TenantService
             throw $e;
         }
 
+        // Borrado best-effort tras el commit
+        foreach ($oldPaths as $path) {
+            $this->deleteOldFile($path);
+        }
+
         return $user->fresh(['user_details']);
     }
 
     public function delete(User $user, Channel $channel): void
     {
+        // Rutas capturadas antes de la transacción; borrado tras el commit (Fase 4 / 4.8)
+        $oldPaths = [];
+        if (! empty($user->image)) {
+            $oldPaths[] = $user->image;
+        }
+
+        $userDetail = $user->user_details instanceof UserDetail ? $user->user_details : null;
+        if ($userDetail) {
+            if (! empty($userDetail->mykad['front_image'])) {
+                $oldPaths[] = $userDetail->mykad['front_image'];
+            }
+            if (! empty($userDetail->mykad['back_image'])) {
+                $oldPaths[] = $userDetail->mykad['back_image'];
+            }
+        }
+
         DB::beginTransaction();
         try {
-            if (! empty($user->image)) {
-                $this->deleteOldFile($user->image);
-            }
-
-            $userDetail = $user->user_details instanceof UserDetail ? $user->user_details : null;
             if ($userDetail) {
-                if (! empty($userDetail->mykad['front_image'])) {
-                    $this->deleteOldFile($userDetail->mykad['front_image']);
-                }
-                if (! empty($userDetail->mykad['back_image'])) {
-                    $this->deleteOldFile($userDetail->mykad['back_image']);
-                }
                 $userDetail->delete();
             }
 
@@ -327,6 +345,11 @@ class TenantService
         } catch (\Throwable $e) {
             DB::rollBack();
             throw $e;
+        }
+
+        // Borrado best-effort tras el commit
+        foreach ($oldPaths as $path) {
+            $this->deleteOldFile($path);
         }
     }
 

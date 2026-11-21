@@ -82,11 +82,16 @@ class AcnooLandlordController extends Controller
             ->orWhere('offerPrice', '<=', 0)
             ->first();
 
+        // Uploads antes de abrir la transacción (Fase 4 / 4.8)
+        $image = $request->image ? $this->upload($request, 'image') : null;
+        $frontImage = $request->hasFile('mykad.front_image') ? $this->upload($request, 'mykad.front_image') : null;
+        $backImage = $request->hasFile('mykad.back_image') ? $this->upload($request, 'mykad.back_image') : null;
+
         DB::beginTransaction();
         try {
 
             $user = User::create([
-                'image' => $request->image ? $this->upload($request, 'image') : null,
+                'image' => $image,
                 'is_setupped' => 1,
                 'name' => $request->name,
                 'email' => $request->email,
@@ -97,9 +102,6 @@ class AcnooLandlordController extends Controller
 
             $user->role = 'landlord';
             $user->save();
-
-            $frontImage = $request->hasFile('mykad.front_image') ? $this->upload($request, 'mykad.front_image') : null;
-            $backImage = $request->hasFile('mykad.back_image') ? $this->upload($request, 'mykad.back_image') : null;
 
             UserDetail::create([
                 'user_id' => $user->id,
@@ -187,19 +189,39 @@ class AcnooLandlordController extends Controller
 
         $user = User::findOrFail($id);
 
+        // Uploads antes de abrir la transacción; directorios viejos se borran tras el commit (Fase 4 / 4.8)
+        $oldDirectories = [];
+
+        if ($request->hasFile('image')) {
+            if (! empty($user->image)) {
+                $oldDirectories[] = dirname($user->image);
+            }
+            $image = $this->upload($request, 'image');
+        } else {
+            $image = $user->image ?? null;
+        }
+
+        if ($request->hasFile('mykad.front_image')) {
+            if (! empty($user->user_details->mykad['front_image'])) {
+                $oldDirectories[] = dirname($user->user_details->mykad['front_image']);
+            }
+            $frontImage = $this->upload($request, 'mykad.front_image');
+        } else {
+            $frontImage = $user->user_details->mykad['front_image'] ?? null;
+        }
+
+        if ($request->hasFile('mykad.back_image')) {
+            if (! empty($user->user_details->mykad['back_image'])) {
+                $oldDirectories[] = dirname($user->user_details->mykad['back_image']);
+            }
+            $backImage = $this->upload($request, 'mykad.back_image');
+        } else {
+            $backImage = $user->user_details->mykad['back_image'] ?? null;
+        }
+
         DB::beginTransaction();
 
         try {
-
-            if ($request->hasFile('image')) {
-                if (! empty($user->image)) {
-                    $oldImagePath = dirname($user->image);
-                    Storage::deleteDirectory($oldImagePath);
-                }
-                $image = $this->upload($request, 'image');
-            } else {
-                $image = $user->image ?? null;
-            }
 
             $user->update([
                 'image' => $image,
@@ -209,26 +231,6 @@ class AcnooLandlordController extends Controller
                 'phone' => $request->input('phone'),
                 'password' => $request->password ? Hash::make($request->password) : $user->password,
             ]);
-
-            if ($request->hasFile('mykad.front_image')) {
-                if (! empty($user->user_details->mykad['front_image'])) {
-                    $oldFrontImagePath = dirname($user->user_details->mykad['front_image']);
-                    Storage::deleteDirectory($oldFrontImagePath);
-                }
-                $frontImage = $this->upload($request, 'mykad.front_image');
-            } else {
-                $frontImage = $user->user_details->mykad['front_image'] ?? null;
-            }
-
-            if ($request->hasFile('mykad.back_image')) {
-                if (! empty($user->user_details->mykad['back_image'])) {
-                    $oldBackImagePath = dirname($user->user_details->mykad['back_image']);
-                    Storage::deleteDirectory($oldBackImagePath);
-                }
-                $backImage = $this->upload($request, 'mykad.back_image');
-            } else {
-                $backImage = $user->user_details->mykad['back_image'] ?? null;
-            }
 
             $user->user_details->update([
                 'user_id' => $user->id,
@@ -242,6 +244,11 @@ class AcnooLandlordController extends Controller
             ]);
 
             DB::commit();
+
+            // Borrado best-effort tras el commit
+            foreach ($oldDirectories as $directory) {
+                Storage::deleteDirectory($directory);
+            }
 
             return response()->json([
                 'message' => 'Landlord update successfully',
@@ -265,8 +272,10 @@ class AcnooLandlordController extends Controller
         try {
             $landlord = User::findOrFail($id);
 
-            if (file_exists($landlord->image)) {
-                Storage::delete($landlord->image);
+            // Rutas capturadas dentro de la transacción; borrado tras el commit (Fase 4 / 4.8)
+            $oldPaths = [];
+            if ($landlord->image) {
+                $oldPaths[] = $landlord->image;
             }
 
             $userDetail = $landlord->user_details()->first();
@@ -275,18 +284,25 @@ class AcnooLandlordController extends Controller
                 $frontImage = $userDetail->getAttribute('mykad')['front_image'] ?? null;
                 $backImage = $userDetail->getAttribute('mykad')['back_image'] ?? null;
 
-                if ($frontImage && file_exists($frontImage)) {
-                    Storage::delete($frontImage);
+                if ($frontImage) {
+                    $oldPaths[] = $frontImage;
                 }
 
-                if ($backImage && file_exists($backImage)) {
-                    Storage::delete($backImage);
+                if ($backImage) {
+                    $oldPaths[] = $backImage;
                 }
             }
 
             $landlord->delete();
 
             DB::commit();
+
+            // Borrado best-effort tras el commit
+            foreach ($oldPaths as $path) {
+                if (file_exists($path)) {
+                    Storage::delete($path);
+                }
+            }
 
             return response()->json([
                 'message' => __('Landlord deleted successfully'),
@@ -309,9 +325,12 @@ class AcnooLandlordController extends Controller
         try {
             $landlords = User::whereIn('id', $request->ids)->get();
 
+            // Rutas capturadas dentro de la transacción; borrado tras el commit (Fase 4 / 4.8)
+            $oldPaths = [];
+
             foreach ($landlords as $landlord) {
-                if (file_exists($landlord->image)) {
-                    Storage::delete($landlord->image);
+                if ($landlord->image) {
+                    $oldPaths[] = $landlord->image;
                 }
 
                 $userDetail = $landlord->user_details()->first();
@@ -320,11 +339,11 @@ class AcnooLandlordController extends Controller
                     $frontImage = $userDetail->getAttribute('mykad')['front_image'] ?? null;
                     $backImage = $userDetail->getAttribute('mykad')['back_image'] ?? null;
 
-                    if ($frontImage && file_exists($frontImage)) {
-                        Storage::delete($frontImage);
+                    if ($frontImage) {
+                        $oldPaths[] = $frontImage;
                     }
-                    if ($backImage && file_exists($backImage)) {
-                        Storage::delete($backImage);
+                    if ($backImage) {
+                        $oldPaths[] = $backImage;
                     }
 
                     $userDetail->delete();
@@ -334,6 +353,13 @@ class AcnooLandlordController extends Controller
             }
 
             DB::commit();
+
+            // Borrado best-effort tras el commit
+            foreach ($oldPaths as $path) {
+                if (file_exists($path)) {
+                    Storage::delete($path);
+                }
+            }
 
             return response()->json([
                 'message' => ('Selected landlord deleted successfully'),

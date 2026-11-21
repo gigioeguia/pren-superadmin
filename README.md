@@ -39,7 +39,7 @@ php artisan serve
 La suite corre sobre la DB MySQL dedicada `dbrentpro_test` (configurada en `phpunit.xml`, decisión ADR-0001; nunca sobre la DB del `.env`):
 
 ```bash
-php artisan test                           # suite completa (~219 tests)
+php artisan test                           # suite completa (224 tests)
 php artisan test --group=characterization  # 5 tests de caracterización (se espera que
                                            # fallen al aplicar los fixes de Fase 1–2)
 ```
@@ -49,7 +49,7 @@ Precondiciones, mocks obligatorios y cobertura de endpoints: ver [`tests/README.
 ## Seguridad conocida
 
 - `npm audit` reporta 2 advisory **dev-only** (vite GHSA-15r9, high; esbuild GHSA-67mh, moderate) que solo afectan al dev server local. **No** ejecutar `npm audit fix --force` (instalaría vite@8, breaking change). La remediación es la migración planificada del stack de build (ítem 4.5 del plan de acción).
-- Laravel 11 y PHP 8.3 (Fase 4 / 4.1 implementado). El plan de remediación por fases (26 vulnerabilidades, 28 ítems de deuda) vive en `.analisis/plan/plan-accion.md` (carpeta gitignored, solo local). Estado actual: Fases 0–3 implementadas; Fase 4: 4.1–4.6 implementados (4.7–4.10 pendientes); ver `plan-accion.md` para el detalle.
+- Laravel 11 y PHP 8.3 (Fase 4 / 4.1 implementado). El plan de remediación por fases (26 vulnerabilidades, 28 ítems de deuda) vive en `.analisis/plan/plan-accion.md` (carpeta gitignored, solo local). Estado actual: Fases 0–3 implementadas; Fase 4: 4.1–4.8 implementados (4.9–4.10 pendientes); ver `plan-accion.md` para el detalle.
 
 ## Documentación interna
 

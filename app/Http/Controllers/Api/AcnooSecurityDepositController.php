@@ -59,11 +59,14 @@ class AcnooSecurityDepositController extends Controller
                 'payment_note' => 'nullable|string',
             ]);
 
+            // Upload antes de abrir la transacción; se calcula una sola vez (Fase 4 / 4.8)
+            $receiptPath = $request->payment_receipt ? $this->upload($request, 'payment_receipt') : null;
+
             DB::beginTransaction();
             try {
                 $payment_data = [
                     'payment_note' => $request->payment_note,
-                    'payment_receipt' => $request->payment_receipt ? $this->upload($request, 'payment_receipt') : null,
+                    'payment_receipt' => $receiptPath,
                 ];
 
                 if ($request->payment_type == 'subscription') {
@@ -83,7 +86,7 @@ class AcnooSecurityDepositController extends Controller
                         'payment_status' => 'unpaid',
                         'notes' => [
                             'manual_data' => $request->payment_note,
-                            'attachment' => $request->payment_receipt ? $this->upload($request, 'payment_receipt') : null,
+                            'attachment' => $receiptPath,
                         ],
                     ]);
 

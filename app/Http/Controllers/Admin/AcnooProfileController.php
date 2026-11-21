@@ -40,23 +40,33 @@ class AcnooProfileController extends Controller
 
         $user = User::findOrFail($id);
 
+        // Comprobaciones y upload antes de abrir la transacción (Fase 4 / 4.8)
+        if ($request->password || $request->current_password) {
+            if (Hash::check($request->current_password, $user->password)) {
+                $request->validate([
+                    'current_password' => 'required|string',
+                    'password' => 'nullable|string|confirmed',
+                ]);
+            } else {
+                return response()->json(__('Current Password does not match with old password'), 404);
+            }
+        }
+
+        $oldImagePath = null;
+        $image = $user->image;
+        if ($request->hasFile('image')) {
+            if ($user->image) {
+                $oldImagePath = $user->image;
+            }
+            $image = $this->upload($request, 'image');
+        }
+
         DB::beginTransaction();
 
         try {
 
-            if ($request->password || $request->current_password) {
-                if (Hash::check($request->current_password, $user->password)) {
-                    $request->validate([
-                        'current_password' => 'required|string',
-                        'password' => 'nullable|string|confirmed',
-                    ]);
-                } else {
-                    return response()->json(__('Current Password does not match with old password'), 404);
-                }
-            }
-
             $user->update($request->except('image', 'password', 'gender') + [
-                'image' => $request->hasFile('image') ? $this->upload($request, 'image', $user->image) : $user->image,
+                'image' => $image,
             ] + ($request->filled('password') ? ['password' => Hash::make($request->password)] : []));
 
             $user->user_details()->updateOrCreate(
@@ -65,6 +75,11 @@ class AcnooProfileController extends Controller
             );
 
             DB::commit();
+
+            // Borrado best-effort tras el commit
+            if ($oldImagePath) {
+                $this->deleteOldFile($oldImagePath);
+            }
 
             return response()->json([
                 'message' => 'Profile update successfully',

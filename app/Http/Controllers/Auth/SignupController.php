@@ -34,28 +34,31 @@ class SignupController extends Controller
             ], 406);
         }
 
+        // Comprobaciones y cálculo de OTP antes de abrir la transacción (Fase 4 / 4.8)
+        $otpSettings = get_option('email-varification');
+        $otpStatus = $otpSettings['otp_status'] ?? 'off';
+
+        $user = User::where('email', $request->email)->first();
+
+        if ($user && $user->is_setupped) {
+            return response()->json([
+                'message' => 'This email is already exists.',
+            ], 406);
+        }
+
+        $code = random_int(100000, 999999);
+
+        $data = [
+            'code' => $code,
+            'name' => $request->name,
+        ];
+
+        $expireSeconds = $this->otp->visibilityTimeInSeconds();
+        $expire = now()->addSeconds($expireSeconds);
+
         DB::beginTransaction();
 
         try {
-
-            $otpSettings = get_option('email-varification');
-            $otpStatus = $otpSettings['otp_status'] ?? 'off';
-
-            $user = User::where('email', $request->email)->first();
-
-            if ($user && $user->is_setupped) {
-                return response()->json([
-                    'message' => 'This email is already exists.',
-                ], 406);
-            }
-
-            $code = random_int(100000, 999999);
-
-            $data = [
-                'code' => $code,
-                'name' => $request->name,
-            ];
-
             if ($otpStatus === 'off') {
 
                 $user = User::updateOrCreate(['email' => $request->email], $request->except('password', 'role') + [
@@ -85,9 +88,6 @@ class SignupController extends Controller
                 ]);
             }
 
-            $expireSeconds = $this->otp->visibilityTimeInSeconds();
-            $expire = now()->addSeconds($expireSeconds);
-
             $user = User::updateOrCreate(['email' => $request->email], $request->except('password', 'role') + [
                 'remember_token' => $code,
                 'role' => 'landlord',
@@ -103,21 +103,7 @@ class SignupController extends Controller
             session()->put('user_id', $user->id);
             session()->put('plan_id', $request->plan_id);
 
-            if (config('mail.queue')) {
-                Mail::to($request->email)->queue(new WelcomeMail($data));
-            } else {
-                Mail::to($request->email)->send(new WelcomeMail($data));
-            }
-
             DB::commit();
-
-            return response()->json([
-                'message' => 'An OTP code has been sent to your email. Please check and confirm.',
-                'openModal' => true,
-                'email' => $request->email,
-                'otp_expiration' => $expireSeconds,
-            ]);
-
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -125,6 +111,20 @@ class SignupController extends Controller
                 'message' => 'Something went wrong. Please contact the admin.',
             ], 403);
         }
+
+        // Envío de OTP tras el commit (Fase 4 / 4.8): sin E/S de red en la transacción.
+        if (config('mail.queue')) {
+            Mail::to($request->email)->queue(new WelcomeMail($data));
+        } else {
+            Mail::to($request->email)->send(new WelcomeMail($data));
+        }
+
+        return response()->json([
+            'message' => 'An OTP code has been sent to your email. Please check and confirm.',
+            'openModal' => true,
+            'email' => $request->email,
+            'otp_expiration' => $expireSeconds,
+        ]);
     }
 
     public function submitOtp(Request $request)

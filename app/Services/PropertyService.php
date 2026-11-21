@@ -285,19 +285,37 @@ class PropertyService
 
         $status = $channel === Channel::Admin ? '1' : '0';
 
+        // Uploads antes de abrir la transacción (Fase 4 / 4.8)
+        $coverImage = null;
+        if (! empty($data['cover_image'])) {
+            $files = is_array($data['cover_image']) ? $data['cover_image'] : [$data['cover_image']];
+            $coverImage = $this->multipleUploadArray($files);
+        }
+
+        $floorplanImage = null;
+        if (! empty($data['floorplan_image']) && $data['floorplan_image'] instanceof UploadedFile) {
+            $floorplanImage = $this->multipleUploadArray([$data['floorplan_image']])[0];
+        }
+
+        $unitImages = [];
+        if (($data['category_id'] ?? null) == 6 && ! empty($data['units']) && is_array($data['units'])) {
+            $unitFiles = $data['unit_files'] ?? [];
+            foreach ($data['units'] as $index => $unitData) {
+                if (empty($unitData['unit_id']) && empty($unitData['unit_name'])) {
+                    continue;
+                }
+                $images = null;
+                if (isset($unitFiles[$index]['images']) && is_array($unitFiles[$index]['images'])) {
+                    $images = $this->multipleUploadArray($unitFiles[$index]['images']);
+                } elseif (isset($unitData['images']) && is_array($unitData['images'])) {
+                    $images = $this->multipleUploadArray($unitData['images']);
+                }
+                $unitImages[$index] = $images;
+            }
+        }
+
         DB::beginTransaction();
         try {
-            $coverImage = null;
-            if (! empty($data['cover_image'])) {
-                $files = is_array($data['cover_image']) ? $data['cover_image'] : [$data['cover_image']];
-                $coverImage = $this->multipleUploadArray($files);
-            }
-
-            $floorplanImage = null;
-            if (! empty($data['floorplan_image']) && $data['floorplan_image'] instanceof UploadedFile) {
-                $floorplanImage = $this->multipleUploadArray([$data['floorplan_image']])[0];
-            }
-
             $property = Property::create([
                 'landlord_id' => $resolvedLandlordId,
                 'category_id' => $data['category_id'],
@@ -333,16 +351,9 @@ class PropertyService
             ]);
 
             if (($data['category_id'] ?? null) == 6 && ! empty($data['units']) && is_array($data['units'])) {
-                $unitFiles = $data['unit_files'] ?? [];
                 foreach ($data['units'] as $index => $unitData) {
                     if (empty($unitData['unit_id']) && empty($unitData['unit_name'])) {
                         continue;
-                    }
-                    $images = null;
-                    if (isset($unitFiles[$index]['images']) && is_array($unitFiles[$index]['images'])) {
-                        $images = $this->multipleUploadArray($unitFiles[$index]['images']);
-                    } elseif (isset($unitData['images']) && is_array($unitData['images'])) {
-                        $images = $this->multipleUploadArray($unitData['images']);
                     }
 
                     Unit::create([
@@ -360,7 +371,7 @@ class PropertyService
                         'amenities' => $unitData['amenities'] ?? null,
                         'tenant_preference' => $unitData['tenant_preference'] ?? null,
                         'description' => $unitData['description'] ?? null,
-                        'images' => $images,
+                        'images' => $unitImages[$index],
                         'monthly_rent' => $unitData['monthly_rent'] ?? 0,
                         'sale_amount' => $unitData['sale_amount'] ?? 0,
                         'security_deposit' => $unitData['security_deposit'] ?? 0,
@@ -410,38 +421,58 @@ class PropertyService
             // ownership guard; Policy already enforces, but keep safe
         }
 
+        // Uploads y cálculo de rutas antes de abrir la transacción (Fase 4 / 4.8)
+        if (! empty($data['cover_removed_images']) && is_array($data['cover_removed_images'])) {
+            $coverPrev = array_values(array_diff($property->cover_image ?? [], $data['cover_removed_images']));
+        } else {
+            $coverPrev = $property->cover_image ?? [];
+        }
+
+        $coverNew = [];
+        if (! empty($data['cover_image'])) {
+            $files = is_array($data['cover_image']) ? $data['cover_image'] : [$data['cover_image']];
+            $coverNew = $this->multipleUploadArray($files);
+        }
+        $coverMerged = array_merge($coverPrev, $coverNew);
+
+        // floorplan
+        $oldFloorplanDir = null;
+        $floorplanImage = $property->propertyDetail()->first()?->getAttribute('floorplan_image');
+        if (! empty($data['floorplan_image']) && $data['floorplan_image'] instanceof UploadedFile) {
+            if ($floorplanImage) {
+                $oldFloorplanDir = dirname((string) $floorplanImage);
+            }
+            $floorplanImage = $this->multipleUploadArray([$data['floorplan_image']])[0];
+        }
+
+        // images de unidades: subir antes; remove_images se borran tras el commit
+        $unitFiles = $data['unit_files'] ?? [];
+
+        $newUnitImages = [];
+        $unitRemoveImages = [];
+        if (($data['category_id'] ?? null) == 6 && ! empty($data['units']) && is_array($data['units'])) {
+            foreach ($data['units'] as $index => $unitData) {
+                if (empty($unitData['unit_id']) && empty($unitData['unit_name'])) {
+                    continue;
+                }
+
+                if (isset($unitFiles[$index]['images']) && is_array($unitFiles[$index]['images'])) {
+                    $newUnitImages[$index] = $this->multipleUploadArray($unitFiles[$index]['images']);
+                } elseif (isset($unitData['images']) && is_array($unitData['images']) && isset($unitData['images'][0]) && $unitData['images'][0] instanceof UploadedFile) {
+                    $newUnitImages[$index] = $this->multipleUploadArray($unitData['images']);
+                }
+
+                if (! empty($unitData['remove_images'])) {
+                    $unitRemoveImages[$index] = $unitData['remove_images'];
+                }
+            }
+        }
+
+        // Imágenes de unidades eliminadas: rutas capturadas dentro de la transacción
+        $removedUnitImagePaths = [];
+
         DB::beginTransaction();
         try {
-            // cover image
-            if (! empty($data['cover_removed_images']) && is_array($data['cover_removed_images'])) {
-                $coverPrev = array_diff($property->cover_image ?? [], $data['cover_removed_images']);
-                foreach ($data['cover_removed_images'] as $image) {
-                    if (Storage::exists($image)) {
-                        Storage::delete($image);
-                    }
-                }
-                $coverPrev = array_values($coverPrev);
-            } else {
-                $coverPrev = $property->cover_image ?? [];
-            }
-
-            $coverNew = [];
-            if (! empty($data['cover_image'])) {
-                $files = is_array($data['cover_image']) ? $data['cover_image'] : [$data['cover_image']];
-                $coverNew = $this->multipleUploadArray($files);
-            }
-            $coverMerged = array_merge($coverPrev, $coverNew);
-
-            // floorplan
-            if (! empty($data['floorplan_image']) && $data['floorplan_image'] instanceof UploadedFile) {
-                if ($property->propertyDetail()->first()?->getAttribute('floorplan_image')) {
-                    Storage::deleteDirectory(dirname((string) $property->propertyDetail()->first()->getAttribute('floorplan_image')));
-                }
-                $floorplanImage = $this->multipleUploadArray([$data['floorplan_image']])[0];
-            } else {
-                $floorplanImage = $property->propertyDetail()->first()?->getAttribute('floorplan_image');
-            }
-
             $updateData = [
                 'category_id' => $data['category_id'],
                 'house_type_id' => $data['house_type_id'] ?? null,
@@ -481,8 +512,6 @@ class PropertyService
             ]);
 
             // units sync
-            $unitFiles = $data['unit_files'] ?? [];
-
             $removedUnitIds = collect($data['removed_unit_ids'] ?? [])
                 ->filter(fn ($v) => ! empty($v))
                 ->map(fn ($v) => (int) $v)
@@ -493,11 +522,9 @@ class PropertyService
             if (! empty($removedUnitIds)) {
                 $unitsToDelete = Unit::whereIn('id', $removedUnitIds)->get(['id', 'images']);
                 foreach ($unitsToDelete as $u) {
-                    if (! empty($u->images)) {
-                        foreach ($u->images as $imgPath) {
-                            if ($imgPath && Storage::exists($imgPath)) {
-                                Storage::delete($imgPath);
-                            }
+                    foreach ($u->images ?? [] as $imgPath) {
+                        if ($imgPath) {
+                            $removedUnitImagePaths[] = $imgPath;
                         }
                     }
                 }
@@ -512,11 +539,9 @@ class PropertyService
                 if (! empty($unitsToDeleteIds)) {
                     $unitsToDelete = Unit::whereIn('id', $unitsToDeleteIds)->get(['id', 'images']);
                     foreach ($unitsToDelete as $u) {
-                        if (! empty($u->images)) {
-                            foreach ($u->images as $imgPath) {
-                                if ($imgPath && Storage::exists($imgPath)) {
-                                    Storage::delete($imgPath);
-                                }
+                        foreach ($u->images ?? [] as $imgPath) {
+                            if ($imgPath) {
+                                $removedUnitImagePaths[] = $imgPath;
                             }
                         }
                     }
@@ -535,26 +560,13 @@ class PropertyService
                         $unit = new Unit;
                     }
 
-                    $unitPrevImages = $unit->images ?? [];
                     if (! empty($unitData['remove_images'])) {
-                        $unitPrevImages = array_diff($unit->images ?? [], $unitData['remove_images']);
-                        foreach ($unitData['remove_images'] as $image) {
-                            if (Storage::exists($image)) {
-                                Storage::delete($image);
-                            }
-                        }
-                        $unitPrevImages = array_values($unitPrevImages);
+                        $unitPrevImages = array_values(array_diff($unit->images ?? [], $unitData['remove_images']));
                     } else {
                         $unitPrevImages = $unit->images ?? [];
                     }
 
-                    $newImages = [];
-                    if (isset($unitFiles[$index]['images']) && is_array($unitFiles[$index]['images'])) {
-                        $newImages = $this->multipleUploadArray($unitFiles[$index]['images']);
-                    } elseif (isset($unitData['images']) && is_array($unitData['images']) && isset($unitData['images'][0]) && $unitData['images'][0] instanceof UploadedFile) {
-                        $newImages = $this->multipleUploadArray($unitData['images']);
-                    }
-                    $mergedImages = array_merge($unitPrevImages, $newImages);
+                    $mergedImages = array_merge($unitPrevImages, $newUnitImages[$index] ?? []);
 
                     $unit->fill([
                         'property_id' => $property->id,
@@ -591,6 +603,33 @@ class PropertyService
         } catch (\Throwable $e) {
             DB::rollBack();
             throw $e;
+        }
+
+        // Borrado de archivos best-effort tras el commit (Fase 4 / 4.8)
+        if (! empty($data['cover_removed_images']) && is_array($data['cover_removed_images'])) {
+            foreach ($data['cover_removed_images'] as $image) {
+                if (Storage::exists($image)) {
+                    Storage::delete($image);
+                }
+            }
+        }
+
+        if ($oldFloorplanDir) {
+            Storage::deleteDirectory($oldFloorplanDir);
+        }
+
+        foreach ($removedUnitImagePaths as $imgPath) {
+            if (Storage::exists($imgPath)) {
+                Storage::delete($imgPath);
+            }
+        }
+
+        foreach ($unitRemoveImages as $images) {
+            foreach ($images as $image) {
+                if (Storage::exists($image)) {
+                    Storage::delete($image);
+                }
+            }
         }
 
         return $property->fresh();
