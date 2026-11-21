@@ -1,7 +1,7 @@
 ---
 id: spec-app-url-https-force-tls-fase5
 titulo: "APP_URL https + forzar TLS (FORCE_HTTPS + TrustProxies) (Fase 5 / 5.6)"
-estado: Borrador
+estado: Aprobado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.6) — .analisis/seguridad.md (Seg-23, l.139)
 cobertura: Cerrar Seg-23 shipeando la palanca repo-side: middleware global `ForceHttps` (302 http→https, todos los métodos, path+query preservados) tras una válvula explícita `FORCE_HTTPS` (default off, sin inferencia ni magia de entorno) + `TrustProxies` operable vía `TRUSTED_PROXIES` (CSV/`*` nativos del parent) + guía operacional en `.env.example`; el flip del `.env` de producción queda como residual (patrón 5.5/5.9). Tests U1–U6 + F1–F4, suite esperada 273+10=283. Decisiones selladas en grilling Q1–Q12 (2026-11-21).
