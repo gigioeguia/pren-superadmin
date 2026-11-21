@@ -1,7 +1,7 @@
 ---
 id: spec-comand-txt-credenciales-fase5
 titulo: "Credenciales de comand.txt: rotación out-of-band, saneo local y cierre documental (Fase 5 / 5.1)"
-estado: Borrador
+estado: Aprobado
 fecha: 2026-11-20
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.1) — .analisis/seguridad.md (Seg-19) — .analisis/deuda-tecnica.md (DT-B9)
 cobertura: Rotación de los 3 pares de credenciales no-demo del blob histórico de comand.txt (acción out-of-band) + saneo in-place de .analisis/comand.txt + actualización de los 4 documentos de .analisis/ + declaración de riesgo residual aceptado (sin history rewrite)
@@ -113,11 +113,11 @@ Este spec no cubre flujos HTTP; el catálogo adapta `Dado/Cuando/Entonces` a ver
 
 | Cuenta | Rotada (fecha) | Confirmado por |
 |--------|---------------|----------------|
-| `erika.cruz@gmail.com` | _pendiente de ejecución_ | — |
-| `superadmin@gmail.com` | _pendiente de ejecución_ | — |
-| `admin@gmail.com` | _pendiente de ejecución_ | — |
+| `erika.cruz@gmail.com` | 2026-11-20 | usuario (aprobación del spec, sesión 2026-11-20) |
+| `superadmin@gmail.com` | 2026-11-20 | usuario (aprobación del spec, sesión 2026-11-20) |
+| `admin@gmail.com` | 2026-11-20 | usuario (aprobación del spec, sesión 2026-11-20) |
 
-> Se completa al ejecutar F1; el PR de implementación no se marca DoD sin las tres fechas.
+> F1 cerrado: el usuario confirmó las 3 rotaciones al aprobar el spec (2026-11-20). Las fechas registradas son de confirmación del usuario; el cierre documental del PR se registra el 2026-11-21.
 
 ---
 
