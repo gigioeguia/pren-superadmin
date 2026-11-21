@@ -7,8 +7,9 @@ La amplían los tests del trait `HasAcnooActions` (G1–G8/H1–H4, con 2
 caracterizaciones nuevas): `.agents/spec-impl/spec-trait-acnoo-fase0.md`
 (Fase 0 / 0.3, DT-C3).
 
-> **Nota (2026-11-21):** la suite creció con las fases 1–4 y hoy totaliza
-> **254 casos** (Fases 0–4). Este README documenta el origen smoke de Fase 0
+> **Nota (2026-11-21):** la suite creció con las fases 1–5 y hoy totaliza
+> **262 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
+> spec 5.3). Este README documenta el origen smoke de Fase 0
 > y las convenciones; los dominios añadidos se listan abajo.
 
 ## Cómo correr la suite
@@ -90,6 +91,7 @@ tests/
     ├── Demo/                     # DemoMode + demoReset (3.5)
     ├── Idor/                     # ownership smoke (Fase 2)
     ├── Seeders/                  # F1–F6 del spec 4.10
+    ├── Withdraw/                 # regresión HTTP del index API (Fase 5 / 5.3, Seg-20)
     └── HandlerGenericErrorSmokeTest.php  # Handler genérico sin fuga de mensaje (3.4)
 ```
 
@@ -101,7 +103,7 @@ Mocks obligatorios (ver `.agents/skills/testing-conventions.md`):
 ## Cobertura de endpoints críticos
 
 > Snapshot del catálogo smoke de **Fase 0** (52 endpoints críticos); la suite
-> total creció con las fases 1–4 (254 casos) sin renovar este conteo.
+> total creció con las fases 1–5 (262 casos) sin renovar este conteo.
 
 Criterio del spec: rutas de auth (web + API), pagos, status de gateways,
 CMS público, entradas de guards y maintenance.
@@ -124,6 +126,15 @@ Casos que verifican `429 Too Many Requests` en el 6.º intento (mismo IP): `L7` 
 ## Permisos admin (Fase 3 / 3.8)
 
 Casos de denegación (`403`) para admin autenticado sin el permiso requerido: `G6` (admin sin permisos → 403 en `/admin`), `F40`–`F51` (uno por módulo nuevo: blogs, clients, comments, faqs, features, highlights, testimonials, website-settings, manage-settings, translations, permissions, languages), `U1` (superadmin sin permisos bypassa), `U2` (admin sin permiso no bypassa). Archivos: `AdminGuardSmokeTest`, `PermissionDenialSmokeTest`.
+
+## Withdraw (Fase 5 / 5.3)
+
+Regresión HTTP del bug Seg-20 (`index` sin `Request` inyectado; fix absorbido
+por Fase 4 / 4.4): `F1` per_page respetado (`data.per_page` + 5 items),
+`F2` rango `from_date`/`to_date`, `F3` scoping por `user_id` (`@group security`).
+Archivo: `tests/Feature/Withdraw/WithdrawIndexSmokeTest.php` — spec
+`spec-withdraw-index-request-fase5`. La key `'meassage'` de la respuesta no se
+aserta (typo diferido, candidato 5.10).
 
 ## Desviaciones vs el catálogo del spec
 
