@@ -8,9 +8,9 @@ caracterizaciones nuevas): `.agents/spec-impl/spec-trait-acnoo-fase0.md`
 (Fase 0 / 0.3, DT-C3).
 
 > **Nota (2026-11-21):** la suite creció con las fases 1–5 y hoy totaliza
-> **301 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
+> **325 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
 > spec 5.3 + 4 del spec 5.4 + 7 del spec 5.5 + 10 del spec 5.6 + 18 del spec
-> 5.7). Este README documenta el origen smoke de Fase 0
+> 5.7 + 24 del spec 5.8). Este README documenta el origen smoke de Fase 0
 > y las convenciones; los dominios añadidos se listan abajo.
 
 ## Cómo correr la suite
@@ -97,6 +97,8 @@ tests/
     ├── Withdraw/                 # regresión HTTP del index API (Fase 5 / 5.3, Seg-20)
     ├── Security/                # TrustHosts (5.4) + Session (5.5) + ForceHttps redirect/proxies (Fase 5 / 5.6)
     ├── Options/                 # Pub1 + F1–F4 (render sin options) + G1–G2 (version sidebar) (Fase 5 / 5.7)
+    ├── Routes/                  # guards de higiene de la tabla de rutas F14–F18 (Fase 5 / 5.8)
+    ├── Notification/            # contrato HTTP de notifications G1–G5 / H1–H5 / A1–A4 (Fase 5 / 5.8)
     └── HandlerGenericErrorSmokeTest.php  # Handler genérico sin fuga de mensaje (3.4)
 ```
 
@@ -108,7 +110,7 @@ Mocks obligatorios (ver `.agents/skills/testing-conventions.md`):
 ## Cobertura de endpoints críticos
 
 > Snapshot del catálogo smoke de **Fase 0** (52 endpoints críticos); la suite
-> total creció con las fases 1–5 (301 casos) sin renovar este conteo.
+> total creció con las fases 1–5 (325 casos) sin renovar este conteo.
 
 Criterio del spec: rutas de auth (web + API), pagos, status de gateways,
 CMS público, entradas de guards y maintenance.
@@ -201,6 +203,27 @@ autentica donde la vista/layout lee `auth()->user()`). `G1`–`G2` (en
 `version` se lee vía `App\Support\Options::string` en el sidebar admin.
 Archivos: `tests/Feature/Options/OptionlessViewsSmokeTest.php` — spec
 `spec-get-option-tipos-consistentes-fase5`.
+
+## Higiene de rutas (Fase 5 / 5.8)
+
+`F9`–`F12` (en `tests/Feature/Demo/DemoModeTest.php`): transacciones
+update/destroy y suscripciones paid/reject vuelven a bloquearse en
+demo — los 4 nombres de ruta de `DemoMode` estaban muertos (doble punto
+/ prefijo equivocado) y las acciones pasaban. `F13`: guard de
+existencia — todo nombre en `DemoMode::ADMIN_DISABLED_ROUTES` /
+`LANDLORD_DISABLED_ROUTES` (ahora `public const`) debe resolver a una
+ruta registrada. `F14`–`F18` (en
+`tests/Feature/Routes/RouteNamesSmokeTest.php`): unicidad de nombres en
+la colección plana (nombres con `::` son del paquete LaravelInstaller,
+fuera del guard), 0 nombres de prefijo desnudo (`api`/`admin.`), rename
+`apiread-notifications` pineado (URI typo inexistente), colisión
+`apimaintenance.index` resuelta (`landlord`/`tenant`) y salud de fuente
+(0 `read-nitifications`, 1 `income-categories/delete-all`,
+0 `NotifyContrller`). `G1`–`G5` / `H1`–`H5` / `A1`–`A4` (en
+`tests/Feature/Notification/`): contrato HTTP de notifications admin/
+landlord/api (post-tidy de URIs) — repara el DoD de
+`spec-service-notification-fase4`, que declaraba estos tests sin
+crearlos. Spec: `spec-typos-rutas-fase5`.
 
 ## Desviaciones vs el catálogo del spec
 

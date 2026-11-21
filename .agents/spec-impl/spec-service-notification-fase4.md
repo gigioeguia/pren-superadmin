@@ -73,6 +73,12 @@ Prefijos `F` (HTTP) y `U` (unit). Casos concretos a definir al revisar esta enti
 - [x] Suite + PHPStan + Pint en verde.
 - [x] Contrato HTTP idéntico verificado por tests.
 
+> **Errata (2026-11-21, `spec-typos-rutas-fase5`):** el ítem "Contrato HTTP
+> idéntico verificado por tests" estaba marcado como cumplido, pero
+> `tests/Feature/Notification/...HttpTest.php` (§4) nunca existió. Los tests
+> `G1`–`G5` / `H1`–`H5` / `A1`–`A4` del spec 5.8 cubren ese contrato desde
+> ahora.
+
 ## 8. Riesgos
 
 | Riesgo | Mitigación |

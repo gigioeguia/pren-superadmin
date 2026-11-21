@@ -171,6 +171,10 @@ Controladores y métodos adicionales a cubrir (no trait):
 | `AcnooMessageController` | `acnooFilter` | `messages-read` |
 | `AcnooExpenseController` / `AcnooIncomeController` | `acnooFilter` | `<modulo>-read` |
 
+> Nota (2026-11-21): `NotifyContrller` (fila de arriba) era una clase muerta
+> sin rutas y fue eliminada en `spec-typos-rutas-fase5`; la cobertura de
+> permisos aplica al vivo `Admin\NotificationController`.
+
 Los controladores de solo lectura (Transaction*, *Report, RentPaymentReport, etc.) cubren `acnooFilter`/`exportExcel`/`exportCsv` en su grupo `*-read` (ya tienen permiso read; solo se añaden los métodos al `only`).
 
 ### 5.7 Controladores nuevos a cubrir (12)
