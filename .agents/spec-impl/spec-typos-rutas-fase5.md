@@ -1,10 +1,10 @@
 ---
 id: spec-typos-rutas-fase5
 titulo: "Typos y duplicados en rutas: `read-nitifications`, nombres muertos en DemoMode, colisión `apimaintenance.index` y tidy de notifications (Fase 5 / 5.8)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.8) — .analisis/seguridad.md (Seg-25, l.143) — .analisis/deuda-tecnica.md (DT-B2, l.98-99)
-cobertura: Cerrar Seg-25/DT-B2 con el alcance real del inventario route:list (741 rutas, 2026-11-21): hard rename `read-nitifications`→`read-notifications` (0 call sites internos; residual = consumidor móvil hipotético), dedupe de `income-categories/delete-all`, 4 nombres muertos en DemoMode (transacciones y suscripciones hoy NO se bloquean en demo — hallazgo funcional no documentado), colisión `apimaintenance.index` landlord/tenant, naming aditivo de 36 rutas (34×`api` + 2×`admin.`) con convención intacta, borrado de `NotifyContrller` muerto, tidy de la familia notifications, y errata del DoD falso de spec-service-notification-fase4. Catálogo F9–F18 + G1–G5 + H1–H5 + A1–A4 (24 casos; suite esperada 301+24=325) + guards anti-reincidencia F13/F14/F17.
+cobertura: Cerrar Seg-25/DT-B2 con el alcance real del inventario route:list (741 rutas, 2026-11-21): hard rename `read-nitifications`→`read-notifications` (0 call sites internos; residual = consumidor móvil hipotético), dedupe de `income-categories/delete-all`, 4 nombres muertos en DemoMode (transacciones y suscripciones hoy NO se bloquean en demo — hallazgo funcional no documentado), colisión `apimaintenance.index` landlord/tenant, naming aditivo de 36 rutas (34×`api` + 2×`admin.`) con convención intacta, borrado de `NotifyContrller` muerto, tidy de la familia notifications, y errata del DoD falso de spec-service-notification-fase4. Catálogo F9–F18 + G1–G5 + H1–H5 + A1–A4 (24 casos; suite esperada 301+24=325) + guards anti-reincidencia F13/F14/F18.
 ---
 
 # Spec — Typos y duplicados en rutas (Fase 5 / 5.8)
@@ -204,18 +204,18 @@ Ninguno: no caracterizamos los bugs — los reparamos en este spec. Los 4 nombre
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] Rename aplicado: `routes/api.php:93` `read-notifications` + `->name('read-notifications')`; 0 `read-nitifications` en `routes/` (F16, F18).
-- [ ] Dedupe: exactamente 1 línea `income-categories/delete-all` en `routes/admin.php` (F18).
-- [ ] DemoMode: 4 nombres muertos → reales (`admin.transactions.*`, `admin.subscriptions.paid/reject`); entrada duplicada `landlords.delete-all` fuera; listas en `public const`; 0 `admin..` (F9–F13, F18).
-- [ ] `NotifyContrller` borrado; 2 entradas baseline fuera (diff justificado en el PR); nota en `spec-permission-middleware-admin-fase3.md:162` (F18).
-- [ ] Naming aditivo completo: `route:list` sin rutas nombradas `api`/`admin.`; 0 nombres repetidos en la colección (F14, F15); convención `api` sin punto intacta; `apiproperties`, `apisign-in` y demás nombres vivos sin cambio.
-- [ ] Colisión resuelta solo en index: `apilandlord-maintenance.index` / `apitenant-maintenance.index` registradas con URIs distintas; `apimaintenance.store/show/update` intactas (F17).
-- [ ] Tidy notifications: URIs `admin|landlord/notifications/filter` y `/view/all` (sin segmento `notification/` ni slash final); URIs antiguas → 404 (G3, H3).
-- [ ] Catálogo en verde: F9–F18, G1–G5, H1–H5, A1–A4 (24 casos) — suite **325 passed** verificada contra salida real de `php artisan test` (301+24).
-- [ ] `composer analyse` sin nuevas entradas vs baseline ([OK] No errors; baseline −2 entradas huérfanas) + `composer lint` limpio.
-- [ ] Errata en `spec-service-notification-fase4.md` (bajo su DoD :74) + docs: `tests/README.md` (conteo 325, árbol), `AGENTS.md` (Routes: nota nombres propios + guard), `.agents/README.md` (índice 52→53, fase5 7→8).
-- [ ] Cierres locales gitignored: `seguridad.md` #25 cerrado + #27 nuevo (`POST /blogs`), `deuda-tecnica.md` DT-B2 cerrado, `plan-accion.md` fila 5.8 cerrada + fila 5.14 nueva + Métricas de éxito.
-- [ ] Rama `spec/typos-rutas-fase5-impl` + PR (squash, 1 aprobación + CI); sin push a `main`; nada mergeado sin DoD tachado.
+- [x] Rename aplicado: `routes/api.php:93` `read-notifications` + `->name('read-notifications')`; 0 `read-nitifications` en `routes/` (F16, F18).
+- [x] Dedupe: exactamente 1 línea `income-categories/delete-all` en `routes/admin.php` (F18).
+- [x] DemoMode: 4 nombres muertos → reales (`admin.transactions.*`, `admin.subscriptions.paid/reject`); entrada duplicada `landlords.delete-all` fuera; listas en `public const`; 0 `admin..` (F9–F13, F18 en verde).
+- [x] `NotifyContrller` borrado; 2 entradas baseline fuera (diff justificado: commit `cab1e60`, entrada por clase borrada — no regeneración); nota en `spec-permission-middleware-admin-fase3.md` (F18).
+- [x] Naming aditivo completo: `route:list` audit `bare=0`, `duplicate_method_uri=0`, 0 nombres repetidos de la app (F14, F15); convención `api` sin punto intacta (`apisign-in`, `apiproperties` sin cambio).
+- [x] Colisión resuelta solo en index: `apilandlord-maintenance.index` / `apitenant-maintenance.index` registradas con URIs distintas; `apimaintenance.store/show/update` intactas (F17).
+- [x] Tidy notifications: URIs `admin|landlord/notifications/filter` y `/view/all` (sin segmento `notification/` ni slash final); URIs antiguas → 404 (G3, H3).
+- [x] Catálogo en verde: F9–F18, G1–G5, H1–H5, A1–A4 (24 casos) — suite **325 passed (1743 assertions)**, exacto 301+24, verificada contra salida real de `php artisan test`.
+- [x] `composer analyse` ([OK] No errors; baseline −2 entradas huérfanas) + `composer lint` passed (tras auto-fix de Pint en 3 archivos de test — estilo, sin efecto semántico).
+- [x] Errata en `spec-service-notification-fase4.md` (bajo su DoD :74) + docs: `tests/README.md` (conteo 325, árbol + sección "Higiene de rutas"), `AGENTS.md` (Routes: nota nombres propios + guard), `.agents/README.md` (índice 52→53, fase5 7→8).
+- [x] Cierres locales gitignored: `seguridad.md` #25 cerrado + #27 nuevo (`POST /blogs`), `deuda-tecnica.md` DT-B2 cerrado, `plan-accion.md` fila 5.8 cerrada + fila 5.14 nueva + Métricas de éxito.
+- [x] Rama `spec/typos-rutas-fase5-impl` + **PR #55** (squash, 1 aprobación + CI); sin push a `main`; DoD tachado antes de pedir merge.
 
 ---
 
@@ -325,3 +325,9 @@ Ninguno: no caracterizamos los bugs — los reparamos en este spec. Los 4 nombre
    php artisan test tests/Feature/Notification
    composer analyse && composer lint && php artisan test
    ```
+
+### Desviaciones menores (implementación, 2026-11-21)
+
+1. **F14 acotado a rutas de la app**: la colección reveló un duplicado preexistente del paquete `safiull/laravel-installer` (`LaravelInstaller::codeVerifyProcess` ×2, no documentado en el inventario) — el guard filtra nombres con `::` (marcador de namespace vendor); ninguna ruta de la app lo usa.
+2. **Mecánica del seed de notificaciones** (G4/G5, H4/H5, A2): `User::notifications()` usa el modelo custom `App\Models\Notification` (sin `HasUuids`) → el test pasa `id` uuid explícito; `will_expire` es columna de `users` (`plan_data()` la mergea sobre `PlanSubscribe`, Helper.php:122) → el landlord del H se crea con `will_expire` futura + fila `PlanSubscribe`; `Sanctum::actingAs()` devuelve el User → no es encadenable con `$this->getJson()`.
+3. **Pint auto-fix** en 3 archivos de test (estilo, sin efecto semántico): comillas simples, import sin uso fuera, FQCN `\App\Models\User` → import, orden de imports.
