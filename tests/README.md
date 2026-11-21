@@ -8,8 +8,8 @@ caracterizaciones nuevas): `.agents/spec-impl/spec-trait-acnoo-fase0.md`
 (Fase 0 / 0.3, DT-C3).
 
 > **Nota (2026-11-21):** la suite creció con las fases 1–5 y hoy totaliza
-> **262 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
-> spec 5.3). Este README documenta el origen smoke de Fase 0
+> **266 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
+> spec 5.3 + 4 del spec 5.4). Este README documenta el origen smoke de Fase 0
 > y las convenciones; los dominios añadidos se listan abajo.
 
 ## Cómo correr la suite
@@ -92,6 +92,7 @@ tests/
     ├── Idor/                     # ownership smoke (Fase 2)
     ├── Seeders/                  # F1–F6 del spec 4.10
     ├── Withdraw/                 # regresión HTTP del index API (Fase 5 / 5.3, Seg-20)
+    ├── Security/                # TrustHosts: validación del Host header (Fase 5 / 5.4, Seg-21)
     └── HandlerGenericErrorSmokeTest.php  # Handler genérico sin fuga de mensaje (3.4)
 ```
 
@@ -103,7 +104,7 @@ Mocks obligatorios (ver `.agents/skills/testing-conventions.md`):
 ## Cobertura de endpoints críticos
 
 > Snapshot del catálogo smoke de **Fase 0** (52 endpoints críticos); la suite
-> total creció con las fases 1–5 (262 casos) sin renovar este conteo.
+> total creció con las fases 1–5 (266 casos) sin renovar este conteo.
 
 Criterio del spec: rutas de auth (web + API), pagos, status de gateways,
 CMS público, entradas de guards y maintenance.
@@ -135,6 +136,17 @@ por Fase 4 / 4.4): `F1` per_page respetado (`data.per_page` + 5 items),
 Archivo: `tests/Feature/Withdraw/WithdrawIndexSmokeTest.php` — spec
 `spec-withdraw-index-request-fase5`. La key `'meassage'` de la respuesta no se
 aserta (typo diferido, candidato 5.10).
+
+## TrustHosts (Fase 5 / 5.4)
+
+Validación del Host header (Seg-21): `F1` host ajeno → **400**, `F2` host de
+`APP_URL` y `F3` subdominio pasan, `F4` dev host (`127.0.0.1`) pasa en `testing`
+(rama dev de `hosts()`). Archivo:
+`tests/Feature/Security/TrustHostsSmokeTest.php` — spec `spec-trust-hosts-fase5`.
+Detalles operativos: el cliente de test normaliza la URI vía `url()` y
+`Request::create` sobrescribe `HTTP_HOST`, así que el Host custom se inyecta
+con request Symfony construida a mano (helper `getWithHost`); el `tearDown`
+resetea los patterns static de Symfony (`Request::setTrustedHosts([])`).
 
 ## Desviaciones vs el catálogo del spec
 

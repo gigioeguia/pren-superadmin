@@ -19,6 +19,8 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- Determinismo TrustHosts (Seg-21 / 5.4): subdominios de este host son confiables en el catálogo -->
+        <env name="APP_URL" value="http://localhost"/>
         <!-- APP_KEY fija de test: sesiones/encrypt deterministas, independiente del .env -->
         <env name="APP_KEY" value="base64:dHTU/RWDy5eDQIOB59Bfp3KG+w4zaC1SGj1/xcZeFNY="/>
         <env name="BCRYPT_ROUNDS" value="4"/>

@@ -12,7 +12,7 @@ npm install                       # allowScripts en package.json auto-aprueba el
 php artisan key:generate
 php artisan storage:link          # public/storage symlink is NOT committed
 php artisan migrate --seed        # runs 24 seeders in order (see DatabaseSeeder)
-php artisan test                  # suite completa (262 casos) over dbrentpro_test — see tests/README.md
+php artisan test                  # suite completa (266 casos) over dbrentpro_test — see tests/README.md
 npm run dev                       # vite (resources/css/app.css, resources/js/app.js)
 npm run build
 php artisan serve                 # local dev server
@@ -84,6 +84,7 @@ Desde Fase 4 / 4.6 la lógica de moneda y OTP vive en clases inyectables del con
 
 - `env()` is **not** used in `app/` (eliminado en Fase 4 / 4.3): breaks under `php artisan config:cache`. New code uses `config()`; `env()` remains legal only in `config/` files — `database/seeders/` is guarded by arch-test U2 (spec 4.10).
 - No usar el helper global `request()` en `app/Http/Controllers/`, `app/Http/Middleware/` ni `app/Exports/`: inyectar `Request $request` (Fase 4 / 4.4). Los controladores ya inyectan `Request $request`; los gateways de `app/Library/` reciben `bool $expectsJson` en `make_payment()` (Fase 4 / 4.6 implementado).
+- **`TrustHosts` activo en el stack global** (Seg-21 / 5.4): el Host header se valida contra `APP_URL` + subdominios (`hosts()` en `app/Http/Middleware/TrustHosts.php`); `local` es no-op del framework; despliegues multi-dominio requieren editar `hosts()` (sin válvula de config). `APP_URL` desalineado ⇒ sitio en 400.
 - `User->role` is a plain string column AND `User` uses Spatie `HasRoles`. Two parallel role systems.
 - `User` `$fillable` includes `balance`, `is_setupped`, `plan_subscribe_id` — mass-assignable (`role` fue removido en Fase 1 / 1.4; asignar vía `forceFill` solo donde el negocio lo exige).
 - `safiull/laravel-installer` adds a `/install` route and `CheckToken` middleware in the `web` group.

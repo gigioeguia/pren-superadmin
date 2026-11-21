@@ -33,6 +33,7 @@ php artisan serve
 - **`allowScripts` en `package.json`**: `npm install` auto-aprueba el postinstall de esbuild (persistido vía `npm approve-scripts esbuild`). **No removerlo**: sin el binario de esbuild, `npm run dev`/`npm run build` fallan.
 - **`vendor/autoload1.php`**: marcador exigido por el middleware `CheckToken` del instalador. Tras un `composer install` fresco, recrearlo: `echo '{"marker":"installer"}' > vendor/autoload1.php`. Sin él, cualquier request web a una ruta no excluida **borra `vendor/laravel`**.
 - `resources/css/app.css` está a 0 bytes: el build no emite asset CSS (estado preexistente, no un fallo).
+- **`APP_ENV=local` en desarrollo**: `TrustHosts` valida el Host header en entornos no-local. Si sirves la app en `127.0.0.1:8000` con `APP_ENV=production`, todo responde 400 — usa `APP_ENV=local` (o fija `APP_URL` al host donde sirves).
 
 ## Credenciales demo
 
@@ -52,7 +53,7 @@ Nada se commitea directo a `main`: cada tarea trabaja en una rama dedicada (`spe
 La suite corre sobre la DB MySQL dedicada `dbrentpro_test` (configurada en `phpunit.xml`, decisión ADR-0001; nunca sobre la DB del `.env`):
 
 ```bash
-php artisan test                           # suite completa (262 tests)
+php artisan test                           # suite completa (266 tests)
 php artisan test --group=characterization  # 1 test de caracterización (documenta deuda
                                            # pendiente; ver tests/README.md)
 ```
