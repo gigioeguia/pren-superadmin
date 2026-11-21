@@ -1,7 +1,7 @@
 ---
 id: spec-comand-txt-credenciales-fase5
 titulo: "Credenciales de comand.txt: rotación out-of-band, saneo local y cierre documental (Fase 5 / 5.1)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-20
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.1) — .analisis/seguridad.md (Seg-19) — .analisis/deuda-tecnica.md (DT-B9)
 cobertura: Rotación de los 3 pares de credenciales no-demo del blob histórico de comand.txt (acción out-of-band) + saneo in-place de .analisis/comand.txt + actualización de los 4 documentos de .analisis/ + declaración de riesgo residual aceptado (sin history rewrite)
@@ -123,13 +123,13 @@ Este spec no cubre flujos HTTP; el catálogo adapta `Dado/Cuando/Entonces` a ver
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] 3/3 pares no-demo rotados y confirmados con fecha en la tabla de §Verificación de rotación.
-- [ ] `.analisis/comand.txt` sin passwords en claro: placeholders `[ROTATED <fecha>]`, emails conservados, nota histórica con referencia a este spec.
-- [ ] Fila 5.1 de `plan-accion.md` en estado final con justificación de riesgo residual aceptado y referencia a este spec.
-- [ ] Métrica "`comand.txt` saneado/fuera de exposición y secretos rotados" en `✅` con referencia a este spec.
-- [ ] `seguridad.md`, `deuda-tecnica.md` y `resumen-ejecutivo.md` actualizados — ninguna sección describe la acción como pendiente; la parte de `UserSeeder` queda explícitamente bajo 5.2.
-- [ ] F8 en verde: 0 passwords de `comand.txt` en este spec, docs de `.analisis/` y cualquier archivo commiteado.
-- [ ] PR con este spec como único cambio de repo; CI verde.
+- [x] 3/3 pares no-demo rotados y confirmados con fecha en la tabla de §Verificación de rotación (confirmación del usuario 2026-11-20).
+- [x] `.analisis/comand.txt` sin passwords en claro (2026-11-21): 3 pares personales → `[ROTATED 2026-11-20]`; usuarios demo → `[DEMO — público por diseño, cierre en 5.2]` (no marcados ROTATED porque no lo fueron — ver §2 OUT); emails y estructura conservados; nota de cabecera con referencia a este spec.
+- [x] Fila 5.1 de `plan-accion.md` en estado final **Cerrado (2026-11-21)** con justificación de riesgo residual aceptado y referencia a este spec.
+- [x] Métrica "`comand.txt` saneado/fuera de exposición y secretos rotados" en `✅` en `plan-accion.md` (2026-11-21) con referencia a este spec.
+- [x] `seguridad.md` (fila 19–26, Seg-19 y Referencia sensible), `deuda-tecnica.md` (DT-B9 y Referencia sensible) y `resumen-ejecutivo.md` actualizados (2026-11-21) — ninguna sección describe la acción como pendiente; la parte de `UserSeeder` queda explícitamente bajo 5.2.
+- [x] F8 en verde (2026-11-21): 0 pares email+password de `comand.txt` en HEAD, working tree y `.analisis/` — emails solo en este spec (sin passwords) y en `comand.txt` saneado; la única coincidencia de `1234567890` es un fixture de teléfono en `tests/Feature/Idor/PropertyOwnershipSmokeTest.php`, no un par credencial.
+- [ ] PR con este spec como único cambio de repo; CI verde — se tacha con el link del run al confirmarse (patrón `spec-upgrade-laravel-php-fase4`).
 
 ---
 
