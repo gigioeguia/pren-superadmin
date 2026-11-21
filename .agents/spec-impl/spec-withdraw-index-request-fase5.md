@@ -4,7 +4,7 @@ titulo: "Cierre Seg-20: `AcnooWithdrawController::index` ya corregido en 4.4 —
 estado: Borrador
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.3) — .analisis/seguridad.md (Seg-20) — .agents/spec-impl/spec-inyectar-request-fase4.md (absorción)
-cobertura: Cierre del bug Seg-20 (`index` usaba `$request->per_page` sin inyectar `Request` → error en runtime): documenta la absorción por Fase 4 / 4.4 (commit ea07c87), añade la anti-regresión que 4.4 dejó como "Inspección" (test HTTP F1–F3: per_page, rango de fechas, scoping por user_id) y sella los documentos que aún listan el hallazgo como vivo (seguridad.md #20, plan-accion 5.3, índice .agents/README.md)
+cobertura: Cierre del bug Seg-20 (`index` usaba `$request->per_page` sin inyectar `Request` → error en runtime): documenta la absorción por Fase 4 / 4.4 (commit ea07c87), añade la anti-regresión que 4.4 dejó como "Inspección" (test HTTP F1–F3: per_page, rango de fechas, scoping por user_id), sella los documentos que aún listan el hallazgo como vivo (seguridad.md #20, plan-accion 5.3, índice .agents/README.md) y actualiza los conteos de suite 254→257 en README.md, tests/README.md y AGENTS.md
 ---
 
 # Spec — Cierre Seg-20: `AcnooWithdrawController::index` ya corregido en 4.4 — test de regresión HTTP y sellado documental (Fase 5 / 5.3)
@@ -34,7 +34,7 @@ Cerrar el ítem 5.3 (Seg-20) sin re-implementar lo ya hecho: el fix (`Api\AcnooW
   - `.analisis/seguridad.md` — #20 con anotación inline "cerrado (2026-11-21…)" (patrón #19, l.131).
   - `.analisis/plan/plan-accion.md` — fila 5.3 con referencia a este spec (patrón filas 5.1/5.2) + línea nueva en "Métricas de éxito" + nota del typo `'meassage'` en fila 5.10.
   - `.agents/README.md` — índice: sección fase5 (3 specs; hoy los 2 existentes no figuran).
-- **Conteos de suite**: `tests/README.md` y `AGENTS.md` — 254 → 257 casos.
+- **Conteos de suite**: `README.md` (raíz, l.55 "254 tests"), `tests/README.md` (nota l.10 + snapshot l.104) y `AGENTS.md` (l.15) — 254 → 257 casos. `tests/README.md` además: línea `Withdraw/` en el árbol de estructura y mini-sección "## Withdraw (Fase 5 / 5.3)" con F1–F3 (patrón de las secciones Throttle/Permisos admin).
 
 ### OUT
 
@@ -67,9 +67,11 @@ Cerrar el ítem 5.3 (Seg-20) sin re-implementar lo ya hecho: el fix (`Api\AcnooW
 ```
 tests/Feature/Withdraw/WithdrawIndexSmokeTest.php   # NUEVO: F1–F3
 
-.agents/README.md                                    # MODIFICADO: índice — sección fase5 (3 specs), conteo 45 → 48
-tests/README.md                                      # MODIFICADO: conteo de suite 254 → 257
-AGENTS.md                                            # MODIFICADO: conteo de suite 254 → 257
+.agents/README.md                                    # MODIFICADO: índice — sección fase5 (3 specs), conteo 45 → 48 (commiteado con este spec)
+README.md                                            # MODIFICADO: "suite completa (254 tests)" → 257 (l.55)
+tests/README.md                                      # MODIFICADO: conteos l.10/l.104 → 257; línea Withdraw/ en el árbol
+                                                     #              + mini-sección "## Withdraw (Fase 5 / 5.3)" con F1–F3
+AGENTS.md                                            # MODIFICADO: "suite completa (254 casos)" → 257 (l.15)
 
 .analisis/ (gitignored — edición local, sin commit)
   seguridad.md                                      # MODIFICADO: #20 → cerrado
@@ -88,7 +90,7 @@ Sin cambios en `app/`, `routes/`, `database/`.
 - **Datos:** `Withdraw::create([...])` directo (no existe `WithdrawFactory`); fechas de F2 por asignación directa (`$withdraw->created_at = Carbon::parse(...); $withdraw->save()`) porque `created_at` no es fillable.
 - **Grupos:** `@group smoke` en la clase; `@group security` además en F3 (scoping por `user_id`).
 - **No asertar `'meassage'`** (typo diferido, OUT): el test aserta status + `data` (shape/conteo), nunca la key de mensaje.
-- **Estados del spec:** Borrador → Revisado → Aprobado (la conversación de grilling hace de revisión/decisión) → Implementado con DoD tachado **dentro del mismo PR** (Q8a). Rama única `spec/withdraw-index-request-fase5-impl`; commits separados `spec(agents)` (spec + índice) y `test(withdraw)` (test + conteos).
+- **Estados del spec:** Borrador → Revisado → Aprobado (la conversación de grilling hace de revisión/decisión) → Implementado con DoD tachado **dentro del mismo PR** (Q8a). Rama única `spec/withdraw-index-request-fase5-impl`; commits separados `spec(agents)` (spec + índice) y `test(withdraw)` (test + conteos en README raíz, tests/README y AGENTS.md).
 
 ---
 
@@ -119,7 +121,7 @@ Ninguno: el typo `'meassage'` no se caracteriza — diferido (OUT, candidato 5.1
 - [ ] `seguridad.md` #20 anotado como cerrado (patrón inline de #19).
 - [ ] `plan-accion.md`: fila 5.3 referenciando este spec + línea en "Métricas de éxito" + nota del typo en fila 5.10.
 - [ ] `.agents/README.md` índice con sección fase5 (3 specs) y conteo 48.
-- [ ] `tests/README.md` y `AGENTS.md` con conteo 257.
+- [ ] `README.md` (raíz), `tests/README.md` y `AGENTS.md` con conteo 257; `tests/README.md` con línea `Withdraw/` en el árbol y mini-sección F1–F3.
 - [ ] Rama `spec/withdraw-index-request-fase5-impl` + PR review (squash merge, 1 aprobación + CI); sin push a `main`.
 
 ---
@@ -174,3 +176,8 @@ Ninguno: el typo `'meassage'` no se caracteriza — diferido (OUT, candidato 5.1
    php artisan test tests/Feature/Withdraw/WithdrawIndexSmokeTest.php
    composer analyse && composer lint && php artisan test
    ```
+5. **Redacciones documentales (acordadas en grilling 2026-11-21, ronda 2):**
+   - `plan-accion.md` fila 5.3 → "**Cerrado (2026-11-21):** fix ya en `main` (absorción 4.4, commit `ea07c87`); spec `spec-withdraw-index-request-fase5` añade test de regresión F1–F3 y sella documentalmente (seguridad.md #20)".
+   - `plan-accion.md` Métricas de éxito → línea nueva tras la de `comand.txt`: "✅ Fix Seg-20 (`AcnooWithdrawController::index` con `Request` inyectado) verificado con test de regresión HTTP (Fase 5 / 5.3 — spec-withdraw-index-request-fase5, 2026-11-21; absorción 4.4)". Encabezado "(reconciliadas 2026-11-19)" intacto (precedente 5.1).
+   - `plan-accion.md` fila 5.10 → extender la celda "Parcial": "typo de key API `'meassage'` (`Api\AcnooWithdrawController::index`) registrado desde el spec 5.3".
+   - `plan-accion.md` encabezado l.7 ("Última reconciliación… HEAD `ae662fa`") y sección "Ver también" **sin cambios** — cierre de ítem, no de fase (Q6).
