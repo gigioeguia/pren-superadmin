@@ -142,7 +142,7 @@ Este spec no cubre flujos HTTP; el catálogo adapta `Dado/Cuando/Entonces` a ver
 | Algún par no-demo resulta inaccesible al rotar (sin autoridad) | Medio | Reabriría la decisión "sin rewrite": el rewrite + purge de Support pasaría a última ratio; registrar en este spec si ocurre |
 | Docs de `.analisis/` no versionados (gitignored) | Bajo | La trazabilidad vive en este spec (commiteado); los docs se citan con línea exacta |
 
-**Pendiente de decisión:** ninguna — las decisiones Q1–Q13 del grilling (2026-11-20) están cerradas; la única ejecución abierta es la rotación (F1).
+**Pendiente de decisión:** ninguna — las decisiones Q1–Q13 del grilling (2026-11-20) están cerradas; F1 confirmado cerrado (verificación de rotación, §6).
 
 ---
 
