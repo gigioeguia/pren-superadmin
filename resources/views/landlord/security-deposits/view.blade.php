@@ -62,12 +62,12 @@
                 <div class="d-flex align-items-center flex-wrap gap-3 justify-content-between">
                     <div>
                         <h6> {{__('Bill From(Admin)')}} </h6>
-                        <p class="info-p"> {{__('Name:')}} <span>{{ get_option('general')['app_name'] }}</span></p>
+                        <p class="info-p"> {{__('Name:')}} <span>{{ get_option('general')['app_name'] ?? '' }}</span></p>
                         <p class="info-p pt-2">{{__('Address:')}}
-                            <span>{{ get_option('general')['app_address'] }}</span>
+                            <span>{{ get_option('general')['app_address'] ?? '' }}</span>
                         </p>
-                        <p class="info-p pt-2"> {{__('Phone:')}} <span>{{ get_option('general')['app_phone'] }}</span></p>
-                        <p class="info-p pt-2"> {{__('Email:')}} <span>{{ get_option('general')['app_email'] }}</span></p>
+                        <p class="info-p pt-2"> {{__('Phone:')}} <span>{{ get_option('general')['app_phone'] ?? '' }}</span></p>
+                        <p class="info-p pt-2"> {{__('Email:')}} <span>{{ get_option('general')['app_email'] ?? '' }}</span></p>
                     </div>
                     <div>
                         <div class="text-sm-end text-start">

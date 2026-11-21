@@ -12,7 +12,7 @@ npm install                       # allowScripts en package.json auto-aprueba el
 php artisan key:generate
 php artisan storage:link          # public/storage symlink is NOT committed
 php artisan migrate --seed        # runs 24 seeders in order (see DatabaseSeeder)
-php artisan test                  # suite completa (283 casos) over dbrentpro_test — see tests/README.md
+php artisan test                  # suite completa (301 casos) over dbrentpro_test — see tests/README.md
 npm run dev                       # vite (resources/css/app.css, resources/js/app.js)
 npm run build
 php artisan serve                 # local dev server
@@ -41,9 +41,11 @@ Run a single test: `php artisan test tests/Feature/Auth/WebLoginSmokeTest.php`
 
 ## Global helpers (autoloaded via composer `files`)
 
-`app/Helpers/Helper.php` is loaded globally (no namespace). Available everywhere: `get_option()`, `default_currency()`, `currency_format()`, `convert_money()`, `cache_remember()`, `forgetModel()`, `notify_users()`, `sendNotification()`, `plan_data()`, `languages()`, `demoReset()`. Check here before assuming a function is missing.
+`app/Helpers/Helper.php` is loaded globally (no namespace). Available everywhere: `get_option()` (returns `array`; scalar keys like `version` are read via `App\Support\Options::string()`), `default_currency()`, `currency_format()`, `convert_money()`, `cache_remember()`, `forgetModel()`, `notify_users()`, `sendNotification()`, `plan_data()`, `languages()`, `demoReset()`. Check here before assuming a function is missing.
 
 Desde Fase 4 / 4.6 la lógica de moneda y OTP vive en clases inyectables del contenedor: `App\Support\Currency` (`format`, `currency`, `default`, `convert`, `convertToDefault`), `App\Support\Payment` (`payable`) y `App\Support\Otp` (`visibilityTimeInSeconds`). Los helpers globales `currency_format`, `currency`, `default_currency`, `convert_money`, `convert_to_default_amount` y `payable` son delegadores delgados a esas clases. Los gateways de `app/Library/` ya no usan `request()`; reciben `bool $expectsJson` en `make_payment($data, $expectsJson = false)`.
+
+Desde Fase 5 / 5.7 `App\Support\Options` fija el contrato tipado de las options: `array($key, $default = [])` y `string($key, $default = '')` con default tipado (fila ausente/corrupta o deriva de tipo → default, nunca null). `get_option(): array` es un delegador delgado a `Options::array()`; solo vale para keys de fila única (`reminder-messages` se consume vía modelo). Arch-test vigila que ninguna vista reintroduzca `get_option(...)[...]` sin `??`.
 
 ## Service providers
 

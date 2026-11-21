@@ -10,7 +10,7 @@
             <div class="w-1100">
                 <div class="woodland-card mt-30">
                     <div class="woodland-card-header">
-                        <div class="h4 title-nine">@lang('Thank you for posting on') {{ get_option('general')['app_name'] }}</div>
+                        <div class="h4 title-nine">@lang('Thank you for posting on') {{ get_option('general')['app_name'] ?? '' }}</div>
                     </div>
                     <div class="success-aler-msg">
                         <p><svg width="16" height="16" viewBox="0 0 16 16" fill="none"

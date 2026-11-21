@@ -6,7 +6,7 @@ class Otp
 {
     public static function visibilityTimeInSeconds(): int
     {
-        $otpSettings = get_option('email-varification') ?? [];
+        $otpSettings = Options::array('email-varification');
 
         $otpStatus = $otpSettings['otp_status'] ?? 'off';
 

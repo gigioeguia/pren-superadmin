@@ -3,11 +3,11 @@
 use App\Models\Currency;
 use App\Models\Gateway;
 use App\Models\Language;
-use App\Models\Option;
 use App\Models\PlanSubscribe;
 use App\Models\User;
 use App\Notifications\SendNotification;
 use App\Support\CacheKeys;
+use App\Support\Options;
 use App\Support\Payment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -37,9 +37,9 @@ function forgetModel(Model $model): void
     CacheKeys::forgetModel($model);
 }
 
-function get_option(string $key): mixed
+function get_option(string $key): array
 {
-    return cache_remember(CacheKeys::option($key), fn () => Option::where('key', $key)->value('value') ?? []);
+    return Options::array($key);
 }
 
 function formatted_date(string $date, string $format = 'd M, Y'): ?string
