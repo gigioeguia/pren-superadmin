@@ -1,7 +1,7 @@
 ---
 id: spec-seeders-firstorcreate-fase4
 titulo: "Seeders sin IDs/rutas hardcodeadas"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-20
 origen: .analisis/plan/plan-accion.md (Fase 4 / 4.10) + .analisis/deuda-tecnica.md (DT-M9)
 cobertura: 24 seeders de DatabaseSeeder + DemoSeeder + demoReset(); idempotencia por clave natural; 0 IDs/rutas frágiles; seed seguro sobre DB ya poblada
@@ -71,10 +71,12 @@ Todos los pre-requisitos existen: el spec es implementable directamente.
 ```
 database/seeders/           # 24 seeders refactorizados + DemoSeeder unificado
 ├── DatabaseSeeder.php      # orden de las 24 llamadas SIN cambios
+├── DemoDataset.php         # dataset demo compartido (fuente única, Q12)
+├── Concerns/SeedsDemoData.php  # trait de siembra compartido (properties/units/incomes/expenses)
 ├── PermissionSeeder.php    # users firstOrCreate por email; sin bloque muerto
 ├── CurrencySeeder.php      # insert → firstOrCreate por code
-├── GatewaySeeder.php      # lookup por code, config(), firstOrCreate por name
-├── UserSeeder.php          # UserFactory estados; UserDetail lookup dinámico
+├── GatewaySeeder.php       # lookup por code, config(), firstOrCreate por name
+├── UserSeeder.php          # UserFactory estados; UserDetail updateOrCreate
 ├── ... (18 restantes: firstOrCreate por clave natural + lookups)
 ├── OptionTableSeeder.php   # per-row firstOrCreate; sin Artisan::call
 ├── LanguageSeeder.php      # firstOrCreate por code (idempotente p/ ruta /update)
@@ -184,20 +186,30 @@ No aplica: los bugs actuales cubiertos (cross-tenant F4, imágenes inexistentes 
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] U1–U4 y F1–F6 en verde; suite completa (244 + ~10 nuevos) en verde, **sin editar tests existentes**.
-- [ ] `php artisan db:seed` ejecutado 2× sobre una DB con datos previos: sin excepciones, sin duplicados (counts idempotentes verificados por F1/F2).
-- [ ] 0 matches del patrón U1 y de `env(` en `database/seeders/` (verificado por arch-test en CI).
-- [ ] 100 % de los paths de imagen sembrados existen en un clone fresco (F3).
-- [ ] Nombres de roles/permisos/emails demo sin cambios; clase `DemoSeeder` y firma del `Artisan::call` sin cambios (D6).
-- [ ] `FedaPayGatewaySeeder` eliminado; 0 secretos en `database/` (U3).
-- [ ] `php artisan demo:reset` en entorno demo funciona con el landlord demo en cualquier ID (U4).
-- [ ] PHPStan nivel 5 sin errores nuevos (baseline 909 sin crecer); `composer lint` (Pint) en verde.
-- [ ] AGENTS.md actualizado: ref a `comand.txt` (ya eliminado) fuera; convención de seeders documentada ("idempotente por clave natural; prohibido `landlord_id => N` y paths a archivos no trackeados"); nota de la credencial sandbox en git history.
-- [ ] Tests nuevos añaden < 15 s a la suite.
+- [x] U1–U4 y F1–F6 en verde; suite completa **254/254** (244 + 10 nuevos) en verde, **sin editar tests existentes**.
+- [x] `php artisan db:seed` ejecutado 2× sobre una DB con datos previos: sin excepciones, sin duplicados — evidencia manual sobre `dbrentpro_test` (users=4, currencies=151, properties=8, incomes=6, options=8) y por F1/F2.
+- [x] 0 matches del patrón U1 y de `env(` en `database/seeders/` (verificado por arch-test U1/U2 en CI).
+- [x] 100 % de los paths de imagen sembrados existen en un clone fresco (F3; 60 repuntados, ver desviación D1).
+- [x] Nombres de roles/permisos/emails demo sin cambios; clase `DemoSeeder` y firma del `Artisan::call` sin cambios (D6; `DemoResetTest` en verde sin edición).
+- [x] `FedaPayGatewaySeeder` eliminado; 0 secretos en `database/` (U3).
+- [x] `php artisan demo:reset` en entorno demo funciona con el landlord demo en cualquier ID (U4 + F5).
+- [x] PHPStan nivel 5 sin errores nuevos (baseline sin crecer); `composer lint` (Pint) en verde.
+- [x] AGENTS.md actualizado: ref a `comand.txt` fuera; convención de seeders documentada; nota de la credencial sandbox en git history.
+- [x] Tests nuevos añaden < 15 s a la suite (≈ 4 s marginales; el migrate:fresh que muestra U4 aislado lo paga la primera clase de cualquier forma).
 
 ---
 
 ## 8. Riesgos y decisiones pendientes
+
+### Desviaciones de implementación (documentadas, mismo espíritu del spec)
+
+- **D1 — 60 paths rotos, no 24:** el audit de la fase de grilling no capturó paths embebidos en JSON con slashes escapados (`uploads\/...` en `mykad`, option `general` y `manage-pages`). Total real: 114 paths sembrados, **60 inexistentes** → todos repuntados a assets trackeados (pool `public/uploads/25/09/**` para covers/floorplans/units, `05-132` avatar, `05-240`/`05-317` mykad, `07-175` logo/favicon, 4 svgs de `25/10/` para manage-pages). Los 54 intactos quedaron tal cual. Misma decisión Q13, magnitud corregida.
+- **D2 — Property/PropertyDetail/Unit sin `firstOrCreate`:** D5 fijaba `puid` como clave natural, pero `puid` se auto-genera en un hook `creating` del modelo (no es fillable ni asignable). Se usa **guard seed-if-absent por landlord demo** + lookups por nombre (category/house_type/facility/amenity) y mapa dataset→ids. Idempotencia verificada por F1/F5.
+- **D3 — Slugs de blogs regenerados:** el hook `creating` del modelo re-genera el slug desde el title; los slugs vendor heredados (basura de restaurante: `how-to-streamline-billing-in-your-restaurant`) no son preservables vía Eloquent. Los nuevos derivan del título (mejora de datos).
+- **D4 — Tests con asserts scoped por clave natural, no counts absolutos:** se detectó que tests pre-existentes sin `RefreshDatabase` (`IdorPolicySmokeTest`, `UserModelTest`, `PlanTest`…) persisten filas en `dbrentpro_test` entre corridas; counts absolutos de F1/F6/F2 chocaban con esa basura. Fuera de alcance editarlos (DoD lo prohíbe) — los asserts nuevos son inmunes al ruido por diseño (que es, además, exactamente lo que el refactor garantiza).
+- **D5 — Conteos reales del dataset:** `CurrencySeeder` tiene 152 filas → 151 códigos únicos (`firstOrCreate` colapsa una dup del array original); el catálogo F1 usa 151. `OptionTableSeeder` termina con 8 keys únicas (dedupe `reminder-messages`).
+
+### Riesgos
 
 | Riesgo | Impacto | Mitigación |
 |--------|---------|------------|
