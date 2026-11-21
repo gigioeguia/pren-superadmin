@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Demo;
 
+use App\Http\Middleware\DemoMode;
 use App\Http\Middleware\VerifyCsrfToken;
 use App\Models\PlanSubscribe;
 use App\Models\User;
@@ -115,5 +116,64 @@ class DemoModeTest extends TestCase
 
         $response->assertOk();
         $response->assertDontSee('This is a demo account', false);
+    }
+
+    public function test_f9_transactions_update_blocked_in_demo(): void
+    {
+        app()->detectEnvironment(fn () => 'demo');
+
+        $admin = $this->createAdmin();
+
+        $response = $this->actingAs($admin)->withoutMiddleware(VerifyCsrfToken::class)->putJson('/admin/transactions/1');
+
+        $response->assertStatus(499);
+        $response->assertJson(['message' => 'This action is disabled in demo mode.']);
+    }
+
+    public function test_f10_transactions_destroy_blocked_in_demo(): void
+    {
+        app()->detectEnvironment(fn () => 'demo');
+
+        $admin = $this->createAdmin();
+
+        $response = $this->actingAs($admin)->withoutMiddleware(VerifyCsrfToken::class)->deleteJson('/admin/transactions/1');
+
+        $response->assertStatus(499);
+        $response->assertJson(['message' => 'This action is disabled in demo mode.']);
+    }
+
+    public function test_f11_subscription_paid_blocked_in_demo(): void
+    {
+        app()->detectEnvironment(fn () => 'demo');
+
+        $admin = $this->createAdmin();
+
+        $response = $this->actingAs($admin)->withoutMiddleware(VerifyCsrfToken::class)->postJson('/admin/subscriptions/paid/1');
+
+        $response->assertStatus(499);
+        $response->assertJson(['message' => 'This action is disabled in demo mode.']);
+    }
+
+    public function test_f12_subscription_reject_blocked_in_demo(): void
+    {
+        app()->detectEnvironment(fn () => 'demo');
+
+        $admin = $this->createAdmin();
+
+        $response = $this->actingAs($admin)->withoutMiddleware(VerifyCsrfToken::class)->postJson('/admin/subscriptions/reject/1');
+
+        $response->assertStatus(499);
+        $response->assertJson(['message' => 'This action is disabled in demo mode.']);
+    }
+
+    public function test_f13_disabled_route_names_resolve_to_registered_routes(): void
+    {
+        // F13: guard de existencia — todo nombre listado en DemoMode debe
+        // resolver a una ruta registrada (lint de nombres muertos/dobles puntos).
+        $routes = app('router')->getRoutes();
+
+        foreach ([...DemoMode::ADMIN_DISABLED_ROUTES, ...DemoMode::LANDLORD_DISABLED_ROUTES] as $name) {
+            $this->assertNotNull($routes->getByName($name), "Route [{$name}] is not registered.");
+        }
     }
 }

@@ -34,6 +34,7 @@ Run a single test: `php artisan test tests/Feature/Auth/WebLoginSmokeTest.php`
 - `maintenance.php` is `require`d from `web.php` — `GET /update` and `GET /cache-clear` now require `auth` + `role:superadmin` (Fase 1 / 1.1). Previously public (Seg-1), now mitigated.
 - **Throttle (Fase 3 / 3.7):** rutas sensibles de auth (login, signup, `otp-submit`, `otp-resend`, `forgot-password`, `reset-password` web; `sign-in`, `sign-up`, `submit-otp`, `send-reset-code`, `resend-otp`, `user-password-reset` API) llevan `throttle:5,1`; el límite general de la API es 60/min (`RouteServiceProvider`, antes 2000).
 - API route names: `api` prefix without dot (e.g. `apisign-in`, `apiproperties`).
+- Todas las rutas tienen `->name()` propio (0 nombres `api`/`admin.` de prefijo desnudo, 0 duplicados) — guard `tests/Feature/Routes/RouteNamesSmokeTest.php` (Fase 5 / 5.8).
 
 ## Middleware aliases (`app/Http/Kernel.php`)
 
