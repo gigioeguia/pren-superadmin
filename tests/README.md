@@ -7,6 +7,10 @@ La amplían los tests del trait `HasAcnooActions` (G1–G8/H1–H4, con 2
 caracterizaciones nuevas): `.agents/spec-impl/spec-trait-acnoo-fase0.md`
 (Fase 0 / 0.3, DT-C3).
 
+> **Nota (2026-11-21):** la suite creció con las fases 1–4 y hoy totaliza
+> **254 casos** (Fases 0–4). Este README documenta el origen smoke de Fase 0
+> y las convenciones; los dominios añadidos se listan abajo.
+
 ## Cómo correr la suite
 
 ```bash
@@ -72,13 +76,21 @@ y el comentario, y actualizar el spec (ver skill `.agents/skills/tests-caracteri
 tests/
 ├── Concerns/CreatesUsers.php     # helpers landlord/admin/tenant/superadmin (+ rol Spatie)
 ├── Stubs/StubGateway.php         # stub de gateway (Gateway->namespace), sin HTTP real
+├── Unit/                         # unitarios: modelos (User, Plan), PropertyService,
+│   ├── Support/                  # CacheKeysTest (invalidación centralizada, 4.9)
+│   └── Seeders/                  # arch-tests U1–U3 + demoReset U4 (spec 4.10)
 └── Feature/
     ├── Auth/                     # L (login web), S (signup+OTP), R (reset), A (API)
-    ├── Payment/                  # P (flujos de pago)
+    ├── Payment/                  # P (flujos de pago + whitelist de namespace)
     ├── Public/                   # Pub (CMS frontal)
-    ├── Admin/                    # G (guard admin)
+    ├── Admin/                    # G (guard admin + denegación de permisos 3.8)
     ├── Landlord/                 # H (guard landlord + expired)
-    └── Maintenance/              # M (rutas Artisan públicas)
+    ├── Maintenance/              # M (rutas Artisan)
+    ├── Cache/                    # invalidación centralizada (4.9)
+    ├── Demo/                     # DemoMode + demoReset (3.5)
+    ├── Idor/                     # ownership smoke (Fase 2)
+    ├── Seeders/                  # F1–F6 del spec 4.10
+    └── HandlerGenericErrorSmokeTest.php  # Handler genérico sin fuga de mensaje (3.4)
 ```
 
 Mocks obligatorios (ver `.agents/skills/testing-conventions.md`):
@@ -87,6 +99,9 @@ Mocks obligatorios (ver `.agents/skills/testing-conventions.md`):
 `StubGateway`/`$this->mock(App\Library\*)` en P.
 
 ## Cobertura de endpoints críticos
+
+> Snapshot del catálogo smoke de **Fase 0** (52 endpoints críticos); la suite
+> total creció con las fases 1–4 (254 casos) sin renovar este conteo.
 
 Criterio del spec: rutas de auth (web + API), pagos, status de gateways,
 CMS público, entradas de guards y maintenance.
