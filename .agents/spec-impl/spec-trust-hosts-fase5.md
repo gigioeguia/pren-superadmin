@@ -1,7 +1,7 @@
 ---
 id: spec-trust-hosts-fase5
 titulo: "Habilitar `TrustHosts` global: validación del Host header contra `APP_URL` (Fase 5 / 5.4)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.4) — .analisis/seguridad.md (Seg-21)
 cobertura: Cerrar Seg-21 descomentando `TrustHosts` en el stack global del Kernel y customizando su allowlist (`APP_URL` + subdominios; dev hosts solo en local/testing), con override de testabilidad que habilita el catálogo HTTP F1–F4 (host ajeno → 400), notas de despliegue (`.env.example`, README, AGENTS Gotchas) y conteos de suite verificados contra salida real (esperados 262+4=266). Sin válvula `TRUSTED_HOSTS` (decisión Q1): despliegues multi-dominio requieren editar `hosts()`
@@ -121,17 +121,17 @@ Ninguno: no hay bug vigente que se espere romper — el fix ES este spec.
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `Kernel.php`: `TrustHosts` descomentado, primera posición del stack global (inspección).
-- [ ] `hosts()` y override según §5 (inspección).
-- [ ] `phpunit.xml` con `APP_URL=http://localhost`.
-- [ ] F1–F4 en verde: corrida focal + suite completa **266** (verificar contra salida real; base 262 confirmada en `main` post PR #50).
-- [ ] `tearDown` presente con `Request::setTrustedHosts([])` en la clase de test.
-- [ ] `composer analyse` sin nuevas entradas vs baseline; `composer lint` limpio.
-- [ ] `.env.example` con comentario en `APP_URL`; `README.md` con nota local dev; `AGENTS.md` con bullet Gotchas.
-- [ ] Conteos **266** en `README.md`, `tests/README.md`, `AGENTS.md`; `tests/README.md` con línea `Security/` en el árbol y mini-sección F1–F4.
-- [ ] `.agents/README.md` índice: fase5 (4 specs), conteo 49.
-- [ ] Cierres locales: `seguridad.md` #21 cerrado; `plan-accion.md` fila 5.4 + métrica.
-- [ ] Rama `spec/trust-hosts-fase5-impl` + PR review (squash, 1 aprobación + CI); sin push a `main`; **nada mergeado en Borrador** (Q5a).
+- [x] `Kernel.php`: `TrustHosts` descomentado, primera posición del stack global (inspección; import FQCN → `use` corregido por Pint).
+- [x] `hosts()` y override según §5 (inspección; la suite los ejercita en verde).
+- [x] `phpunit.xml` con `APP_URL=http://localhost`.
+- [x] F1–F4 en verde: focal 4 passed (4 assertions); suite completa **266 passed (818 assertions)** — exacto 262+4, verificado contra salida real.
+- [x] `tearDown` presente con `Request::setTrustedHosts([])` en la clase de test.
+- [x] `composer analyse` sin nuevas entradas vs baseline ([OK]); `composer lint` limpio (tras auto-fix de `fully_qualified_strict_types` en Kernel).
+- [x] `.env.example` con comentario en `APP_URL`; `README.md` con nota local dev; `AGENTS.md` con bullet Gotchas.
+- [x] Conteos **266** en `README.md`, `tests/README.md`, `AGENTS.md`; `tests/README.md` con línea `Security/` en el árbol y mini-sección F1–F4.
+- [x] `.agents/README.md` índice: fase5 (4 specs), conteo 49 (commiteado con el spec).
+- [x] Cierres locales: `seguridad.md` #21 cerrado; `plan-accion.md` fila 5.4 + métrica (gitignored).
+- [x] Rama `spec/trust-hosts-fase5-impl` + PR review (squash, 1 aprobación + CI); sin push a `main`; **nada mergeado en Borrador** (Q5a).
 
 ---
 
@@ -192,7 +192,7 @@ Ninguno: no hay bug vigente que se espere romper — el fix ES este spec.
        return ! $this->app->environment('local');
    }
    ```
-2. **Envío del Host en tests:** `$this->get('/login', ['Host' => 'evil.example'])`. `tearDown`: `\Illuminate\Http\Request::setTrustedHosts([])`.
+2. **Envío del Host en tests:** `$this->get($uri, ['Host' => 'evil.example'])` **no funciona** — `prepareUrlForRequest()` (vendor) envuelve la URI con `url()` y `Request::create` sobrescribe `HTTP_HOST` con el host de esa URI absoluta. Solución implementada: helper `getWithHost()` que construye la request Symfony con URI relativa (`SymfonyRequest::create($uri, 'GET', [], [], [], ['HTTP_HOST' => $host])`) y la pasa por el kernel real (stack global incluido). `tearDown`: `\Illuminate\Http\Request::setTrustedHosts([])`.
 3. **Cadena del 400** (verificada en vendor, P3): middleware → `Request::setTrustedHosts(patterns)` (static) → `$request->getHost()` durante render → sin match → `SuspiciousOperationException` → `Handler` l.653 → `BadRequestHttpException` → 400.
 4. **Redacciones documentales (patrón 5.3, grilling Q1–Q10):**
    - `seguridad.md` #21 → añadir al final: "— **cerrado (2026-11-21, spec `spec-trust-hosts-fase5`)**: middleware global descomentado (`hosts()` = `APP_URL` + subdominios; dev hosts solo local/testing); test HTTP F1–F4 (`TrustHostsSmokeTest`)."
