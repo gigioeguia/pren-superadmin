@@ -50,7 +50,7 @@
                     </div>
 
                        <div class="login-button-container">
-                            <a href="{{ Route::has($page_data['headings']['header_btn_link']) ? route($page_data['headings']['header_btn_link']) : route('login') }}" class="login-btn-2">
+                            <a href="{{ Route::has($page_data['headings']['header_btn_link'] ?? null) ? route($page_data['headings']['header_btn_link']) : route('login') }}" class="login-btn-2">
                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M6.04175 5.83333C6.04175 3.64721 7.81396 1.875 10.0001 1.875C12.1862 1.875 13.9584 3.64721 13.9584 5.83333C13.9584 8.01946 12.1862 9.79167 10.0001 9.79167C7.81396 9.79167 6.04175 8.01946 6.04175 5.83333Z" fill="white"/>
                             <path d="M3.54175 15.8334C3.54175 13.187 5.68705 11.0417 8.33341 11.0417H11.6667C14.3131 11.0417 16.4584 13.187 16.4584 15.8334C16.4584 17.099 15.4324 18.125 14.1667 18.125H5.83341C4.56776 18.125 3.54175 17.099 3.54175 15.8334Z" fill="white"/>
@@ -95,7 +95,7 @@
                 </ul>
 
                 <div class="login-button-container">
-                    <a href="{{ Route::has($page_data['headings']['header_btn_link']) ? route($page_data['headings']['header_btn_link']) : route('login') }}" class="login-btn-2">
+                    <a href="{{ Route::has($page_data['headings']['header_btn_link'] ?? null) ? route($page_data['headings']['header_btn_link']) : route('login') }}" class="login-btn-2">
                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M6.04175 5.83333C6.04175 3.64721 7.81396 1.875 10.0001 1.875C12.1862 1.875 13.9584 3.64721 13.9584 5.83333C13.9584 8.01946 12.1862 9.79167 10.0001 9.79167C7.81396 9.79167 6.04175 8.01946 6.04175 5.83333Z" fill="white"/>
                         <path d="M3.54175 15.8334C3.54175 13.187 5.68705 11.0417 8.33341 11.0417H11.6667C14.3131 11.0417 16.4584 13.187 16.4584 15.8334C16.4584 17.099 15.4324 18.125 14.1667 18.125H5.83341C4.56776 18.125 3.54175 17.099 3.54175 15.8334Z" fill="white"/>

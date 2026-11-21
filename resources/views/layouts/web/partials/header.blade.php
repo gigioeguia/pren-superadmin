@@ -9,7 +9,7 @@
                 <img src="{{ asset($page_data['web_logo_one'] ?? 'backend/assets/img/logo.svg') }}" alt="header-logo" />
             </a>
 
-            <a href="{{ Route::has($page_data['headings']['header_btn_link']) ? route($page_data['headings']['header_btn_link']) : route('login') }}"  class="get-app-btn login-btn ">
+            <a href="{{ Route::has($page_data['headings']['header_btn_link'] ?? null) ? route($page_data['headings']['header_btn_link']) : route('login') }}"  class="get-app-btn login-btn ">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
                     xmlns="http://www.w3.org/2000/svg">
                     <path
@@ -94,7 +94,7 @@
                     </li>
                 </ul>
 
-                <a href="{{ Route::has($page_data['headings']['header_btn_link']) ? route($page_data['headings']['header_btn_link']) : route('login') }}"
+                <a href="{{ Route::has($page_data['headings']['header_btn_link'] ?? null) ? route($page_data['headings']['header_btn_link']) : route('login') }}"
                     class="get-app-btn">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
                         xmlns="http://www.w3.org/2000/svg">

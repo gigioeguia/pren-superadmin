@@ -45,7 +45,7 @@ class RegistrationController extends Controller
         }
 
         // OTP settings
-        $otpSettings = get_option('email-varification') ?? [];
+        $otpSettings = get_option('email-varification');
         $otpStatus = $otpSettings['otp_status'] ?? 'off';
 
         $code = random_int(100000, 999999);

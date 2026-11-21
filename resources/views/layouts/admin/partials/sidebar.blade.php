@@ -771,7 +771,7 @@
         </ul>
         
         @php
-        $version = get_option('version');
+        $version = \App\Support\Options::string('version');
         @endphp
 
         @if($version)

@@ -96,7 +96,7 @@ class Flutterwave
             $url = 'https://api.flutterwave.com/v3/payments';
         }
 
-        $logo = get_option('logo_setting')->logo ?? asset('uploads/logo.png');
+        $logo = get_option('general')['logo'] ?? asset('uploads/logo.png');
 
         try {
             $params = [

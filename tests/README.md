@@ -8,8 +8,9 @@ caracterizaciones nuevas): `.agents/spec-impl/spec-trait-acnoo-fase0.md`
 (Fase 0 / 0.3, DT-C3).
 
 > **Nota (2026-11-21):** la suite creció con las fases 1–5 y hoy totaliza
-> **283 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
-> spec 5.3 + 4 del spec 5.4 + 7 del spec 5.5 + 10 del spec 5.6). Este README documenta el origen smoke de Fase 0
+> **301 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
+> spec 5.3 + 4 del spec 5.4 + 7 del spec 5.5 + 10 del spec 5.6 + 18 del spec
+> 5.7). Este README documenta el origen smoke de Fase 0
 > y las convenciones; los dominios añadidos se listan abajo.
 
 ## Cómo correr la suite
@@ -78,8 +79,9 @@ tests/
 ├── Concerns/CreatesUsers.php     # helpers landlord/admin/tenant/superadmin (+ rol Spatie)
 ├── Stubs/StubGateway.php         # stub de gateway (Gateway->namespace), sin HTTP real
 ├── Unit/                         # unitarios: modelos (User, Plan), PropertyService,
-│   ├── Support/                  # CacheKeysTest (invalidación centralizada, 4.9)
+│   ├── Support/                  # CacheKeysTest (4.9) + OtpTest (4.6) + OptionsTest U1–U9 (5.7)
 │   ├── Config/                   # SessionConfigTest U1–U5 (5.5) + ForceHttpsConfigTest U1–U6 (5.6)
+│   ├── Views/                    # arch-tests U10–U11: 0 get_option()[...] sin guard, 0 logo_setting (5.7)
 │   └── Seeders/                  # arch-tests U1–U3 + demoReset U4 (spec 4.10)
 └── Feature/
     ├── Auth/                     # L (login web), S (signup+OTP), R (reset), A (API)
@@ -94,6 +96,7 @@ tests/
     ├── Seeders/                  # F1–F6 del spec 4.10
     ├── Withdraw/                 # regresión HTTP del index API (Fase 5 / 5.3, Seg-20)
     ├── Security/                # TrustHosts (5.4) + Session (5.5) + ForceHttps redirect/proxies (Fase 5 / 5.6)
+    ├── Options/                 # Pub1 + F1–F4 (render sin options) + G1–G2 (version sidebar) (Fase 5 / 5.7)
     └── HandlerGenericErrorSmokeTest.php  # Handler genérico sin fuga de mensaje (3.4)
 ```
 
@@ -105,7 +108,7 @@ Mocks obligatorios (ver `.agents/skills/testing-conventions.md`):
 ## Cobertura de endpoints críticos
 
 > Snapshot del catálogo smoke de **Fase 0** (52 endpoints críticos); la suite
-> total creció con las fases 1–5 (283 casos) sin renovar este conteo.
+> total creció con las fases 1–5 (301 casos) sin renovar este conteo.
 
 Criterio del spec: rutas de auth (web + API), pagos, status de gateways,
 CMS público, entradas de guards y maintenance.
@@ -178,6 +181,26 @@ suite aislada, sin redirect), `F4` (proxy confiado con
 `HTTP_X_FORWARDED_PROTO=https`: `request->secure()` true, sin redirect
 infinito). Archivo feature: `tests/Feature/Security/ForceHttpsSmokeTest.php`
 — spec `spec-app-url-https-force-tls-fase5`.
+
+## Opciones tipadas (Fase 5 / 5.7)
+
+Tipos consistentes en `get_option` (Seg-24): `U1`–`U9` (en
+`tests/Unit/Support/OptionsTest.php`) fijan el contrato de
+`App\Support\Options` — defaults tipados (`[]`/`''`, nunca null), JSON
+corrupto → default, deriva de tipo silenciosa (scalar leído como array y
+viceversa) e invalidación del observer a través del helper.
+`U10`–`U11` (en `tests/Unit/Views/UnguardedOptionAccessTest.php`) son
+arch-tests: 0 accesos `get_option(...)[...]` sin `??` en
+`resources/views/**` (scan por línea, limitación documentada en el spec)
+y 0 referencias a la key fantasma `logo_setting`. `Pub1` (`/privacy-policy`
+con la tabla `options` vacía → 200; antes 500) y `F1`–`F4` (render directo
+de un invoice por familia + property-success ×2 con tabla vacía; el render
+fuera del middleware web comparte `$errors` vía `withViewErrors([])` y
+autentica donde la vista/layout lee `auth()->user()`). `G1`–`G2` (en
+`tests/Feature/Options/VersionSidebarSmokeTest.php`): la key escalar
+`version` se lee vía `App\Support\Options::string` en el sidebar admin.
+Archivos: `tests/Feature/Options/OptionlessViewsSmokeTest.php` — spec
+`spec-get-option-tipos-consistentes-fase5`.
 
 ## Desviaciones vs el catálogo del spec
 
