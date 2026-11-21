@@ -8,8 +8,8 @@ caracterizaciones nuevas): `.agents/spec-impl/spec-trait-acnoo-fase0.md`
 (Fase 0 / 0.3, DT-C3).
 
 > **Nota (2026-11-21):** la suite creció con las fases 1–5 y hoy totaliza
-> **273 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
-> spec 5.3 + 4 del spec 5.4 + 7 del spec 5.5). Este README documenta el origen smoke de Fase 0
+> **283 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
+> spec 5.3 + 4 del spec 5.4 + 7 del spec 5.5 + 10 del spec 5.6). Este README documenta el origen smoke de Fase 0
 > y las convenciones; los dominios añadidos se listan abajo.
 
 ## Cómo correr la suite
@@ -79,7 +79,7 @@ tests/
 ├── Stubs/StubGateway.php         # stub de gateway (Gateway->namespace), sin HTTP real
 ├── Unit/                         # unitarios: modelos (User, Plan), PropertyService,
 │   ├── Support/                  # CacheKeysTest (invalidación centralizada, 4.9)
-│   ├── Config/                   # SessionConfigTest U1–U5 (mapeo env→config, Fase 5 / 5.5)
+│   ├── Config/                   # SessionConfigTest U1–U5 (5.5) + ForceHttpsConfigTest U1–U6 (5.6)
 │   └── Seeders/                  # arch-tests U1–U3 + demoReset U4 (spec 4.10)
 └── Feature/
     ├── Auth/                     # L (login web), S (signup+OTP), R (reset), A (API)
@@ -93,7 +93,7 @@ tests/
     ├── Idor/                     # ownership smoke (Fase 2)
     ├── Seeders/                  # F1–F6 del spec 4.10
     ├── Withdraw/                 # regresión HTTP del index API (Fase 5 / 5.3, Seg-20)
-    ├── Security/                # TrustHosts: Host header (Fase 5 / 5.4) + Session driver/cookie (Fase 5 / 5.5)
+    ├── Security/                # TrustHosts (5.4) + Session (5.5) + ForceHttps redirect/proxies (Fase 5 / 5.6)
     └── HandlerGenericErrorSmokeTest.php  # Handler genérico sin fuga de mensaje (3.4)
 ```
 
@@ -105,7 +105,7 @@ Mocks obligatorios (ver `.agents/skills/testing-conventions.md`):
 ## Cobertura de endpoints críticos
 
 > Snapshot del catálogo smoke de **Fase 0** (52 endpoints críticos); la suite
-> total creció con las fases 1–5 (273 casos) sin renovar este conteo.
+> total creció con las fases 1–5 (283 casos) sin renovar este conteo.
 
 Criterio del spec: rutas de auth (web + API), pagos, status de gateways,
 CMS público, entradas de guards y maintenance.
@@ -164,6 +164,20 @@ a `login`, autenticado sin plan a `landlord.subscriptions.index` vía
 `ExpiredMiddleware`). Archivo feature:
 `tests/Feature/Security/SessionSmokeTest.php` — spec
 `spec-session-database-secure-fase5`.
+
+## Force HTTPS (Fase 5 / 5.6)
+
+Redirect 302 http→https tras la válvula `FORCE_HTTPS` + proxies confiables
+vía `TRUSTED_PROXIES` (Seg-23): `U1`–`U6` (en
+`tests/Unit/Config/ForceHttpsConfigTest.php`) evalúan el archivo real
+`config/app.php` con env mutado — default off, cast `'true'`/`'false'` de
+`Env::get`, `null` default de proxies, `'*'` y CSV pasan intactos.
+`F1` (válvula on: `http` → 302 con `Location` https y path+query
+preservados), `F2` (https pasa con válvula on), `F3` (válvula off:
+suite aislada, sin redirect), `F4` (proxy confiado con
+`HTTP_X_FORWARDED_PROTO=https`: `request->secure()` true, sin redirect
+infinito). Archivo feature: `tests/Feature/Security/ForceHttpsSmokeTest.php`
+— spec `spec-app-url-https-force-tls-fase5`.
 
 ## Desviaciones vs el catálogo del spec
 

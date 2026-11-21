@@ -143,20 +143,20 @@ Ninguno: no hay bug vigente que se espere romper — la palanca ES este spec.
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `config/app.php`: exactamente 2 keys nuevas tras `'asset_url'` (l.86) — inspección: diff de 2 líneas + comentario breve.
-- [ ] `app/Http/Middleware/ForceHttps.php`: válvula off → passthrough; on + `!secure` → 302 a https mismo path+query; on + secure → passthrough; sin `env()` ni `request()` (reglas 4.3/4.4).
-- [ ] `app/Http/Kernel.php`: `ForceHttps::class` en stack global inmediatamente tras `TrustProxies::class` (l.50); grupos web/api/maintenance sin cambios.
-- [ ] `app/Http/Middleware/TrustProxies.php`: override `proxies()` devolviendo `config('app.trusted_proxies')`; headers intactos (ll.22–27).
-- [ ] `.env.example`: comentario bajo `APP_URL` (producción DEBE usar `https://<dominio-real>`); `# FORCE_HTTPS=` y `# TRUSTED_PROXIES=` comentadas con una línea de explicación cada una.
-- [ ] U1–U6 en verde (focal: 6 passed); `$_ENV` restaurado en `tearDown`.
-- [ ] F1–F4 en verde (focal: 4 passed); estáticos de Symfony reseteados en `tearDown` (patrón `TrustHostsSmokeTest`).
-- [ ] Suite completa: **283 passed** — exacto 273+10, verificados contra salida real de `php artisan test`.
-- [ ] `phpunit.xml` sin cambios.
-- [ ] `composer analyse` sin nuevas entradas vs baseline; `composer lint` limpio.
-- [ ] Conteos **283** en `README.md`, `tests/README.md`, `AGENTS.md`; `tests/README.md` con `ForceHttpsSmokeTest` en el árbol + mini-sección "## Force HTTPS (Fase 5 / 5.6)"; `.agents/README.md` índice fase5 (6 specs, conteo 51 — commiteado con el draft).
-- [ ] Cierres locales `.analisis/` (gitignored): `seguridad.md` #23 → Mitigado + residual; `plan-accion.md` fila 5.6 + métrica (redacciones de la nota 8).
-- [ ] Sin flip del `.env` local (válvula on rompería `php artisan serve`, que no sirve TLS).
-- [ ] Rama `spec/app-url-https-force-tls-fase5-impl` + PR (squash, 1 aprobación + CI); sin push a `main`.
+- [x] `config/app.php`: exactamente 2 keys nuevas tras `'asset_url'` (l.86) — inspección: diff de 2 líneas + comentario breve.
+- [x] `app/Http/Middleware/ForceHttps.php`: válvula off → passthrough; on + `!secure` → 302 a https mismo path+query; on + secure → passthrough; sin `env()` ni `request()` (reglas 4.3/4.4).
+- [x] `app/Http/Kernel.php`: `ForceHttps::class` en stack global inmediatamente tras `TrustProxies::class` (l.50); grupos web/api/maintenance sin cambios.
+- [x] `app/Http/Middleware/TrustProxies.php`: override `proxies()` devolviendo `config('app.trusted_proxies')`; headers intactos (ll.22–27).
+- [x] `.env.example`: comentario bajo `APP_URL` (producción DEBE usar `https://<dominio-real>`); `# FORCE_HTTPS=` y `# TRUSTED_PROXIES=` comentadas con una línea de explicación cada una.
+- [x] U1–U6 en verde (focal: 6 passed); `$_ENV` restaurado en `tearDown`.
+- [x] F1–F4 en verde (focal: 4 passed); estáticos de Symfony reseteados en `tearDown` (patrón `TrustHostsSmokeTest`).
+- [x] Suite completa: **283 passed** — exacto 273+10, verificados contra salida real de `php artisan test`.
+- [x] `phpunit.xml` sin cambios.
+- [x] `composer analyse` sin nuevas entradas vs baseline; `composer lint` limpio.
+- [x] Conteos **283** en `README.md`, `tests/README.md`, `AGENTS.md`; `tests/README.md` con `ForceHttpsSmokeTest` en el árbol + mini-sección "## Force HTTPS (Fase 5 / 5.6)"; `.agents/README.md` índice fase5 (6 specs, conteo 51 — commiteado con el draft).
+- [x] Cierres locales `.analisis/` (gitignored): `seguridad.md` #23 → Mitigado + residual; `plan-accion.md` fila 5.6 + métrica (redacciones de la nota 8).
+- [x] Sin flip del `.env` local (válvula on rompería `php artisan serve`, que no sirve TLS).
+- [x] Rama `spec/app-url-https-force-tls-fase5-impl` + PR (squash, 1 aprobación + CI); sin push a `main`.
 
 ---
 

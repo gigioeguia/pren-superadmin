@@ -53,7 +53,7 @@ Nada se commitea directo a `main`: cada tarea trabaja en una rama dedicada (`spe
 La suite corre sobre la DB MySQL dedicada `dbrentpro_test` (configurada en `phpunit.xml`, decisión ADR-0001; nunca sobre la DB del `.env`):
 
 ```bash
-php artisan test                           # suite completa (273 tests)
+php artisan test                           # suite completa (283 tests)
 php artisan test --group=characterization  # 1 test de caracterización (documenta deuda
                                            # pendiente; ver tests/README.md)
 ```
