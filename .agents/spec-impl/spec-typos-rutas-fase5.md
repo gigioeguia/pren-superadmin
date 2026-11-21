@@ -1,7 +1,7 @@
 ---
 id: spec-typos-rutas-fase5
 titulo: "Typos y duplicados en rutas: `read-nitifications`, nombres muertos en DemoMode, colisión `apimaintenance.index` y tidy de notifications (Fase 5 / 5.8)"
-estado: Borrador
+estado: Aprobado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.8) — .analisis/seguridad.md (Seg-25, l.143) — .analisis/deuda-tecnica.md (DT-B2, l.98-99)
 cobertura: Cerrar Seg-25/DT-B2 con el alcance real del inventario route:list (741 rutas, 2026-11-21): hard rename `read-nitifications`→`read-notifications` (0 call sites internos; residual = consumidor móvil hipotético), dedupe de `income-categories/delete-all`, 4 nombres muertos en DemoMode (transacciones y suscripciones hoy NO se bloquean en demo — hallazgo funcional no documentado), colisión `apimaintenance.index` landlord/tenant, naming aditivo de 36 rutas (34×`api` + 2×`admin.`) con convención intacta, borrado de `NotifyContrller` muerto, tidy de la familia notifications, y errata del DoD falso de spec-service-notification-fase4. Catálogo F9–F18 + G1–G5 + H1–H5 + A1–A4 (24 casos; suite esperada 301+24=325) + guards anti-reincidencia F13/F14/F17.
