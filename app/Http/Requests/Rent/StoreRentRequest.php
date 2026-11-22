@@ -14,7 +14,7 @@ class StoreRentRequest extends FormRequest
     /**
      * Reglas compartidas por ambos canales (spec §5.8: idénticas hoy).
      *
-     * @return array<string, array<int, string>>
+     * @return array<string, mixed>
      */
     public function rules(): array
     {

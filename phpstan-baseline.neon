@@ -127,24 +127,6 @@ parameters:
 			path: app/Exports/LandlordMaintenanceReportExport.php
 
 		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\Rent model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/LandlordRentInvitationExport.php
-
-		-
-			message: '#^Relation ''security_deposit'' is not found in App\\Models\\Rent model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/LandlordRentInvitationExport.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\Rent model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/LandlordRentInvitationExport.php
-
-		-
 			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
 			identifier: class.notFound
 			count: 1
@@ -432,66 +414,6 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Api/PropertyController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Rent\:\:\$landlord\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Http/Controllers/Api/RentController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Rent\:\:\$tenant\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Http/Controllers/Api/RentController.php
-
-		-
-			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 3
-			path: app/Http/Controllers/Api/RentController.php
-
-		-
-			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 3
-			path: app/Http/Controllers/Api/RentController.php
-
-		-
-			message: '#^If condition is always true\.$#'
-			identifier: if.alwaysTrue
-			count: 1
-			path: app/Http/Controllers/Api/RentController.php
-
-		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\Rent model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/RentController.php
-
-		-
-			message: '#^Relation ''rent_payments'' is not found in App\\Models\\Rent model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Api/RentController.php
-
-		-
-			message: '#^Relation ''security_deposit'' is not found in App\\Models\\Rent model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/RentController.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\Rent model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/RentController.php
-
-		-
-			message: '#^Relation ''unit'' is not found in App\\Models\\Rent model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/RentController.php
 
 		-
 			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
@@ -919,60 +841,6 @@ parameters:
 			identifier: array.duplicateKey
 			count: 1
 			path: app/Http/Controllers/Landlord/ProfileController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Rent\:\:\$landlord\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Landlord/RentInvitationController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Rent\:\:\$tenant\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Landlord/RentInvitationController.php
-
-		-
-			message: '#^Relation ''landlord'' is not found in App\\Models\\Rent model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Landlord/RentInvitationController.php
-
-		-
-			message: '#^Relation ''rent'' is not found in App\\Models\\Unit model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Landlord/RentInvitationController.php
-
-		-
-			message: '#^Relation ''security_deposit'' is not found in App\\Models\\Rent model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Landlord/RentInvitationController.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\Rent model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Landlord/RentInvitationController.php
-
-		-
-			message: '#^Relation ''unit'' is not found in App\\Models\\Rent model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Landlord/RentInvitationController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>amenities" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/Landlord/RentInvitationController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>facilities" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/Landlord/RentInvitationController.php
 
 		-
 			message: '#^Relation ''sender'' is not found in App\\Models\\Support model\.$#'

@@ -178,10 +178,14 @@ class RentService
             $property = $rent->property;
 
             if ($property instanceof Property && $property->category_id == 6) {
-                $unitFacilityIds = $rent->unit?->facilities ?? [];
+                // getRelationValue: la relación ya está cargada y unit_id es
+                // nullable — mismo valor que la propiedad mágica, sin el
+                // falso-positivo nullsafe de larastan sobre $rent->unit.
+                $unit = $rent->getRelationValue('unit');
+                $unitFacilityIds = $unit?->getAttribute('facilities') ?? [];
                 $rent->setAttribute('facility_names', Facility::whereIn('id', $unitFacilityIds)->pluck('name', 'id'));
 
-                $unitAmenityIds = $rent->unit?->amenities ?? [];
+                $unitAmenityIds = $unit?->getAttribute('amenities') ?? [];
                 $rent->setAttribute('amenity_names', Amenity::whereIn('id', $unitAmenityIds)->pluck('name', 'id'));
             } else {
                 $propertyDetail = $property instanceof Property ? $property->propertyDetail : null;
@@ -321,7 +325,7 @@ class RentService
             throw $e;
         }
 
-        sendNotification($rent->id, notify_users([$rent->tenant->id, $rent->landlord->id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]), admin_msg: __('Landlord create a new rent invitation'), landlord_msg: __('A new rent invitation has been sent to the tenant. Waiting for approval.'), tenant_msg: __('You have received a new rent invitation. Please review and approve.'));
+        sendNotification($rent->id, notify_users([$rent->tenant_id, $rent->landlord_id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]), admin_msg: __('Landlord create a new rent invitation'), landlord_msg: __('A new rent invitation has been sent to the tenant. Waiting for approval.'), tenant_msg: __('You have received a new rent invitation. Please review and approve.'));
 
         return $rent;
     }
@@ -347,7 +351,7 @@ class RentService
 
         // Divergencia por canal: solo Api notifica el approval (F4/F5).
         if ($channel === Channel::Api) {
-            sendNotification($rent->id, notify_users([$rent->tenant->id, $rent->landlord->id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]), landlord_msg: __('The rent agreement has been approved and is now active.'), tenant_msg: __('Your rent agreement has been approved and is now active. Welcome!'));
+            sendNotification($rent->id, notify_users([$rent->tenant_id, $rent->landlord_id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]), landlord_msg: __('The rent agreement has been approved and is now active.'), tenant_msg: __('Your rent agreement has been approved and is now active. Welcome!'));
         }
 
         return $rent;
@@ -372,7 +376,7 @@ class RentService
             'status' => 'cancelled',
         ]);
 
-        sendNotification($rent->id, notify_users([$rent->tenant->id, $rent->landlord->id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]), landlord_msg: __('The tenant has cancelled the rent agreement.'), tenant_msg: __('You have successfully cancelled your rent agreement.'));
+        sendNotification($rent->id, notify_users([$rent->tenant_id, $rent->landlord_id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]), landlord_msg: __('The tenant has cancelled the rent agreement.'), tenant_msg: __('You have successfully cancelled your rent agreement.'));
 
         return $rent;
     }
@@ -387,7 +391,7 @@ class RentService
             'tenant_agreement' => $this->uploadAgreement($tenantAgreement),
         ]);
 
-        sendNotification($rent->id, notify_users([$rent->tenant->id, $rent->landlord->id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]), landlord_msg: __('The tenant has submitted the signed rent agreement. Please review it.'), tenant_msg: __('Your rent agreement has been submitted successfully. Awaiting landlord’s review.'));
+        sendNotification($rent->id, notify_users([$rent->tenant_id, $rent->landlord_id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]), landlord_msg: __('The tenant has submitted the signed rent agreement. Please review it.'), tenant_msg: __('Your rent agreement has been submitted successfully. Awaiting landlord’s review.'));
 
         return $rent;
     }
@@ -396,7 +400,7 @@ class RentService
     {
         $rent->update(['status' => 'processing']);
 
-        sendNotification($rent->id, notify_users([$rent->tenant->id, $rent->landlord->id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]), landlord_msg: __('The tenant has accepted the rent invitation.'), tenant_msg: __('You have successfully accepted the rent invitation.'));
+        sendNotification($rent->id, notify_users([$rent->tenant_id, $rent->landlord_id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]), landlord_msg: __('The tenant has accepted the rent invitation.'), tenant_msg: __('You have successfully accepted the rent invitation.'));
 
         return $rent;
     }

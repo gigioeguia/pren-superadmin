@@ -37,7 +37,7 @@ class RentController extends Controller
     public function store(StoreRentRequest $request)
     {
         $data = $request->validated();
-        $data['landlord_id'] = $request->user()->id;
+        $data['landlord_id'] = auth()->id();
 
         try {
             $rent = $this->rents->createWithDeposit($data, $request->file('landlord_agreement'));

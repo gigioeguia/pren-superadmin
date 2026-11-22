@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Unit extends Model
 {
@@ -38,7 +39,7 @@ class Unit extends Model
         'late_fee_after_days',
     ];
 
-    public function rent()
+    public function rent(): HasOne
     {
         return $this->hasOne(Rent::class);
     }

@@ -68,7 +68,7 @@ Route::post('rent-payments/filter', [Landlord\RentPaymentController::class, 'fil
 Route::get('rent-payments-excel', [Landlord\RentPaymentController::class, 'exportExcel'])->name('rent-payments.excel');
 Route::get('rent-payments-csv', [Landlord\RentPaymentController::class, 'exportCsv'])->name('rent-payments.csv');
 
-Route::resource('rents', Landlord\RentInvitationController::class);
+Route::resource('rents', Landlord\RentInvitationController::class)->only(['index', 'store', 'show']);
 Route::post('rents/approved/{id}', [Landlord\RentInvitationController::class, 'approved'])->name('rents.approved');
 Route::post('rents/canceled/{id}', [Landlord\RentInvitationController::class, 'canceled'])->name('rents.canceled');
 Route::post('rents/filter', [Landlord\RentInvitationController::class, 'filter'])->name('rents.filter');

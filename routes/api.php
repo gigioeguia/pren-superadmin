@@ -39,7 +39,7 @@ Route::prefix('v1')->group(function () {
             Route::post('application/approved/{id}', [Api\LandlordApplicationController::class, 'approved'])->name('application.approved');
             Route::post('application/rejected/{id}', [Api\LandlordApplicationController::class, 'rejected'])->name('application.rejected');
             Route::get('application/file/{id}', [Api\LandlordApplicationController::class, 'file_download'])->name('application.file');
-            Route::apiResource('rent', Api\RentController::class);
+            Route::apiResource('rent', Api\RentController::class)->only(['index', 'store', 'show']);
             Route::post('rent/approved/{id}', [Api\RentController::class, 'approved'])->name('rent.approved');
             Route::post('rent/accept/{id}', [Api\RentController::class, 'tenant_accept'])->name('rent.accept');
             Route::post('rent/cancelled/{id}', [Api\RentController::class, 'tenant_cancelled'])->name('rent.cancelled');
