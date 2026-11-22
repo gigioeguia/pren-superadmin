@@ -1,7 +1,7 @@
 ---
 id: spec-service-application-fase5
 titulo: "Service Application — unificar 3 controladores de tenant application (Fase 5 / 5.13, hijo 3)"
-estado: Borrador
+estado: Aprobado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.13) — DT-A1, DT-C4
 cobertura: Migración de Application a app/Services/ApplicationService.php unificando Api/TenantApplicationController (315), Landlord/ApplicationController (212) y Api/LandlordApplicationController (130)
