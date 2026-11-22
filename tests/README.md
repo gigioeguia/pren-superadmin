@@ -8,9 +8,9 @@ caracterizaciones nuevas): `.agents/spec-impl/spec-trait-acnoo-fase0.md`
 (Fase 0 / 0.3, DT-C3).
 
 > **Nota (2026-11-21):** la suite creció con las fases 1–5 y hoy totaliza
-> **325 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
+> **331 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
 > spec 5.3 + 4 del spec 5.4 + 7 del spec 5.5 + 10 del spec 5.6 + 18 del spec
-> 5.7 + 24 del spec 5.8). Este README documenta el origen smoke de Fase 0
+> 5.7 + 24 del spec 5.8 + 6 del spec 5.9). Este README documenta el origen smoke de Fase 0
 > y las convenciones; los dominios añadidos se listan abajo.
 
 ## Cómo correr la suite
@@ -80,7 +80,7 @@ tests/
 ├── Stubs/StubGateway.php         # stub de gateway (Gateway->namespace), sin HTTP real
 ├── Unit/                         # unitarios: modelos (User, Plan), PropertyService,
 │   ├── Support/                  # CacheKeysTest (4.9) + OtpTest (4.6) + OptionsTest U1–U9 (5.7)
-│   ├── Config/                   # SessionConfigTest U1–U5 (5.5) + ForceHttpsConfigTest U1–U6 (5.6)
+│   ├── Config/                   # SessionConfigTest U1–U5 (5.5) + ForceHttpsConfigTest U1–U6 (5.6) + LoggingArchTest U1–U2 (5.9)
 │   ├── Views/                    # arch-tests U10–U11: 0 get_option()[...] sin guard, 0 logo_setting (5.7)
 │   └── Seeders/                  # arch-tests U1–U3 + demoReset U4 (spec 4.10)
 └── Feature/
@@ -98,6 +98,7 @@ tests/
     ├── Security/                # TrustHosts (5.4) + Session (5.5) + ForceHttps redirect/proxies (Fase 5 / 5.6)
     ├── Options/                 # Pub1 + F1–F4 (render sin options) + G1–G2 (version sidebar) (Fase 5 / 5.7)
     ├── Routes/                  # guards de higiene de la tabla de rutas F14–F18 (Fase 5 / 5.8)
+    ├── Console/                 # ops:verify-deploy F1–F4 (patrón de evidencia, Fase 5 / 5.9)
     ├── Notification/            # contrato HTTP de notifications G1–G5 / H1–H5 / A1–A4 (Fase 5 / 5.8)
     └── HandlerGenericErrorSmokeTest.php  # Handler genérico sin fuga de mensaje (3.4)
 ```
@@ -110,7 +111,7 @@ Mocks obligatorios (ver `.agents/skills/testing-conventions.md`):
 ## Cobertura de endpoints críticos
 
 > Snapshot del catálogo smoke de **Fase 0** (52 endpoints críticos); la suite
-> total creció con las fases 1–5 (325 casos) sin renovar este conteo.
+> total creció con las fases 1–5 (331 casos) sin renovar este conteo.
 
 Criterio del spec: rutas de auth (web + API), pagos, status de gateways,
 CMS público, entradas de guards y maintenance.
@@ -224,6 +225,21 @@ fuera del guard), 0 nombres de prefijo desnudo (`api`/`admin.`), rename
 landlord/api (post-tidy de URIs) — repara el DoD de
 `spec-service-notification-fase4`, que declaraba estos tests sin
 crearlos. Spec: `spec-typos-rutas-fase5`.
+
+## Verificación de deploy (Fase 5 / 5.9)
+
+`U1`–`U2` (en `tests/Unit/Config/LoggingArchTest.php`): el fallback de
+`LOG_LEVEL` en `config/logging.php` no vuelve a ser `debug` (6 canales en
+`warning`; slack conserva `critical`) y `.env.example` sigue pineando
+`LOG_LEVEL=warning` + `LOG_DEPRECATIONS_CHANNEL=null` (Seg-26).
+`F1`–`F4` (en `tests/Feature/Console/VerifyDeployTest.php`): el comando
+`ops:verify-deploy` — patrón de evidencia de los residuales operacionales
+de 5.9/5.5/5.6 — verifica config efectivo (5 HARD + 3 WARN, tabla
+esperado/efectivo/resultado); enforcement solo con `APP_ENV=production`
+(F3: no-producción es report-only), exit code binario y salida sin el
+valor de `APP_KEY` (F4). La suite fuerza config en runtime (patrón
+ForceHttpsSmokeTest), sin mutar `$_ENV`. Spec:
+`spec-log-level-warning-fase5`.
 
 ## Desviaciones vs el catálogo del spec
 
