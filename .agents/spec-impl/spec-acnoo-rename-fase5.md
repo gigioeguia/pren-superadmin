@@ -1,10 +1,11 @@
 ---
 id: spec-acnoo-rename-fase5
 titulo: "Rename del prefijo `Acnoo` (92 controladores + familia `acnoo*` del trait), comentarios muertos (DT-B4) y de-branding de seed data (Fase 5 / 5.10)"
-estado: Borrador
+estado: Aprobado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.10, l.115) — .analisis/deuda-tecnica.md (DT-B1 l.95-96, DT-B4 l.104-105; DT-B7 l.113-114 ya cerrado en el cierre de Fase 4)
 cobertura: Cerrar DT-B1/DT-B4 con el alcance real del inventario (2026-11-21): drop total del prefijo en 92 controladores + `AcnooLateFeeService` (0 colisiones verificadas sobre 137 controladores; 0 referencias dinámicas por string — todo `::class`), rename del trait `HasAcnooActions` → `HasTableActions` con su familia de 12 métodos + hook `deletingAcnooRow` (arrastra 56 strings de acción en rutas, 34 `only()`, 6 `LogicException`, 33 consumidores, 2 smoke tests), eliminación de ~25 marcadores de procedencia, baseline por replace mecánico con invariante 245 entradas / 447 errores, emails demo `*@acnoo.com` → `@example.com` (6 seeders + `UserFactory` + 3 test files), branding PropertyRent en `OptionTableSeeder`, DT-B4 completo (`.htaccess`/`composer.json`/`Kernel.php`), selector JS huérfano, typo `'meassage'` → `'message'` (registrado desde spec 5.3), arch-test anti-reincidencia 0 `acnoo` en 8 directorios. 2 PRs: impl (mecánico) + cleanup (semántico). Catálogo U1–U2 + F1 (3 casos nuevos; la suite existente es la red de comportamiento). README (DT-B7) documentado como ya-cerrado, sin re-auditoría.
+aprobacion: Autorización explícita del decisor (2026-11-21, grilling Q1–Q18 cerrado + orden directa de implementar sin paso por Revisado — patrón `spec-tests-smoke-fase0`); desviaciones se documentarán inline.
 ---
 
 # Spec — Rename del prefijo `Acnoo`, comentarios muertos y de-branding (Fase 5 / 5.10)
