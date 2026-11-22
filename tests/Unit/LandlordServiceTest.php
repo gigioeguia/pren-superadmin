@@ -5,7 +5,6 @@ namespace Tests\Unit;
 use App\Enums\Channel;
 use App\Models\Plan;
 use App\Models\PlanSubscribe;
-use App\Models\User;
 use App\Models\UserDetail;
 use App\Services\LandlordService;
 use Carbon\Carbon;

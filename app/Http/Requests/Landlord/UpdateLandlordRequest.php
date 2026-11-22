@@ -18,6 +18,13 @@ class UpdateLandlordRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // 'nullable' puro: claves que el original leía sin validar —
+            // fluyen por validated() sin rechazar nada nuevo
+            'name' => 'nullable',
+            'gender' => 'nullable',
+            'mykad_id' => 'nullable',
+            'address_info' => 'nullable',
+            'password' => 'nullable',
             'phone' => 'nullable|array',
             'mobile_no' => 'nullable|string|max:15',
             'mobile_code' => 'nullable|string',

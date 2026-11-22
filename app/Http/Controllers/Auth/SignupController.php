@@ -2,39 +2,32 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\Channel;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Landlord\CreateAccountRequest;
 use App\Mail\WelcomeMail;
 use App\Models\Plan;
-use App\Models\PlanSubscribe;
 use App\Models\User;
+use App\Services\LandlordService;
 use App\Support\Otp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Validation\Rules\Password;
 
 class SignupController extends Controller
 {
-    public function __construct(protected Otp $otp) {}
+    public function __construct(protected Otp $otp, protected LandlordService $landlords) {}
 
-    public function store(Request $request)
+    public function store(CreateAccountRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'password' => Password::required(),
-            'email' => 'required|email',
-        ]);
-
         if (! config('mail.username')) {
             return response()->json([
                 'message' => __('Mail service is not configured. Please contact your administrator.'),
             ], 406);
         }
 
-        // Comprobaciones y cálculo de OTP antes de abrir la transacción (Fase 4 / 4.8)
+        // Comprobaciones y cálculo de OTP antes de la transacción (Fase 4 / 4.8)
         $otpSettings = get_option('email-varification');
         $otpStatus = $otpSettings['otp_status'] ?? 'off';
 
@@ -46,39 +39,17 @@ class SignupController extends Controller
             ], 406);
         }
 
-        $code = random_int(100000, 999999);
-
-        $data = [
-            'code' => $code,
-            'name' => $request->name,
-        ];
-
+        // OTP como string: remember_token/hash_equals operan sobre strings
+        $code = (string) random_int(100000, 999999);
         $expireSeconds = $this->otp->visibilityTimeInSeconds();
         $expire = now()->addSeconds($expireSeconds);
 
-        DB::beginTransaction();
-
         try {
             if ($otpStatus === 'off') {
-
-                $user = User::updateOrCreate(['email' => $request->email], [
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'password' => Hash::make($request->password),
-                    'is_setupped' => 1,
-                ]);
-
-                // Columnas fuera del contrato fillable: exclusivas server-side
-                $user->role = 'landlord';
-                $user->forceFill([
-                    'remember_token' => null,
-                    'email_verified_at' => now(),
-                ])->save();
+                $user = $this->landlords->createAccount($request->validated(), Channel::Landlord);
 
                 session()->put('user_id', $user->id);
                 session()->put('plan_id', $request->plan_id);
-
-                DB::commit();
 
                 Auth::login($user);
 
@@ -91,26 +62,12 @@ class SignupController extends Controller
                 ]);
             }
 
-            $user = User::updateOrCreate(['email' => $request->email], [
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'is_setupped' => 1,
-            ]);
-
-            // Columnas fuera del contrato fillable: exclusivas server-side
-            $user->role = 'landlord';
-            $user->forceFill([
-                'remember_token' => $code,
-                'email_verified_at' => $expire,
-            ])->save();
+            $user = $this->landlords->createAccount($request->validated(), Channel::Landlord, $code, $expire);
 
             session()->put('user_id', $user->id);
             session()->put('plan_id', $request->plan_id);
-
-            DB::commit();
         } catch (\Throwable $th) {
-            DB::rollBack();
+            report($th);
 
             return response()->json([
                 'message' => 'Something went wrong. Please contact the admin.',
@@ -118,6 +75,11 @@ class SignupController extends Controller
         }
 
         // Envío de OTP tras el commit (Fase 4 / 4.8): sin E/S de red en la transacción.
+        $data = [
+            'code' => $code,
+            'name' => $request->name,
+        ];
+
         if (config('mail.queue')) {
             Mail::to($request->email)->queue(new WelcomeMail($data));
         } else {
@@ -174,23 +136,8 @@ class SignupController extends Controller
             $plan_price = ($plan->offerPrice ?? 0) > 0 ? $plan->offerPrice : $plan->subscriptionPrice;
 
             if ($plan_price <= 0) {
-                // Calculate duration
-                $duration = $plan->durationInDays();
-
-                // Create free subscription directly
-                $subscribe = PlanSubscribe::create([
-                    'plan_id' => $plan->id,
-                    'plan_name' => $plan->subscriptionName,
-                    'user_id' => $user->id,
-                    'duration' => $duration,
-                    'payment_status' => 'paid',
-                ]);
-
-                $user->forceFill([
-                    'plan_subscribe_id' => $subscribe->id,
-                    'will_expire' => now()->addDays($duration),
-                    'subscriptionDate' => now(),
-                ])->save();
+                // Trío free-plan: única fuente en LandlordService (sin tx, como el original)
+                $this->landlords->activateFreePlan($user, Channel::Landlord, $plan);
 
                 $message = __('OTP verified successfully. Free plan activated!');
                 $redirect_url = route('landlord.dashboard');

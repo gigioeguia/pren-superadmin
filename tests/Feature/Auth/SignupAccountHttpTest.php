@@ -204,11 +204,11 @@ class SignupAccountHttpTest extends TestCase
         // Act
         $response = $this->withoutMiddleware(VerifyCsrfToken::class)
             ->postJson('/signup', [
-            'name' => 'Demo Gap Landlord',
-            'email' => 'f12@example.test',
-            'password' => 'Password123',
-            'plan_id' => 1,
-        ]);
+                'name' => 'Demo Gap Landlord',
+                'email' => 'f12@example.test',
+                'password' => 'Password123',
+                'plan_id' => 1,
+            ]);
 
         // Assert — documenta el gap actual: la alta real NO se bloquea
         $response->assertOk();

@@ -2,38 +2,28 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
+use App\Enums\Channel;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Landlord\CreateAccountRequest;
 use App\Mail\WelcomeMail;
-use App\Models\Plan;
-use App\Models\PlanSubscribe;
 use App\Models\User;
+use App\Services\LandlordService;
 use App\Support\ErrorMessage;
 use App\Support\Otp;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Validation\Rules\Password;
 
 class RegistrationController extends Controller
 {
-    public function __construct(protected Otp $otp) {}
+    public function __construct(protected Otp $otp, protected LandlordService $landlords) {}
 
-    public function maanRegistration(Request $request): JsonResponse
+    public function maanRegistration(CreateAccountRequest $request): JsonResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'password' => Password::required(),
-            'email' => 'required|email',
-        ]);
-
         // Comprobaciones y cálculo de OTP antes de abrir la transacción (Fase 4 / 4.8)
-        // Find free plan
-        $free_plan = Plan::where('subscriptionPrice', '<=', 0)
-            ->orWhere('offerPrice', '<=', 0)
-            ->first();
+        $free_plan = $this->landlords->freePlan();
 
         // Check existing user
         $existing_user = User::where('email', $request->email)->first();
@@ -48,13 +38,13 @@ class RegistrationController extends Controller
         $otpSettings = get_option('email-varification');
         $otpStatus = $otpSettings['otp_status'] ?? 'off';
 
-        $code = random_int(100000, 999999);
+        // OTP como string: remember_token/hash_equals operan sobre strings
+        $code = (string) random_int(100000, 999999);
 
         $expire = null;
         $data = null;
 
         if ($otpStatus === 'on') {
-
             $expireSeconds = $this->otp->visibilityTimeInSeconds();
 
             $expire = now()->addSeconds($expireSeconds);
@@ -65,49 +55,23 @@ class RegistrationController extends Controller
             ];
         }
 
+        // tx externa + savepoints del service: una sola unidad atómica (User + trío), como el original
         DB::beginTransaction();
 
         try {
-
-            // Create or update user. `role` no es fillable; se fuerza por propiedad
-            // directa tras la creación (Seg-4). El evento `creating` del modelo
-            // garantiza un valor por defecto 'landlord' si no se asigna.
-            // Columnas fuera del contrato fillable: exclusivas server-side.
-            $user = User::updateOrCreate(
-                ['email' => $request->email],
-                [
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'password' => Hash::make($request->password),
-                ]
+            $user = $this->landlords->createAccount(
+                $request->validated(),
+                Channel::Api,
+                $otpStatus === 'on' ? $code : null,
+                $expire
             );
 
-            $user->role = 'landlord';
-            $user->forceFill([
-                'remember_token' => $otpStatus === 'on' ? $code : null,
-                'email_verified_at' => $otpStatus === 'on' ? $expire : now(),
-            ])->save();
+            // assign free plan
+            if ($free_plan) {
+                $this->landlords->activateFreePlan($user, Channel::Api, $free_plan);
+            }
 
             if ($otpStatus === 'off') {
-
-                // assign free plan
-                if ($free_plan) {
-
-                    $duration = $free_plan->durationInDays();
-
-                    $subscribe = PlanSubscribe::create([
-                        'plan_id' => $free_plan->id,
-                        'user_id' => $user->id,
-                        'duration' => $duration,
-                    ]);
-
-                    $user->forceFill([
-                        'plan_subscribe_id' => $subscribe->id,
-                        'will_expire' => now()->addDays($duration),
-                        'subscriptionDate' => now(),
-                    ])->save();
-                }
-
                 DB::commit();
 
                 Auth::login($user);
@@ -121,26 +85,7 @@ class RegistrationController extends Controller
                 ]);
             }
 
-            // assign free plan
-            if ($free_plan) {
-
-                $duration = $free_plan->durationInDays();
-
-                $subscribe = PlanSubscribe::create([
-                    'plan_id' => $free_plan->id,
-                    'user_id' => $user->id,
-                    'duration' => $duration,
-                ]);
-
-                $user->forceFill([
-                    'plan_subscribe_id' => $subscribe->id,
-                    'will_expire' => now()->addDays($duration),
-                    'subscriptionDate' => now(),
-                ])->save();
-            }
-
             DB::commit();
-
         } catch (\Throwable $th) {
             report($th);
 

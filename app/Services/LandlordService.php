@@ -300,10 +300,10 @@ class LandlordService
     /**
      * Creación de la cuenta landlord (web signup / api registration).
      *
-     * @param array{name?: string, email?: string, password?: string} $data claves
-     *      explícitas; cualquier otra clave del payload se ignora (Seg-28).
-     * @param string|null $otpCode token OTP server-side (null cuando OTP está off)
-     * @param CarbonInterface|null $expiresAt expiración del OTP (null → verified now)
+     * @param  array{name?: string, email?: string, password?: string}  $data  claves
+     *                                                                         explícitas; cualquier otra clave del payload se ignora (Seg-28).
+     * @param  string|null  $otpCode  token OTP server-side (null cuando OTP está off)
+     * @param  CarbonInterface|null  $expiresAt  expiración del OTP (null → verified now)
      */
     public function createAccount(array $data, Channel $channel, ?string $otpCode = null, ?CarbonInterface $expiresAt = null): User
     {
@@ -384,7 +384,7 @@ class LandlordService
     /**
      * Upload de un único UploadedFile con nombre generado (patrón TenantService).
      */
-    protected function uploadFromFiles(UploadedFile|null $file): ?string
+    protected function uploadFromFiles(?UploadedFile $file): ?string
     {
         if (! $file instanceof UploadedFile) {
             return null;
