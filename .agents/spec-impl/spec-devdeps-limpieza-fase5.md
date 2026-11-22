@@ -160,7 +160,10 @@ grep -rn "sail" .github .env.example README.md                      # 0
 - [x] `deuda-tecnica.md`: DT-A5, DT-B5 y DT-B6 cerrados con fecha y ref a este spec; claims de DT-B5 corregidos (mockery/collision/faker usados, guzzle con uso directo) (F9).
 - [x] PR con spec + implementación; `Refs: .agents/spec-impl/spec-devdeps-limpieza-fase5.md`; DoD tachado en la descripción.
 
-**Lateral documental (fuera del catálogo, mismo espíritu F8):** README declaraba "334 tests" — suite real 371 (cuenta pre-5.11); corregido en el mismo sweep.
+**Laterales (fuera del catálogo, registrados):**
+- Documental: README declaraba "334 tests" — suite real 371 (cuenta pre-5.11); corregido en el mismo sweep.
+- `composer audit` durante F10 (2026-11-21): 4 advisories únicos sobre `laravel/framework` v11.57.1 — **1 high** (CRLF injection in default email rule, GHSA-5vg9-5847-vvmq/CVE-2026-48019), 1 medium (Temporary Signed URL Path Confusion), 2 low (Task Output Injection, XSS Debug Page) — fixes solo en ≥12.60 ⇒ **fila 5.15** del plan (upgrade 11→12 vs mitigación puntual, decisión pendiente).
+- Ídem: `nunomaduro/larastan` abandonado → **fila 5.16** (migración a `larastan/larastan`).
 
 ---
 
