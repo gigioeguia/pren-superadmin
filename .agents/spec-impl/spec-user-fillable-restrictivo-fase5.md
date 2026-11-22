@@ -1,7 +1,7 @@
 ---
 id: spec-user-fillable-restrictivo-fase5
 titulo: "`$fillable` de `User` restrictivo: allowlist de 7 columnas, fin del patrón `except()` en escrituras de `User` y fixes colaterales (Fase 5 / 5.11)"
-estado: Borrador
+estado: Aprobado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.11) — .analisis/deuda-tecnica.md (DT-B3, l.101-102) — hallazgos nuevos Seg-28/Seg-29 a registrar en .analisis/seguridad.md
 cobertura: Cerrar DT-B3 reduciendo `User::$fillable` de 15 a 7 columnas (allowlist; desviación documentada de la sugerencia literal `$guarded` de DT-B3), eliminando `$request->except()` en los 6 call sites que escriben `User` con arrays explícitos, migrando ~18 writes server-side legítimos a `forceFill`, y cerrando en el mismo diff tres hallazgos conexos: inyección masiva + override por merge-order en signup público (Seg-28, nuevo), IDOR de `Admin/ProfileController::update` (Seg-29, nuevo) y el drop silencioso de `role` en `PermissionSeeder` vigente desde 1.4. Catálogo U1–U6 + S1–S6 + A1–A4 + G1–G9 + P1–P3 + H1–H3 + F1–F5 (36 casos; suite esperada 334+36=370) + arch-test scoped anti-`except()`
