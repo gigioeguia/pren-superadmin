@@ -10,7 +10,7 @@ class BlogSeeder extends Seeder
 {
     public function run(): void
     {
-        $authorId = User::whereEmail('superadmin@acnoo.com')->value('id');
+        $authorId = User::whereEmail('superadmin@example.com')->value('id');
 
         if (! $authorId) {
             $this->command?->warn('BlogSeeder skipped: superadmin user not found.');

@@ -14,18 +14,18 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $landlord = User::whereEmail('landlord@acnoo.com')->first();
+        $landlord = User::whereEmail('landlord@example.com')->first();
 
         if (! $landlord) {
             $landlord = User::factory()->demoLandlord()->create();
-            $this->announceGeneratedPassword('landlord@acnoo.com');
+            $this->announceGeneratedPassword('landlord@example.com');
         }
 
-        $tenant = User::whereEmail('tenant@acnoo.com')->first();
+        $tenant = User::whereEmail('tenant@example.com')->first();
 
         if (! $tenant) {
             $tenant = User::factory()->demoTenant()->create(['landlord_id' => $landlord->id]);
-            $this->announceGeneratedPassword('tenant@acnoo.com');
+            $this->announceGeneratedPassword('tenant@example.com');
         }
 
         UserDetail::updateOrCreate(['user_id' => $landlord->id], [

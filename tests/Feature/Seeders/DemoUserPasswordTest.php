@@ -20,10 +20,10 @@ class DemoUserPasswordTest extends TestCase
     use RefreshDatabase;
 
     private const DEMO_EMAILS = [
-        'superadmin@acnoo.com',
-        'admin@acnoo.com',
-        'landlord@acnoo.com',
-        'tenant@acnoo.com',
+        'superadmin@example.com',
+        'admin@example.com',
+        'landlord@example.com',
+        'tenant@example.com',
     ];
 
     private const LEGACY_PASSWORDS = ['superadmin', 'admin', 'landlord', 'tenant'];

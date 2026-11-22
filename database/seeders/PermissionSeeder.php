@@ -163,7 +163,7 @@ class PermissionSeeder extends Seeder
             $this->command->info("Creating '{$key}' user");
             // Create default user for each role (idempotent by email, spec 4.10)
             $generated_role = str($key)->remove(' ')->lower();
-            $email = $generated_role.'@acnoo.com';
+            $email = $generated_role.'@example.com';
             $user = User::firstOrCreate([
                 'email' => $email,
             ], [

@@ -12,7 +12,7 @@ npm install                       # allowScripts en package.json auto-aprueba el
 php artisan key:generate
 php artisan storage:link          # public/storage symlink is NOT committed
 php artisan migrate --seed        # runs 24 seeders in order (see DatabaseSeeder)
-php artisan test                  # suite completa (331 casos) over dbrentpro_test — see tests/README.md
+php artisan test                  # suite completa (334 casos) over dbrentpro_test — see tests/README.md
 npm run dev                       # vite (resources/css/app.css, resources/js/app.js)
 npm run build
 php artisan serve                 # local dev server
@@ -74,7 +74,7 @@ Desde Fase 5 / 5.7 `App\Support\Options` fija el contrato tipado de las options:
 
 ## Seeders
 
-`DatabaseSeeder` calls 24 seeders **in order**; `PermissionSeeder` must run before role-dependent ones. Demo users (`*@acnoo.com`) have **non-predictable passwords** (Fase 5 / 5.2): `config('demo.user_password')` — `DEMO_USER_PASSWORD` in `.env`, evaluation only — or a random one per user printed at creation. `App\Support\DemoCredentials` is the single source; never reintroduce `bcrypt('<role>')` for demo accounts in seeders/factories.
+`DatabaseSeeder` calls 24 seeders **in order**; `PermissionSeeder` must run before role-dependent ones. Demo users (`*@example.com`) have **non-predictable passwords** (Fase 5 / 5.2): `config('demo.user_password')` — `DEMO_USER_PASSWORD` in `.env`, evaluation only — or a random one per user printed at creation. `App\Support\DemoCredentials` is the single source; never reintroduce `bcrypt('<role>')` for demo accounts in seeders/factories.
 
 **Convención (Fase 4 / 4.10, DT-M9):** seeders idempotentes por clave natural (`firstOrCreate`: `email`/`code`/`name`/`key`/`slug`); re-ejecutar `db:seed` sobre una DB ya poblada no duplica. Prohibido reintroducir IDs numéricos literales (`landlord_id => 3`), rutas a archivos no trackeados (`uploads/...`) o `env()` en `database/seeders/` — lo vigila el arch-test `tests/Unit/Seeders/SeedersArchTest.php`. El dataset demo vive en `database/seeders/DemoDataset.php` y lo siembra el trait `Concerns/SeedsDemoData` (consumido por Property/Income/Expense/DemoSeeder; PropertyDetail/Unit viajan bajo guard seed-if-absent porque `puid` se auto-genera en un hook del modelo). El landlord demo se resuelve por `User::demoLandlords()` (flag `is_demo`), nunca por id — `demoReset()` incluida. `FedaPayGatewaySeeder` fue eliminado (huérfano con credencial sandbox embebida); la key quedó en git history — rotarla si algún entorno la usó.
 
@@ -94,7 +94,7 @@ Desde Fase 5 / 5.7 `App\Support\Options` fija el contrato tipado de las options:
 
 ## Tooling
 
-- **PHPStan (Larastan 3.x)**: `composer analyse` — level 5, paths `app/`, target PHP 8.3 (`phpVersion: 80300`), incluye `phpstan-baseline.neon` (245 entradas / 447 errores legacy congelados).
+- **PHPStan (Larastan 3.x)**: `composer analyse` — level 5, paths `app/`, target PHP 8.3 (`phpVersion: 80300`), incluye `phpstan-baseline.neon` (243 entradas / 445 errores legacy congelados; −2 desde el spec 5.8).
 - **Baseline rule**: the baseline is single-use. Regenerating it to make a PR pass is forbidden; only with documented justification + diff review of the file in the PR. New/modified code errors must fail.
 - **Pint (preset laravel)**: `composer lint` (test mode, CI-enforced) / `composer lint:fix` (auto-fix). Config in `pint.json`.
 - **CI**: `.github/workflows/ci.yml` — 4 jobs on push to `main` + PRs: `tests` (MySQL 8 service over `dbrentpro_test`), `static-analysis` (phpstan), `style` (pint), `frontend-build` (npm ci + build). Note: the `tests` job must recreate the `vendor/autoload1.php` marker after `composer install`.

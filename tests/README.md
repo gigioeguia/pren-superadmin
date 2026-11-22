@@ -8,9 +8,9 @@ caracterizaciones nuevas): spec del trait de la Fase 0 (Fase 0 / 0.3, DT-C3 —
 índice en `.agents/README.md`).
 
 > **Nota (2026-11-21):** la suite creció con las fases 1–5 y hoy totaliza
-> **331 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
+> **334 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
 > spec 5.3 + 4 del spec 5.4 + 7 del spec 5.5 + 10 del spec 5.6 + 18 del spec
-> 5.7 + 24 del spec 5.8 + 6 del spec 5.9). Este README documenta el origen smoke de Fase 0
+> 5.7 + 24 del spec 5.8 + 6 del spec 5.9 + 3 del spec 5.10). Este README documenta el origen smoke de Fase 0
 > y las convenciones; los dominios añadidos se listan abajo.
 
 ## Cómo correr la suite
@@ -141,8 +141,8 @@ Regresión HTTP del bug Seg-20 (`index` sin `Request` inyectado; fix absorbido
 por Fase 4 / 4.4): `F1` per_page respetado (`data.per_page` + 5 items),
 `F2` rango `from_date`/`to_date`, `F3` scoping por `user_id` (`@group security`).
 Archivo: `tests/Feature/Withdraw/WithdrawIndexSmokeTest.php` — spec
-`spec-withdraw-index-request-fase5`. La key `'meassage'` de la respuesta no se
-aserta (typo diferido, candidato 5.10).
+`spec-withdraw-index-request-fase5`. La key de respuesta se aserta como
+`'message'` desde el spec 5.10 (el typo `'meassage'` original quedó corregido).
 
 ## TrustHosts (Fase 5 / 5.4)
 

@@ -65,4 +65,9 @@ class VendorPrefixArchTest extends TestCase
     {
         $this->assertNoVendorPrefix(['app', 'routes']);
     }
+
+    public function test_u2_no_vendor_prefix_global(): void
+    {
+        $this->assertNoVendorPrefix(['app', 'routes', 'config', 'database', 'tests', 'resources', 'lang', 'public']);
+    }
 }

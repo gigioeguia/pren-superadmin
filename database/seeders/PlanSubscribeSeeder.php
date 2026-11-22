@@ -12,7 +12,7 @@ class PlanSubscribeSeeder extends Seeder
 {
     public function run(): void
     {
-        $landlord = User::whereEmail('landlord@acnoo.com')->first();
+        $landlord = User::whereEmail('landlord@example.com')->first();
         $plan = Plan::where('subscriptionName', 'Economy')->first();
         $gateway = Gateway::where('name', 'Stripe')->first();
 

@@ -52,7 +52,7 @@ class DatabaseSeederIdempotencyTest extends TestCase
 
         // dataset demo completo, scoped por clave natural (inmune a filas
         // preexistentes de tests sin RefreshDatabase)
-        $this->assertSame(4, User::whereIn('email', ['superadmin@acnoo.com', 'admin@acnoo.com', 'landlord@acnoo.com', 'tenant@acnoo.com'])->count());
+        $this->assertSame(4, User::whereIn('email', ['superadmin@example.com', 'admin@example.com', 'landlord@example.com', 'tenant@example.com'])->count());
 
         $demo = User::demoLandlords()->first();
         $this->assertNotNull($demo);
@@ -103,8 +103,8 @@ class DatabaseSeederIdempotencyTest extends TestCase
         $this->seed(PermissionSeeder::class);
 
         $this->assertSame($usersBefore + 2, User::count());
-        $this->assertSame(1, User::whereEmail('superadmin@acnoo.com')->count());
-        $this->assertSame(1, User::whereEmail('admin@acnoo.com')->count());
+        $this->assertSame(1, User::whereEmail('superadmin@example.com')->count());
+        $this->assertSame(1, User::whereEmail('admin@example.com')->count());
         $this->assertSame($roleCount, DB::table('roles')->count());
         $this->assertSame($permissionCount, DB::table('permissions')->count());
     }

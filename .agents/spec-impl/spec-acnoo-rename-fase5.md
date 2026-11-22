@@ -1,7 +1,7 @@
 ---
 id: spec-acnoo-rename-fase5
 titulo: "Rename del prefijo `Acnoo` (92 controladores + familia `acnoo*` del trait), comentarios muertos (DT-B4) y de-branding de seed data (Fase 5 / 5.10)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.10, l.115) — .analisis/deuda-tecnica.md (DT-B1 l.95-96, DT-B4 l.104-105; DT-B7 l.113-114 ya cerrado en el cierre de Fase 4)
 cobertura: Cerrar DT-B1/DT-B4 con el alcance real del inventario (2026-11-21): drop total del prefijo en 92 controladores + `AcnooLateFeeService` (0 colisiones verificadas sobre 137 controladores; 0 referencias dinámicas por string — todo `::class`), rename del trait `HasAcnooActions` → `HasTableActions` con su familia de 12 métodos + hook `deletingAcnooRow` (arrastra 56 strings de acción en rutas, 34 `only()`, 6 `LogicException`, 33 consumidores, 2 smoke tests), eliminación de ~25 marcadores de procedencia, baseline por replace mecánico con invariante 245 entradas / 447 errores, emails demo `*@acnoo.com` → `@example.com` (6 seeders + `UserFactory` + 3 test files), branding PropertyRent en `OptionTableSeeder`, DT-B4 completo (`.htaccess`/`composer.json`/`Kernel.php`), selector JS huérfano, typo `'meassage'` → `'message'` (registrado desde spec 5.3), arch-test anti-reincidencia 0 `acnoo` en 8 directorios. 2 PRs: impl (mecánico) + cleanup (semántico). Catálogo U1–U2 + F1 (3 casos nuevos; la suite existente es la red de comportamiento). README (DT-B7) documentado como ya-cerrado, sin re-auditoría.
@@ -31,7 +31,7 @@ Cerrar DT-B1/DT-B4 en su alcance real: no solo renombrar 92 controladores, sino 
 3. **Rutas** (`routes/admin.php` 169 líneas, `routes/landlord.php` 91, `routes/api.php` 53): FQCN por `::class` en los 3 archivos, 56 strings de acción `'acnooFilter'` → `'filter'` (36 admin, 20 landlord), 34 strings `->only('index', 'acnooFilter', ...)`. **Nombres y URIs de rutas NO cambian** — solo action methods (guard: `RouteNamesSmokeTest` + suite smoke).
 4. **6 mensajes `LogicException`** del trait (embeben nombres de método: *"debe definir `acnooRedirectRoute()`..."* → `redirectRoute()`).
 5. **~25 marcadores de procedencia** `// Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.` **eliminados aquí** (Q15: son naming-coupled — dejarlos publicaría comentarios que citan nombres inexistentes). El docblock del trait queda como única documentación del contrato; la spec histórica `spec-trait-acnoo-fase0.md` es el registro.
-6. **Smoke tests renombrados**: `AcnooActionsSmokeTest` → `TableActionsSmokeTest` (`tests/Feature/Admin/`), `LandlordAcnooActionsSmokeTest` → `LandlordTableActionsSmokeTest` (`tests/Feature/Landlord/`); asserts actualizados: `'acnooFilter'` → `'filter'` (Landlord :217), map `AcnooAmenityController::class => ['filter', 'deleteAll', 'status']` (:229-230), `class_uses_recursive(HasTableActions::class)` (:234). Los docblocks G1–G8/H1–H4 mantienen la referencia a `spec-trait-acnoo-fase0` (histórica, intacta).
+6. **Smoke tests renombrados**: `AcnooActionsSmokeTest` → `TableActionsSmokeTest` (`tests/Feature/Admin/`), `LandlordAcnooActionsSmokeTest` → `LandlordTableActionsSmokeTest` (`tests/Feature/Landlord/`); asserts actualizados: `'acnooFilter'` → `'filter'` (Landlord :217), map `AcnooAmenityController::class => ['filter', 'deleteAll', 'status']` (:229-230), `class_uses_recursive(HasTableActions::class)` (:234). Los docblocks G1–G8/H1–H4 referencian el spec del trait de la Fase 0 **vía el índice de `.agents/README.md`** (la referencia literal `spec-trait-acnoo-fase0` contenía `acnoo` y U1/U2 la prohíben en dirs escaneados — desviación menor documentada abajo; las specs-impl en `.agents/` quedan intactas).
 7. **Arch-test U1** (nuevo `tests/Unit/Hygiene/VendorPrefixArchTest.php`): 0 `acnoo` case-insensitive en `app/` + `routes/` (contenido + filenames).
 8. **Baseline** `phpstan-baseline.neon`: replace mecánico de los 128 paths con `Acnoo` **y de los mensajes congelados** (embeben FQCN). Invariante: **245 entradas / 447 errores exactos**. No es regeneración (regla AGENTS.md Tooling); diff justificado en el PR.
 9. **Docs naming-coupled mínimos**: `AGENTS.md` ("Most controllers prefixed Acnoo" fuera, `HasAcnooActions` → `HasTableActions` en Controller layout/Gotchas), `tests/README.md` (:6-7 trait, :68 clase renombrada en tabla de caracterizaciones).
@@ -114,7 +114,7 @@ README.md · AGENTS.md · tests/README.md · .agents/README.md   # docs vivos
   plan/plan-accion.md                                     # fila 5.10 cerrada + Métricas de éxito
 ```
 
-### 4.1 Mapeo de la familia del trait (Q4 — verificación de colisiones en P4)
+### 4.1 Mapeo de la familia del trait (Q4 — verificación de colisiones en P4; 15 métodos + hook)
 
 | Actual | Nuevo |
 |--------|-------|
@@ -125,12 +125,14 @@ README.md · AGENTS.md · tests/README.md · .agents/README.md   # docs vivos
 | `acnooQuery` | `query` |
 | `acnooViewData` | `viewData` |
 | `acnooRedirectRoute` | `redirectRoute` |
+| `acnooStatusRedirectRoute` | `statusRedirectRoute` |
+| `acnooStatusMessage` | `statusMessage` |
 | `acnooDeleteMessage` | `deleteMessage` |
+| `acnooDeletesRowByRow` | `deletesRowByRow` |
 | `acnooExport` | `export` |
 | `acnooPerPage` | `perPage` |
 | `acnooExcelFilename` | `excelFilename` |
 | `acnooCsvFilename` | `csvFilename` |
-| `acnooStatusMessage` | `statusMessage` |
 | `deletingAcnooRow` (hook, spec 2.6) | `deletingRow` |
 | `deleteAll` · `status` · `exportExcel` · `exportCsv` | intactos (ya no-prefijados) |
 
@@ -202,31 +204,31 @@ Ninguno nuevo: no caracterizamos — reparamos. La caracterización viva (`Landl
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-**PR1 — rename mecánico:**
+**PR1 — rename mecánico (commit `e516277`, suite 332):**
 
-- [ ] 92 controladores + `LateFeeService` renombrados (drop del prefijo); 0 `Acnoo` en filenames de `app/`
-- [ ] `HasTableActions` + mapeo §4.1 aplicado (12 métodos + hook); 0 identificadores `acnoo*` en `app/`; `deleteAll`/`status`/`exportExcel`/`exportCsv` intactos
-- [ ] P4 ejecutado sin colisiones de método (resultado anexo al PR)
-- [ ] `routes/`: FQCN nuevos en los 3 archivos, 56 `'acnooFilter'`→`'filter'`, 34 `only()` actualizados; 0 `acnoo` en `routes/` (U1)
-- [ ] 6 `LogicException` del trait actualizados; ~25 marcadores de procedencia eliminados
-- [ ] Smoke tests renombrados con asserts/maps/docblocks actualizados; suite completa verde con conteo idéntico al fijado en P2
-- [ ] `composer analyse` [OK] con baseline **245 entradas / 447 errores exactos** (diff de paths+mensajes justificado en el PR); `composer lint` verde
-- [ ] `RouteNamesSmokeTest` verde — 0 nombres/URIs de rutas cambiadas
-- [ ] `AGENTS.md` + `tests/README.md` refs naming-coupled actualizadas (Controller layout, trait, :6-7/:68)
-- [ ] Rama `spec/acnoo-rename-fase5-impl` + PR squash + CI verde; sin push a `main`
+- [x] 92 controladores + `LateFeeService` renombrados (drop del prefijo); 0 `Acnoo` en filenames de `app/` (`find` → 0)
+- [x] `HasTableActions` + mapeo §4.1 aplicado (15 métodos + hook); 0 identificadores `acnoo*` en `app/`; `deleteAll`/`status`/`exportExcel`/`exportCsv` intactos
+- [x] P4 ejecutado sin colisiones de método: `function (filter|view|...)` solo en Policies/Exports/Gateways (clases ajenas al trait), 0 en controladores consumidores
+- [x] `routes/`: FQCN nuevos en los 3 archivos, 56 `'acnooFilter'`→`'filter'`, 34 `only()` actualizados; 0 `acnoo` en `routes/` (U1)
+- [x] 6 `LogicException` del trait actualizados; **33** marcadores de procedencia eliminados (conteo real, no ~25)
+- [x] Smoke tests renombrados con asserts/maps/docblocks actualizados; suite completa verde: **332 = 331 base + U1** (conteo base preservado + guard nuevo)
+- [x] `composer analyse` [OK] con baseline **243 entradas / 445 errores exactos** (invariante real — el 245/447 del borrador estaba stale desde el spec 5.8; AGENTS.md corregido); diff de paths+mensajes justificado en el PR; `composer lint` verde (auto-fix AST de blank lines post-borrado de marcadores, 33 archivos, sin efecto semántico)
+- [x] `RouteNamesSmokeTest` verde (F14–F18) — 0 nombres/URIs de rutas cambiadas
+- [x] `AGENTS.md` + `tests/README.md` refs naming-coupled actualizadas
+- [x] Rama `spec/acnoo-rename-fase5-impl` + commit `e516277`; sin push a `main`
 
-**PR2 — limpieza semántica:**
+**PR2 — limpieza semántica (commit `6da9e32`, suite 334):**
 
-- [ ] Emails `@example.com` en 6 seeders + `UserFactory` (+ argumentos de `DemoCredentials::password()`) + 3 test files; suite verde
-- [ ] Branding `OptionTableSeeder` per tabla §4.2; 0 `Acnoo`/`acnoo` en el seeder
-- [ ] DT-B4: `composer.json:71` fuera, `Kernel.php:79` fuera, `.htaccess:9-14` y `:16-22` fuera (shim :1-7 intacto)
-- [ ] `custom.js:6` selector huérfano fuera
-- [ ] `'meassage'` → `'message'` (`Api/WithdrawController:27`) + F1 verde
-- [ ] U2 verde: 0 `acnoo` en las 8 dirs, sin excepciones (needle dinámico + self-exclusión)
-- [ ] Docs vivos: `README.md` (:40 emails + conteo real), `AGENTS.md` (emails + conteo + convención final), `tests/README.md` (:144 + conteo), `.agents/README.md` (índice 54→55, fase5 9→10)
-- [ ] Cierres locales gitignored: `deuda-tecnica.md` DT-B1/DT-B4 cerrados, `plan-accion.md` fila 5.10 cerrada + Métricas de éxito
-- [ ] Residuales documentados: DBs ya sembradas conservan emails/branding viejos (re-seed crea duplicados — patrón 5.2); typo-fix visible solo para consumidor API hipotético (precedente 5.8)
-- [ ] Rama `spec/acnoo-rename-fase5-cleanup` + PR squash + CI verde; DoD tachado antes de pedir merge
+- [x] Emails `@example.com` en 6 seeders + `UserFactory` (+ argumentos de `DemoCredentials::password()`) + 3 test files; suite verde
+- [x] Branding `OptionTableSeeder` per tabla §4.2 (8 keys); 0 `Acnoo`/`acnoo` en el seeder (U2)
+- [x] DT-B4: `composer.json` (`dont-discover` + refresh de content-hash del lock vía `composer update --lock`), `Kernel.php:79` fuera, `.htaccess` ambos bloques fuera (shim :1-7 intacto)
+- [x] `custom.js` bloque slick muerto fuera (el selector huérfano era el único contenido del handler)
+- [x] `'meassage'` → `'message'` (`Api/WithdrawController:27`) + F1 verde (implementado como `test_f4`: F1–F3 ya tomados por el spec 5.3)
+- [x] U2 verde: 0 `acnoo` en las 8 dirs, sin excepciones (needle dinámico + self-exclusión)
+- [x] Docs vivos: `README.md` (:40 emails + 283→334), `AGENTS.md` (:15 331→334, emails, :97 baseline 243/445), `tests/README.md` (334 + nota `'meassage'`), `.agents/README.md` (índice 54→55, fase5 9→10)
+- [x] Cierres locales gitignored: `deuda-tecnica.md` DT-B1/DT-B4/DT-B7 cerrados, `plan-accion.md` fila 5.10 cerrada + Métricas de éxito
+- [x] Residuales documentados: DBs ya sembradas conservan emails/branding viejos (re-seed crea duplicados — patrón 5.2); typo-fix visible solo para consumidor API hipotético (precedente 5.8)
+- [x] Rama `spec/acnoo-rename-fase5-cleanup` + commit `6da9e32`; DoD tachado antes de pedir merge
 
 ---
 
@@ -318,3 +320,19 @@ Ninguno nuevo: no caracterizamos — reparamos. La caracterización viva (`Landl
    grep -ric acnoo app/ routes/ | grep -v ':0' ; grep -ric acnoo config/ database/ tests/ resources/ lang/ public/ | grep -v ':0'   # PR2: vacío
    ```
 7. **No-ops explícitos:** `npm run build` no se requiere (el JS tocado está fuera de Vite); `public/build/` no se regenera; `.phpunit.result.cache` se regenera solo (contiene nombres de clases viejos hasta la próxima corrida — no es fuente).
+
+---
+
+### Desviaciones y correcciones (implementación, 2026-11-21)
+
+1. **Invariante de baseline corregido: 243 entradas / 445 errores** (no 245/447): el borrador tomó los números de `AGENTS.md`, stale desde el spec 5.8 (que retiró 2 entradas huérfanas de `NotifyContrller`). El replace mecánico se verificó contra el conteo real pre-rename y `AGENTS.md` quedó corregido en PR2.
+2. **Familia del trait: 15 métodos + hook** (no 12 + hook): el inventario del borrador omitió `acnooStatusRedirectRoute` (:114) y `acnooDeletesRowByRow` (:119), presentes en el trait — renombrados como `statusRedirectRoute`/`deletesRowByRow` dentro del mismo mapeo (§4.1 actualizado).
+3. **Marcadores de procedencia: 33** (no ~25); variante única de texto, borrado mecánico en un pase.
+4. **Referencias históricas `spec-trait-acnoo-fase0` reformuladas** en los archivos dentro de dirs escaneados (docblock + notas de seguridad del trait, docblocks de los 2 smoke tests, `tests/README.md:7`) → "spec del trait de la Fase 0 — índice en `.agents/README.md`". Motivo: U1/U2 con 0 excepciones prohíben el literal en `app/`+`tests/`; las specs-impl históricas en `.agents/` (no escaneado) quedan intactas. El §2 IN.6 original decía "mantienen la referencia... intacta" — corregido arriba.
+5. **Caso F1 del catálogo implementado como `test_f4`** en `WithdrawIndexSmokeTest`: los IDs F1–F3 ya estaban tomados por el spec 5.3; misma aserción (`'message'` presente, `'meassage'` ausente).
+6. **Conteo de suite en DoD**: "conteo idéntico al fijado en P2" precisado como *conteo base preservado + guards nuevos*: PR1 = 332 (331 + U1), PR2 = 334 (332 + U2 + F4).
+7. **`custom.js`**: el selector huérfano (:6) era el único contenido de un `$(document).ready` completo — se eliminó el bloque slick entero (líneas 1–47, sección "Slick Slider"), no solo la línea 6, para no dejar JS con sintaxis rota.
+8. **`composer.lock`**: la remoción del bloque `extra` cambia el content-hash → `composer update --lock --no-install` (1 línea, sin cambio de dependencias).
+9. **Pint auto-fix en 33 controladores** tras el borrado de marcadores (blank lines, fixer `class_attributes_separation`; 6 archivos además `unary_operator_spaces`/`not_operator_with_successor_space`): fixers AST-based, sin efecto semántico — precedente spec 5.8. `composer lint` verde después.
+10. **Line endings CRLF preservados** en `.htaccess`/`custom.js` (warning de git autocrlf al commitear, consistente con el estado preexistente del repo).
+11. **PRs pendientes de apertura/merge** (ramas locales listas): PR1 `spec/acnoo-rename-fase5-impl` (`e516277`), PR2 `spec/acnoo-rename-fase5-cleanup` (`6da9e32`, apilado sobre PR1 — retargetear base a `main` tras merge de PR1).

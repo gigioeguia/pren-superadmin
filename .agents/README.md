@@ -30,11 +30,11 @@ Carpeta de convenciones, especificaciones, skills y decisiones que rigen cómo t
 │   │               spec-helpers-globales-clases-fase4 · spec-plan-duration-days-fase4 ·
 │   │               spec-db-transactions-no-external-io-fase4 · spec-cache-invalidacion-centralizada-fase4 ·
 │   │               spec-seeders-firstorcreate-fase4
-│   ├── fase5 (9):  spec-comand-txt-credenciales-fase5 · spec-demo-user-passwords-fase5 ·
+│   ├── fase5 (10): spec-comand-txt-credenciales-fase5 · spec-demo-user-passwords-fase5 ·
 │   │               spec-withdraw-index-request-fase5 · spec-trust-hosts-fase5 ·
 │   │               spec-session-database-secure-fase5 · spec-app-url-https-force-tls-fase5 ·
 │   │               spec-get-option-tipos-consistentes-fase5 · spec-typos-rutas-fase5 ·
-│   │               spec-log-level-warning-fase5
+│   │               spec-log-level-warning-fase5 · spec-acnoo-rename-fase5
 │   └── meta (1):   spec-reconciliacion-analisis-fase0-3
 │
 ├── skills/                    # procedimientos operacionales
