@@ -274,9 +274,9 @@ class PaymentController extends Controller
                 $landlord = User::where('id', $plan->landlord_id)->first();
 
                 if ($plan->status !== 'paid') {
-                    $landlord->update([
+                    $landlord->forceFill([
                         'balance' => $landlord->balance + $plan->landlord_balance,
-                    ]);
+                    ])->save();
 
                     $plan->update([
                         'payment_date' => today(),
@@ -303,9 +303,9 @@ class PaymentController extends Controller
                 $landlord = User::where('id', $plan->rent->landlord_id ?? '')->first();
 
                 if ($plan->payment_status !== 'paid') {
-                    $landlord->update([
+                    $landlord->forceFill([
                         'balance' => $landlord->balance + $plan->total_amount,
-                    ]);
+                    ])->save();
 
                     $plan->update([
                         'payment_date' => today(),
@@ -357,11 +357,11 @@ class PaymentController extends Controller
                     'payment_type' => 'subscription',
                 ]);
 
-                $user->update([
+                $user->forceFill([
                     'subscriptionDate' => now(),
                     'plan_subscribe_id' => $subscribe->id,
                     'will_expire' => now()->addDays($duration),
-                ]);
+                ])->save();
             }
 
             session()->put('payment_processed', true);

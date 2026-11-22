@@ -72,17 +72,21 @@ class RegistrationController extends Controller
             // Create or update user. `role` no es fillable; se fuerza por propiedad
             // directa tras la creación (Seg-4). El evento `creating` del modelo
             // garantiza un valor por defecto 'landlord' si no se asigna.
+            // Columnas fuera del contrato fillable: exclusivas server-side.
             $user = User::updateOrCreate(
                 ['email' => $request->email],
-                $request->except('password', 'role') + [
-                    'remember_token' => $otpStatus === 'on' ? $code : null,
-                    'email_verified_at' => $otpStatus === 'on' ? $expire : now(),
+                [
+                    'name' => $request->name,
+                    'email' => $request->email,
                     'password' => Hash::make($request->password),
                 ]
             );
 
             $user->role = 'landlord';
-            $user->save();
+            $user->forceFill([
+                'remember_token' => $otpStatus === 'on' ? $code : null,
+                'email_verified_at' => $otpStatus === 'on' ? $expire : now(),
+            ])->save();
 
             if ($otpStatus === 'off') {
 
@@ -97,11 +101,11 @@ class RegistrationController extends Controller
                         'duration' => $duration,
                     ]);
 
-                    $user->update([
+                    $user->forceFill([
                         'plan_subscribe_id' => $subscribe->id,
                         'will_expire' => now()->addDays($duration),
                         'subscriptionDate' => now(),
-                    ]);
+                    ])->save();
                 }
 
                 DB::commit();
@@ -128,11 +132,11 @@ class RegistrationController extends Controller
                     'duration' => $duration,
                 ]);
 
-                $user->update([
+                $user->forceFill([
                     'plan_subscribe_id' => $subscribe->id,
                     'will_expire' => now()->addDays($duration),
                     'subscriptionDate' => now(),
-                ]);
+                ])->save();
             }
 
             DB::commit();
@@ -192,10 +196,10 @@ class RegistrationController extends Controller
 
                 Auth::login($user);
 
-                $user->update([
+                $user->forceFill([
                     'remember_token' => null,
                     'email_verified_at' => now(),
-                ]);
+                ])->save();
 
                 return response()->json([
                     'message' => 'Logged In successfully!',

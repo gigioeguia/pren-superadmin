@@ -48,7 +48,10 @@ class SigninController extends Controller
                     ], 406);
                 }
 
-                User::where('email', $request->email)->first()->update(['remember_token' => $code, 'email_verified_at' => $expire]);
+                User::where('email', $request->email)->first()->forceFill([
+                    'remember_token' => $code,
+                    'email_verified_at' => $expire,
+                ])->save();
 
                 return response()->json([
                     'message' => 'An otp code has been sent to your email. Please check and confirm.',

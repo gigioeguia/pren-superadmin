@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Landlord;
 
 use App\Exports\LandlordWithdrawMethodExport;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Models\UserMethod;
 use App\Models\Withdraw;
 use App\Models\WithdrawMethod;
@@ -35,7 +36,9 @@ class WithdrawController extends Controller
             'status' => 'nullable|string',
         ]);
 
-        $user = auth()->user();
+        // Tipado explícito: auth()->user() es union de guards con modelos
+        // fantasma en config (spec 5.11 — writes sobre User tipado).
+        $user = User::findOrFail(auth()->id());
         $user_method = UserMethod::findOrFail($request->user_method_id);
         $method = WithdrawMethod::findOrFail($user_method->method_id);
 
@@ -75,9 +78,9 @@ class WithdrawController extends Controller
                     'charge' => $charge,
                 ]);
 
-                $user->update([
+                $user->forceFill([
                     'balance' => $user->balance - $total_amount,
-                ]);
+                ])->save();
 
                 DB::commit();
 

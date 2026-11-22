@@ -12,7 +12,7 @@ npm install                       # allowScripts en package.json auto-aprueba el
 php artisan key:generate
 php artisan storage:link          # public/storage symlink is NOT committed
 php artisan migrate --seed        # runs 24 seeders in order (see DatabaseSeeder)
-php artisan test                  # suite completa (334 casos) over dbrentpro_test — see tests/README.md
+php artisan test                  # suite completa (371 casos) over dbrentpro_test — see tests/README.md
 npm run dev                       # vite (resources/css/app.css, resources/js/app.js)
 npm run build
 php artisan serve                 # local dev server
@@ -88,7 +88,7 @@ Desde Fase 5 / 5.7 `App\Support\Options` fija el contrato tipado de las options:
 - No usar el helper global `request()` en `app/Http/Controllers/`, `app/Http/Middleware/` ni `app/Exports/`: inyectar `Request $request` (Fase 4 / 4.4). Los controladores ya inyectan `Request $request`; los gateways de `app/Library/` reciben `bool $expectsJson` en `make_payment()` (Fase 4 / 4.6 implementado).
 - **`TrustHosts` activo en el stack global** (Seg-21 / 5.4): el Host header se valida contra `APP_URL` + subdominios (`hosts()` en `app/Http/Middleware/TrustHosts.php`); `local` es no-op del framework; despliegues multi-dominio requieren editar `hosts()` (sin válvula de config). `APP_URL` desalineado ⇒ sitio en 400.
 - `User->role` is a plain string column AND `User` uses Spatie `HasRoles`. Two parallel role systems.
-- `User` `$fillable` includes `balance`, `is_setupped`, `plan_subscribe_id` — mass-assignable (`role` fue removido en Fase 1 / 1.4; asignar vía `forceFill` solo donde el negocio lo exige).
+- `User` `$fillable` es un allowlist de 7 columnas (`name, email, image, phone, password, profile_type, is_setupped` — Fase 5 / 5.11). `balance`, `plan_subscribe_id`, `will_expire`, `subscriptionDate`, `landlord_id`, `email_verified_at`, `remember_token`, `unique_id` y `role`/`is_demo` solo se escriben server-side vía `forceFill` explícito; las escrituras de `User` usan arrays explícitos de claves, jamás `$request->except()`/`all()`.
 - `safiull/laravel-installer` adds a `/install` route and `CheckToken` middleware in the `web` group.
 - `.analisis/` is gitignored and contains security + debt analysis (`seguridad.md`, `deuda-tecnica.md`, `plan/plan-accion.md`). Do not commit it; consult it before risky refactors.
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Seeders;
 
+use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -40,6 +41,47 @@ class SeededRoleAlignmentTest extends TestCase
         // Assert — columna role alineada con Spatie: redirect admin
         $response->assertOk();
         $this->assertStringContainsString('/admin', (string) $response->json('redirect'));
+    }
+
+    public function test_f1_seeded_role_column_matches_spatie(): void
+    {
+        // Arrange
+        $this->seedWithKnownDemoPassword();
+
+        // Assert — asignación explícita (Q6): columna y Spatie alineadas
+        $admin = User::where('email', 'admin@example.com')->first();
+        $this->assertSame('admin', $admin->role);
+        $this->assertTrue($admin->hasRole('admin'));
+
+        $superadmin = User::where('email', 'superadmin@example.com')->first();
+        $this->assertSame('superadmin', $superadmin->role);
+        $this->assertTrue($superadmin->hasRole('superadmin'));
+    }
+
+    public function test_f3_notify_users_reaches_seeded_superadmin(): void
+    {
+        // Arrange
+        $this->seedWithKnownDemoPassword();
+
+        // Act
+        $recipients = notify_users();
+
+        // Assert — el superadmin demo ya no queda fuera de las notificaciones
+        $this->assertTrue($recipients->contains('email', 'superadmin@example.com'));
+        $this->assertTrue($recipients->contains('email', 'admin@example.com'));
+    }
+
+    public function test_f4_support_receiver_resolves_seeded_superadmin(): void
+    {
+        // Arrange
+        $this->seedWithKnownDemoPassword();
+
+        // Act — la query exacta que consume SupportService:18
+        $receiver = User::where('role', 'superadmin')->first();
+
+        // Assert
+        $this->assertNotNull($receiver);
+        $this->assertSame('superadmin@example.com', $receiver->email);
     }
 
     public function test_f5_seeded_admin_is_rejected_from_api_app_sign_in(): void

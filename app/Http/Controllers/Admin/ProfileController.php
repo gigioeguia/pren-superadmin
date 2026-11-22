@@ -38,7 +38,11 @@ class ProfileController extends Controller
             'image' => 'nullable|image',
         ]);
 
-        $user = User::findOrFail($id);
+        // Seg-29: el target es siempre el usuario de sesión; el id de la
+        // ruta se ignora (antes resolvía cualquier cuenta vía findOrFail).
+        // Auth::id() en vez de $request->user(): tipado limpio para PHPStan
+        // (los guards de config declaran modelos fantasma).
+        $user = User::findOrFail(Auth::id());
 
         // Comprobaciones y upload antes de abrir la transacción (Fase 4 / 4.8)
         if ($request->password || $request->current_password) {
@@ -65,7 +69,10 @@ class ProfileController extends Controller
 
         try {
 
-            $user->update($request->except('image', 'password', 'gender') + [
+            $user->update([
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->input('phone'),
                 'image' => $image,
             ] + ($request->filled('password') ? ['password' => Hash::make($request->password)] : []));
 

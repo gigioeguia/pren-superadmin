@@ -167,14 +167,22 @@ class PermissionSeeder extends Seeder
             $user = User::firstOrCreate([
                 'email' => $email,
             ], [
-                'role' => $generated_role,
                 'name' => ucwords(str_replace('_', ' ', $key)),
                 // Password demo: config o aleatoria (Fase 5 / 5.2)
                 'password' => DemoCredentials::hash(DemoCredentials::password($email)),
-                'plan_subscribe_id' => null,
-                'will_expire' => null,
-                'email_verified_at' => now(),
             ]);
+
+            // `role` + trío de suscripción: asignación explícita server-side,
+            // sin depender del unguard de SeedCommand (spec 5.11). Solo al
+            // crear para preservar la idempotencia (4.10).
+            if ($user->wasRecentlyCreated) {
+                $user->role = $generated_role;
+                $user->forceFill([
+                    'plan_subscribe_id' => null,
+                    'will_expire' => null,
+                    'email_verified_at' => now(),
+                ])->save();
+            }
 
             if ($user->wasRecentlyCreated && ($generated = DemoCredentials::generatedFor($email))) {
                 $this->command->info("[demo] {$email} / {$generated} (password aleatorio: no se vuelve a mostrar)");

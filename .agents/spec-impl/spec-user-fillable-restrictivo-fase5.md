@@ -1,7 +1,7 @@
 ---
 id: spec-user-fillable-restrictivo-fase5
 titulo: "`$fillable` de `User` restrictivo: allowlist de 7 columnas, fin del patrón `except()` en escrituras de `User` y fixes colaterales (Fase 5 / 5.11)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.11) — .analisis/deuda-tecnica.md (DT-B3, l.101-102) — hallazgos nuevos Seg-28/Seg-29 a registrar en .analisis/seguridad.md
 cobertura: Cerrar DT-B3 reduciendo `User::$fillable` de 15 a 7 columnas (allowlist; desviación documentada de la sugerencia literal `$guarded` de DT-B3), eliminando `$request->except()` en los 6 call sites que escriben `User` con arrays explícitos, migrando ~18 writes server-side legítimos a `forceFill`, y cerrando en el mismo diff tres hallazgos conexos: inyección masiva + override por merge-order en signup público (Seg-28, nuevo), IDOR de `Admin/ProfileController::update` (Seg-29, nuevo) y el drop silencioso de `role` en `PermissionSeeder` vigente desde 1.4. Catálogo U1–U6 + S1–S6 + A1–A4 + G1–G9 + P1–P3 + H1–H3 + F1–F5 (36 casos; suite esperada 334+36=370) + arch-test scoped anti-`except()`
@@ -248,14 +248,14 @@ Casos que nacen afirmando el comportamiento inseguro/incorrecto vigente (commit 
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] U1–U6, S1–S6, A1–A4, G1–G9, P1–P3, H1–H3, F1–F5 (36 casos) en verde; suite completa esperada **334+36=370** (verificar la base 334 contra salida real — lección 5.3)
-- [ ] `User::$fillable` === 7 columnas exactas (U1); 0 usos de `fill/create/update/updateOrCreate/firstOrCreate` con las 8 columnas retiradas en `app/` + `database/` (mapa §4 migrado a `forceFill`; grep final en implementación)
-- [ ] 0 `$request->except(` en los 4 archivos migrados (U6); los 43 sitios no-`User` intactos (lateral §2 OUT)
-- [ ] Caracterizaciones Seg-28/Seg-29/quirk-1.4 flipeadas en el mismo PR, con commit previo documentándolas
-- [ ] `php artisan test` completo en verde; PHPStan nivel 5 sin nuevas entradas (baseline intacta); Pint en verde
-- [ ] `ApiAuthSmokeTest` ×4 helpers migrados a `forceFill` (sweep §4)
-- [ ] Doc sweep: `AGENTS.md` (gotcha `$fillable` reescrito) + `tests/README.md` (conteos/árbol) + `.agents/README.md` (índice) commiteados; `seguridad.md` (Seg-28/Seg-29), `deuda-tecnica.md` (DT-B3 + desviación), `plan-accion.md` (fila 5.11 + métrica) editados localmente (gitignored)
-- [ ] PR desde `spec/spec-user-fillable-restrictivo-fase5-impl` a `main`, DoD tachado en la descripción
+- [x] U1–U6, S1–S6, A1–A4, G1–G9, P1–P3, H1–H3, F1–F5 (36 casos) en verde; suite completa: base verificada **334/334** (P7) → **371 passed / 4554 assertions** (desviación D3: +1 caso de soporte H3-accept)
+- [x] `User::$fillable` === 7 columnas exactas (U1); 0 usos de `fill/create/update/updateOrCreate/firstOrCreate` con las 8 columnas retiradas en `app/` + `database/` (mapa §4 migrado a `forceFill`; grep final: los remanentes son otros modelos, líneas internas de forceFill y response payloads)
+- [x] 0 `$request->except(` en los 4 archivos migrados (U6); los 43 sitios no-`User` intactos (lateral §2 OUT)
+- [x] Caracterizaciones Seg-28/Seg-29 flipeadas en el mismo PR: commit de caracterización `f98a020` (10 casos verdes sobre código inseguro) → fix → flip (D1: F2/F5 quedaron como regresión pura)
+- [x] `php artisan test` completo en verde (371); PHPStan nivel 5 sin nuevas entradas (baseline saneado: −12 entradas phantom huérfanas de los withdraw controllers, D4); Pint en verde
+- [x] `ApiAuthSmokeTest` ×4 helpers migrados a `forceFill` (sweep §4)
+- [x] Doc sweep: `AGENTS.md` (gotcha `$fillable` reescrito + conteo 371) + `tests/README.md` (conteo/árbol/sección 5.11) + `.agents/README.md` (índice 55, fase5 11) commiteados; `seguridad.md` (Seg-28/Seg-29 registrados y cerrados), `deuda-tecnica.md` (DT-B3 cerrado + desviación `$guarded`), `plan-accion.md` (fila 5.11 + métrica) editados localmente (gitignored)
+- [ ] PR desde `spec/spec-user-fillable-restrictivo-fase5-impl` a `main`, DoD tachado en la descripción *(pendiente de merge — rama y commits listos)*
 
 ---
 
@@ -271,6 +271,17 @@ Casos que nacen afirmando el comportamiento inseguro/incorrecto vigente (commit 
 | Drift del conteo de suite base | bajo | Verificar 334 contra salida real antes de sumar (lección 5.3) |
 
 **Pendiente de decisión:** ninguna — Q1–Q16 cerradas por grilling (2026-11-21).
+
+---
+
+## 8bis. Desviaciones de implementación (2026-11-21)
+
+Inferidas de la evidencia durante la implementación; decisiones Q1–Q16 intactas:
+
+- **D1 — El quirk 1.4 del seeder no era reproducible:** `SeedCommand` envuelve la ejecución de los seeders en `Model::unguarded()` (vendor `SeedCommand.php:69`), así que la clave `'role'` de `firstOrCreate` **sí se persistía** por las vías estándar de seed (`db:seed`, `DatabaseSeeder`, `$this->seed()` en tests) — la columna `role` de las cuentas demo ya estaba alineada con Spatie y el redirect de login/API gate de F2/F5 **ya observaba** el comportamiento "post-fix". El fix Q6 se mantiene como **hardening** (asignación explícita unguard-independiente, necesaria además porque el trío sale de `$fillable` y fiarse del unguard sería frágil), pero F2/F5 pasaron de caracterización→flip a **regresión pura**. Detectado empíricamente con test scratch antes de tocar código.
+- **D2 — `IdorPolicySmokeTest` sin trait de DB:** la clase commiteaba sus fixtures a la DB compartida de tests (fuga preexistente); expuesto por la sensibilidad al orden de F4 (`first()` devolvía un usuario de factory de otro test). Envuelta en `DatabaseTransactions` (sin dependencias cross-test, verificado). Archivo fuera del mapa §4 — necesario para el DoD "suite completa en verde".
+- **D3 — Suite 371 (no 370):** H3 ganó un caso de soporte (`test_h3_profile_set_up_accepts_valid_profile_type`) para cubrir el camino válido de la regla nueva — 334+37=371.
+- **D4 — Saneo de baseline (−12 entradas, no regeneración):** el tipado de `$user` en los dos withdraw controllers (`User::findOrFail(auth()->id())`, exigido para que los writes quedaran sobre `User` tipado) eliminó los errores phantom legacy (`App\Models\Api\Tenant`/`Api\User`, modelos inexistentes declarados en guards de `config/auth.php`); sus 12 entradas del baseline quedaron huérfanas y se removieron con justificación (precedente 4.6/5.8). Análogamente, `Admin/ProfileController::update` usa `User::findOrFail(Auth::id())` en vez de `$request->user()` (misma semántica de Seg-29, tipado limpio) y `SubscriptionController::paid` usa `User::findOrFail($subscribe->user_id)` en vez de `$subscribe->user` — sin tocar `config/auth.php` (§2 OUT) ni el modelo.
 
 ---
 

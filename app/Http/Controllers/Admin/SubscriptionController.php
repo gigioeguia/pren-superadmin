@@ -6,6 +6,7 @@ use App\Exports\AdminSubscriptionExport;
 use App\Http\Controllers\Controller;
 use App\Models\PlanSubscribe;
 use App\Models\Transaction;
+use App\Models\User;
 use App\Traits\HasTableActions;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -71,11 +72,15 @@ class SubscriptionController extends Controller
                     'notes' => $request->notes,
                 ]);
 
-                $subscribe->user()->update([
+                // Q14 (spec 5.11): instancia tipada + forceFill en vez del mass
+                // update vía relación — bajo contrato fillable y dispara
+                // UserObserver (invalidación estructural de plan-data-{user_id},
+                // gap P5 de 4.9).
+                User::findOrFail($subscribe->user_id)->forceFill([
                     'subscriptionDate' => now(),
                     'plan_subscribe_id' => $subscribe->id,
                     'will_expire' => now()->addDays($subscribe->plan->duration ?? ''),
-                ]);
+                ])->save();
 
                 Transaction::create([
                     'paid_by' => $subscribe->user_id,

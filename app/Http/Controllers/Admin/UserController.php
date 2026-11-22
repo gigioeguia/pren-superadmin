@@ -49,14 +49,15 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'role' => 'required|string',
-            'mobile_no' => 'nullable|string',
-            'mobile_code' => 'nullable|string',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|confirmed',
             'image' => 'nullable|image',
         ]);
 
-        $user = User::create($request->except('image', 'password', 'role') + [
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->input('phone'),
             'image' => $request->image ? $this->upload($request, 'image') : null,
             'password' => Hash::make($request->password),
         ]);
@@ -94,9 +95,6 @@ class UserController extends Controller
         }
         $request->validate([
             'role' => 'required|string',
-            'mobile_no' => 'nullable|string',
-            'mobile_code' => 'nullable|string',
-            'country' => 'nullable|string',
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,'.$user->id,
             'password' => 'nullable|string|confirmed',
@@ -105,7 +103,10 @@ class UserController extends Controller
 
         $role = Role::where('name', $request->role)->first();
         $user->roles()->sync($role->id);
-        $user->update($request->except('image', 'password', 'role') + [
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->input('phone'),
             'image' => $request->image ? $this->upload($request, 'image', $user->image) : $user->image,
             'password' => $request->password ? Hash::make($request->password) : $user->password,
         ]);

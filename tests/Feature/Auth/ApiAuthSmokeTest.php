@@ -311,10 +311,10 @@ class ApiAuthSmokeTest extends TestCase
     {
         // Arrange
         $user = $this->createLandlord();
-        $user->update([
+        $user->forceFill([
             'remember_token' => '123456',
             'email_verified_at' => now()->addMinutes(15),
-        ]);
+        ])->save();
 
         // Act
         $response = $this->postJson('/api/v1/user-password-reset', [
@@ -334,10 +334,10 @@ class ApiAuthSmokeTest extends TestCase
     {
         // Arrange
         $user = $this->createLandlord();
-        $user->update([
+        $user->forceFill([
             'remember_token' => '123456',
             'email_verified_at' => now()->subMinute(),
-        ]);
+        ])->save();
 
         // Act
         $response = $this->postJson('/api/v1/user-password-reset', [
@@ -357,10 +357,10 @@ class ApiAuthSmokeTest extends TestCase
     {
         // Arrange
         $user = $this->createLandlord();
-        $user->update([
+        $user->forceFill([
             'remember_token' => '123456',
             'email_verified_at' => now()->addMinutes(15),
-        ]);
+        ])->save();
 
         // Act
         $response = $this->postJson('/api/v1/user-password-reset', [
@@ -382,10 +382,10 @@ class ApiAuthSmokeTest extends TestCase
     {
         // Arrange
         $user = $this->createLandlord();
-        $user->update([
+        $user->forceFill([
             'remember_token' => '123456',
             'email_verified_at' => now()->addMinutes(15),
-        ]);
+        ])->save();
 
         // Act
         $response = $this->postJson('/api/v1/user-password-reset', [
