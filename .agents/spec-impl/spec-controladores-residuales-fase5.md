@@ -1,7 +1,7 @@
 ---
 id: spec-controladores-residuales-fase5
 titulo: "Residuales < 200: 2ª pasada Property, DashboardService, trait RespondsJson, arch-test (Fase 5 / 5.13, hijo 6)"
-estado: Borrador
+estado: Aprobado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.13) — DT-C4
 cobertura: Última milla del criterio "< 200 estricto": Admin/PropertyController 225, Landlord/PropertyController 200, Api/LandlordDashboardController 228, Controller.php base 235, y activación del arch-test permanente
