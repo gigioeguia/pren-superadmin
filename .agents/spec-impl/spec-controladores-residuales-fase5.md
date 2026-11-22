@@ -131,3 +131,20 @@ Implementado en rama `spec/controladores-residuales-fase5-impl`. El decisor apro
 - `php artisan test` → **387 passed (4654 assertions)**: 371 base + 4 F1–F2 + 2 U4 + 2 U17/U18 + 8 guard.
 - `vendor/bin/phpstan analyse` → `[OK] No errors`; `vendor/bin/pint --test` → passed.
 - `wc -l`: Admin/Property 191 (antes 225) · Landlord/Property 164 (199) · Api/LandlordDashboard 46 (228) · `Controller.php` 14 (235).
+
+### Verificación (2026-11-22, sobre la línea con hijos 2–5 implementados in-tree)
+
+**Slice entregado — sigue en verde:**
+- `wc -l` re-verificado: `Controller.php` **14** · Api/LandlordDashboard **46** · Admin/Property **192** (±1 vs 191 por ediciones de hijos 2–5; < 200) · Landlord/Property **165**.
+- Tests del hijo en verde: `ApiLandlordDashboardHttpTest` (F1–F2, 4) + `RestoredTableActionsSmokeTest` (guard, 8) + `RespondsJsonCompatTest` (U4, 2) — dentro de la suite completa **486 passed (5500 assertions)** (las 387 del corte crecieron con la red de hijos 2–5).
+- `tests/Unit/Controllers/ControllersLineLimitArchTest.php` **no existe** — consistente con D1.
+
+**D1 (arch-test + reflexión) — diferido sigue vigente; bloqueos cuantificados hoy:**
+
+| Regla | Bloqueo actual | Origen |
+|---|---|---|
+| U1 (< 200 global) | `Admin/TenantController` **206** (único ≥ 200) | Nunca estuvo en la lista de los 12 del paraguas: la cobertura "12/12 < 200" se cumple, pero la regla global del arch-test lo captura. TenantService ya existe — es un recorte/2ª pasada no asignado a ningún hijo |
+| U2 (0 tx en controllers) | **9 hits** `DB::beginTransaction/transaction(`: Api/UserController, Api/SecurityDepositController, Api/Auth/RegistrationController (tx conservada intencionalmente por hijo 4 §11), Api+Landlord/WithdrawController, Admin/WithdrawRequestController, Admin+Landlord/ProfileController, Admin/RoleController | El paraguas §5.2 asumía "los 8 con tx están todos en scope" — inexacto: withdraw/profile/role/user/security-deposit son deuda lateral OUT (paraguas §2 OUT) |
+| U3 (reflexión rutas↔métodos) | **114 rutas muertas** confirmadas por reflexión real (coincide con L2 ~110): verbos de `Route::resource` sin `->only()` (~25 declaraciones: transactions, website-settings, comments, incomes, expenses, facilities, amenities…) + verbos api (`apitenant.destroy`, `apisupports.*`, `apilandlord-maintenance.index`) | Requiere el slice de higiene de resources del paraguas + la limpieza por entidad (regla §5.4) que los hijos 2–5 no ejecutaron (sus specs declararon las rutas "intactas" en OUT) |
+
+**Conclusión:** el hijo NO puede cerrarse todavía — el quinto checkbox espera (a) recorte de TenantController < 200, (b) decisión sobre las 9 tx (migrar withdraw/profile/role a services o desviación documentada de la regla U2), (c) slice de higiene de las 114 rutas muertas. Ninguno está en el scope aprobado de este hijo; el estado `Aprobado` (slice anticipado D1) es correcto mientras tanto.
