@@ -124,8 +124,10 @@ class PaymentService
     /**
      * Pago manual (transferencia): attachment subido ANTES de abrir la
      * transacción; la tx solo envuelve la escritura (Fase 4 / 4.8).
+     *
+     * @param  mixed  $manualData  referencia free-form del pago manual (string en la práctica).
      */
-    public function payManual(PaymentContext $context, ?string $manualData, ?UploadedFile $attachment): void
+    public function payManual(PaymentContext $context, mixed $manualData, ?UploadedFile $attachment): void
     {
         if (! $context->plan instanceof Plan) {
             // Inalcanzable por UI (las vistas deposit/rent solo listan
@@ -404,7 +406,7 @@ class PaymentService
             throw new \RuntimeException('Payment type/plan mismatch.');
         }
 
-        $landlord = User::where('id', $plan->rent?->landlord_id ?? '')->first();
+        $landlord = User::where('id', $plan->rent->landlord_id ?? '')->first();
 
         if ($plan->payment_status !== 'paid') {
             if (! $landlord) {

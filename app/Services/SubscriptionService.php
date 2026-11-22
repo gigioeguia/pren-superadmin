@@ -99,7 +99,7 @@ class SubscriptionService
             User::findOrFail($subscription->user_id)->forceFill([
                 'subscriptionDate' => now(),
                 'plan_subscribe_id' => $subscription->id,
-                'will_expire' => now()->addDays($subscription->plan?->duration ?? 0),
+                'will_expire' => now()->addDays($subscription->plan->duration ?? 0),
             ])->save();
 
             Transaction::create([

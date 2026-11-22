@@ -14,10 +14,6 @@ use App\Models\User;
  */
 final class PaymentContext
 {
-    /**
-     * @param  SecurityDeposit|RentPayment|Plan  $plan
-     * @param  int|float  $amount
-     */
     public function __construct(
         public readonly User $user,
         public readonly Gateway $gateway,

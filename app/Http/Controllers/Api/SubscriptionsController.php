@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Channel;
 use App\Http\Controllers\Controller;
-use App\Models\Plan;
+use App\Services\SubscriptionService;
 
 class SubscriptionsController extends Controller
 {
+    public function __construct(protected SubscriptionService $subscriptions) {}
+
     public function index()
     {
         if (! auth()->check()) {
@@ -15,7 +18,7 @@ class SubscriptionsController extends Controller
             ], 401);
         }
 
-        $plans = Plan::whereStatus(1)->latest()->get();
+        $plans = $this->subscriptions->listForChannel(Channel::Api);
 
         return response()->json([
             'message' => __('Data fetched successfully.'),

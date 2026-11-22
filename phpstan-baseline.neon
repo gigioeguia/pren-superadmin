@@ -31,30 +31,6 @@ parameters:
 			path: app/Exports/AdminLandlordWithdrawReportExport.php
 
 		-
-			message: '#^Relation ''gateway'' is not found in App\\Models\\PlanSubscribe model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminSubscriptionExport.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\PlanSubscribe model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminSubscriptionExport.php
-
-		-
-			message: '#^Relation ''gateway'' is not found in App\\Models\\PlanSubscribe model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminSubscriptionReportExport.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\PlanSubscribe model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/AdminSubscriptionReportExport.php
-
-		-
 			message: '#^Relation ''account_info'' is not found in App\\Models\\Withdraw model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
@@ -65,12 +41,6 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Exports/AdminWithdrawRequestExport.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Application\:\:\$file\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ApplicationService.php
 
 		-
 			message: '#^Relation ''landlord'' is not found in App\\Models\\Labor model\.$#'
@@ -138,7 +108,6 @@ parameters:
 			count: 1
 			path: app/Exports/LandlordWithdrawMethodExport.php
 
-
 		-
 			message: '#^Access to an undefined property App\\Models\\PlanSubscribe\:\:\$will_expire\.$#'
 			identifier: property.notFound
@@ -188,6 +157,18 @@ parameters:
 			path: app/Http/Controllers/Admin/LandlordWithdrawReportController.php
 
 		-
+			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\Tenant\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/NotificationController.php
+
+		-
+			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/NotificationController.php
+
+		-
 			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
 			identifier: class.notFound
 			count: 1
@@ -218,42 +199,6 @@ parameters:
 			path: app/Http/Controllers/Admin/RentPaymentGenerateController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\PlanSubscribe\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Admin/SubscriptionController.php
-
-		-
-			message: '#^If condition is always true\.$#'
-			identifier: if.alwaysTrue
-			count: 2
-			path: app/Http/Controllers/Admin/SubscriptionController.php
-
-		-
-			message: '#^Relation ''gateway'' is not found in App\\Models\\PlanSubscribe model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Admin/SubscriptionController.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\PlanSubscribe model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Admin/SubscriptionController.php
-
-		-
-			message: '#^Relation ''gateway'' is not found in App\\Models\\PlanSubscribe model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Admin/SubscriptionReportController.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\PlanSubscribe model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Admin/SubscriptionReportController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$latestMessage\.$#'
 			identifier: property.notFound
 			count: 1
@@ -282,6 +227,12 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 3
 			path: app/Http/Controllers/Admin/TransactionReportController.php
+
+		-
+			message: '#^Parameter \#1 \$ids of method Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany\<Illuminate\\Database\\Eloquent\\Model,Illuminate\\Database\\Eloquent\\Model,Illuminate\\Database\\Eloquent\\Relations\\Pivot,string\>\:\:sync\(\) expects array\|Illuminate\\Database\\Eloquent\\Model\|Illuminate\\Support\\Collection, int\|string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Admin/UserController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Withdraw\:\:\$user\.$#'
@@ -318,211 +269,6 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 6
 			path: app/Http/Controllers/Admin/WithdrawRequestController.php
-
-		-
-			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Admin/NotificationController.php
-
-		-
-			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Admin/NotificationController.php
-
-		-
-			message: '#^Parameter \#1 \$ids of method Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany\<Illuminate\\Database\\Eloquent\\Model,Illuminate\\Database\\Eloquent\\Model,Illuminate\\Database\\Eloquent\\Relations\\Pivot,string\>\:\:sync\(\) expects array\|Illuminate\\Database\\Eloquent\\Model\|Illuminate\\Support\\Collection, int\|string given\.$#'
-			identifier: argument.type
-			count: 2
-			path: app/Http/Controllers/Admin/UserController.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\Favorite model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Api/FavoriteController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Labor\:\:\$landlord\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/LaborController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$property\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/LandlordMaintenanceController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/LandlordMaintenanceController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/LandlordMaintenanceController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/PropertyController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/PropertyController.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\Review model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Api/PropertyController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/ReviewController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/ReviewController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/TenantController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/TenantController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$property\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/TenantMaintenanceController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$tenant\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/TenantMaintenanceController.php
-
-		-
-			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/TenantMaintenanceController.php
-
-		-
-			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/TenantMaintenanceController.php
-
-		-
-			message: '#^Relation ''labor'' is not found in App\\Models\\Maintenance model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Api/TenantMaintenanceController.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\Maintenance model\.$#'
-			identifier: larastan.relationExistence
-			count: 5
-			path: app/Http/Controllers/Api/TenantMaintenanceController.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\Maintenance model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Api/TenantMaintenanceController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Withdraw\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/WithdrawController.php
-
-		-
-			message: '#^Relation ''account_info'' is not found in App\\Models\\Withdraw model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Api/WithdrawController.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\Withdraw model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Api/WithdrawController.php
-
-		-
-			message: '#^Relation ''withdraw'' is not found in App\\Models\\Transaction model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Api/WithdrawController.php
-
-
-		-
-			message: '#^Access to an undefined property App\\Models\\UserMethod\:\:\$withdraw_method\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/WithdrawMethodController.php
-
-		-
-			message: '#^Access to property \$balance on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/WithdrawMethodController.php
-
-		-
-			message: '#^Access to property \$balance on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/WithdrawMethodController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/WithdrawMethodController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/WithdrawMethodController.php
-
-		-
-			message: '#^Parameter \#1 \$json of function json_decode expects string, null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Api/WithdrawMethodController.php
-
-		-
-			message: '#^Relation ''withdraw_method'' is not found in App\\Models\\UserMethod model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/WithdrawMethodController.php
-
-		-
-			message: '#^Variable \$transformedData might not be defined\.$#'
-			identifier: variable.undefined
-			count: 1
-			path: app/Http/Controllers/Api/WithdrawMethodController.php
 
 		-
 			message: '#^Access to property \$email on an unknown class App\\Models\\Api\\Tenant\.$#'
@@ -639,6 +385,120 @@ parameters:
 			path: app/Http/Controllers/Api/Auth/SigninController.php
 
 		-
+			message: '#^Relation ''property'' is not found in App\\Models\\Favorite model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/FavoriteController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Labor\:\:\$landlord\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/LaborController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$property\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/LandlordMaintenanceController.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/LandlordMaintenanceController.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/LandlordMaintenanceController.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PropertyController.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PropertyController.php
+
+		-
+			message: '#^Relation ''tenant'' is not found in App\\Models\\Review model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/PropertyController.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Controllers/Api/ReviewController.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Controllers/Api/ReviewController.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/TenantController.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/TenantController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$property\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/TenantMaintenanceController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$tenant\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/TenantMaintenanceController.php
+
+		-
+			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\Tenant\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Controllers/Api/TenantMaintenanceController.php
+
+		-
+			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\User\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Controllers/Api/TenantMaintenanceController.php
+
+		-
+			message: '#^Relation ''labor'' is not found in App\\Models\\Maintenance model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/TenantMaintenanceController.php
+
+		-
+			message: '#^Relation ''property'' is not found in App\\Models\\Maintenance model\.$#'
+			identifier: larastan.relationExistence
+			count: 5
+			path: app/Http/Controllers/Api/TenantMaintenanceController.php
+
+		-
+			message: '#^Relation ''tenant'' is not found in App\\Models\\Maintenance model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Api/TenantMaintenanceController.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$currency\.$#'
 			identifier: property.notFound
 			count: 1
@@ -657,6 +517,78 @@ parameters:
 			path: app/Http/Controllers/Api/UserController.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Withdraw\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/WithdrawController.php
+
+		-
+			message: '#^Relation ''account_info'' is not found in App\\Models\\Withdraw model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Api/WithdrawController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\Withdraw model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/WithdrawController.php
+
+		-
+			message: '#^Relation ''withdraw'' is not found in App\\Models\\Transaction model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Api/WithdrawController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\UserMethod\:\:\$withdraw_method\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/WithdrawMethodController.php
+
+		-
+			message: '#^Access to property \$balance on an unknown class App\\Models\\Api\\Tenant\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Controllers/Api/WithdrawMethodController.php
+
+		-
+			message: '#^Access to property \$balance on an unknown class App\\Models\\Api\\User\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Controllers/Api/WithdrawMethodController.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/WithdrawMethodController.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/WithdrawMethodController.php
+
+		-
+			message: '#^Parameter \#1 \$json of function json_decode expects string, null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/WithdrawMethodController.php
+
+		-
+			message: '#^Relation ''withdraw_method'' is not found in App\\Models\\UserMethod model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Api/WithdrawMethodController.php
+
+		-
+			message: '#^Variable \$transformedData might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/Http/Controllers/Api/WithdrawMethodController.php
+
+		-
 			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\Tenant\.$#'
 			identifier: class.notFound
 			count: 3
@@ -667,6 +599,24 @@ parameters:
 			identifier: class.notFound
 			count: 3
 			path: app/Http/Controllers/Auth/LoginController.php
+
+		-
+			message: '#^Relation ''labor'' is not found in App\\Models\\Maintenance model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Landlord/DashboardController.php
+
+		-
+			message: '#^Relation ''property'' is not found in App\\Models\\Maintenance model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Landlord/DashboardController.php
+
+		-
+			message: '#^Relation ''tenant'' is not found in App\\Models\\Maintenance model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Landlord/DashboardController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Labor\:\:\$landlord\.$#'
@@ -715,6 +665,18 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 3
 			path: app/Http/Controllers/Landlord/MaintenanceReportController.php
+
+		-
+			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\Tenant\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Landlord/NotificationController.php
+
+		-
+			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Landlord/NotificationController.php
 
 		-
 			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
@@ -771,48 +733,6 @@ parameters:
 			path: app/Http/Controllers/Landlord/WithdrawMethodController.php
 
 		-
-			message: '#^Relation ''labor'' is not found in App\\Models\\Maintenance model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Landlord/DashboardController.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\Maintenance model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Landlord/DashboardController.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\Maintenance model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Landlord/DashboardController.php
-
-		-
-			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Landlord/NotificationController.php
-
-		-
-			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Landlord/NotificationController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Gateway\:\:\$currency\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Relation ''currency'' is not found in App\\Models\\Gateway model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/PaymentController.php
-
-		-
 			message: '#^Method App\\Http\\Middleware\\Authenticate\:\:redirectTo\(\) should return string\|null but return statement is missing\.$#'
 			identifier: return.missing
 			count: 1
@@ -855,18 +775,6 @@ parameters:
 			path: app/Http/Middleware/RedirectIfAuthenticated.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Gateway\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Gateway\>\:\:\$currency\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Library/Billplz.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Gateway\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Gateway\>\:\:\$currency\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Library/FedaPayGateway.php
-
-		-
 			message: '#^Cannot call method generateToken\(\) on resource\.$#'
 			identifier: method.nonObject
 			count: 1
@@ -879,40 +787,10 @@ parameters:
 			path: app/Library/FedaPayGateway.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Gateway\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Gateway\>\:\:\$currency\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Library/Flutterwave.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Gateway\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Gateway\>\:\:\$currency\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Library/Instamojo.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Gateway\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Gateway\>\:\:\$currency\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Library/Mollie.php
-
-		-
 			message: '#^Unreachable statement \- code above always terminates\.$#'
 			identifier: deadCode.unreachable
 			count: 1
 			path: app/Library/Mollie.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Gateway\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Gateway\>\:\:\$currency\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Library/Paystack.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Gateway\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Gateway\>\:\:\$currency\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Library/Razorpay.php
 
 		-
 			message: '#^Access to an undefined property Razorpay\\Api\\Api\:\:\$order\.$#'
@@ -933,34 +811,10 @@ parameters:
 			path: app/Library/Razorpay.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Gateway\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Gateway\>\:\:\$currency\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Library/StripeGateway.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Gateway\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Gateway\>\:\:\$currency\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Library/TapPayment.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Gateway\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Gateway\>\:\:\$currency\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Library/Thawani.php
-
-		-
 			message: '#^Class App\\Library\\Thawani referenced with incorrect case\: App\\Library\\thawani\.$#'
 			identifier: class.nameCase
 			count: 4
 			path: app/Library/Thawani.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Gateway\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Gateway\>\:\:\$currency\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Library/Toyyibpay.php
 
 		-
 			message: '#^Class Illuminate\\Support\\Str referenced with incorrect case\: illuminate\\Support\\Str\.$#'
@@ -1075,6 +929,12 @@ parameters:
 			identifier: class.notFound
 			count: 1
 			path: app/Providers/WebsiteServiceProvider.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Application\:\:\$file\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ApplicationService.php
 
 		-
 			message: '#^Trait App\\Traits\\HasPermission is used zero times and is not analysed\.$#'

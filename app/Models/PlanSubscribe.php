@@ -31,17 +31,26 @@ class PlanSubscribe extends Model
         'notes' => 'json',
     ];
 
-    public function user()
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsTo<Plan, $this>
+     */
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
     }
 
-    public function gateway()
+    /**
+     * @return BelongsTo<Gateway, $this>
+     */
+    public function gateway(): BelongsTo
     {
         return $this->belongsTo(Gateway::class);
     }

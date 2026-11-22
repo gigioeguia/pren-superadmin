@@ -33,6 +33,9 @@ class Gateway extends Model
         'phone_required',
     ];
 
+    /**
+     * @return BelongsTo<Currency, $this>
+     */
     public function currency(): BelongsTo
     {
         return $this->belongsTo(Currency::class, 'currency_id');
