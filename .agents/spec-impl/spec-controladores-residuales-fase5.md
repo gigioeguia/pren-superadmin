@@ -1,7 +1,7 @@
 ---
 id: spec-controladores-residuales-fase5
 titulo: "Residuales < 200: 2ª pasada Property, DashboardService, trait RespondsJson, arch-test (Fase 5 / 5.13, hijo 6)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.13) — DT-C4
 cobertura: Última milla del criterio "< 200 estricto": Admin/PropertyController 225, Landlord/PropertyController 200, Api/LandlordDashboardController 228, Controller.php base 235, y activación del arch-test permanente
@@ -86,10 +86,10 @@ tests/Feature/Dashboard/ApiLandlordDashboardHttpTest.php   # caracterización pr
 ## 7. Criterios de aceptación (Definition of Done)
 
 - [x] `wc -l`: Admin/Property **191**, Landlord/Property **164**, Api/LandlordDashboard **46**, `Controller.php` **14** (< 30).
-- [ ] `ControllersLineLimitArchTest` (U1–U2) y reflexión de rutas (U3) activos y en verde en CI. **Diferido (D1):** requiere hijos 1–5 mergeados; en su lugar aterrizó el guard scoped `RestoredTableActionsSmokeTest` (11 rutas restauradas resuelven + 2 OTP eliminadas).
+- [x] `ControllersLineLimitArchTest` (U1–U2) y reflexión de rutas (U3) activos y en verde. **Evidencia (D1, 2026-11-22):** `tests/Unit/Controllers/ControllersLineLimitArchTest.php` — U1: 377 archivos de controlador < 200 (incluido `Admin/TenantController` 206→**193** tras su 2ª pasada, fuera de la lista de los 12 — desviación D4, con contract test `AdminTenantShowHttpTest` F1 en verde); U2: 0 tx fuera del allowlist de 9 con justificación por entrada + guard bidireccional (desviación D5, decisor). `tests/Feature/Routes/RouteMethodsReflectionTest.php` — U3: 114 rutas muertas→**54** (60 removibles con grep-previo: 52 sin referencias, 7 solo-DemoMode, 1 F17), 54 restantes en allowlist temporal con guard que fuerza su retiro (desviación D6, decisor). **En CI cuando los PRs de la línea apilada mergueen.**
 - [x] Caracterización F1–F2 en verde antes de migrar dashboard ✓; red Property (F3–F6) en verde tras la 2ª pasada ✓ (suite completa 387 passed).
 - [x] `Api/UserController` sin cambio (U4) ✓ — mensajes byte-idénticos tras el trait (shape anidado congelado).
-- [ ] Suite + PHPStan + Pint en verde ✓ (387 passed / 4654 assertions; PHPStan OK, baseline −9 entradas huérfanas, 0 nuevas); `plan-accion.md` 5.13 cerrado — **pendiente de hijos 1–5**.
+- [x] Suite + PHPStan + Pint en verde. **Evidencia (D1):** `php artisan test` **488 passed (5876 assertions)** — 486 de la línea post-hijo-5 + F1 tenant + reflexión U3 + 2 arch-tests − F9/F10 obsoletas; `composer analyse` [OK]; `composer lint` passed. `plan-accion.md` 5.13 actualizado con implementación en rama apilada (merges pendientes) y las 2 deudas nuevas registradas (9 tx, 54 rutas).
 
 ## 8. Riesgos
 
@@ -148,3 +148,21 @@ Implementado en rama `spec/controladores-residuales-fase5-impl`. El decisor apro
 | U3 (reflexión rutas↔métodos) | **114 rutas muertas** confirmadas por reflexión real (coincide con L2 ~110): verbos de `Route::resource` sin `->only()` (~25 declaraciones: transactions, website-settings, comments, incomes, expenses, facilities, amenities…) + verbos api (`apitenant.destroy`, `apisupports.*`, `apilandlord-maintenance.index`) | Requiere el slice de higiene de resources del paraguas + la limpieza por entidad (regla §5.4) que los hijos 2–5 no ejecutaron (sus specs declararon las rutas "intactas" en OUT) |
 
 **Conclusión:** el hijo NO puede cerrarse todavía — el quinto checkbox espera (a) recorte de TenantController < 200, (b) decisión sobre las 9 tx (migrar withdraw/profile/role a services o desviación documentada de la regla U2), (c) slice de higiene de las 114 rutas muertas. Ninguno está en el scope aprobado de este hijo; el estado `Aprobado` (slice anticipado D1) es correcto mientras tanto.
+
+## 12. Implementación D1 (2026-11-22) — rama `spec/controladores-residuales-fase5-d1`
+
+Cierre del diferido con los hijos 1–5 **implementados in-tree** en la línea apilada (merges de PRs pendientes en orden: language→rent→application→landlord→payment→residuales). El decisor resolvió los tres bloqueos en la misma sesión:
+
+| # | Desviación | Detalle |
+|---|-----------|---------|
+| D4 | TenantController (U1) | 206→**193**: 2ª pasada presentación (ver §5) — `show()` eager-load → `TenantService::loadForShow` (verbatim), selects countries/phone_codes a helper. Contract test `AdminTenantShowHttpTest` F1 congelado en verde pre-recorte. El controlador nunca estuvo en la lista de los 12 del paraguas: la regla GLOBAL del arch-test lo capturó. Hallazgo lateral L4: `show` sigue sin gate `tenants-read` (preexistente, fuera de scope). |
+| D5 | Allowlist U2 (9 tx) | La premisa del paraguas §5.2 ("los 8 con tx están todos en scope") era inexacta. Decisor: allowlist documentada con guard bidireccional — la tx NUEVA en cualquier controlador rompe CI; retirar una entrada exige que ya no declare tx. 1 entrada es diseño intencional (Api/Auth/Registration, hijo 4 §11); 8 son deuda lateral OUT (withdraw ×3, profile ×2, role, api user, api security-deposit) rastreadas en plan-accion para migración con specs propios. |
+| D6 | U3 escalonado (114→54) | Decisor: las 54 rutas referenciadas por vistas vivas NO se restauran aquí — son otro PR tan grande como un hijo (mismo bug-clase D2, ~16 entidades). Este slice remueve las **60 limpias** (52 sin referencias — grep-previo sobre vistas/JS/DemoMode/app/routes/tests/lang; 7 solo-DemoMode con limpieza de sus listas; 1 congelada por F17) y activa `RouteMethodsReflectionTest` con allowlist de las 54 + guard que falla si una se restaura y no se retira. Slice futuro: **"restauración CRUD 4.2"** (spec propia, como D2). |
+
+**Adaptaciones de tests de estado congelado (documentadas):** `RouteNamesSmokeTest` F17 (la ruta muerta `apilandlord-maintenance.index` pasa de assertNotNull a assertNull — su método no existía desde siempre; las rutas explicitas de maintenance quedan vivas); `DemoModeTest` F9/F10 eliminadas (protegían rutas que dejan de existir — `admin.transactions.update/destroy`; la cobertura restante de DemoMode sigue verde vía F6/F13, que ahora validan contra las listas limpias).
+
+**Fix flaky preexistente:** `RestoredTableActionsSmokeTest` fallaba intermitente por nombres de faker con apóstrofe ("O'Reilly") — Blade los escapa a `&#39;` en el HTML renderizado y el assert del nombre crudo no matchea. Nombres fijos sin caracteres HTML.
+
+**Evidencia:** suite completa **488 passed (5876 assertions)**; `composer analyse` [OK]; `composer lint` passed; reflexión post-corte = exactamente las 54 del allowlist (0 nuevas, 0 restauradas-sin-retiro).
+
+**Commits:** `4184458` (U1: 2ª pasada TenantController + F1) → `21fcb75` (U3: 60 removidas + DemoMode/F17/F9-F10 + reflexión + arch-tests U1/U2).

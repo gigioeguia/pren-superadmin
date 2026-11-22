@@ -11,7 +11,7 @@ composer install
 php artisan key:generate
 php artisan storage:link          # public/storage symlink is NOT committed
 php artisan migrate --seed        # runs 24 seeders in order (see DatabaseSeeder)
-php artisan test                  # suite completa (371 casos) over dbrentpro_test — see tests/README.md
+php artisan test                  # suite completa (488 casos) over dbrentpro_test — see tests/README.md
 php artisan serve                 # local dev server
 ```
 
@@ -32,6 +32,7 @@ Run a single test: `php artisan test tests/Feature/Auth/WebLoginSmokeTest.php`
 - **Throttle (Fase 3 / 3.7):** rutas sensibles de auth (login, signup, `otp-submit`, `otp-resend`, `forgot-password`, `reset-password` web; `sign-in`, `sign-up`, `submit-otp`, `send-reset-code`, `resend-otp`, `user-password-reset` API) llevan `throttle:5,1`; el límite general de la API es 60/min (`RouteServiceProvider`, antes 2000).
 - API route names: `api` prefix without dot (e.g. `apisign-in`, `apiproperties`).
 - Todas las rutas tienen `->name()` propio (0 nombres `api`/`admin.` de prefijo desnudo, 0 duplicados) — guard `tests/Feature/Routes/RouteNamesSmokeTest.php` (Fase 5 / 5.8).
+- **Toda ruta declarada apunta a un método existente** — guard permanente `tests/Feature/Routes/RouteMethodsReflectionTest.php` (hijo 6 / D1): 0 rutas muertas nuevas; 54 conocidas viven en su allowlist (features rotas desde 4.2, dueño: slice futuro "restauración CRUD 4.2"; el guard fuerza retirarlas al restaurar).
 
 ## Middleware aliases (`app/Http/Kernel.php`)
 
@@ -63,7 +64,7 @@ Desde Fase 5 / 5.7 `App\Support\Options` fija el contrato tipado de las options:
 - **18 entidades migradas a Services** (`app/Services/`): 12 de la Fase 4 (Property, Expense, ExpenseCategory, Income, IncomeCategory, Tenant, SecurityDeposit, RentPayment, RefundRequest, Support, WithdrawMethod, Notification) + Language, Rent, Application, Landlord y Payment/Subscription (Fase 5 / 5.13 hijos 1–5) — sus controladores Admin/Landlord/Api son delgados (<250 líneas) y sin duplicación. El flujo de pagos (3 payment types + 11 gateways + `success` idempotente con `Cache::lock`) vive íntegro en `PaymentService`; el controlador posee sesión/respuestas.
 - La duplicación 3-capas (Admin/Landlord/Api por entidad) persiste en las entidades **no migradas** (withdraw, maintenance, labor, blog/comment…) — deuda lateral fuera del paraguas 5.13 (ver OUT del spec paraguas); payments/subscriptions cerraron con el hijo 5.
 - `filter()`, `deleteAll()`, `status()`, `exportExcel()`, `exportCsv()` live in **one shared trait**: `app/Traits/HasTableActions.php` (spec-trait-acnoo-fase0, DT-C3). Hoy: 29 controladores hacen `use HasTableActions` (Language, RentInvitation, Application y Landlord migraron sus rutas al service en 5.13 hijos 1–4); la migración 4.2 reestructuró el reparto; inventario histórico en `.agents/spec-impl/spec-trait-acnoo-fase0.md` §12. **Changing shared behavior = edit the trait once.** Do not reintroduce copies of these 5 methods.
-- Largest hoy: `Admin/TenantController` (206), `Auth/SignupController` (198), `Admin/PropertyController` (192), `PaymentController` (191, era 464), `Admin/SubscriptionController` (131, delega en `SubscriptionService`).
+- Largest hoy: `Auth/SignupController` (198), `Admin/TenantController` (193, 2ª pasada hijo 6/D1), `Admin/PropertyController` (192), `PaymentController` (191, era 464), `Admin/SubscriptionController` (131, delega en `SubscriptionService`). **Arch-test activo** (`tests/Unit/Controllers/ControllersLineLimitArchTest.php`): todo controlador < 200 y 0 tx fuera del allowlist de 9 documentadas — auto-enforced.
 
 ## Translations
 
