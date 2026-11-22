@@ -38,6 +38,28 @@ jobs:
       - name: Create installer marker
         run: echo '{"marker":"installer"}' > vendor/autoload1.php
 
+      # Sin .env, phpdotenv hace un @file_get_contents('.env') que el
+      # printer de Collision reporta como warning en cada test que
+      # bootea la app (tormenta de ~470 warns espurios, presentes desde
+      # antes del paraguas 5.13 pero invisibles: warnings solos no
+      # rompen el exit code). Un .env vacio silencia la lectura; las
+      # vars criticas viven en phpunit.xml + los env del job.
+      - name: Create empty env file
+        run: touch .env
+
+      # Los unit tests con DatabaseTransactions no migran (convencion
+      # del repo): el esquema debe existir ANTES de la suite — p.ej.
+      # ApplicationServiceTest corre alfabeticamente primero y sobre
+      # una DB vacia falla con 'table not found'.
+      - name: Migrate test database
+        run: php artisan migrate --force
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: dbrentpro_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+
       - name: Run test suite
         run: php artisan test
         env:
