@@ -1,7 +1,7 @@
 ---
 id: spec-service-rent-fase5
 titulo: "Service Rent — unificar RentInvitation web + Api Rent (Fase 5 / 5.13, hijo 2)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.13) — DT-A1, DT-C4
 cobertura: Migración de Rent a app/Services/RentService.php unificando Landlord/RentInvitationController (365) y Api/RentController (290); dueño único del bloque service-charge/SecurityDeposit
@@ -131,11 +131,11 @@ Sin `delete`/`deleteMany` en el contrato: hoy ninguna ruta viva consume borrado 
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `RentService` en verde (U1–U4); `createWithDeposit` firma pública estable para el hijo 3.
-- [ ] Contrato F1–F15 en verde antes de migrar; sigue en verde después.
-- [ ] 2 controladores < 200 líneas, sin `HasTableActions`; 0 ocurrencias de `service-charge` en `RentInvitationController` y `Api/RentController` (la copia de `Api/TenantApplicationController` queda hasta hijo 3; `Admin/ServiceChargeController`/`RentPaymentGenerateController` son usos legítimos fuera de scope).
-- [ ] Rutas vivas `rents/filter|excel|csv` operativas (delegan al service); verbos muertos `rents/create|edit|update|destroy` y api `rent/update|destroy` eliminados con grep previo documentado.
-- [ ] Suite + PHPStan + Pint en verde.
+- [x] `RentService` en verde (U1–U4); `createWithDeposit` firma pública estable para el hijo 3.
+- [x] Contrato F1–F15 en verde antes de migrar; sigue en verde después.
+- [x] 2 controladores < 200 líneas, sin `HasTableActions`; 0 ocurrencias de `service-charge` en `RentInvitationController` y `Api/RentController` (la copia de `Api/TenantApplicationController` queda hasta hijo 3; `Admin/ServiceChargeController`/`RentPaymentGenerateController` son usos legítimos fuera de scope).
+- [x] Rutas vivas `rents/filter|excel|csv` operativas (delegan al service); verbos muertos `rents/create|edit|update|destroy` y api `rent/update|destroy` eliminados con grep previo documentado.
+- [x] Suite + PHPStan + Pint en verde.
 
 ## 8. Riesgos
 
@@ -174,3 +174,35 @@ Auditoría `revisar-spec` previa a la implementación. Hallazgos y resoluciones:
 | H9 | Dados incompletos/redacción: F1 sin `tenant_id`, F13 sin cabecera AJAX, F3 confusa, "reglas por canal donde hoy difieren" sin instancia (store idéntico en ambos canales) | bajo | Catálogo pulido (F1/F3/F13); §5.8 precisa que las reglas de store son idénticas hoy |
 
 **Estado:** `Borrador` → `Aprobado` (decisor autoriza enmendar + aprobar en la misma sesión de revisión, como hijo 1). Implementación gateda por P1 (merge del hijo 1).
+
+### Implementación (2026-11-22) — rama `spec/service-rent-fase5-impl`
+
+**Desviación P1:** implementado apilado sobre la rama del hijo 1 (aún sin mergear a `main`). El orden del paraguas se preserva vía merge de PRs: hijo 1 primero, este PR después.
+
+**Desviación documentada — arrays explícitos en `createWithDeposit`:** los controladores originales pasaban `$request->except('landlord_agreement')` a `Rent::create()`; el service construye un array explícito de 10 claves (misma desviación que hijo 1 §11). Delta observable: payloads crafted con campos `$fillable` extra (`status`, `cancel_info`) ya no aplican en store — ni F1–F15 ni la red existente congelan ese edge, y los 43 sitios `except()` restantes siguen fuera de scope (paraguas §2 OUT).
+
+**Decisión de implementación — `notify_users` con columnas propias:** `[$rent->tenant_id, $rent->landlord_id]` en vez del rodeo original por las relaciones (`$rent->tenant->id`) — ids idénticos (mismas columnas), evita 2 lazy-loads por notificación y elimina los `property.notFound` de larastan sin docblocks.
+
+**`DemoMode` saneado:** su propio lint (f13 de `DemoModeTest`) detectó 4 nombres de ruta huérfanos tras eliminar los verbos muertos (`apirent.update/destroy`, `landlord.rents.update/destroy`) — limpiados de las listas de rutas deshabilitadas; las rutas ya no existen, la protección demo era un no-op latente.
+
+**Modelos tipados:** relaciones de `Rent` (`tenant`/`unit`/`landlord`: `BelongsTo`, `security_deposit`: `HasOne`, `rent_payments`: `HasMany`) y `Unit::rent()` con return type — larastan resuelve las propiedades y los errores congelados mueren; alineado con la convención de `Property`/`SecurityDeposit`.
+
+**Quirk del upload:** `$rent->unit?->facilities` (unit_id nullable, falso-positivo `nullsafe.neverNull` de larastan sobre la propiedad mágica) se resuelve vía `getRelationValue('unit')?->getAttribute(...)` — misma relación ya cargada, mismas casts, sin query extra y sin supresión de linter.
+
+**Quirks preservados (§5.7):** F15 congela la lectura cruzada `?landlord_id=`; F14 la rama `no_paginate` sin scope de landlord; comparación laxa `no_paginate == true` idéntica al original; crash sobre null si falta la option `service-charge` (no se "arregla"); `approved` web sin notificación (F4) vs api con notificación (F5); error-paths por canal según tabla §4 (`SecurityDepositMissing` → web 404 / api 500 no capturada; `Unpaid` → web 400 / api 404 'Rent not found').
+
+**Evidencia DoD:**
+
+| Criterio | Evidencia |
+|---|---|
+| `RentService` U1–U4 | **4 passed** (26 assertions) — cálculo congelado, tx atómica (fallo forzado en 2ª escritura → rollback + sin notificación), notif solo Api, cancel_info persistida |
+| Contrato pre-migración | F1–F15: **15 passed** (106 assertions) contra los controladores originales (commit 78f1699) |
+| Contrato post-migración | F1–F15: **15 passed** tras migrar ambos canales (Api primero, web después, suite verde tras cada paso) |
+| Controladores < 200 | `wc -l` → **139** (antes 365) y **130** (antes 290) |
+| Sin `HasTableActions`/`service-charge`/`DB::` en los 2 controladores | `grep -c` → **0** usos (única mención: docblock de procedencia en `filter()`); `service-charge` queda 1 en `Api/TenantApplicationController` (hijo 3) + usos admin legítimos |
+| Rutas | Vivas: index/store/show/approved/canceled/filter/excel/csv/get-units (F13 200/200/200). Muertas eliminadas: web `rents/create\|edit\|update\|destroy`, api `rent/update\|destroy` (`route:list`); grep previo: única coincidencia `@include('landlord.rents.create')` — partial blade, no ruta |
+| Suite completa | **421 passed (4885 assertions)** — antes 402; 0 fallidos (hijo 1 incluido: rama apilada) |
+| PHPStan (level 5 + baseline congelado) | **[OK] No errors** — baseline saneado **−22 entradas** (10 Api/RentController + 9 RentInvitation + 3 LandlordRentInvitationExport: legacy reemplazado/errores muertos por el tipado); sin entradas nuevas |
+| Pint (preset laravel) | **passed** |
+
+**Estado:** `Aprobado` → `Implementado` (DoD verificado con evidencia; `createWithDeposit` listo para el hijo 3).
