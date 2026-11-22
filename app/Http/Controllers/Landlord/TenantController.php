@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Landlord;
 
 use App\Enums\Channel;
+use App\Exports\LandlordTenantExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\StoreTenantRequest;
 use App\Http\Requests\Tenant\UpdateTenantRequest;
 use App\Models\User;
 use App\Services\TenantService;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TenantController extends Controller
 {
@@ -138,5 +140,32 @@ class TenantController extends Controller
             'message' => 'Selected tenant deleted successfully',
             'redirect' => route('landlord.tenants.index'),
         ]);
+    }
+
+    /**
+     * Rutas restauradas de 4.2 (spec residuales 5.13): shape del trait
+     * (JSON {data} para XHR, redirect si no), filas del service.
+     */
+    public function filter(Request $request)
+    {
+        $tenants = $this->service->listForChannel(Channel::Landlord, auth()->user(), array_merge($request->all(), ['per_page' => 20]));
+
+        if ($request->ajax()) {
+            return response()->json([
+                'data' => view('landlord.tenants.datas', ['tenants' => $tenants])->render(),
+            ]);
+        }
+
+        return redirect(url()->previous());
+    }
+
+    public function exportExcel(Request $request)
+    {
+        return Excel::download(new LandlordTenantExport($request), 'landlord-tenants.xlsx');
+    }
+
+    public function exportCsv(Request $request)
+    {
+        return Excel::download(new LandlordTenantExport($request), 'landlord-tenants.csv');
     }
 }

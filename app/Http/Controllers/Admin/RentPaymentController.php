@@ -3,17 +3,21 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\Channel;
+use App\Exports\AdminRentPaymentExport;
 use App\Http\Controllers\Controller;
 use App\Models\RentPayment;
 use App\Services\RentPaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class RentPaymentController extends Controller
 {
     public function __construct(protected RentPaymentService $service)
     {
-        $this->middleware('permission:rent-payments-read')->only('index');
+        // Gate restaurado pre-4.2: filter/file_download/exportExcel/exportCsv
+        // bajo rent-payments-read (spec residuales 5.13).
+        $this->middleware('permission:rent-payments-read')->only('index', 'filter', 'file_download', 'exportExcel', 'exportCsv');
         $this->middleware('permission:rent-payments-update')->only('approve', 'rejected');
     }
 
@@ -66,5 +70,32 @@ class RentPaymentController extends Controller
             'message' => __('Rent Payment Rejected successfully'),
             'redirect' => route('admin.rent-payments.index'),
         ]);
+    }
+
+    /**
+     * Rutas restauradas de 4.2 (spec residuales 5.13): shape del trait
+     * (JSON {data} para XHR, redirect si no), filas del service.
+     */
+    public function filter(Request $request)
+    {
+        $rent_payments = $this->service->listForChannel(Channel::Admin, auth()->user(), array_merge($request->all(), ['per_page' => 20]));
+
+        if ($request->ajax()) {
+            return response()->json([
+                'data' => view('admin.rent-payment.datas', ['rent_payments' => $rent_payments])->render(),
+            ]);
+        }
+
+        return redirect(url()->previous());
+    }
+
+    public function exportExcel(Request $request)
+    {
+        return Excel::download(new AdminRentPaymentExport, 'rent-payments.xlsx');
+    }
+
+    public function exportCsv(Request $request)
+    {
+        return Excel::download(new AdminRentPaymentExport, 'rent-payments.csv');
     }
 }

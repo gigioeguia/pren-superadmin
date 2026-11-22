@@ -19,7 +19,7 @@ caracterizaciones nuevas): spec del trait de la Fase 0 (Fase 0 / 0.3, DT-C3 —
 ```bash
 php artisan test                        # suite completa
 php artisan test --group=smoke           # solo smoke (todos los de esta suite llevan el grupo implícito por directorio)
-php artisan test --group=characterization # solo tests de caracterización (1)
+php artisan test --group=characterization # solo tests de caracterización (4)
 php artisan test tests/Feature/Auth/     # un dominio
 ```
 
@@ -67,6 +67,9 @@ y el comentario, y actualizar el spec (ver skill `.agents/skills/tests-caracteri
 | Test | Bug caracterizado | Debe fallar tras |
 |------|-------------------|------------------|
 | `LandlordTableActionsSmokeTest::test_delete_all_deletes_foreign_amenities_without_ownership_check` | Seg-5 — `deleteAll` landlord sin ownership check (IDOR bulk) | Fase 2 |
+| `LandlordApplicationHttpTest::test_f10_file_download_web_ignores_type_parameter` | Quirk file_download web — ignora `$type` y sirve siempre `landlord_agreement` (spec hijo 3 §5) | follow-up file_download (fuera de 5.13) |
+| `LandlordApplicationHttpTest::test_f11_file_download_api_reads_missing_file_attribute` | Quirk file_download api — lee `$application->file`, atributo inexistente → null siempre (spec hijo 3 §5) | follow-up file_download (fuera de 5.13) |
+| `SignupAccountHttpTest::test_f12_demo_mode_does_not_block_signup` | Gap DemoMode — signup público no bloqueado en `APP_ENV=demo` (`.analisis/seguridad.md` fila 14, hallazgo H3 de la revisión del hijo 4) | decisión de bloqueo de signup en demo (fuera de 5.13) |
 
 > Nota G2/G4: el 403 observado no lo produce `AdminMiddleware` (que ya dejó
 > pasar al landlord/tenant por el bug de precedencia) sino el middleware Spatie

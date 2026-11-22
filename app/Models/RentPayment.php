@@ -33,6 +33,9 @@ class RentPayment extends Model
         'note',
     ];
 
+    /**
+     * @return BelongsTo<Rent, $this>
+     */
     public function rent(): BelongsTo
     {
         return $this->belongsTo(Rent::class);

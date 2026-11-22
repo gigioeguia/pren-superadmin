@@ -7,12 +7,8 @@ use App\Exports\AdminPropertiesExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Property\StorePropertyRequest;
 use App\Http\Requests\Property\UpdatePropertyRequest;
-use App\Models\Amenity;
 use App\Models\Category;
-use App\Models\Facility;
-use App\Models\HouseType;
 use App\Models\Property;
-use App\Models\User;
 use App\Services\PropertyService;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -47,15 +43,7 @@ class PropertyController extends Controller
 
     public function create()
     {
-        $countries = base_path('lang/countrylist.json');
-        $countries = json_decode(file_get_contents($countries), true);
-        $phone_codes = base_path('lang/phone_code.json');
-        $phone_codes = json_decode(file_get_contents($phone_codes), true);
-        $categories = Category::all();
-        $house_types = HouseType::where('status', 1)->latest()->get();
-        $landlords = User::where('role', 'landlord')->latest()->get();
-
-        return view('admin.properties.create', compact('categories', 'countries', 'house_types', 'phone_codes', 'landlords'));
+        return view('admin.properties.create', $this->service->formOptions(Channel::Admin));
     }
 
     public function store(StorePropertyRequest $request)
@@ -77,23 +65,9 @@ class PropertyController extends Controller
         $property = Property::findOrFail($id);
         $this->authorize('view', $property);
 
-        $property = $this->service->loadForShow($property, Channel::Admin);
-
-        if ($property->category_id == 6) {
-            foreach ($property->units as $unit) {
-                $unitFacilityIds = $unit->facilities ?? [];
-                $unit->setAttribute('facility_names', Facility::whereIn('id', $unitFacilityIds)->pluck('name', 'id'));
-
-                $unitAmenityIds = $unit->amenities ?? [];
-                $unit->setAttribute('amenity_names', Amenity::whereIn('id', $unitAmenityIds)->pluck('name', 'id'));
-            }
-        } else {
-            $facilityIds = $property->propertyDetail->facilities ?? [];
-            $property->facilities = Facility::whereIn('id', $facilityIds)->pluck('name', 'id');
-
-            $amenityIds = $property->propertyDetail->amenities ?? [];
-            $property->amenities = Amenity::whereIn('id', $amenityIds)->pluck('name', 'id');
-        }
+        $property = $this->service->decorateForShow(
+            $this->service->loadForShow($property, Channel::Admin)
+        );
 
         $view = $property->category_id == 6 ? 'admin.properties.unit-view' : 'admin.properties.view';
 
@@ -102,17 +76,10 @@ class PropertyController extends Controller
 
     public function edit(string $id)
     {
-        $phone_codes = base_path('lang/phone_code.json');
-        $phone_codes = json_decode(file_get_contents($phone_codes), true);
-        $countries = base_path('lang/countrylist.json');
-        $countries = json_decode(file_get_contents($countries), true);
-        $categories = Category::all();
-        $house_types = HouseType::where('status', 1)->latest()->get();
         $property = Property::with(['category:id,name', 'propertyDetail', 'units'])->findOrFail($id);
         $this->authorize('update', $property);
-        $landlords = User::where('role', 'landlord')->latest()->get();
 
-        return view('admin.properties.edit', compact('categories', 'house_types', 'phone_codes', 'countries', 'property', 'landlords'));
+        return view('admin.properties.edit', $this->service->formOptions(Channel::Admin, property: $property));
     }
 
     public function update(UpdatePropertyRequest $request, $id)

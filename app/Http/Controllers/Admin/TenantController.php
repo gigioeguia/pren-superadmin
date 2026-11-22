@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\Channel;
 use App\Exceptions\PlanLimitExceededException;
+use App\Exports\AdminTenantExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\StoreTenantRequest;
 use App\Http\Requests\Tenant\UpdateTenantRequest;
@@ -12,6 +13,7 @@ use App\Models\User;
 use App\Services\TenantService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TenantController extends Controller
 {
@@ -32,12 +34,7 @@ class TenantController extends Controller
 
     public function create()
     {
-        $countries = base_path('lang/countrylist.json');
-        $countries = json_decode(file_get_contents($countries), true);
-        $phone_codes = base_path('lang/phone_code.json');
-        $phone_codes = json_decode(file_get_contents($phone_codes), true);
-
-        return view('admin.tenants.create', compact('countries', 'phone_codes'));
+        return view('admin.tenants.create', $this->formSelects());
     }
 
     public function store(StoreTenantRequest $request)
@@ -64,24 +61,7 @@ class TenantController extends Controller
 
     public function show(string $id)
     {
-        $tenant = User::with([
-            'user_details',
-            'rents' => function ($query) {
-                $query->where('status', 'active')
-                    ->select('id', 'property_id', 'tenant_id', 'start_date', 'end_date', 'tenant_agreement');
-            },
-            'rents.security_deposit:id,rent_id,deposit_amount,rent_advance,utility_advance',
-            'rents.property:id,category_id,puid,address_info',
-            'rents.property.category:id,name',
-            'rents.property.propertyDetail:property_id,property_info',
-            'rents.rent_payments' => function ($query) {
-                $query->select('rent_id', 'payment_status')
-                    ->selectRaw('SUM(CASE WHEN payment_status = "paid" THEN subtotal_amount ELSE 0 END) as total_paid_rent')
-                    ->selectRaw('SUM(CASE WHEN payment_status = "paid" AND MONTH(payment_date) = MONTH(CURRENT_DATE()) AND YEAR(payment_date) = YEAR(CURRENT_DATE()) THEN subtotal_amount ELSE 0 END) as this_month_payment')
-                    ->selectRaw('SUM(CASE WHEN payment_status = "unpaid" THEN subtotal_amount ELSE 0 END) as due_rent')
-                    ->groupBy('rent_id', 'payment_status');
-            },
-        ])->findOrFail($id);
+        $tenant = $this->service->loadForShow((int) $id);
 
         return view('admin.tenants.view', compact('tenant'));
     }
@@ -89,12 +69,8 @@ class TenantController extends Controller
     public function edit(string $id)
     {
         $tenant = User::with('user_details')->findOrFail($id);
-        $countries = base_path('lang/countrylist.json');
-        $countries = json_decode(file_get_contents($countries), true);
-        $phone_codes = base_path('lang/phone_code.json');
-        $phone_codes = json_decode(file_get_contents($phone_codes), true);
 
-        return view('admin.tenants.edit', compact('countries', 'tenant', 'phone_codes'));
+        return view('admin.tenants.edit', array_merge($this->formSelects(), compact('tenant')));
     }
 
     public function update(UpdateTenantRequest $request, string $id)
@@ -173,5 +149,45 @@ class TenantController extends Controller
         }
 
         return response()->json(['message' => 'File not found']);
+    }
+
+    /**
+     * Rutas restauradas de 4.2 (spec residuales 5.13): el JS de la vista
+     * espera el shape del trait (JSON {data} para XHR, redirect si no).
+     */
+    public function filter(Request $request)
+    {
+        $tenants = $this->service->listForChannel(Channel::Admin, auth()->user(), array_merge($request->all(), ['per_page' => 20]));
+
+        if ($request->ajax()) {
+            return response()->json([
+                'data' => view('admin.tenants.datas', ['tenants' => $tenants])->render(),
+            ]);
+        }
+
+        return redirect(url()->previous());
+    }
+
+    public function exportExcel(Request $request)
+    {
+        return Excel::download(new AdminTenantExport($request->status), 'tenant.xlsx');
+    }
+
+    public function exportCsv(Request $request)
+    {
+        return Excel::download(new AdminTenantExport($request->status), 'tenants.csv');
+    }
+
+    /**
+     * Selects estáticos de los formularios create/edit (lang/*.json).
+     *
+     * @return array<string, mixed>
+     */
+    private function formSelects(): array
+    {
+        return [
+            'countries' => json_decode((string) file_get_contents(base_path('lang/countrylist.json')), true),
+            'phone_codes' => json_decode((string) file_get_contents(base_path('lang/phone_code.json')), true),
+        ];
     }
 }

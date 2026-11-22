@@ -18,6 +18,33 @@ class TenantService
 {
     use HasUploader;
 
+    /**
+     * Perfil de vista del show admin (spec-controladores-residuales 5.13,
+     * U1): eager loads idénticos al bloque original del controlador,
+     * con los agregados de rent_payments resueltos por SQL.
+     */
+    public function loadForShow(int $tenantId): User
+    {
+        return User::with([
+            'user_details',
+            'rents' => function ($query) {
+                $query->where('status', 'active')
+                    ->select('id', 'property_id', 'tenant_id', 'start_date', 'end_date', 'tenant_agreement');
+            },
+            'rents.security_deposit:id,rent_id,deposit_amount,rent_advance,utility_advance',
+            'rents.property:id,category_id,puid,address_info',
+            'rents.property.category:id,name',
+            'rents.property.propertyDetail:property_id,property_info',
+            'rents.rent_payments' => function ($query) {
+                $query->select('rent_id', 'payment_status')
+                    ->selectRaw('SUM(CASE WHEN payment_status = "paid" THEN subtotal_amount ELSE 0 END) as total_paid_rent')
+                    ->selectRaw('SUM(CASE WHEN payment_status = "paid" AND MONTH(payment_date) = MONTH(CURRENT_DATE()) AND YEAR(payment_date) = YEAR(CURRENT_DATE()) THEN subtotal_amount ELSE 0 END) as this_month_payment')
+                    ->selectRaw('SUM(CASE WHEN payment_status = "unpaid" THEN subtotal_amount ELSE 0 END) as due_rent')
+                    ->groupBy('rent_id', 'payment_status');
+            },
+        ])->findOrFail($tenantId);
+    }
+
     public function listForChannel(Channel $channel, ?User $actor, array $filters = []): LengthAwarePaginator
     {
         $perPage = (int) ($filters['per_page'] ?? 10);

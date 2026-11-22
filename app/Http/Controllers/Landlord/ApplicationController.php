@@ -2,102 +2,73 @@
 
 namespace App\Http\Controllers\Landlord;
 
+use App\Enums\Channel;
+use App\Exceptions\ApplicationAgreementMissingException;
+use App\Exceptions\ApplicationAgreementSignedException;
+use App\Exceptions\ApplicationDepositUnpaidException;
 use App\Exports\LandlordApplicationExport;
-use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
-use App\Models\Property;
-use App\Models\SecurityDeposit;
-use App\Traits\HasTableActions;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\ApplicationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ApplicationController extends Controller
 {
-    use HasTableActions;
-    use HasUploader;
+    public function __construct(protected ApplicationService $applications) {}
 
     public function index()
     {
-        $property = Property::where('landlord_id', auth()->id())->get('id');
-        $applications = Application::with(['tenant:id,name', 'property:id,puid', 'property.propertyDetail:property_id,property_info', 'unit:id,unit_name'])->whereIn('property_id', $property)->latest()->paginate(10);
+        $applications = $this->applications->listForChannel(Channel::Landlord, auth()->user());
 
         return view('landlord.application.index', compact('applications'));
     }
 
     public function show(string $id)
     {
-        $application = Application::with(['tenant',
-            'tenant.user_details',
-            'property:id,puid,category_id,address_info,rent_info,utility_deposit,security_deposit,late_fee,late_fee_after_days,landlord_id',
-            'property.propertyDetail:property_id,property_type,property_info',
-            'property.category:id,name',
-            'property.landlord:id,name,phone,email',
-            'property.rent:property_id,id',
-            'unit:id,monthly_rent,utility_deposit,security_deposit,late_fee,late_fee_after_days'])->findOrFail($id);
-
+        $application = Application::findOrFail($id);
         $this->authorize('view', $application);
+        $application = $this->applications->loadForShow($application, Channel::Landlord);
 
         return view('landlord.application.view', compact('application'));
     }
 
     public function processing(Request $request, string $id)
     {
-        $application_process = Application::findOrFail($id);
-        $this->authorize('process', $application_process);
+        // Orden preservado del canal web: findOrFail → authorize → validate.
+        $application = Application::findOrFail($id);
+        $this->authorize('process', $application);
 
-        if ($application_process) {
+        $request->validate([
+            'landlord_agreement' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
+        ]);
 
-            $request->validate([
-                'landlord_agreement' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
-            ]);
+        $this->applications->processing($application, $request->file('landlord_agreement'), Channel::Landlord);
 
-            $application_process->update([
-                'landlord_agreement' => $request->landlord_agreement ? $this->upload($request, 'landlord_agreement') : null,
-                'status' => 1,
-            ]);
-
-            return response()->json([
-                'message' => 'Application processes successfully',
-                'redirect' => route('landlord.tenant-applications.show', $application_process->id),
-            ]);
-        } else {
-            return response()->json(['message' => 'Application not found'], 404);
-        }
+        return response()->json([
+            'message' => 'Application processes successfully',
+            'redirect' => route('landlord.tenant-applications.show', $application->id),
+        ]);
     }
 
     public function approved(string $id)
     {
-        $approve_application = Application::findOrFail($id);
-        $this->authorize('approve', $approve_application);
-        $security_deposit = SecurityDeposit::where('property_id', $approve_application->property_id)
-            ->where('unit_id', $approve_application->unit_id)
-            ->first();
+        $application = Application::findOrFail($id);
+        $this->authorize('approve', $application);
 
-        if (! empty($approve_application->tenant_agreement) && Storage::exists($approve_application->tenant_agreement)) {
-            if ($security_deposit->status == 'paid') {
-                $approve_application->update([
-                    'status' => 2,
-                ]);
-
-                $security_deposit->rent()->update([
-                    'status' => 'active',
-                ]);
-
-                return response()->json([
-                    'message' => 'Application approved successfully',
-                    'redirect' => route('landlord.tenant-applications.show', $approve_application->id),
-                ]);
-            } else {
-                return response()->json(['message' => 'Application Unpaid'], 404);
-            }
-        } else {
-            return response()->json([
-                'message' => 'Tenant agreement file does not exist',
-            ], 404);
+        try {
+            $this->applications->approve($application, Channel::Landlord);
+        } catch (ApplicationAgreementMissingException $e) {
+            return response()->json(['message' => $e->getMessage()], 404);
+        } catch (ApplicationDepositUnpaidException) {
+            return response()->json(['message' => 'Application Unpaid'], 404);
         }
+
+        return response()->json([
+            'message' => 'Application approved successfully',
+            'redirect' => route('landlord.tenant-applications.show', $application->id),
+        ]);
     }
 
     public function rejected(Request $request, string $id)
@@ -106,27 +77,20 @@ class ApplicationController extends Controller
             'rejected_cause' => 'required|string|max:255',
         ]);
 
-        $application_reject = Application::findOrFail($id);
-        $this->authorize('reject', $application_reject);
-        if (empty($application_reject->tenant_agreement) || ! Storage::exists($application_reject->tenant_agreement)) {
-            if ($application_reject) {
-                $application_reject->update([
-                    'rejected_cause' => $request->rejected_cause,
-                    'status' => 3,
-                ]);
+        $application = Application::findOrFail($id);
+        $this->authorize('reject', $application);
 
-                return response()->json([
-                    'message' => 'Application rejected successfully',
-                    'redirect' => route('landlord.tenant-applications.show', $application_reject->id),
-                ]);
-            } else {
-                return response()->json(['message' => 'Application not found'], 404);
-            }
-        } else {
-            return response()->json([
-                'message' => 'Application cannot be rejected because a tenant agreement already exists.',
-            ]);
+        try {
+            $this->applications->reject($application, $request->input('rejected_cause'), Channel::Landlord);
+        } catch (ApplicationAgreementSignedException $e) {
+            // Quirk preservado (tabla §4): el canal web responde 200.
+            return response()->json(['message' => $e->getMessage()]);
         }
+
+        return response()->json([
+            'message' => 'Application rejected successfully',
+            'redirect' => route('landlord.tenant-applications.show', $application->id),
+        ]);
     }
 
     public function file_download(string $id, string $type)
@@ -134,79 +98,43 @@ class ApplicationController extends Controller
         $application = Application::findOrFail($id);
         $this->authorize('fileDownload', $application);
 
-        $filePath = $type === 'landlord' ? $application->landlord_agreement : $application->tenant_agreement;
+        $filePath = $this->applications->fileDownload($application, Channel::Landlord, $type);
 
-        if (is_null($application->landlord_agreement)) {
+        if (is_null($filePath)) {
             return response()->json([
                 'message' => 'File not found',
             ]);
         }
-
-        $filePath = $application->landlord_agreement;
 
         if (Storage::exists($filePath)) {
             return Storage::download($filePath);
         }
     }
 
-    protected function model(): string
+    /**
+     * Antes servido por HasTableActions; ahora delega al service
+     * (spec §5.4) y renderiza la misma vista de filas.
+     */
+    public function filter(Request $request)
     {
-        return Application::class;
+        $rows = $this->applications->filterForLandlord(auth()->id(), $request->only(['search', 'per_page']));
+
+        if ($request->ajax()) {
+            return response()->json([
+                'data' => view('landlord.application.datas', ['applications' => $rows])->render(),
+            ]);
+        }
+
+        return redirect(url()->previous());
     }
 
-    protected function query(Request $request): Builder
+    public function exportExcel(Request $request)
     {
-        $property = Property::where('landlord_id', auth()->id())->get('id');
-
-        return Application::with(['tenant:id,name', 'property:id,puid', 'property.propertyDetail:property_id,property_info', 'unit:id,unit_name'])
-            ->whereIn('property_id', $property)
-            ->when($request->input('search'), function ($q) use ($request) {
-                $q->where(function ($q) use ($request) {
-                    $search = $request->input('search');
-                    $q->whereHas('tenant', function ($query) use ($search) {
-                        $query->where('name', 'like', '%'.$search.'%');
-                    })
-                        ->orWhereHas('property', function ($query) use ($search) {
-                            $query->where('puid', 'like', '%'.$search.'%');
-                        })
-                        ->orWhereHas('unit', function ($query) use ($search) {
-                            $query->where('unit_name', 'like', '%'.$search.'%');
-                        })
-                        ->orWhereHas('property.propertyDetail', function ($query) use ($search) {
-                            $query->where('property_info->property_title', 'like', '%'.$search.'%');
-                        });
-                });
-            })
-            ->latest();
+        return Excel::download(new LandlordApplicationExport, 'landlord-applications.xlsx');
     }
 
-    protected function view(): string
+    public function exportCsv(Request $request)
     {
-        return 'landlord.application.datas';
-    }
-
-    protected function viewData(LengthAwarePaginator $rows): array
-    {
-        return ['applications' => $rows];
-    }
-
-    protected function perPage(): int
-    {
-        return 20;
-    }
-
-    protected function export(Request $request): object
-    {
-        return new LandlordApplicationExport;
-    }
-
-    protected function excelFilename(): string
-    {
-        return 'landlord-applications';
-    }
-
-    protected function csvFilename(): string
-    {
-        return 'landlord-applications';
+        return Excel::download(new LandlordApplicationExport, 'landlord-applications.csv');
     }
 }

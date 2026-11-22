@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Landlord;
 
 use App\Enums\Channel;
+use App\Exports\LandlordRentPaymentExport;
 use App\Http\Controllers\Controller;
 use App\Models\RentPayment;
 use App\Services\RentPaymentService;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class RentPaymentController extends Controller
 {
@@ -32,5 +34,19 @@ class RentPaymentController extends Controller
         $rent_payments = $this->service->listForChannel(Channel::Landlord, auth()->user(), array_merge($request->all(), ['per_page' => $request->per_page ?? 20]));
 
         return view('landlord.rent-payments.datas', ['rent_payments' => $rent_payments]);
+    }
+
+    /**
+     * Rutas restauradas de 4.2 (spec residuales 5.13): filenames verbatim
+     * de los hooks de export pre-4.2.
+     */
+    public function exportExcel(Request $request)
+    {
+        return Excel::download(new LandlordRentPaymentExport, 'landlord-rent-payments.xlsx');
+    }
+
+    public function exportCsv(Request $request)
+    {
+        return Excel::download(new LandlordRentPaymentExport, 'landlord-rent-payments.csv');
     }
 }

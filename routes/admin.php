@@ -10,7 +10,7 @@ Route::get('/account-data', [Admin\AdminDashboardController::class, 'account_cha
 
 Route::resource('profile', Admin\ProfileController::class)->only('index', 'update');
 
-Route::resource('users', Admin\UserController::class);
+Route::resource('users', Admin\UserController::class)->except('show');
 Route::post('users/filter', [Admin\UserController::class, 'filter'])->name('users.filter');
 Route::post('users/status/{id}', [Admin\UserController::class, 'status'])->name('users.status');
 Route::post('users/delete-all', [Admin\UserController::class, 'deleteAll'])->name('users.delete-all');
@@ -27,7 +27,7 @@ Route::get('properties-csv', [Admin\PropertyController::class, 'exportCsv'])->na
 Route::get('properties/get-facilities/{landlordId}', [Admin\PropertyController::class, 'getFacilities'])->name('properties.get-facilities');
 Route::get('properties/get-amenities/{landlordId}', [Admin\PropertyController::class, 'getAmenities'])->name('properties.get-amenities');
 
-Route::resource('landlords', Admin\LandlordController::class);
+Route::resource('landlords', Admin\LandlordController::class)->except('show');
 Route::post('landlords/filter', [Admin\LandlordController::class, 'filter'])->name('landlords.filter');
 Route::post('landlords/delete-all', [Admin\LandlordController::class, 'deleteAll'])->name('landlords.delete-all');
 Route::get('landlords-excel', [Admin\LandlordController::class, 'exportExcel'])->name('landlords.excel');
@@ -36,13 +36,11 @@ Route::get('landlords-csv', [Admin\LandlordController::class, 'exportCsv'])->nam
 Route::resource('tenants', Admin\TenantController::class);
 Route::post('tenants/filter', [Admin\TenantController::class, 'filter'])->name('tenants.filter');
 Route::post('tenants/delete-all', [Admin\TenantController::class, 'deleteAll'])->name('tenants.delete-all');
-Route::post('tenants/otp-submit', [Admin\TenantController::class, 'submitOtp'])->name('tenants.otp-submit');
-Route::post('tenants/otp-resend', [Admin\TenantController::class, 'otpResend'])->name('tenants.otp-resend');
 Route::get('tenant/excel', [Admin\TenantController::class, 'exportExcel'])->name('tenants.excel');
 Route::get('tenant/csv', [Admin\TenantController::class, 'exportCsv'])->name('tenants.csv');
 Route::get('tenant/file-download/{id}', [Admin\TenantController::class, 'file_download'])->name('tenants.file-download');
 
-Route::resource('transactions', Admin\TransactionController::class);
+Route::resource('transactions', Admin\TransactionController::class)->only('index');
 Route::post('transactions/filter', [Admin\TransactionController::class, 'filter'])->name('transactions.filter');
 Route::get('transactions-excel', [Admin\TransactionController::class, 'exportExcel'])->name('transactions.excel');
 Route::get('transactions-csv', [Admin\TransactionController::class, 'exportCsv'])->name('transactions.csv');
@@ -52,7 +50,7 @@ Route::resource('gateways', Admin\GatewayController::class)->only('index', 'upda
 // Route::resource('banner', Admin\BannerController::class)->only(['index', 'create', 'update']);
 Route::resource('service-charges', Admin\ServiceChargeController::class)->only('index', 'update');
 
-Route::resource('refund-reason', Admin\RefundReasonController::class);
+Route::resource('refund-reason', Admin\RefundReasonController::class)->except('show');
 Route::post('refund-reason/filter', [Admin\RefundReasonController::class, 'filter'])->name('refund-reason.filter');
 Route::post('refund-reason/delete-all', [Admin\RefundReasonController::class, 'deleteAll'])->name('refund-reason.delete-all');
 Route::post('refund-reason/status/{id}', [Admin\RefundReasonController::class, 'status'])->name('refund-reason.status');
@@ -60,25 +58,25 @@ Route::post('refund-reason/status/{id}', [Admin\RefundReasonController::class, '
 Route::resource('plans', Admin\PlanController::class)->except('show');
 
 // House Type
-Route::resource('house-types', Admin\HouseTypeController::class);
+Route::resource('house-types', Admin\HouseTypeController::class)->except('show');
 Route::post('house-types/filter', [Admin\HouseTypeController::class, 'filter'])->name('house-types.filter');
 Route::post('house-types/delete-all', [Admin\HouseTypeController::class, 'deleteAll'])->name('house-types.delete-all');
 Route::post('house-types/status/{id}', [Admin\HouseTypeController::class, 'status'])->name('house-types.status');
 
 // Facility
-Route::resource('facilities', Admin\FacilityController::class);
+Route::resource('facilities', Admin\FacilityController::class)->except('show');
 Route::post('facilities/filter', [Admin\FacilityController::class, 'filter'])->name('facilities.filter');
 Route::post('facilities/delete-all', [Admin\FacilityController::class, 'deleteAll'])->name('facilities.delete-all');
 Route::post('facilities/status/{id}', [Admin\FacilityController::class, 'status'])->name('facilities.status');
 
 // Amenity
-Route::resource('amenities', Admin\AmenityController::class);
+Route::resource('amenities', Admin\AmenityController::class)->except('show');
 Route::post('amenities/filter', [Admin\AmenityController::class, 'filter'])->name('amenities.filter');
 Route::post('amenities/delete-all', [Admin\AmenityController::class, 'deleteAll'])->name('amenities.delete-all');
 Route::post('amenities/status/{id}', [Admin\AmenityController::class, 'status'])->name('amenities.status');
 
 // Withdrawal Method
-Route::resource('withdraw-methods', Admin\WithdrawMethodController::class);
+Route::resource('withdraw-methods', Admin\WithdrawMethodController::class)->except('show');
 Route::post('withdraw-methods/status/{id}', [Admin\WithdrawMethodController::class, 'status'])->name('withdraw-methods.status');
 Route::post('withdraw-methods/filter', [Admin\WithdrawMethodController::class, 'filter'])->name('withdraw-methods.filter');
 Route::post('withdraw-methods/delete-all', [Admin\WithdrawMethodController::class, 'deleteAll'])->name('withdraw-methods.delete-all');
@@ -86,7 +84,7 @@ Route::get('withdraw-methods-excel', [Admin\WithdrawMethodController::class, 'ex
 Route::get('withdraw-methods-csv', [Admin\WithdrawMethodController::class, 'exportCsv'])->name('withdraw-methods.csv');
 
 // Withdrawal
-Route::resource('withdraw-request', Admin\WithdrawRequestController::class)->only('index', 'show', 'store', 'reject');
+Route::resource('withdraw-request', Admin\WithdrawRequestController::class)->only('index', 'show');
 Route::post('withdraw-request/filter', [Admin\WithdrawRequestController::class, 'filter'])->name('withdraw-request.filter');
 Route::post('withdraw-request/reject/{id}', [Admin\WithdrawRequestController::class, 'reject'])->name('withdraw.reject');
 Route::post('withdraw-request/approve/{id}', [Admin\WithdrawRequestController::class, 'approve'])->name('withdraw.approve');
@@ -109,10 +107,10 @@ Route::get('security-deposits/file-download/{id}', [Admin\SecurityDepositControl
 Route::get('security-deposits-excel', [Admin\SecurityDepositController::class, 'exportExcel'])->name('security-deposits.excel');
 Route::get('security-deposits-csv', [Admin\SecurityDepositController::class, 'exportCsv'])->name('security-deposits.csv');
 
-Route::resource('rent-payment-generate', Admin\RentPaymentGenerateController::class);
+Route::resource('rent-payment-generate', Admin\RentPaymentGenerateController::class)->only('index', 'store');
 
 // Reminder Method
-Route::resource('reminder-messages', Admin\ReminderMessageController::class)->except('show');
+Route::resource('reminder-messages', Admin\ReminderMessageController::class)->only('index', 'store', 'update', 'destroy');
 
 // Roles & Permissions
 Route::resource('roles', Admin\RoleController::class)->except('show');
@@ -188,21 +186,19 @@ Route::post('incomes/filter', [Admin\IncomeController::class, 'filter'])->name('
 Route::post('incomes/delete-all', [Admin\IncomeController::class, 'deleteAll'])->name('incomes.delete-all');
 Route::get('incomes-excel', [Admin\IncomeController::class, 'exportExcel'])->name('incomes.excel');
 Route::get('incomes-csv', [Admin\IncomeController::class, 'exportCsv'])->name('incomes.csv');
-Route::post('incomes/status/{id}', [Admin\IncomeController::class, 'status'])->name('incomes.status');
 
 // Expenses Category
-Route::resource('expense-categories', Admin\ExpenseCategoryController::class);
+Route::resource('expense-categories', Admin\ExpenseCategoryController::class)->except('show');
 Route::post('expense-categories/filter', [Admin\ExpenseCategoryController::class, 'filter'])->name('expense-categories.filter');
 Route::post('expense-categories/delete-all', [Admin\ExpenseCategoryController::class, 'deleteAll'])->name('expense-categories.delete-all');
 Route::post('expense-categories/status/{id}', [Admin\ExpenseCategoryController::class, 'status'])->name('expense-categories.status');
 
 // Expenses
-Route::resource('expenses', Admin\ExpenseController::class);
+Route::resource('expenses', Admin\ExpenseController::class)->except('show');
 Route::post('expenses/filter', [Admin\ExpenseController::class, 'filter'])->name('expenses.filter');
 Route::post('expenses/delete-all', [Admin\ExpenseController::class, 'deleteAll'])->name('expenses.delete-all');
 Route::get('expenses-excel', [Admin\ExpenseController::class, 'exportExcel'])->name('expenses.excel');
 Route::get('expenses-csv', [Admin\ExpenseController::class, 'exportCsv'])->name('expenses.csv');
-Route::post('expenses/status/{id}', [Admin\ExpenseController::class, 'status'])->name('expenses.status');
 
 // Message
 Route::resource('messages', Admin\MessageController::class)->only('index', 'destroy');
@@ -210,7 +206,7 @@ Route::post('messages/filter', [Admin\MessageController::class, 'filter'])->name
 Route::post('messages/delete-all', [Admin\MessageController::class, 'deleteAll'])->name('messages.delete-all');
 
 // Front CMS
-Route::resource('website-settings', Admin\WebSettingController::class);
+Route::resource('website-settings', Admin\WebSettingController::class)->only('index', 'update');
 
 // Term And Condition Controller
 Route::resource('term-conditions', Admin\TermConditionController::class)->only('index', 'store');
@@ -222,28 +218,28 @@ Route::resource('testimonials', Admin\TestimonialController::class)->except('sho
 Route::post('testimonials/filter', [Admin\TestimonialController::class, 'filter'])->name('testimonials.filter');
 Route::post('testimonials/delete-all', [Admin\TestimonialController::class, 'deleteAll'])->name('testimonials.delete-all');
 
-Route::resource('features', Admin\FeatureController::class);
+Route::resource('features', Admin\FeatureController::class)->except('show');
 Route::post('features/filter', [Admin\FeatureController::class, 'filter'])->name('features.filter');
 Route::post('features/status/{id}', [Admin\FeatureController::class, 'status'])->name('features.status');
 Route::post('features/delete-all', [Admin\FeatureController::class, 'deleteAll'])->name('features.delete-all');
 
-Route::resource('clients', Admin\ClientController::class);
+Route::resource('clients', Admin\ClientController::class)->except('show');
 Route::post('clients/filter', [Admin\ClientController::class, 'filter'])->name('clients.filter');
 Route::post('clients/status/{id}', [Admin\ClientController::class, 'status'])->name('clients.status');
 Route::post('clients/delete-all', [Admin\ClientController::class, 'deleteAll'])->name('clients.delete-all');
 
-Route::resource('blogs', Admin\BlogController::class);
+Route::resource('blogs', Admin\BlogController::class)->except('show');
 Route::post('blogs/filter', [Admin\BlogController::class, 'filter'])->name('blogs.filter');
 Route::post('blogs/status/{id}', [Admin\BlogController::class, 'status'])->name('blogs.status');
 Route::post('blogs/delete-all', [Admin\BlogController::class, 'deleteAll'])->name('blogs.delete-all');
 Route::get('blogs/comments/{id}', [Admin\BlogController::class, 'filterComment'])->name('blogs.filter.comment');
 
-Route::resource('highlights', Admin\HighlightController::class);
+Route::resource('highlights', Admin\HighlightController::class)->except('show');
 Route::post('highlights/filter', [Admin\HighlightController::class, 'filter'])->name('highlights.filter');
 Route::post('highlights/status/{id}', [Admin\HighlightController::class, 'status'])->name('highlights.status');
 Route::post('highlights/delete-all', [Admin\HighlightController::class, 'deleteAll'])->name('highlights.delete-all');
 
-Route::resource('comments', Admin\CommentController::class);
+Route::resource('comments', Admin\CommentController::class)->only('destroy');
 Route::post('comments/delete-all', [Admin\CommentController::class, 'deleteAll'])->name('comments.delete-all');
 Route::post('comments/filter', [Admin\CommentController::class, 'filter'])->name('comments.filter');
 

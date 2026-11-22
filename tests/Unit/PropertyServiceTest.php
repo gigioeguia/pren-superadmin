@@ -5,12 +5,15 @@ namespace Tests\Unit;
 use App\Enums\Channel;
 use App\Exceptions\PlanLimitExceededException;
 use App\Exceptions\PropertyRentedException;
+use App\Models\Amenity;
 use App\Models\Category;
+use App\Models\Facility;
 use App\Models\Plan;
 use App\Models\PlanSubscribe;
 use App\Models\Property;
 use App\Models\PropertyDetail;
 use App\Models\Rent;
+use App\Models\Unit;
 use App\Services\PropertyService;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -258,5 +261,55 @@ class PropertyServiceTest extends TestCase
         $result = $this->service->updateStatus($property, true);
 
         $this->assertSame('1', (string) $result->status);
+    }
+
+    public function test_u17_decorate_for_show_sets_unit_names_for_unit_category(): void
+    {
+        // Arrange
+        $landlord = $this->createLandlord();
+        $category = new Category(['name' => 'Condominium', 'status' => 1]);
+        $category->id = 6; // la rama unit del decorado exige category_id == 6
+        $category->save();
+        $property = Property::factory()->create(['landlord_id' => $landlord->id, 'category_id' => $category->id]);
+        $facility = Facility::create(['name' => 'Lift', 'landlord_id' => $landlord->id, 'status' => 1]);
+        $amenity = Amenity::create(['name' => 'Wifi', 'landlord_id' => $landlord->id, 'status' => 1]);
+        Unit::create([
+            'property_id' => $property->id,
+            'unit_name' => 'A-1',
+            'facilities' => [$facility->id],
+            'amenities' => [$amenity->id],
+        ]);
+
+        // Act
+        $decorated = $this->service->decorateForShow($property->load('units'));
+
+        // Assert
+        $unit = $decorated->units->first();
+        $this->assertSame([$facility->id => 'Lift'], $unit->facility_names->toArray());
+        $this->assertSame([$amenity->id => 'Wifi'], $unit->amenity_names->toArray());
+    }
+
+    public function test_u18_decorate_for_show_sets_property_names_for_single_category(): void
+    {
+        // Arrange
+        $landlord = $this->createLandlord();
+        $category = new Category(['name' => 'Apartment', 'status' => 1]);
+        $category->id = 1; // categoría simple (distinta de la rama unit 6)
+        $category->save();
+        $property = Property::factory()->create(['landlord_id' => $landlord->id, 'category_id' => $category->id]);
+        $facility = Facility::create(['name' => 'Pool', 'landlord_id' => $landlord->id, 'status' => 1]);
+        $amenity = Amenity::create(['name' => 'Gym', 'landlord_id' => $landlord->id, 'status' => 1]);
+        PropertyDetail::factory()->create([
+            'property_id' => $property->id,
+            'facilities' => [$facility->id],
+            'amenities' => [$amenity->id],
+        ]);
+
+        // Act
+        $decorated = $this->service->decorateForShow($property->load('propertyDetail'));
+
+        // Assert
+        $this->assertSame([$facility->id => 'Pool'], $decorated->facilities->toArray());
+        $this->assertSame([$amenity->id => 'Gym'], $decorated->amenities->toArray());
     }
 }

@@ -2,23 +2,22 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\Channel;
 use App\Exports\AdminSubscriptionExport;
 use App\Http\Controllers\Controller;
 use App\Models\PlanSubscribe;
-use App\Models\Transaction;
-use App\Models\User;
+use App\Services\SubscriptionService;
 use App\Traits\HasTableActions;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class SubscriptionController extends Controller
 {
     use HasTableActions;
 
-    public function __construct()
+    public function __construct(protected SubscriptionService $subscriptions)
     {
         $this->middleware('permission:subscriptions-read')->only('index', 'filter', 'file_download', 'getInvoice', 'exportExcel', 'exportCsv');
         $this->middleware('permission:subscriptions-update')->only('reject', 'paid');
@@ -26,7 +25,7 @@ class SubscriptionController extends Controller
 
     public function index()
     {
-        $subscriptions = PlanSubscribe::with(['user:id,name,will_expire', 'plan:id,subscriptionName', 'gateway:id,name'])->latest()->paginate(10);
+        $subscriptions = $this->subscriptions->listForChannel(Channel::Admin);
 
         return view('admin.subscriptions.index', compact('subscriptions'));
     }
@@ -37,22 +36,12 @@ class SubscriptionController extends Controller
             'notes' => 'required|string|max:255',
         ]);
 
-        $reject = PlanSubscribe::findOrFail($id);
+        $this->subscriptions->reject(PlanSubscribe::findOrFail($id), (string) $request->input('notes'));
 
-        if ($reject) {
-
-            $reject->update([
-                'payment_status' => 'rejected',
-                'notes' => $request->notes,
-            ]);
-
-            return response()->json([
-                'message' => 'Subscription rejected successfully',
-                'redirect' => route('admin.subscriptions.index'),
-            ]);
-        } else {
-            return response()->json(['message' => 'request not found'], 404);
-        }
+        return response()->json([
+            'message' => 'Subscription rejected successfully',
+            'redirect' => route('admin.subscriptions.index'),
+        ]);
     }
 
     public function paid(Request $request, string $id)
@@ -61,65 +50,35 @@ class SubscriptionController extends Controller
             'notes' => 'required|string|max:255',
         ]);
 
-        $subscribe = PlanSubscribe::findOrFail($id);
+        $subscription = PlanSubscribe::findOrFail($id);
 
-        if ($subscribe) {
-            DB::beginTransaction();
-            try {
+        try {
+            $this->subscriptions->paid($subscription, (string) $request->input('notes'), (int) auth()->id());
+        } catch (\Exception $e) {
+            report($e);
 
-                $subscribe->update([
-                    'payment_status' => 'paid',
-                    'notes' => $request->notes,
-                ]);
-
-                // Q14 (spec 5.11): instancia tipada + forceFill en vez del mass
-                // update vía relación — bajo contrato fillable y dispara
-                // UserObserver (invalidación estructural de plan-data-{user_id},
-                // gap P5 de 4.9).
-                User::findOrFail($subscribe->user_id)->forceFill([
-                    'subscriptionDate' => now(),
-                    'plan_subscribe_id' => $subscribe->id,
-                    'will_expire' => now()->addDays($subscribe->plan->duration ?? ''),
-                ])->save();
-
-                Transaction::create([
-                    'paid_by' => $subscribe->user_id,
-                    'received_by' => auth()->id(),
-                    'gateway_id' => $subscribe->gateway_id,
-                    'plan_subscribe_id' => $subscribe->id,
-                    'date' => today(),
-                    'amount' => $subscribe->price,
-                    'type' => 'credit',
-                    'payment_method' => $subscribe->gateway->name ?? null,
-                    'payment_type' => 'subscription',
-                ]);
-
-                DB::commit();
-
-                sendNotification($subscribe->id, notify_users([$subscribe->user->id]), admin_url: route('admin.subscriptions.index', ['id' => $subscribe->id]), admin_msg: __('A new subscription has been activated.'), landlord_msg: __('Your subscription has been successfully activated. Enjoy the benefits!'));
-
-                return response()->json([
-                    'message' => 'Subscription paid successfully',
-                    'redirect' => route('admin.subscriptions.index'),
-                ]);
-            } catch (\Exception) {
-                DB::rollBack();
-
-                return response()->json(['message' => 'Something Went wrong!'], 404);
-            }
-        } else {
-            return response()->json(['message' => 'request not found'], 404);
+            return response()->json(['message' => 'Something Went wrong!'], 404);
         }
+
+        sendNotification(
+            $subscription->id,
+            notify_users([$subscription->user->id]),
+            admin_url: route('admin.subscriptions.index', ['id' => $subscription->id]),
+            admin_msg: __('A new subscription has been activated.'),
+            landlord_msg: __('Your subscription has been successfully activated. Enjoy the benefits!')
+        );
+
+        return response()->json([
+            'message' => 'Subscription paid successfully',
+            'redirect' => route('admin.subscriptions.index'),
+        ]);
     }
 
     public function file_download(string $id)
     {
-        $subscription = PlanSubscribe::findOrFail($id);
+        $filePath = $this->subscriptions->fileDownload(PlanSubscribe::findOrFail($id));
 
-        // Check if attachment exists in notes
-        $filePath = $subscription->notes['attachment'] ?? null;
-
-        if (empty($filePath) || ! Storage::exists($filePath)) {
+        if ($filePath === null) {
             return redirect()->back()->with('error', 'File not found');
         }
 
@@ -128,7 +87,7 @@ class SubscriptionController extends Controller
 
     public function getInvoice(string $invoice_id)
     {
-        $subscriber = PlanSubscribe::with(['plan:id,subscriptionName', 'gateway:id,name', 'user:id,name,email', 'user.user_details:user_id,address_info'])->findOrFail($invoice_id);
+        $subscriber = $this->subscriptions->getInvoice((int) $invoice_id);
 
         return view('admin.subscriptions.invoice', compact('subscriber'));
     }
@@ -140,24 +99,9 @@ class SubscriptionController extends Controller
 
     protected function query(Request $request): Builder
     {
-        $subscriptionQuery = PlanSubscribe::with(['user:id,name', 'plan:id,subscriptionName', 'gateway:id,name']);
+        $search = $request->input('search');
 
-        if ($request->filled('search')) {
-            $subscriptionQuery->where(function ($q) use ($request) {
-                $q->where('payment_status', 'like', '%'.$request->search.'%')
-                    ->orWhereHas('user', function ($q) use ($request) {
-                        $q->where('name', 'like', '%'.$request->search.'%');
-                    })
-                    ->orWhereHas('plan', function ($q) use ($request) {
-                        $q->where('subscriptionName', 'like', '%'.$request->search.'%');
-                    })
-                    ->orWhereHas('gateway', function ($q) use ($request) {
-                        $q->where('name', 'like', '%'.$request->search.'%');
-                    });
-            });
-        }
-
-        return $subscriptionQuery->latest();
+        return $this->subscriptions->adminQuery(is_string($search) ? $search : null);
     }
 
     protected function view(): string

@@ -26,6 +26,21 @@ trait HasUploader
     }
 
     /**
+     * Upload a single UploadedFile with an auto-generated filename, for
+     * services that receive the file instead of the whole Request.
+     */
+    private function uploadFile(UploadedFile $file, ?string $oldFile = null, ?string $disk = null): string
+    {
+        $filename = $this->generatedFilename($file);
+        $path = 'uploads/'.now()->format('y/m');
+        $filePath = $file->storeAs($path, $filename, $disk ?? config('filesystems.default'));
+
+        $this->deleteOldFile($oldFile, $disk);
+
+        return $filePath;
+    }
+
+    /**
      * Upload multiple files and delete old files if provided.
      */
     private function multipleUpload(Request $request, string $input, array $oldFiles = [], ?string $disk = null): array

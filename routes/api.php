@@ -34,18 +34,17 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('amenities', Api\AmenitiesController::class)->except('create', 'edit', 'show');
             Route::apiResource('properties', Api\PropertyController::class);
             Route::post('properties/status', [Api\PropertyController::class, 'update_status'])->name('properties.status');
-            Route::apiResource('tenant', Api\TenantController::class);
+            Route::apiResource('tenant', Api\TenantController::class)->except('destroy');
             Route::post('application/processing/{id}', [Api\LandlordApplicationController::class, 'processing'])->name('application.processing');
             Route::post('application/approved/{id}', [Api\LandlordApplicationController::class, 'approved'])->name('application.approved');
             Route::post('application/rejected/{id}', [Api\LandlordApplicationController::class, 'rejected'])->name('application.rejected');
             Route::get('application/file/{id}', [Api\LandlordApplicationController::class, 'file_download'])->name('application.file');
-            Route::apiResource('rent', Api\RentController::class);
+            Route::apiResource('rent', Api\RentController::class)->only(['index', 'store', 'show']);
             Route::post('rent/approved/{id}', [Api\RentController::class, 'approved'])->name('rent.approved');
             Route::post('rent/accept/{id}', [Api\RentController::class, 'tenant_accept'])->name('rent.accept');
             Route::post('rent/cancelled/{id}', [Api\RentController::class, 'tenant_cancelled'])->name('rent.cancelled');
             Route::post('rent/agreement-sign/{id}', [Api\RentController::class, 'tenant_agreement'])->name('rent.agreement-sign');
             Route::apiResource('labors', Api\LaborController::class);
-            Route::apiResource('maintenance', Api\LandlordMaintenanceController::class)->only('index')->names(['index' => 'landlord-maintenance.index']);
             Route::post('maintenance/rejected/{id}', [Api\LandlordMaintenanceController::class, 'rejected'])->name('landlord-maintenance.rejected');
             Route::post('maintenance/processing/{id}', [Api\LandlordMaintenanceController::class, 'processing'])->name('landlord-maintenance.processing');
             Route::post('maintenance/completed/{id}', [Api\LandlordMaintenanceController::class, 'completed'])->name('landlord-maintenance.completed');
@@ -58,7 +57,7 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('dashboard', Api\LandlordDashboardController::class)->only('index');
             Route::get('dashboard/property-chart', [Api\LandlordDashboardController::class, 'property_chart'])->name('dashboard.property-chart');
             Route::get('dashboard/account-chart', [Api\LandlordDashboardController::class, 'account_chart'])->name('dashboard.account-chart');
-            Route::apiResource('supports', Api\SupportController::class);
+            Route::apiResource('supports', Api\SupportController::class)->only('index', 'store');
 
             Route::apiResource('expense-categories', Api\ExpenseCategoryController::class)->except('show');
             Route::apiResource('expenses', Api\ExpenseController::class)->except('show');

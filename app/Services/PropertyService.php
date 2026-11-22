@@ -7,7 +7,9 @@ use App\Exceptions\PlanLimitExceededException;
 use App\Exceptions\PropertyRentedException;
 use App\Helpers\HasUploader;
 use App\Models\Amenity;
+use App\Models\Category;
 use App\Models\Facility;
+use App\Models\HouseType;
 use App\Models\Property;
 use App\Models\PropertyDetail;
 use App\Models\Unit;
@@ -265,6 +267,64 @@ class PropertyService
         }
 
         return $property;
+    }
+
+    /**
+     * Enriquecimiento de vista compartido por show web Admin/Landlord
+     * (2ª pasada, spec controladores-residuales-fase5): decorado de
+     * facility/amenity names movido verbatim de ambos controladores.
+     */
+    public function decorateForShow(Property $property): Property
+    {
+        if ($property->category_id == 6) {
+            foreach ($property->units as $unit) {
+                $unitFacilityIds = $unit->facilities ?? [];
+                $unit->setAttribute('facility_names', Facility::whereIn('id', $unitFacilityIds)->pluck('name', 'id'));
+
+                $unitAmenityIds = $unit->amenities ?? [];
+                $unit->setAttribute('amenity_names', Amenity::whereIn('id', $unitAmenityIds)->pluck('name', 'id'));
+            }
+        } else {
+            $facilityIds = $property->propertyDetail->facilities ?? [];
+            $property->setAttribute('facilities', Facility::whereIn('id', $facilityIds)->pluck('name', 'id'));
+
+            $amenityIds = $property->propertyDetail->amenities ?? [];
+            $property->setAttribute('amenities', Amenity::whereIn('id', $amenityIds)->pluck('name', 'id'));
+        }
+
+        return $property;
+    }
+
+    /**
+     * Dropdowns de los formularios create/edit web (misma 2ª pasada): las
+     * claves del array coinciden con los nombres de variable que esperan
+     * las vistas (compact-compatible), por canal.
+     *
+     * @return array<string, mixed>
+     */
+    public function formOptions(Channel $channel, ?User $actor = null, ?Property $property = null): array
+    {
+        $countries = json_decode(file_get_contents(base_path('lang/countrylist.json')), true);
+        $phone_codes = json_decode(file_get_contents(base_path('lang/phone_code.json')), true);
+        $options = [
+            'categories' => Category::all(),
+            'countries' => $countries,
+            'phone_codes' => $phone_codes,
+            'house_types' => HouseType::where('status', 1)->latest()->get(),
+        ];
+
+        if ($channel === Channel::Admin) {
+            $options['landlords'] = User::where('role', 'landlord')->latest()->get();
+        } else {
+            $options['facilities'] = Facility::where('landlord_id', $actor?->id)->get();
+            $options['amenities'] = Amenity::where('landlord_id', $actor?->id)->get();
+        }
+
+        if ($property !== null) {
+            $options['property'] = $property;
+        }
+
+        return $options;
     }
 
     public function store(array $data, Channel $channel, ?User $actor, ?int $landlordId = null): Property
