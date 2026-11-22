@@ -37,8 +37,8 @@ cobertura: Última milla del criterio "< 200 estricto": Admin/PropertyController
 
 | # | Pre-requisito | Estado | Acción |
 |---|---|---|---|
-| P1 | Hijos 1–5 mergeados | Pendiente | Este hijo es el último |
-| P2 | Rutas muertas del paraguas (U1–U3) limpiadas | Pendiente | El test de reflexión no puede pasar con rutas muertas |
+| P1 | Hijos 1–5 mergeados | Pendiente | **Desviación D1 (aprobada por decisor):** slice anticipado — se implementan las unidades independientes de P1 (trait, dashboard, property, rutas 4.2); arch-test U1/U2 y reflexión U3 completa quedan diferidos hasta que los hijos 1–5 aterricen |
+| P2 | Rutas muertas del paraguas (U1–U3) limpiadas | Resuelto en el slice | Ver Revisión D2: las 13 "muertas" resultaron features rotas (las vistas las referencian) → restauradas; solo las 2 OTP (sin referencias) se eliminan; guard scoped aterriza en su lugar |
 | P3 | Red de Property | Verde (F1–F29 spec 4.2 + ownership) | Sin regresiones en la 2ª pasada |
 | P4 | `$message` usado por `Api/UserController` (4 refs L157–171) | Verificado | El array se MUEVE al trait, no se elimina |
 
@@ -85,11 +85,11 @@ tests/Feature/Dashboard/ApiLandlordDashboardHttpTest.php   # caracterización pr
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `wc -l`: Admin/Property < 200, Landlord/Property < 200, Api/LandlordDashboard < 200, `Controller.php` < 30 líneas.
-- [ ] `ControllersLineLimitArchTest` (U1–U2) y reflexión de rutas (U3) activos y en verde en CI.
-- [ ] Caracterización F1–F2 en verde antes de migrar dashboard; red Property (F3–F6) en verde tras la 2ª pasada.
-- [ ] `Api/UserController` sin cambio (U4).
-- [ ] Suite + PHPStan + Pint en verde; `plan-accion.md` 5.13 cerrado con evidencia.
+- [x] `wc -l`: Admin/Property **191**, Landlord/Property **164**, Api/LandlordDashboard **46**, `Controller.php` **14** (< 30).
+- [ ] `ControllersLineLimitArchTest` (U1–U2) y reflexión de rutas (U3) activos y en verde en CI. **Diferido (D1):** requiere hijos 1–5 mergeados; en su lugar aterrizó el guard scoped `RestoredTableActionsSmokeTest` (11 rutas restauradas resuelven + 2 OTP eliminadas).
+- [x] Caracterización F1–F2 en verde antes de migrar dashboard ✓; red Property (F3–F6) en verde tras la 2ª pasada ✓ (suite completa 387 passed).
+- [x] `Api/UserController` sin cambio (U4) ✓ — mensajes byte-idénticos tras el trait (shape anidado congelado).
+- [ ] Suite + PHPStan + Pint en verde ✓ (387 passed / 4654 assertions; PHPStan OK, baseline −9 entradas huérfanas, 0 nuevas); `plan-accion.md` 5.13 cerrado — **pendiente de hijos 1–5**.
 
 ## 8. Riesgos
 
@@ -107,3 +107,27 @@ tests/Feature/Dashboard/ApiLandlordDashboardHttpTest.php   # caracterización pr
 
 - `spec-unificar-capas-services-fase5.md` (§5.2, §6) · `spec-unificar-capas-services-fase4.md` (red F1–F29)
 - `.analisis/plan/plan-accion.md` → Fase 5 / 5.13 · `tests/Unit/Seeders/SeedersArchTest.php` (estilo)
+
+## 11. Revisión — slice anticipado (2026-11-21)
+
+Implementado en rama `spec/controladores-residuales-fase5-impl`. El decisor aprobó arrancar este hijo antes que los hijos 1–5, recortando el alcance a las unidades independientes de P1.
+
+### Desviaciones
+
+| # | Desviación | Detalle |
+|---|-----------|---------|
+| D1 | Slice anticipado | P1 (hijos 1–5) sigue pendiente ⇒ arch-test U1/U2 y reflexión U3 completa diferidos. Aterrizó el guard scoped `tests/Feature/Routes/RestoredTableActionsSmokeTest.php` (8 casos: reflexión de las 11 rutas restauradas, OTP eliminadas, filter/excel/csv HTTP por capa). DoD parcial: 4/5 boxes con evidencia; el quinto espera a los hijos. |
+| D2 | Rutas "muertas" 4.2 = features rotas | El grep previo a la eliminación (proceso Q12 del paraguas) reveló que 11 de las 13 rutas referenciadas estaban usadas por vistas vivas (forms `.filter-form` + dropdowns de export en tenants/rent-payments de ambas capas) — hoy hacían 500 (`BadMethodCallException`). Decisión del decisor: **restaurar** (trait-shape JSON `{data}` para XHR, rows vía services, filenames verbatim de los hooks pre-4.2) en vez de borrar. Solo `tenants.otp-submit/otp-resend` (sin referencias) se eliminan. La premisa del paraguas §6/U1–U2 queda desactualizada — ver corrección en el paraguas. |
+| D3 | Gate de permisos restaurado | `Admin/RentPaymentController`: `filter`/`file_download`/`exportExcel`/`exportCsv` vuelven bajo `rent-payments-read` (gate pre-4.2 perdido en 4.2; `file_download` estaba sin gate desde 4.2 — security-positive). |
+
+### Hallazgos laterales (follow-up fuera de este slice)
+
+- **L1 — filters con shape HTML:** `Admin/Landlord PropertyController::filter` y `Landlord/RentPaymentController::filter` devuelven la vista directa, pero el JS (`public/backend/assets/js/custom-ajax.js`, `dataType: "json"`, `res.data`) espera JSON `{data: html}` → no-op silencioso en el navegador. Mismo bug-clase que D2 sin el 500. Corrección recomendada: alinear al shape del trait en un slice propio (cambia contrato observable ⇒ spec aparte).
+- **L2 — inventario completo de rutas muertas (~110):** la reflexión total (la que U3 exigiría) detecta ~110 rutas más apuntando a métodos inexistentes: verbos de `Route::resource` sin `->only()` en ~25 declaraciones (transactions, website-settings, comments, incomes, expenses, labors, facilities…) y rutas de entidades de los hijos 2–5 (`rents.create/edit/update/destroy` → hijo 2). Reparto propuesto: cada hijo limpia sus entidades (regla paraguas §5.4) + un slice de higiene de resources para los no-asignados; U3 completo nace verde al final.
+- **L3 — baseline PHPStan:** −9 entradas huérfanas (5 del dashboard + 4 de los property controllers tras mover el código a services), 0 nuevas; el `formatData` heredado reescrito lookup-equivalente (`$row === null ? 0 : ...`) para no resurrectar los ignores de `nullsafe.neverNull` del código viejo.
+
+### Evidencia (DoD parcial)
+
+- `php artisan test` → **387 passed (4654 assertions)**: 371 base + 4 F1–F2 + 2 U4 + 2 U17/U18 + 8 guard.
+- `vendor/bin/phpstan analyse` → `[OK] No errors`; `vendor/bin/pint --test` → passed.
+- `wc -l`: Admin/Property 191 (antes 225) · Landlord/Property 164 (199) · Api/LandlordDashboard 46 (228) · `Controller.php` 14 (235).

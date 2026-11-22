@@ -12,6 +12,8 @@ use App\Models\RentPayment;
 use App\Models\User;
 use App\Models\Withdraw;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -180,8 +182,8 @@ class DashboardService
      * constantes, siempre resolvía a la izquierda) — ambas consultas
      * alían la columna como income_amount_data.
      *
-     * @param  \Illuminate\Support\Collection<(int|string), \stdClass>  $datas
-     * @param  \Carbon\CarbonPeriod  $period
+     * @param  Collection<(int|string), \stdClass>  $datas
+     * @param  CarbonPeriod  $period
      * @return array<int, array{date: string, amount: mixed}>
      */
     private function formatData(string $duration, $period, $datas, string $format): array

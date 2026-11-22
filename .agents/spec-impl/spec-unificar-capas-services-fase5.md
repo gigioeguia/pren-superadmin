@@ -101,6 +101,8 @@ Cerrar el desvío del criterio de salida de Fase 4: los 12 controladores que hoy
 
 Rutas que apuntan a métodos eliminados en 4.2 (`BadMethodCallException` latente). Previo grep de `route()`/`to_route()`/BLADE para confirmar que ninguna vista/JS referencia los route names; si alguna lo hace, desviación documentada y se decide en el PR.
 
+> **Actualización (hijo 6, 2026-11-21):** el grep previo detectó que 11 de las 13 rutas están referenciadas por **vistas vivas** (forms `.filter-form` + dropdowns de export en tenants/rent-payments de ambas capas) — no eran latentes, eran **features rotas con 500** desde 4.2. Decisión del decisor: **restaurar** (shape JSON del trait, rows vía services, filenames verbatim pre-4.2), no eliminar; solo `tenants.otp-submit/otp-resend` (sin referencias) se eliminan. Además, el inventario por reflexión completa es **~110 rutas muertas más** (verbos de `Route::resource` sin `->only()` en ~25 declaraciones + entidades de los hijos 2–5): cada hijo limpia las suyas (regla §5.4) y un slice de higiene de resources cierra el resto — la reflexión U3 completa del hijo 6 nace verde al final. Detalle en `spec-controladores-residuales-fase5.md` §11 (D2, L1–L2).
+
 | ID | Escenario | Dado | Cuando | Entonces |
 |----|-----------|------|--------|----------|
 | U1 | Rutas muertas admin | `routes/admin.php` L37–42, L97–102 | invocar `tenants/filter`, `tenants.otp-submit`, `tenants.otp-resend`, `tenants.excel`, `tenants.csv`, `rent-payments/filter`, `rent-payments.excel`, `rent-payments/csv` | las 8 rutas eliminadas de `routes/admin.php`; 0 referencias en vistas/JS |
