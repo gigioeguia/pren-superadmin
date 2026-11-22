@@ -1,7 +1,7 @@
 ---
 id: spec-unificar-capas-services-fase5
 titulo: "Unificar capas restantes con Services hasta controladores < 200 líneas (Fase 5 / 5.13)"
-estado: Borrador
+estado: Aprobado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.13) — DT-A1, DT-C4
 cobertura: Coordinación de la migración de las entidades no migradas (payments, landlords, rent, application, language) + 12 controladores > 200 líneas + arch-test de cumplimiento permanente
@@ -94,7 +94,7 @@ Cerrar el desvío del criterio de salida de Fase 4: los 12 controladores que hoy
 4. **Cero rutas muertas nuevas:** toda ruta existente de una entidad migrada se preserva funcional (delegando al service) o se elimina explícitamente en el mismo PR con decisión documentada. No se repite el desvío de 4.2.
 5. **Quirks observables preservados:** el quirk de `file_download` (application) se caracteriza tal cual y se documenta como bug conocido; el orden interno de E/S de `LanguageController::deleteAll` SÍ se fixea (capturar rutas → borrar filas → borrar archivos post-commit) porque no es observable por HTTP — desviación menor documentada en el hijo.
 6. **`File::` sobre `lang/*.json` se mueve tal cual** al service (sin migrar a disk de `Storage`).
-7. **Tests de caracterización HTTP obligatorios por entidad, antes de tocar el controlador** (hoy hay cero para language, rent, application).
+7. **Tests de contrato HTTP previos por entidad, antes de tocar el controlador** (language ya tiene red parcial: `CacheAdminInvalidationTest` + `PermissionDenialSmokeTest::test_f51`; rent y application parten de cero). No llevan `@group characterization` (reservado a bugs con fase de ruptura): congelan el contrato y el DoD de cada hijo exige que sigan en verde tras la migración.
 8. Baseline PHPStan congelado; errores nuevos se corrigen; Pint en verde.
 
 ## 6. Catálogo de casos — rutas muertas de Fase 4 (item del paraguas)
