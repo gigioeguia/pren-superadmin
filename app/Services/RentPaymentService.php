@@ -21,6 +21,27 @@ class RentPaymentService
                 'rent.property.propertyDetail:id,property_id,property_info',
                 'gateway:id,name',
             ]);
+
+            // Filtro del filter() restaurado (spec residuales 5.13): verbatim
+            // del query pre-4.2 del controlador admin.
+            if (! empty($filters['search'])) {
+                $search = $filters['search'];
+                $query->where(function ($q) use ($search) {
+                    $q->where('invoice_no', 'like', '%'.$search.'%')
+                        ->orWhere('monthly_rent', 'like', '%'.$search.'%')
+                        ->orWhere('utility_bill', 'like', '%'.$search.'%')
+                        ->orWhere('payment_status', 'like', '%'.$search.'%')
+                        ->orWhereHas('rent.tenant', function ($q) use ($search) {
+                            $q->where('name', 'like', '%'.$search.'%');
+                        })
+                        ->orWhereHas('gateway', function ($q) use ($search) {
+                            $q->where('name', 'like', '%'.$search.'%');
+                        })
+                        ->orWhereHas('rent.property.propertyDetail', function ($q) use ($search) {
+                            $q->where('property_info', 'like', '%'.$search.'%');
+                        });
+                });
+            }
         } elseif ($channel === Channel::Landlord) {
             $landlordId = $actor?->id;
             $query = RentPayment::with(['rent:id,tenant_id,property_id,landlord_id', 'rent.tenant:id,name', 'rent.property:id,puid', 'rent.property.propertyDetail:id,property_id,property_info'])

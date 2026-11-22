@@ -36,8 +36,6 @@ Route::get('landlords-csv', [Admin\LandlordController::class, 'exportCsv'])->nam
 Route::resource('tenants', Admin\TenantController::class);
 Route::post('tenants/filter', [Admin\TenantController::class, 'filter'])->name('tenants.filter');
 Route::post('tenants/delete-all', [Admin\TenantController::class, 'deleteAll'])->name('tenants.delete-all');
-Route::post('tenants/otp-submit', [Admin\TenantController::class, 'submitOtp'])->name('tenants.otp-submit');
-Route::post('tenants/otp-resend', [Admin\TenantController::class, 'otpResend'])->name('tenants.otp-resend');
 Route::get('tenant/excel', [Admin\TenantController::class, 'exportExcel'])->name('tenants.excel');
 Route::get('tenant/csv', [Admin\TenantController::class, 'exportCsv'])->name('tenants.csv');
 Route::get('tenant/file-download/{id}', [Admin\TenantController::class, 'file_download'])->name('tenants.file-download');

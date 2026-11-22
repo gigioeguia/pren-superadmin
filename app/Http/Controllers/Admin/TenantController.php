@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\Channel;
 use App\Exceptions\PlanLimitExceededException;
+use App\Exports\AdminTenantExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\StoreTenantRequest;
 use App\Http\Requests\Tenant\UpdateTenantRequest;
@@ -12,6 +13,7 @@ use App\Models\User;
 use App\Services\TenantService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TenantController extends Controller
 {
@@ -173,5 +175,32 @@ class TenantController extends Controller
         }
 
         return response()->json(['message' => 'File not found']);
+    }
+
+    /**
+     * Rutas restauradas de 4.2 (spec residuales 5.13): el JS de la vista
+     * espera el shape del trait (JSON {data} para XHR, redirect si no).
+     */
+    public function filter(Request $request)
+    {
+        $tenants = $this->service->listForChannel(Channel::Admin, auth()->user(), array_merge($request->all(), ['per_page' => 20]));
+
+        if ($request->ajax()) {
+            return response()->json([
+                'data' => view('admin.tenants.datas', ['tenants' => $tenants])->render(),
+            ]);
+        }
+
+        return redirect(url()->previous());
+    }
+
+    public function exportExcel(Request $request)
+    {
+        return Excel::download(new AdminTenantExport($request->status), 'tenant.xlsx');
+    }
+
+    public function exportCsv(Request $request)
+    {
+        return Excel::download(new AdminTenantExport($request->status), 'tenants.csv');
     }
 }
