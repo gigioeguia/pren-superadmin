@@ -1,7 +1,7 @@
 ---
 id: spec-service-payment-fase5
 titulo: "Service Payment — PaymentController (464) + SubscriptionService para listing triplicado (Fase 5 / 5.13, hijo 5)"
-estado: Borrador
+estado: Aprobado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.13) — DT-C4, DT-A1
 cobertura: Migración del monolito PaymentController (3 payment types + 11 gateways + success idempotente) a un único PaymentService, y del listing/reject/paid de Subscription (triplicado Admin/Landlord/Api) a SubscriptionService
