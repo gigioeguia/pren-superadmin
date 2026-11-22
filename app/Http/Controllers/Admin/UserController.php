@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Traits\HasAcnooActions;
+use App\Traits\HasTableActions;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -15,14 +15,14 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
-    use HasAcnooActions {
+    use HasTableActions {
         status as protected;
     }
     use HasUploader;
 
     public function __construct()
     {
-        $this->middleware('permission:users-read')->only('index', 'acnooFilter');
+        $this->middleware('permission:users-read')->only('index', 'filter');
         $this->middleware('permission:users-create')->only('create', 'store');
         $this->middleware('permission:users-update')->only('edit', 'update', 'status');
         $this->middleware('permission:users-delete')->only('destroy', 'deleteAll');
@@ -137,14 +137,12 @@ class UserController extends Controller
         ]);
     }
 
-    // Config de HasAcnooActions (spec-trait-acnoo-fase0 §4): valores verbatim del controlador.
-
-    protected function acnooModel(): string
+    protected function model(): string
     {
         return User::class;
     }
 
-    protected function acnooQuery(Request $request): Builder
+    protected function query(Request $request): Builder
     {
         return User::whereNotIn('role', ['superadmin', 'staff', 'shop-owner'])->when($request->input('search'), function ($q) use ($request) {
             $q->where(function ($q) use ($request) {
@@ -157,27 +155,27 @@ class UserController extends Controller
             ->latest();
     }
 
-    protected function acnooView(): string
+    protected function view(): string
     {
         return 'admin.users.datas';
     }
 
-    protected function acnooViewData(LengthAwarePaginator $rows): array
+    protected function viewData(LengthAwarePaginator $rows): array
     {
         return ['users' => $rows];
     }
 
-    protected function acnooPerPage(): int
+    protected function perPage(): int
     {
         return 20;
     }
 
-    protected function acnooDeleteMessage(): string
+    protected function deleteMessage(): string
     {
         return __('Selected Staff deleted successfully');
     }
 
-    protected function acnooRedirectRoute(): string
+    protected function redirectRoute(): string
     {
         return 'admin.users.index';
     }

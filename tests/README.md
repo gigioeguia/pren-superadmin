@@ -3,9 +3,9 @@
 Suite de **tests smoke** (caracterización) de los flujos críticos: auth web/API,
 pagos, rutas públicas, guards y rutas Artisan. Origen:
 `.agents/spec-impl/spec-tests-smoke-fase0.md` (Fase 0 / 0.1 del plan de acción).
-La amplían los tests del trait `HasAcnooActions` (G1–G8/H1–H4, con 2
-caracterizaciones nuevas): `.agents/spec-impl/spec-trait-acnoo-fase0.md`
-(Fase 0 / 0.3, DT-C3).
+La amplían los tests del trait `HasTableActions` (G1–G8/H1–H4, con 2
+caracterizaciones nuevas): spec del trait de la Fase 0 (Fase 0 / 0.3, DT-C3 —
+índice en `.agents/README.md`).
 
 > **Nota (2026-11-21):** la suite creció con las fases 1–5 y hoy totaliza
 > **331 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
@@ -65,7 +65,7 @@ y el comentario, y actualizar el spec (ver skill `.agents/skills/tests-caracteri
 
 | Test | Bug caracterizado | Debe fallar tras |
 |------|-------------------|------------------|
-| `LandlordAcnooActionsSmokeTest::test_delete_all_deletes_foreign_amenities_without_ownership_check` | Seg-5 — `deleteAll` landlord sin ownership check (IDOR bulk) | Fase 2 |
+| `LandlordTableActionsSmokeTest::test_delete_all_deletes_foreign_amenities_without_ownership_check` | Seg-5 — `deleteAll` landlord sin ownership check (IDOR bulk) | Fase 2 |
 
 > Nota G2/G4: el 403 observado no lo produce `AdminMiddleware` (que ya dejó
 > pasar al landlord/tenant por el bug de precedencia) sino el middleware Spatie

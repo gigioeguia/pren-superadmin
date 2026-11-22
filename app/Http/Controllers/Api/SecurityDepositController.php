@@ -1,0 +1,143 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Enums\Channel;
+use App\Helpers\HasUploader;
+use App\Http\Controllers\Controller;
+use App\Models\Gateway;
+use App\Models\Plan;
+use App\Models\PlanSubscribe;
+use App\Models\RentPayment;
+use App\Models\SecurityDeposit;
+use App\Services\SecurityDepositService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\ViewErrorBag;
+
+class SecurityDepositController extends Controller
+{
+    use HasUploader;
+
+    public function __construct(protected SecurityDepositService $service) {}
+
+    public function index(Request $request)
+    {
+        $security_deposit = $this->service->listForChannel(Channel::Api, $request->user(), $request->all());
+
+        return response()->json([
+            'message' => __('Data fetched successfully.'),
+            'data' => $security_deposit,
+        ]);
+    }
+
+    public function show(string $id)
+    {
+        $security_deposit = SecurityDeposit::with(['property:id,security_deposit,utility_deposit,rent_info', 'property.propertyDetail:property_id,property_info', 'landlord:id,name,phone,email', 'landlord.user_details:user_id,address_info', 'tenant:id,name,phone,email', 'tenant.user_details:user_id,address_info'])->findOrFail($id);
+        $this->authorize('view', $security_deposit);
+
+        $errors = session()->get('errors', new ViewErrorBag);
+        $html = view('api-invoice.security-deposit', compact('security_deposit', 'errors'))->render();
+
+        return response()->json([
+            'message' => 'Data fetched successfully.',
+            'data' => [
+                'id' => $security_deposit->id,
+                'total_amount' => $security_deposit->total_amount,
+            ],
+            'html' => $html,
+        ]);
+    }
+
+    public function offline_payment(Request $request, string $gateway_id, string $id)
+    {
+        $gateway = Gateway::findOrFail($gateway_id);
+
+        if ($gateway->is_manual == 1) {
+            $request->validate([
+                'payment_receipt' => 'required|file|mimes:jpeg,png,jpg,pdf|max:5120',
+                'payment_note' => 'nullable|string',
+            ]);
+
+            // Upload antes de abrir la transacción; se calcula una sola vez (Fase 4 / 4.8)
+            $receiptPath = $request->payment_receipt ? $this->upload($request, 'payment_receipt') : null;
+
+            DB::beginTransaction();
+            try {
+                $payment_data = [
+                    'payment_note' => $request->payment_note,
+                    'payment_receipt' => $receiptPath,
+                ];
+
+                if ($request->payment_type == 'subscription') {
+                    $plan = Plan::findOrFail($id);
+                    $duration = $plan->durationInDays();
+
+                    PlanSubscribe::create([
+                        'user_id' => auth()->id(),
+                        'plan_id' => $plan->id,
+                        'plan_name' => $plan->subscriptionName,
+                        'number_of_property' => $plan->number_of_property,
+                        'number_of_tenant' => $plan->number_of_tenant,
+                        'number_of_labor' => $plan->number_of_labor,
+                        'gateway_id' => $gateway_id,
+                        'price' => $plan->offerPrice ?? $plan->subscriptionPrice,
+                        'duration' => $duration,
+                        'payment_status' => 'unpaid',
+                        'notes' => [
+                            'manual_data' => $request->payment_note,
+                            'attachment' => $receiptPath,
+                        ],
+                    ]);
+
+                    DB::commit();
+
+                    session()->forget('user_id');
+
+                    return response()->json([
+                        'message' => 'New subscription purchased requested.',
+                    ]);
+                }
+
+                if ($request->payment_type == 'security_deposit') {
+
+                    $security_deposit = SecurityDeposit::findOrFail($id);
+                    $this->authorize('offlinePayment', $security_deposit);
+                    $security_deposit->update([
+                        'payment_date' => today(),
+                        'status' => 'pending',
+                        'gateway_id' => $gateway->id,
+                        'payment_data' => $payment_data,
+
+                    ]);
+                } elseif ($request->payment_type == 'rent_payment') {
+
+                    $rent_payment = RentPayment::findOrFail($id);
+                    $rent_payment->update([
+                        'payment_date' => today(),
+                        'payment_status' => 'pending',
+                        'gateway_id' => $gateway->id,
+                        'payment_data' => $payment_data,
+
+                    ]);
+                }
+
+                DB::commit();
+
+                return response()->json([
+                    'message' => 'Payment sent successfully',
+                ]);
+            } catch (\Exception $e) {
+                DB::rollback();
+
+                return response()->json([
+                    'message' => 'Payment failed',
+                ], 500);
+            }
+        }
+
+        return response()->json([
+            'message' => 'Invalid payment gateway',
+        ], 400);
+    }
+}

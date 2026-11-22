@@ -1,0 +1,148 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Helpers\HasUploader;
+use App\Http\Controllers\Controller;
+use App\Models\Client;
+use App\Traits\HasTableActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
+class ClientController extends Controller
+{
+    use HasTableActions;
+    use HasUploader;
+
+    public function __construct()
+    {
+        $this->middleware('permission:clients-read')->only('index', 'filter');
+        $this->middleware('permission:clients-create')->only('create', 'store');
+        $this->middleware('permission:clients-update')->only('edit', 'update', 'status');
+        $this->middleware('permission:clients-delete')->only('destroy', 'deleteAll');
+    }
+
+    public function index(Request $request)
+    {
+        $clients = Client::latest()->paginate(10);
+
+        return view('admin.clients.index', compact('clients'));
+    }
+
+    public function create()
+    {
+        return view('admin.clients.create');
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'status' => 'required',
+            'title' => 'required',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        Client::create($request->except('image') + [
+            'image' => $request->image ? $this->upload($request, 'image') : null,
+        ]);
+
+        return response()->json([
+            'message' => __('Client created successfully'),
+            'redirect' => route('admin.clients.index'),
+        ]);
+    }
+
+    public function edit(Client $client)
+    {
+        return view('admin.clients.edit', compact('client'));
+    }
+
+    public function update(Request $request, Client $client)
+    {
+        $request->validate([
+            'status' => 'required',
+            'title' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $client->update($request->except('image') + [
+            'image' => $request->image ? $this->upload($request, 'image', $client->image) : $client->image,
+        ]);
+
+        return response()->json([
+            'message' => __('Client updated successfully'),
+            'redirect' => route('admin.clients.index'),
+        ]);
+    }
+
+    public function destroy(Client $client)
+    {
+        if (file_exists($client->image)) {
+            Storage::delete($client->image);
+        }
+        $client->delete();
+
+        return response()->json([
+            'message' => __('Client deleted successfully'),
+            'redirect' => route('admin.clients.index'),
+        ]);
+    }
+
+    protected function model(): string
+    {
+        return Client::class;
+    }
+
+    protected function query(Request $request): Builder
+    {
+        return Client::when($request->input('search'), function ($q) use ($request) {
+            $q->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%'.$request->input('search').'%');
+            });
+        })
+            ->latest();
+    }
+
+    protected function view(): string
+    {
+        return 'admin.clients.datas';
+    }
+
+    protected function viewData(LengthAwarePaginator $rows): array
+    {
+        return ['clients' => $rows];
+    }
+
+    protected function deletesRowByRow(): bool
+    {
+        return true;
+    }
+
+    protected function deletingRow($row): array
+    {
+        $image = $row->image;
+
+        if ($image && file_exists($image)) {
+            return [fn () => Storage::delete($image)];
+        }
+
+        return [];
+    }
+
+    protected function redirectRoute(): string
+    {
+        return 'admin.clients.index';
+    }
+
+    protected function statusMessage(): string
+    {
+        return 'Client ';
+    }
+
+    protected function deleteMessage(): string
+    {
+        return __('Selected Client deleted successfully');
+    }
+}
