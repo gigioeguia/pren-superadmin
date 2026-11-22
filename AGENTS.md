@@ -60,10 +60,10 @@ Desde Fase 5 / 5.7 `App\Support\Options` fija el contrato tipado de las options:
 
 ## Controller layout (Fase 4 / 4.2: patrón Services — migración parcial)
 
-- **16 entidades migradas a Services** (`app/Services/`): 12 de la Fase 4 (Property, Expense, ExpenseCategory, Income, IncomeCategory, Tenant, SecurityDeposit, RentPayment, RefundRequest, Support, WithdrawMethod, Notification) + Language, Rent, Application y Landlord (Fase 5 / 5.13 hijos 1–4) — sus controladores Admin/Landlord/Api son delgados (<250 líneas) y sin duplicación.
-- La duplicación 3-capas (Admin/Landlord/Api por entidad) persiste en las entidades **no migradas** (payments…) — deuda rastreada como ítem 5.13 del plan.
+- **18 entidades migradas a Services** (`app/Services/`): 12 de la Fase 4 (Property, Expense, ExpenseCategory, Income, IncomeCategory, Tenant, SecurityDeposit, RentPayment, RefundRequest, Support, WithdrawMethod, Notification) + Language, Rent, Application, Landlord y Payment/Subscription (Fase 5 / 5.13 hijos 1–5) — sus controladores Admin/Landlord/Api son delgados (<250 líneas) y sin duplicación. El flujo de pagos (3 payment types + 11 gateways + `success` idempotente con `Cache::lock`) vive íntegro en `PaymentService`; el controlador posee sesión/respuestas.
+- La duplicación 3-capas (Admin/Landlord/Api por entidad) persiste en las entidades **no migradas** (withdraw, maintenance, labor, blog/comment…) — deuda lateral fuera del paraguas 5.13 (ver OUT del spec paraguas); payments/subscriptions cerraron con el hijo 5.
 - `filter()`, `deleteAll()`, `status()`, `exportExcel()`, `exportCsv()` live in **one shared trait**: `app/Traits/HasTableActions.php` (spec-trait-acnoo-fase0, DT-C3). Hoy: 29 controladores hacen `use HasTableActions` (Language, RentInvitation, Application y Landlord migraron sus rutas al service en 5.13 hijos 1–4); la migración 4.2 reestructuró el reparto; inventario histórico en `.agents/spec-impl/spec-trait-acnoo-fase0.md` §12. **Changing shared behavior = edit the trait once.** Do not reintroduce copies of these 5 methods.
-- Largest hoy: `PaymentController` (464 líneas), `Admin/TenantController` (206), `Auth/SignupController` (198), `Admin/PropertyController` (192), `Admin/SubscriptionController` (187).
+- Largest hoy: `Admin/TenantController` (206), `Auth/SignupController` (198), `Admin/PropertyController` (192), `PaymentController` (191, era 464), `Admin/SubscriptionController` (131, delega en `SubscriptionService`).
 
 ## Translations
 
@@ -91,7 +91,7 @@ Desde Fase 5 / 5.7 `App\Support\Options` fija el contrato tipado de las options:
 
 ## Tooling
 
-- **PHPStan (Larastan 3.x)**: `composer analyse` — level 5, paths `app/`, target PHP 8.3 (`phpVersion: 80300`), incluye `phpstan-baseline.neon` (243 entradas / 445 errores legacy congelados; −2 desde el spec 5.8).
+- **PHPStan (Larastan 3.x)**: `composer analyse` — level 5, paths `app/`, target PHP 8.3 (`phpVersion: 80300`), incluye `phpstan-baseline.neon` (157 entradas / 255 errores legacy congelados; hijo 5 resolvió 23 entradas legacy tipando las relaciones `BelongsTo<X, $this>` de Gateway/PlanSubscribe/RentPayment — regeneración justificada en `spec-service-payment-fase5.md` §11).
 - **Baseline rule**: the baseline is single-use. Regenerating it to make a PR pass is forbidden; only with documented justification + diff review of the file in the PR. New/modified code errors must fail.
 - **Pint (preset laravel)**: `composer lint` (test mode, CI-enforced) / `composer lint:fix` (auto-fix). Config in `pint.json`.
 - **CI**: `.github/workflows/ci.yml` — 3 jobs on push to `main` + PRs: `tests` (MySQL 8 service over `dbrentpro_test`), `static-analysis` (phpstan), `style` (pint). Note: the `tests` job must recreate the `vendor/autoload1.php` marker after `composer install`.

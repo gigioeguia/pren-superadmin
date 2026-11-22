@@ -1,7 +1,7 @@
 ---
 id: spec-service-payment-fase5
 titulo: "Service Payment — PaymentController (464) + SubscriptionService para listing triplicado (Fase 5 / 5.13, hijo 5)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.13) — DT-C4, DT-A1
 cobertura: Migración del monolito PaymentController (3 payment types + 11 gateways + success idempotente) a un único PaymentService, y del listing/reject/paid de Subscription (triplicado Admin/Landlord/Api) a SubscriptionService
@@ -121,11 +121,11 @@ class SubscriptionService
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `PaymentService` + `SubscriptionService` en verde (U1–U4).
-- [ ] `PaymentController` < 200 líneas; `Admin/SubscriptionController` delega listing/reject/paid/invoice/file.
-- [ ] Caracterizaciones nuevas P7–P9, P12 en verde antes de migrar; red completa de pagos sigue en verde.
-- [ ] 0 `Cache::`/`DB::`/`Storage::` de negocio en el controlador (grep).
-- [ ] Suite + PHPStan + Pint en verde.
+- [x] `PaymentService` + `SubscriptionService` en verde (U1–U4). **Evidencia:** unit 5 passed / 33 assertions (u1, u2a spent-state, u2b lock-busy, u3 make_payment sin abrir tx vía captura de `DB::transactionLevel` en StubGateway, u4 trío + quirk exacto + `Notification::assertNothingSent` — el service no notifica).
+- [x] `PaymentController` < 200 líneas; `Admin/SubscriptionController` delega listing/reject/paid/invoice/file. **Evidencia:** `wc -l` → PaymentController 464→**191**, Admin/SubscriptionController 187→**131** (delega vía `listForChannel(Channel::Admin)`/`adminQuery`/`reject`/`paid`/`getInvoice`/`fileDownload`), Landlord 19 / Api 28 delgados.
+- [x] Caracterizaciones nuevas P7–P9, P12 en verde antes de migrar; red completa de pagos sigue en verde. **Evidencia:** commit `60017fc` (22 passed / 65 assertions pre-migración: `PaymentUrlHttpTest` p7a–f, `OrderStatusHttpTest` p8a–c/p9a–b, `SubscriptionChannelsHttpTest` p10a–d/p11a–d/p12a–c) + red existente (PaymentFlowSmokeTest, BalanceForceFillTest, GatewayNamespaceWhitelistTest, WebhookSignatureSmokeTest, CachePaymentInvalidationTest, SubscriptionPaidTest G8–G9) en verde pre y post.
+- [x] 0 `Cache::`/`DB::`/`Storage::` de negocio en el controlador (grep). **Evidencia:** grep en los 4 controladores migrados → único hit `Storage::download($filePath)` en Admin/SubscriptionController (delivery del stream, mismo criterio que los hermanos ya migrados SecurityDeposit/RentPayment); PaymentController 0 hits de los tres facades (Cache/lock, DB tx y Stripe verify viven en el service).
+- [x] Suite + PHPStan + Pint en verde. **Evidencia:** `php artisan test` **486 passed (5500 assertions)** (459 previos + 22 contrato + 5 unit); `composer analyse` [OK] — baseline 180→**157** entradas (23 legacy resueltas por la migración, ver §11); `composer lint` passed.
 
 ## 8. Riesgos
 
@@ -145,3 +145,45 @@ class SubscriptionService
 - `spec-unificar-capas-services-fase5.md` · `spec-payment-success-fase2.md` · `spec-gateway-namespace-whitelist-fase2.md`
 - `spec-db-transactions-no-external-io-fase4.md` (4.8) · `spec-cache-invalidacion-centralizada-fase4.md` (4.9) · `spec-user-fillable-restrictivo-fase5.md`
 - `.analisis/plan/plan-accion.md` → Fase 5 / 5.13
+
+## 11. Implementación (2026-11-22) — rama `spec/service-payment-fase5-impl`
+
+**Desviación P1:** implementado apilado sobre la rama del hijo 4 (aún sin mergear a `main`), como hijos 2–4. El orden del paraguas se preserva vía merge de PRs encadenados.
+
+Commits: `60017fc` (contrato P7–P12 pre-migración) → `8940ee1` (services + Support + U1–U4) → `7c8a8e7` (migración 4 controladores).
+
+**Divergencia trío `paid` vs `success` (anticipada por §5/§8) — confirmada y preservada, NO unificada:**
+
+| Aspecto | `SubscriptionService::paid` (admin aprueba manual) | `PaymentService::success` rama subscription |
+|---|---|---|
+| PlanSubscribe | actualiza fila existente (`unpaid`→`paid`) | crea fila nueva `paid` |
+| `will_expire` | `now()->addDays($subscribe->plan->duration ?? 0)` — **duration crudo: +1 día para plan mensual** (quirk) | `now()->addDays($plan->durationInDays())` — +30 días |
+| `received_by` | admin autenticado (`$approvedBy`) | primer `superadmin\|admin` |
+| `notes` | del request (validadas) | n/a (la fila manual ya las trae) |
+
+U4 congela el quirk exacto (`+1 día`); G8–G9 siguen cubriendo el trío/invalidación a nivel HTTP. El single-source del §5 solo era posible a ciegas — se descarta por §8.
+
+### Desviaciones de contrato (sobre el sketch §4)
+
+- **D1 — `RequestState` → `PaymentState::fromSession()`:** el DTO vive en `app/Support` y su factory estática es la única fuente del contrato de sesión del flujo de pago (replica las lecturas del original 1:1; valores de sesión no-escalar/no-modelo → ausentes). `pay()` one-shot no es implementable sin que el service toque sesión: se parte en `resolvePayment` (gateway whitelist + user + plan/amount) → `payManual` / `payGateway`, con el controlador stasheando `fund_callback`+`user`/`plan`/`gateway_id`/`amount` antes de `make_payment` (orden del original).
+- **D2 — `success(): mixed` → `PaymentOutcome`:** enum puro (PHP no admite backing duplicado 'failed'×2) con `status()/message()/flashKey()` replicando los 3 outcomes observables. El controller marca `payment_processed`+forget solo en `Success` (ver error-paths).
+- **D3 — `paymentUrl(...)` → `subscriptionUrl/depositUrl/rentUrl`:** 403 de ownership vía `AuthorizationException` (Handler → 403, idéntico al `abort(403)` original); la validación 422 por tipo queda en el controller (contrato HTTP).
+- **D4 — `failed()`/`orderStatus()` quedan en el controller:** 100 % session-parse + redirect, cero dominio — el sketch los listaba en el service, pero paraguas §5.3 manda (service agnóstico de HTTP). Congelados por P8–P9.
+- **D5 — SubscriptionService:** `listForChannel(Channel): LengthAwarePaginator|Collection` (sin `?User $actor` ni `array $filters` — ningún canal los usa; el retorno del sketch era irreal: Admin pagina PlanSubscribe, Landlord/Api devuelven Collection de Plan activos). `reject`/`paid` ganan `string $notes` (el sketch los omitía) y `paid` gana `int $approvedBy`; pierden `Channel` (rutas admin-only, el canal no discrimina). `fileDownload(): ?string` devuelve el path; el streaming queda en el controller (precedente SecurityDeposit/RentPayment ya migrados). El hook `query()` del trait delega en `adminQuery(?string $search)`.
+- **D6 — P10–P12 viven en `tests/Feature/Subscriptions/SubscriptionChannelsHttpTest.php`** (la estructura §4 no asignaba archivo al catálogo de subscriptions).
+
+### Observaciones empíricas congeladas durante la implementación
+
+- **Enum backing:** `PaymentOutcome` nació `: string` con dos casos `'failed'` — PHP lo rechaza ("Duplicate value in enum"); enum puro + `status()`.
+- **U3 y RefreshDatabase:** el trait envuelve cada test en una tx ⇒ el assert compara contra el baseline de `DB::transactionLevel()` (capturado dentro de StubGateway, que gana `static int $transactionLevelAtCall`), no contra 0.
+- **`offerPrice` vuelve de MySQL como float** (8.0) — asserts de payment_data por valor, no por identidad de tipo.
+- **Baseline PHPStan 180→157 entradas (−23):** los generics `@return BelongsTo<X, $this>` en `Gateway::currency`, `PlanSubscribe::user/plan/gateway` y `RentPayment::rent` + la eliminación del `if ($reject)` muerto resolvieron 23 entradas legacy (controllers de subscriptions/reports, exports y los 11 gateways de `app/Library`). Regeneración justificada (regla de baseline single-use: errores legacy resueltos por la migración misma, 0 errores nuevos); diff del archivo en el PR.
+- **Larastan no infiere la clase relacionada desde `: BelongsTo` pelado** (resuelve `Model`): los generics del punto anterior son requisito, no cosmética.
+
+### Error-paths y edges preservados/mejorados (documentados)
+
+- **Orden interno intacto:** 404 (plan) → 403 (identidad) → session en las vistas; `payment_processed` check antes del lock; verificación (Stripe HTTP / payment_info) antes de abrir tx; writes dentro de tx; guard-throws (`payer missing`, `landlord not found`, `admin missing`, `type/plan mismatch`) reproducen los crash→catch→`Something went wrong!` del original con excepciones tipadas.
+- **Sesión tras fallo de commit (corner no observable):** el original olvidaba las claves y marcaba `payment_processed` ANTES del `DB::commit()` — un commit fallido dejaba la sesión "procesada". Ahora el forget ocurre solo en outcome `Success`. Requeriría que el propio `commit()` lance para divergir.
+- **Sesiones/inputs craftedas (inalcanzables por los flujos reales):** mismatch tipo/plan en sesión, `payment_type` no-escalar, `session_id` array, o `manual_data` array: antes `ErrorException`/`\Error` no capturados (500) en varios puntos; ahora fallo manejado (redirect failed o `Something went wrong!`). `manual_data` array se almacena como `null` (antes: el array crudo). Ninguno alcanzable por la UI/vistas actuales.
+- **`paid` con plan inexistente:** el `?? ''` original era código muerto (`plans.duration` NOT NULL default 0) → `?? 0` equivalente; un plan borrado con FK viva era 500 no capturado (`addDays('')` TypeError/\Error) y sigue siendo fallo manejado vía la tx del service.
+- **Mejora documentada:** `paid()` ahora `report($e)` antes del JSON 404 `'Something Went wrong!'` (el original tragaba la excepción en silencio); `reject`/`paid` pierden su rama `else` muerta tras `findOrFail` (unreachable desde siempre).
