@@ -1,7 +1,7 @@
 ---
 id: spec-devdeps-limpieza-fase5
 titulo: "Limpieza de dependencias no usadas: eliminación del pipeline frontend y stray composer (Fase 5 / 5.12)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.12) — .analisis/deuda-tecnica.md (DT-B5, DT-B6; DT-A5 vía supersede de 4.5)
 cobertura: Eliminación del pipeline frontend npm completo (5 devDeps + archivos + job de CI) por ser código muerto demostrable (0 directivas @vite), remoción de laravel/sail del require-dev y de 4 paquetes symfony/* no usados del require; conservación documentada de mockery/collision/faker/guzzle (claims de DT-B5 obsoletos) + barrido documental coherente en AGENTS.md, README.md, plan-accion.md y deuda-tecnica.md
@@ -150,15 +150,17 @@ grep -rn "sail" .github .env.example README.md                      # 0
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] F1–F6 aplicados: 0 archivos npm/Vite en HEAD (`git ls-files`), `composer.json` sin sail ni los 4 `symfony/*`, `composer.lock` regenerado, `composer install` OK.
-- [ ] `mockery`, `collision`, `faker` y `guzzle` permanecen instalados con sus usos intactos (F7): PaymentFlowSmokeTest:240, `TestCommand` de collision, factories, Billplz/TapPayment.
-- [ ] `php artisan test` en verde (371 casos) y `composer analyse`/`composer lint` en verde — sin entradas nuevas al baseline (regla single-use vigente).
-- [ ] CI en 3 jobs (`tests`, `static-analysis`, `style`), verde en el PR.
-- [ ] AGENTS.md y README.md sin referencias npm/vite/Node/allowScripts/npm audit (F8).
-- [ ] `.env.example` sin `VITE_*` (F4) y `.gitignore` sin entradas huérfanas (F3).
-- [ ] `plan-accion.md`: fila 5.12 Cerrado + fila 4.5 con anotación supersede conservando su historia (F9).
-- [ ] `deuda-tecnica.md`: DT-A5, DT-B5 y DT-B6 cerrados con fecha y ref a este spec; claims obsoletos de DT-B5 corregidos (mockery/collision usados, guzzle con uso directo) (F9).
-- [ ] PR con spec + implementación; `Refs: .agents/spec-impl/spec-devdeps-limpieza-fase5.md`; DoD tachado en la descripción.
+- [x] F1–F6 aplicados: 0 archivos npm/Vite en HEAD (`git ls-files | grep -cE '^(package|vite\.config|resources/js|resources/css)'` = 0), `composer.json` sin sail ni los 4 `symfony/*` (grep = 0), `composer.lock` regenerado (`composer remove`, −188 líneas), `composer install` OK (2026-11-21). Extensión menor de F1: `node_modules/` local también borrado — coherente con F3 (sin entrada de ignore que lo cubra, dejarlo sería ruido untracked).
+- [x] `mockery`, `collision`, `faker` y `guzzle` permanecen instalados con sus usos intactos (F7): `composer show` ×4 OK; PaymentFlowSmokeTest:240, `TestCommand` de collision, factories, Billplz/TapPayment sin cambios.
+- [x] `php artisan test` en verde — **371 passed (4542 assertions), 56s (2026-11-21)**; `composer analyse` OK (0 errores, baseline intacto); `composer lint` passed.
+- [x] CI en 3 jobs (`tests`, `static-analysis`, `style`), verde en el PR.
+- [x] AGENTS.md y README.md sin referencias npm/vite/Node/allowScripts/npm audit (F8): `grep -icE "npm|vite|node|allowScripts"` = 0/0.
+- [x] `.env.example` sin `VITE_*` (F4, grep = 0) y `.gitignore` sin entradas huérfanas (F3, grep = 0).
+- [x] `plan-accion.md`: fila 5.12 Cerrado (2026-11-21) + fila 4.5 con anotación **SUPERSEDED** conservando su historia (F9).
+- [x] `deuda-tecnica.md`: DT-A5, DT-B5 y DT-B6 cerrados con fecha y ref a este spec; claims de DT-B5 corregidos (mockery/collision/faker usados, guzzle con uso directo) (F9).
+- [x] PR con spec + implementación; `Refs: .agents/spec-impl/spec-devdeps-limpieza-fase5.md`; DoD tachado en la descripción.
+
+**Lateral documental (fuera del catálogo, mismo espíritu F8):** README declaraba "334 tests" — suite real 371 (cuenta pre-5.11); corregido en el mismo sweep.
 
 ---
 
