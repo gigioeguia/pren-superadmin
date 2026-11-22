@@ -153,7 +153,7 @@ grep -rn "sail" .github .env.example README.md                      # 0
 - [x] F1–F6 aplicados: 0 archivos npm/Vite en HEAD (`git ls-files | grep -cE '^(package|vite\.config|resources/js|resources/css)'` = 0), `composer.json` sin sail ni los 4 `symfony/*` (grep = 0), `composer.lock` regenerado (`composer remove`, −188 líneas), `composer install` OK (2026-11-21). Extensión menor de F1: `node_modules/` local también borrado — coherente con F3 (sin entrada de ignore que lo cubra, dejarlo sería ruido untracked).
 - [x] `mockery`, `collision`, `faker` y `guzzle` permanecen instalados con sus usos intactos (F7): `composer show` ×4 OK; PaymentFlowSmokeTest:240, `TestCommand` de collision, factories, Billplz/TapPayment sin cambios.
 - [x] `php artisan test` en verde — **371 passed (4542 assertions), 56s (2026-11-21)**; `composer analyse` OK (0 errores, baseline intacto); `composer lint` passed.
-- [x] CI en 3 jobs (`tests`, `static-analysis`, `style`), verde en el PR.
+- [x] CI en 3 jobs (`tests`, `static-analysis`, `style`) — verde tras fix de platform pin (ver Laterales); el primer run falló en `composer install` con lock resuelto en PHP 8.4 local (symfony 8.x exige php >=8.4.1).
 - [x] AGENTS.md y README.md sin referencias npm/vite/Node/allowScripts/npm audit (F8): `grep -icE "npm|vite|node|allowScripts"` = 0/0.
 - [x] `.env.example` sin `VITE_*` (F4, grep = 0) y `.gitignore` sin entradas huérfanas (F3, grep = 0).
 - [x] `plan-accion.md`: fila 5.12 Cerrado (2026-11-21) + fila 4.5 con anotación **SUPERSEDED** conservando su historia (F9).
@@ -164,6 +164,7 @@ grep -rn "sail" .github .env.example README.md                      # 0
 - Documental: README declaraba "334 tests" — suite real 371 (cuenta pre-5.11); corregido en el mismo sweep.
 - `composer audit` durante F10 (2026-11-21): 4 advisories únicos sobre `laravel/framework` v11.57.1 — **1 high** (CRLF injection in default email rule, GHSA-5vg9-5847-vvmq/CVE-2026-48019), 1 medium (Temporary Signed URL Path Confusion), 2 low (Task Output Injection, XSS Debug Page) — fixes solo en ≥12.60 ⇒ **fila 5.15** del plan (upgrade 11→12 vs mitigación puntual, decisión pendiente).
 - Ídem: `nunomaduro/larastan` abandonado → **fila 5.16** (migración a `larastan/larastan`).
+- **Fix de CI (desviación de implementación, 2026-11-21):** el lock regenerado en F5/F6 se resolvió bajo PHP 8.4 local (el repo no fijaba `config.platform`) y bloqueó `symfony/string|css-selector|event-dispatcher` en v8.1.x (php >=8.4.1) — `composer install` del CI (PHP 8.3) falló. Fix: `config.platform.php: "8.3"` en `composer.json` (piso del proyecto: `"php": "^8.3"` + CI 8.3) + downgrade a 7.4.x (php >=8.2, misma clase de versiones que tenía main). El pin queda permanente: locks futuros deterministas, independientes del runtime local. Gates re-verificados tras el fix: 371/371, PHPStan OK, Pint OK.
 
 ---
 
