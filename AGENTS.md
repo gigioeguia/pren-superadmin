@@ -8,13 +8,10 @@ Laravel 11.x / PHP 8.3 SaaS for property rental management (roles: `superadmin`,
 
 ```bash
 composer install
-npm install                       # allowScripts en package.json auto-aprueba el postinstall de esbuild (no removerlo: sin el binario, npm run dev/build fallan)
 php artisan key:generate
 php artisan storage:link          # public/storage symlink is NOT committed
 php artisan migrate --seed        # runs 24 seeders in order (see DatabaseSeeder)
 php artisan test                  # suite completa (371 casos) over dbrentpro_test — see tests/README.md
-npm run dev                       # vite (resources/css/app.css, resources/js/app.js)
-npm run build
 php artisan serve                 # local dev server
 ```
 
@@ -97,7 +94,7 @@ Desde Fase 5 / 5.7 `App\Support\Options` fija el contrato tipado de las options:
 - **PHPStan (Larastan 3.x)**: `composer analyse` — level 5, paths `app/`, target PHP 8.3 (`phpVersion: 80300`), incluye `phpstan-baseline.neon` (243 entradas / 445 errores legacy congelados; −2 desde el spec 5.8).
 - **Baseline rule**: the baseline is single-use. Regenerating it to make a PR pass is forbidden; only with documented justification + diff review of the file in the PR. New/modified code errors must fail.
 - **Pint (preset laravel)**: `composer lint` (test mode, CI-enforced) / `composer lint:fix` (auto-fix). Config in `pint.json`.
-- **CI**: `.github/workflows/ci.yml` — 4 jobs on push to `main` + PRs: `tests` (MySQL 8 service over `dbrentpro_test`), `static-analysis` (phpstan), `style` (pint), `frontend-build` (npm ci + build). Note: the `tests` job must recreate the `vendor/autoload1.php` marker after `composer install`.
+- **CI**: `.github/workflows/ci.yml` — 3 jobs on push to `main` + PRs: `tests` (MySQL 8 service over `dbrentpro_test`), `static-analysis` (phpstan), `style` (pint). Note: the `tests` job must recreate the `vendor/autoload1.php` marker after `composer install`.
 - **`php artisan ops:verify-deploy`**: verifica postura operacional efectiva (LOG_LEVEL/session/TLS; patrón de evidencia 5.9 para los residuales de 5.9/5.5/5.6; tabla PASS/FAIL/WARN + exit code; enforcement solo en `APP_ENV=production`, resto report-only; la salida se pega como evidencia bajo `.analisis/`, gitignored).
 - `.editorconfig` exists. No pre-commit hooks (CI is the gate).
 
