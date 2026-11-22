@@ -1,7 +1,7 @@
 ---
 id: spec-unificar-capas-services-fase5
 titulo: "Unificar capas restantes con Services hasta controladores < 200 líneas (Fase 5 / 5.13)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.13) — DT-A1, DT-C4
 cobertura: Coordinación de la migración de las entidades no migradas (payments, landlords, rent, application, language) + 12 controladores > 200 líneas + arch-test de cumplimiento permanente
@@ -116,12 +116,12 @@ Métodos de verificación: extender `tests/Feature/Routes/RouteNamesSmokeTest.ph
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] Los 6 specs hijos creados, revisados (`revisar-spec`) y aprobados.
-- [ ] Rutas muertas (U1–U3) eliminadas con evidencia de grep y test de reflexión en verde.
-- [ ] 12/12 controladores < 200 líneas (`wc -l` pegado como evidencia en cada hijo).
-- [ ] `ControllersLineLimitArchTest` activo en CI con las 2 reglas de §5.2.
-- [ ] Suite completa en verde; PHPStan sin nuevas entradas de baseline; Pint en verde.
-- [ ] `plan-accion.md` ítem 5.13 marcado cerrado con evidencia.
+- [x] Los 6 specs hijos creados, revisados (`revisar-spec`) y aprobados. **Evidencia:** 6/6 en estado `Implementado` (verificado 2026-11-22). Auditoría `revisar-spec` con hallazgos enmendados en hijos 1, 2 y 4 (§11 de cada uno); aprobación por decisor en hijos 3, 5 y 6 (commits `c1d8733`, `2092983`, `95369c9`).
+- [x] Rutas muertas (U1–U3) eliminadas con evidencia de grep y test de reflexión en verde. **Evidencia:** premisa superseded por D2 (11 de 13 eran features rotas → restauradas; solo las 2 OTP sin referencias eliminadas) y D1-escalado (60 removibles fuera con grep-previo sobre vistas/JS/DemoMode/app/routes/tests/lang: 52 sin refs + 7 solo-DemoMode + 1 F17). Reflexión permanente `tests/Feature/Routes/RouteMethodsReflectionTest.php` en verde: 0 muertas nuevas; 54 conocidas en allowlist (dueño: slice 5.17 "restauración CRUD 4.2", guard que fuerza su retiro).
+- [x] 12/12 controladores < 200 líneas (`wc -l` pegado como evidencia en cada hijo). **Evidencia:** los 12 + el 13º capturado por la regla global: Payment 191 (464), Admin/Landlord 177 (425), Signup 198 (251), Api/Registration 166 (221), RentInvitation 139 (365), Api/Rent 130 (290), Api/TenantApplication 80 (315), Landlord/Application 140 (212), Admin/Language 168 (264), Api/LandlordDashboard 46 (228), Admin/Property 192 (225), Landlord/Property 165 (200), `Controller.php` 14 (235), **Admin/TenantController 193 (206, nunca listado en §2 — desviación D4 del hijo 6)**.
+- [x] `ControllersLineLimitArchTest` activo en CI con las 2 reglas de §5.2. **Evidencia:** `tests/Unit/Controllers/ControllersLineLimitArchTest.php` en verde (U1: 377 archivos < 200; U2: 0 tx fuera del allowlist de 9 con guard bidireccional). Activo en la suite de la línea apilada; enforcement CI efectivo al merguear los PRs (pendientes, en orden).
+- [x] Suite completa en verde; PHPStan sin nuevas entradas de baseline; Pint en verde. **Evidencia:** `php artisan test` **488 passed (5876 assertions)**; `composer analyse` [OK] — baseline 157 entradas, cada cambio bajo la regla single-use con justificación en el spec correspondiente (−9 hijo 6 slice, −23 hijo 5, +1 entrada para el quirk `$file` del hijo 3); `composer lint` passed.
+- [x] `plan-accion.md` ítem 5.13 marcado cerrado con evidencia. **Evidencia:** fila 5.13 **Cerrado (2026-11-22)** con el resumen de los 6 hijos + residuales con dueño en filas nuevas **5.17** (restauración CRUD de las 54) y **5.18** (migración de las 9 tx). Archivo local (gitignored por diseño).
 
 ## 8. Riesgos
 
@@ -152,3 +152,15 @@ Métodos de verificación: extender `tests/Feature/Routes/RouteNamesSmokeTest.ph
 - `.agents/spec-impl/spec-unificar-capas-services-fase4.md` → patrón §8
 - `.agents/spec/spec-conventions.md`, `.agents/spec/spec-template.md`
 - Skills: `tests-caracterizacion`, `workflow-ramas`, `revisar-spec`
+
+## 11. Cierre (2026-11-22)
+
+Los 6 hijos `Implementado` sobre la **línea apilada** (language → rent → application → landlord → payment → residuales+D1). El criterio de salida de Fase 4 queda cerrado: ningún controlador supera 200 líneas y el arch-test lo hace permanente.
+
+**Estado honesto del cierre:**
+
+- **Merges pendientes:** todo vive en ramas `spec/*-fase5-impl` apiladas; el enforcement CI del arch-test y la reflexión es efectivo cuando los PRs mergueen (en orden). Nada está en `main` aún.
+- **Deuda con dueño (filas 5.17/5.18 del plan):** 54 rutas de features rotas desde 4.2 siguen rotas (allowlist de `RouteMethodsReflectionTest`, dueño: spec "restauración CRUD 4.2"); 9 tx legadas en controladores (allowlist del arch-test U2, 1 de ellas diseño intencional del hijo 4 §11).
+- **Premisas enmendadas por el camino (todas con decisión del decisor):** §5.2 "los 8 con tx están en scope" → allowlist de 9 (D5); §6 "rutas muertas = cruft a limpiar" → la mitad eran features rotas a restaurar (D2/D6); la lista de los 12 no incluía a `Admin/TenantController` (206) → capturado por la regla global y recortado (D4).
+- **Baseline PHPStan:** 157 entradas congeladas; los deltas (−9, −23, +1) documentados en los specs correspondientes bajo la regla single-use.
+- **Suite:** 371 casos (arranque) → **488** (486 de hijos 1–6 + 2 arch-tests); red de caracterización/contrato nueva por entidad en verde pre y post migración.
