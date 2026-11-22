@@ -67,22 +67,10 @@ parameters:
 			path: app/Exports/AdminWithdrawRequestExport.php
 
 		-
-			message: '#^Relation ''property'' is not found in App\\Models\\Application model\.$#'
-			identifier: larastan.relationExistence
+			message: '#^Access to an undefined property App\\Models\\Application\:\:\$file\.$#'
+			identifier: property.notFound
 			count: 1
-			path: app/Exports/LandlordApplicationExport.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\Application model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/LandlordApplicationExport.php
-
-		-
-			message: '#^Relation ''unit'' is not found in App\\Models\\Application model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Exports/LandlordApplicationExport.php
+			path: app/Services/ApplicationService.php
 
 		-
 			message: '#^Relation ''landlord'' is not found in App\\Models\\Labor model\.$#'
@@ -362,24 +350,6 @@ parameters:
 			path: app/Http/Controllers/Api/LaborController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Application\:\:\$file\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/LandlordApplicationController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Application\:\:\$property\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Api/LandlordApplicationController.php
-
-		-
-			message: '#^If condition is always true\.$#'
-			identifier: if.alwaysTrue
-			count: 2
-			path: app/Http/Controllers/Api/LandlordApplicationController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$property\.$#'
 			identifier: property.notFound
 			count: 1
@@ -426,60 +396,6 @@ parameters:
 			identifier: class.notFound
 			count: 2
 			path: app/Http/Controllers/Api/ReviewController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Application\:\:\$property\.$#'
-			identifier: property.notFound
-			count: 16
-			path: app/Http/Controllers/Api/TenantApplicationController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Application\:\:\$tenant\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/TenantApplicationController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 6
-			path: app/Http/Controllers/Api/TenantApplicationController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 6
-			path: app/Http/Controllers/Api/TenantApplicationController.php
-
-		-
-			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/TenantApplicationController.php
-
-		-
-			message: '#^Access to property \$role on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/TenantApplicationController.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\Application model\.$#'
-			identifier: larastan.relationExistence
-			count: 6
-			path: app/Http/Controllers/Api/TenantApplicationController.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\Application model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Api/TenantApplicationController.php
-
-		-
-			message: '#^Relation ''unit'' is not found in App\\Models\\Application model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/TenantApplicationController.php
 
 		-
 			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
@@ -753,30 +669,6 @@ parameters:
 			path: app/Http/Controllers/Auth/LoginController.php
 
 		-
-			message: '#^If condition is always true\.$#'
-			identifier: if.alwaysTrue
-			count: 2
-			path: app/Http/Controllers/Landlord/ApplicationController.php
-
-		-
-			message: '#^Relation ''property'' is not found in App\\Models\\Application model\.$#'
-			identifier: larastan.relationExistence
-			count: 5
-			path: app/Http/Controllers/Landlord/ApplicationController.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\Application model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Landlord/ApplicationController.php
-
-		-
-			message: '#^Relation ''unit'' is not found in App\\Models\\Application model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Landlord/ApplicationController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Labor\:\:\$landlord\.$#'
 			identifier: property.notFound
 			count: 2
@@ -885,19 +777,7 @@ parameters:
 			path: app/Http/Controllers/Landlord/DashboardController.php
 
 		-
-			message: '#^Relation ''property'' is not found in App\\Models\\Application model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Landlord/DashboardController.php
-
-		-
 			message: '#^Relation ''property'' is not found in App\\Models\\Maintenance model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Landlord/DashboardController.php
-
-		-
-			message: '#^Relation ''tenant'' is not found in App\\Models\\Application model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Landlord/DashboardController.php

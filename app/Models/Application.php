@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Application extends Model
 {
@@ -21,17 +22,26 @@ class Application extends Model
         'rejected_cause',
     ];
 
-    public function tenant()
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function tenant(): BelongsTo
     {
         return $this->belongsTo(User::class, 'tenant_id');
     }
 
-    public function property()
+    /**
+     * @return BelongsTo<Property, $this>
+     */
+    public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class, 'property_id');
     }
 
-    public function unit()
+    /**
+     * @return BelongsTo<Unit, $this>
+     */
+    public function unit(): BelongsTo
     {
         return $this->belongsTo(Unit::class, 'unit_id');
     }

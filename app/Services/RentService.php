@@ -269,13 +269,6 @@ class RentService
             }
         }
 
-        // Quirk preservado: sin fila 'service-charge' la lectura sobre null
-        // crashea igual que en los controladores originales (no se "arregla").
-        $chargeOption = Option::where('key', 'service-charge')->first();
-        $chargeData = $chargeOption->value;
-        $amount = $chargeData['amount'] ?? 0;
-        $type = $chargeData['type'] ?? 'fixed';
-
         // Rent total = rent + utility
         $rentTotalAmount = $rentAdvance + $utilityAdvance;
         // Security total = rent + utility + deposit
@@ -283,7 +276,7 @@ class RentService
         // Security deposit + rent + utility para el balance del landlord
         $landlordBalance = $depositAmount + $rentAdvance + $utilityAdvance;
 
-        $calculatedCharge = ($type === 'percentage') ? ($securityTotalAmount * $amount) / 100 : $amount;
+        $calculatedCharge = $this->calculatedCharge($securityTotalAmount);
 
         // Upload antes de abrir la transacción (Fase 4 / 4.8)
         $landlordAgreementPath = $landlordAgreement ? $this->uploadAgreement($landlordAgreement) : null;
@@ -328,6 +321,53 @@ class RentService
         sendNotification($rent->id, notify_users([$rent->tenant_id, $rent->landlord_id]), landlord_url: route('landlord.rents.index', ['id' => $rent->id]), admin_msg: __('Landlord create a new rent invitation'), landlord_msg: __('A new rent invitation has been sent to the tenant. Waiting for approval.'), tenant_msg: __('You have received a new rent invitation. Please review and approve.'));
 
         return $rent;
+    }
+
+    /**
+     * Creación de Rent+SecurityDeposit para ApplicationService::agreementSign
+     * (spec hijo 3 §4): importes y acuerdos ya resueltos por las ramas
+     * category del application; el service-charge se calcula aquí — única
+     * lectura del Option 'service-charge' fuera de los controladores admin
+     * (DoD hijo 3 §7).
+     *
+     * La transacción la abre el caller: agreement_sign envuelve el update
+     * del application y esta creación en la misma tx (comportamiento
+     * actual). Devuelve el Rent creado para el enlace del caller.
+     *
+     * @param  array<string, mixed>  $rentAttributes
+     * @param  array<string, mixed>  $depositAttributes
+     */
+    public function createWithAgreement(array $rentAttributes, array $depositAttributes, float|int $chargeBaseAmount): Rent
+    {
+        $charge = $this->calculatedCharge($chargeBaseAmount);
+
+        $rent = Rent::create($rentAttributes);
+
+        SecurityDeposit::create($depositAttributes + [
+            'rent_id' => $rent->id,
+            'charge' => $charge,
+            'landlord_balance' => ($depositAttributes['total_amount'] ?? 0) - $charge,
+            'status' => 'unpaid',
+        ]);
+
+        return $rent;
+    }
+
+    /**
+     * Única lectura del Option 'service-charge' del código no-admin
+     * (DoD hijo 3 §7). Quirk preservado: sin fila 'service-charge' la
+     * lectura sobre null crashea igual que en los controladores
+     * originales (no se "arregla").
+     */
+    protected function calculatedCharge(float|int $baseTotalAmount): float
+    {
+        $chargeOption = Option::where('key', 'service-charge')->first();
+        $chargeData = $chargeOption->value;
+
+        $amount = $chargeData['amount'] ?? 0;
+        $type = $chargeData['type'] ?? 'fixed';
+
+        return $type === 'percentage' ? ($baseTotalAmount * $amount) / 100 : $amount;
     }
 
     /**
