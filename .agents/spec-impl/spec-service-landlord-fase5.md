@@ -1,7 +1,7 @@
 ---
 id: spec-service-landlord-fase5
 titulo: "Service Landlord — unificar alta de landlord entre Admin, Signup web y Api Registration (Fase 5 / 5.13, hijo 4)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.13) — DT-A1, DT-C4
 cobertura: Migración de Admin/LandlordController (425) a app/Services/LandlordService.php y absorción en el service de la creación de landlord por canal (SignupController 251, Api/Auth/RegistrationController 221); el trío free-plan queda en una única implementación con ramas por canal
@@ -152,11 +152,11 @@ class LandlordService
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `LandlordService` en verde (U1–U4); una sola implementación del trío free-plan: `grep 'PlanSubscribe::create' app/Http/Controllers/ = 0` y forceFill del trío idem (vive solo en `activateFreePlan`).
-- [ ] Tests de contrato F1–F12 en verde antes de migrar y tras migrar; G6–G9, `WebSignupMassAssignmentTest` (Seg-28), `DemoModeTest` y smoke auth siguen en verde.
-- [ ] 3 controladores < 200 líneas, sin `HasTableActions`, sin `file_exists()` sobre storage.
-- [ ] Rutas `landlords.filter|delete-all|excel|csv` vivas.
-- [ ] Suite + PHPStan + Pint en verde.
+- [x] `LandlordService` en verde (U1–U4); una sola implementación del trío free-plan. **Evidencia:** U1–U4 passed (48 assertions). Grep re-alcado a los 3 controladores migrados (criterio hijo 2 H1): `PlanSubscribe::create` = 0 y forceFill del trío = 0 en `Admin/LandlordController`, `Auth/SignupController`, `Api/Auth/RegistrationController`; las ocurrencias restantes viven en `PaymentController`, `Admin/SubscriptionController` y `Api/SecurityDepositController` (flujos payment/subscription — hijo 5) y en controladores legacy fuera de scope.
+- [x] Tests de contrato F1–F12 en verde antes de migrar (13 passed, 112 assertions, commit `159d994`) y tras migrar; G6–G9, `WebSignupMassAssignmentTest` (Seg-28), `DemoModeTest` y smoke auth siguen en verde. **Evidencia:** suite 459 passed (5362 assertions) pre y post fix final; grupo characterization 4/4 (F12 sigue verde — el gap se preserva por diseño).
+- [x] 3 controladores < 200 líneas, sin `HasTableActions`, sin `file_exists()` sobre storage. **Evidencia:** `Admin/LandlordController` 425→177, `Auth/SignupController` 251→197, `Api/Auth/RegistrationController` 221→165; grep `HasTableActions`/`file_exists` = 0 en los 3.
+- [x] Rutas `landlords.filter|delete-all|excel|csv` vivas. **Evidencia:** `php artisan route:list` → 11 rutas landlord; F6 ejercita las 4.
+- [x] Suite + PHPStan + Pint en verde. **Evidencia:** `php artisan test` 459 passed (61s); `composer analyse` [OK] sin errores (baseline intacta); `composer lint` passed.
 
 ## 8. Riesgos
 
@@ -194,3 +194,25 @@ Auditoría `revisar-spec` previa a la implementación. Hallazgos y resoluciones:
 | H8 | DoD "grep del trío free-plan fuera del service = 0" poco preciso (el trío son dos piezas: `PlanSubscribe::create` + forceFill) | bajo | DoD re-alocado a grep de ambas piezas en `app/Http/Controllers/` |
 
 **Estado:** `Borrador` → `Aprobado` (decisor autoriza enmendar + aprobar en la misma sesión de revisión, como hijo 2). Implementación gateada por P1 (merge del hijo 3); rama apilada, como hijos 2–3.
+
+### Implementación (2026-11-22) — rama `spec/service-landlord-fase5-impl`
+
+**Desviación P1:** implementado apilado sobre la rama del hijo 3 (aún sin mergear a `main`). El orden del paraguas se preserva vía merge de PRs: hijo 3 primero, este PR después.
+
+Commits: `159d994` (contrato F1–F12 pre-migración) → `d1c0b90` (service + FormRequests + U1–U4) → `d54ac5b` (migración 3 controladores).
+
+**Desviación D1 — firma de archivos:** `store/update` toman `array $files` (patrón `TenantService`) en lugar del `?UploadedFile $image` único del contrato §4 — el admin maneja 3 archivos (image + mykad front/back).
+
+**Desviación D2 — contract tests con `RefreshDatabase`:** los primeros intentos con `DatabaseTransactions` leían la fila *residual* del singleton `options` (`Options::read` devuelve la primera fila por key sin orden definido) en vez de la fila creada por el test. `RefreshDatabase` es la convención de los tests hermanos de estas rutas (`WebSignupSmokeTest`, `LandlordStoreSubscriptionTest`) y blinda contra residuos locales.
+
+**D3 — granularidad:** F11 se implementó como f11a/f11b (mismo criterio que hijo 3 D2).
+
+**Observaciones empíricas congeladas durante la caracterización:**
+- **Quirk api `payment_status='unpaid'`:** §4 decía "3 campos (sin payment_status)"; el valor observable es el default de columna `'unpaid'` (f11a lo congela; admin/web setean `'paid'` explícitamente).
+- **Guard `file_exists()` muerto:** sobre rutas relativas de storage el guard de destroy/deleteAll era un no-op con `Storage::fake` (y en producción, contra `storage/app/public`). F4/F5 congelan el contrato HTTP+DB; U3 valida la limpieza real de media sobre el service tras la sustitución por `Storage::exists()` (§5).
+- **`validated()` dropea claves sin regla:** `name`/`gender`/`mykad_id`/`address_info` (store) y `password` (update) no estaban en las reglas originales pero el código las leía del request. Los contract tests F1/F3 lo detectaron; los FormRequests las declaran `'nullable'` puro (fluyen por `validated()` sin rechazar nada nuevo).
+- **OTP como string:** `random_int` devolvía int y `createAccount` tipa `?string`; el OTP vive como string (`remember_token`, `hash_equals`) — cast en el origen (PHPStan `argument.type`).
+
+**Error-paths preservados:** `update` resuelve `User::findOrFail` fuera del try (404 como hoy); `destroy` dentro (500 genérico como hoy); submitOtp sin tx (trío bare, como el original); `maanRegistration` conserva la tx externa del controlador + savepoints del service (unidad atómica User+trío, como hoy).
+
+**Mejoras en paths no cubiertos por contrato (documentadas):** `update` sin `user_details` ya no crashea (guard explícito; era 500 por null); `deleteAll` con `ids` ausente es no-op 200 (era crash). Ningún test del catálogo cubría esos edges.
