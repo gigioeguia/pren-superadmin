@@ -60,10 +60,10 @@ Desde Fase 5 / 5.7 `App\Support\Options` fija el contrato tipado de las options:
 
 ## Controller layout (Fase 4 / 4.2: patrón Services — migración parcial)
 
-- **12 entidades migradas a Services** (`app/Services/`, spec `spec-unificar-capas-services-fase4` + 11 specs hijos): Property, Expense, ExpenseCategory, Income, IncomeCategory, Tenant, SecurityDeposit, RentPayment, RefundRequest, Support, WithdrawMethod, Notification — sus controladores Admin/Landlord/Api son delgados (<250 líneas) y sin duplicación.
-- La duplicación 3-capas (Admin/Landlord/Api por entidad) persiste en las entidades **no migradas** (payments, landlords, rent, application, language…) — deuda rastreada como ítem 5.13 del plan.
-- `filter()`, `deleteAll()`, `status()`, `exportExcel()`, `exportCsv()` live in **one shared trait**: `app/Traits/HasTableActions.php` (spec-trait-acnoo-fase0, DT-C3). Hoy: 33 controladores hacen `use HasTableActions`; 18 conservan un `filter` propio, 14 un `deleteAll` propio y 4 un `exportExcel` propio (la migración 4.2 reestructuró el reparto; inventario histórico en `.agents/spec-impl/spec-trait-acnoo-fase0.md` §12). **Changing shared behavior = edit the trait once.** Do not reintroduce copies of these 5 methods.
-- Largest hoy: `PaymentController` (464 líneas), `Admin/LandlordController` (428), `Landlord/RentInvitationController` (367), `Api/TenantApplicationController` (315), `Api/RentController` (290).
+- **15 entidades migradas a Services** (`app/Services/`): 12 de la Fase 4 (Property, Expense, ExpenseCategory, Income, IncomeCategory, Tenant, SecurityDeposit, RentPayment, RefundRequest, Support, WithdrawMethod, Notification) + Language, Rent y Application (Fase 5 / 5.13 hijos 1–3) — sus controladores Admin/Landlord/Api son delgados (<250 líneas) y sin duplicación.
+- La duplicación 3-capas (Admin/Landlord/Api por entidad) persiste en las entidades **no migradas** (payments, landlords…) — deuda rastreada como ítem 5.13 del plan.
+- `filter()`, `deleteAll()`, `status()`, `exportExcel()`, `exportCsv()` live in **one shared trait**: `app/Traits/HasTableActions.php` (spec-trait-acnoo-fase0, DT-C3). Hoy: 30 controladores hacen `use HasTableActions` (Language, RentInvitation y Application migraron sus rutas al service en 5.13 hijos 1–3); la migración 4.2 reestructuró el reparto; inventario histórico en `.agents/spec-impl/spec-trait-acnoo-fase0.md` §12. **Changing shared behavior = edit the trait once.** Do not reintroduce copies of these 5 methods.
+- Largest hoy: `PaymentController` (464 líneas), `Admin/LandlordController` (425), `Auth/SignupController` (251), `Api/Auth/RegistrationController` (221), `Admin/TenantController` (206).
 
 ## Translations
 
