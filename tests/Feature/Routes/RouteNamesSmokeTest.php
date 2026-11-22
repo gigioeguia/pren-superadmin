@@ -58,14 +58,16 @@ class RouteNamesSmokeTest extends TestCase
     public function test_f17_maintenance_index_collision_is_resolved(): void
     {
         // F17: landlord/tenant ya no comparten nombre; update del tenant
-        // intacta (DemoMode referencia apimaintenance.update).
-        $landlord = app('router')->getRoutes()->getByName('apilandlord-maintenance.index');
+        // intacta (DemoMode referencia apimaintenance.update). La ruta
+        // muerta landlord-maintenance.index fue eliminada en el slice D1
+        // del hijo 6 (método inexistentes desde siempre); solo vive la
+        // del tenant.
+        $this->assertNull(app('router')->getRoutes()->getByName('apilandlord-maintenance.index'));
+
         $tenant = app('router')->getRoutes()->getByName('apitenant-maintenance.index');
         $update = app('router')->getRoutes()->getByName('apimaintenance.update');
 
-        $this->assertNotNull($landlord);
         $this->assertNotNull($tenant);
-        $this->assertSame('api/v1/landlord/maintenance', $landlord->uri());
         $this->assertSame('api/v1/tenant/maintenance', $tenant->uri());
         $this->assertNotNull($update);
     }

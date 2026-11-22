@@ -72,10 +72,14 @@ class RestoredTableActionsSmokeTest extends TestCase
 
     public function test_admin_tenants_filter_returns_json_rows(): void
     {
-        // Arrange
+        // Arrange — nombre fijo: los nombres de faker con apóstrofe se
+        // escapan a &#39; en el HTML renderizado y rompen el assert.
         $admin = $this->createSuperadmin();
         $landlord = $this->createLandlord();
-        $tenant = User::factory()->tenant()->create(['landlord_id' => $landlord->id]);
+        $tenant = User::factory()->tenant()->create([
+            'name' => 'Admin Filter Tenant',
+            'landlord_id' => $landlord->id,
+        ]);
 
         // Act
         $response = $this->actingAs($admin)->postJson('/admin/tenants/filter', [
@@ -92,8 +96,8 @@ class RestoredTableActionsSmokeTest extends TestCase
         // Arrange
         $landlordA = $this->landlordWithSubscription();
         $landlordB = $this->createLandlord();
-        $own = User::factory()->tenant()->create(['landlord_id' => $landlordA->id]);
-        $foreign = User::factory()->tenant()->create(['landlord_id' => $landlordB->id]);
+        $own = User::factory()->tenant()->create(['name' => 'Scoped Filter Tenant', 'landlord_id' => $landlordA->id]);
+        $foreign = User::factory()->tenant()->create(['name' => 'Foreign Filter Tenant', 'landlord_id' => $landlordB->id]);
 
         // Act
         $response = $this->actingAs($landlordA)->postJson('/landlord/tenants/filter', [

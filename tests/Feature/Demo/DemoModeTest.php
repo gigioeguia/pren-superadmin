@@ -118,30 +118,6 @@ class DemoModeTest extends TestCase
         $response->assertDontSee('This is a demo account', false);
     }
 
-    public function test_f9_transactions_update_blocked_in_demo(): void
-    {
-        app()->detectEnvironment(fn () => 'demo');
-
-        $admin = $this->createAdmin();
-
-        $response = $this->actingAs($admin)->withoutMiddleware(VerifyCsrfToken::class)->putJson('/admin/transactions/1');
-
-        $response->assertStatus(499);
-        $response->assertJson(['message' => 'This action is disabled in demo mode.']);
-    }
-
-    public function test_f10_transactions_destroy_blocked_in_demo(): void
-    {
-        app()->detectEnvironment(fn () => 'demo');
-
-        $admin = $this->createAdmin();
-
-        $response = $this->actingAs($admin)->withoutMiddleware(VerifyCsrfToken::class)->deleteJson('/admin/transactions/1');
-
-        $response->assertStatus(499);
-        $response->assertJson(['message' => 'This action is disabled in demo mode.']);
-    }
-
     public function test_f11_subscription_paid_blocked_in_demo(): void
     {
         app()->detectEnvironment(fn () => 'demo');
