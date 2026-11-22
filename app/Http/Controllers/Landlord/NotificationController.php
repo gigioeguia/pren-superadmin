@@ -19,7 +19,7 @@ class NotificationController extends Controller
         return view('landlord.notifications.index', compact('notifications'));
     }
 
-    public function acnooFilter(Request $request)
+    public function filter(Request $request)
     {
         $notifications = $this->service->listForChannel(Channel::Landlord, auth()->user(), $request->all());
 

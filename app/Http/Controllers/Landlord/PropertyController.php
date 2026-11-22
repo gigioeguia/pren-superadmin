@@ -167,7 +167,7 @@ class PropertyController extends Controller
         ]);
     }
 
-    public function acnooFilter(Request $request)
+    public function filter(Request $request)
     {
         $properties = $this->service->listForChannel(Channel::Landlord, auth()->user(), array_merge($request->all(), ['per_page' => 20]));
 

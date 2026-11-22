@@ -1,0 +1,162 @@
+<?php
+
+namespace App\Http\Controllers\Landlord;
+
+use App\Exports\LandlordMaintenanceExport;
+use App\Http\Controllers\Controller;
+use App\Models\Labor;
+use App\Models\Maintenance;
+use App\Models\Property;
+use App\Traits\HasTableActions;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
+
+class MaintenanceController extends Controller
+{
+    use HasTableActions;
+
+    public function index()
+    {
+        $property = Property::where('landlord_id', auth()->id())->get('id');
+        $maintenances = Maintenance::with(['tenant:id,name,phone', 'labor:id,name', 'property', 'property.propertyDetail:property_id,property_info'])
+            ->whereIn('property_id', $property)
+            ->latest()->paginate(10);
+
+        return view('landlord.maintenance.index', compact('maintenances'));
+    }
+
+    public function show(string $id)
+    {
+        $labors = Labor::latest()->get();
+        $maintenance = Maintenance::with(['tenant:id,name,phone', 'property:id,building_name,address_info'])->findOrFail($id);
+
+        return view('landlord.maintenance.view', compact('maintenance', 'labors'));
+    }
+
+    public function rejected(Request $request, string $id)
+    {
+
+        $request->validate([
+            'notes' => 'nullable|string',
+        ]);
+
+        $maintenance = Maintenance::findOrFail($id);
+
+        $maintenance->update([
+            'status' => 'rejected',
+            'notes' => $request->notes,
+        ]);
+
+        return response()->json([
+            'message' => 'Maintenance rejected successfully',
+            'redirect' => route('landlord.maintenances.index'),
+        ]);
+    }
+
+    public function processing(Request $request, string $id)
+    {
+
+        $request->validate([
+            'labor_id' => 'required|integer|exists:labors,id',
+            'total_costing' => 'required|numeric',
+            'comments' => 'nullable',
+        ]);
+
+        $maintenance = Maintenance::findOrFail($id);
+
+        $maintenance->update([
+            'labor_id' => $request->labor_id,
+            'total_costing' => $request->total_costing,
+            'comments' => $request->comments,
+            'status' => 'processing',
+        ]);
+
+        return response()->json([
+            'message' => 'Maintenance processing successfully',
+            'redirect' => route('landlord.maintenances.show', $maintenance->id),
+        ]);
+    }
+
+    public function completed(Request $request, string $id)
+    {
+        $request->validate([
+            'comments' => 'required',
+        ]);
+
+        $maintenance = Maintenance::findOrFail($id);
+
+        $maintenance->update([
+            'comments' => $request->comments,
+            'status' => 'completed',
+        ]);
+
+        return response()->json([
+            'message' => 'Maintenance Completed successfully',
+            'redirect' => route('landlord.maintenances.show', $maintenance->id),
+        ]);
+    }
+
+    protected function model(): string
+    {
+        return Maintenance::class;
+    }
+
+    protected function query(Request $request): Builder
+    {
+        $property = Property::where('landlord_id', auth()->id())->get('id');
+
+        return Maintenance::with(['tenant:id,name,phone', 'labor:id,name', 'property'])->whereIn('property_id', $property)
+            ->when($request->input('search'), function ($q) use ($request) {
+                $q->where(function ($q) use ($request) {
+                    $search = $request->input('search');
+                    $q->where('title', 'like', '%'.$search.'%')
+                        ->orwhere('description', 'like', '%'.$search.'%')
+                        ->orwhere('notes', 'like', '%'.$search.'%')
+                        ->orwhere('comments', 'like', '%'.$search.'%')
+                        ->orWhereHas('tenant', function ($query) use ($search) {
+                            $query->where('name', 'like', '%'.$search.'%')
+                                ->orWhere('phone', 'like', '%'.$search.'%');
+                        })
+
+                        ->orWhereHas('labor', function ($query) use ($search) {
+                            $query->where('name', 'like', '%'.$search.'%');
+                        })
+                        ->orWhereHas('property', function ($query) use ($search) {
+                            $query->where('building_name', 'like', '%'.$search.'%');
+                        });
+                });
+            })
+            ->latest();
+    }
+
+    protected function view(): string
+    {
+        return 'landlord.maintenance.datas';
+    }
+
+    protected function viewData(LengthAwarePaginator $rows): array
+    {
+        return ['maintenances' => $rows];
+    }
+
+    protected function perPage(): int
+    {
+        return 20;
+    }
+
+    protected function export(Request $request): object
+    {
+        return new LandlordMaintenanceExport;
+    }
+
+    protected function excelFilename(): string
+    {
+        return 'landlord-maintenances';
+    }
+
+    protected function csvFilename(): string
+    {
+        return 'landlord-maintenances';
+    }
+}

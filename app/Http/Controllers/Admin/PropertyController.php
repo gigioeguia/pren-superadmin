@@ -21,7 +21,7 @@ class PropertyController extends Controller
 {
     public function __construct(protected PropertyService $service)
     {
-        $this->middleware('permission:properties-read')->only('index', 'show', 'acnooFilter', 'exportExcel', 'exportCsv', 'propertySuccess', 'getFacilities', 'getAmenities');
+        $this->middleware('permission:properties-read')->only('index', 'show', 'filter', 'exportExcel', 'exportCsv', 'propertySuccess', 'getFacilities', 'getAmenities');
         $this->middleware('permission:properties-create')->only('create', 'store');
         $this->middleware('permission:properties-update')->only('edit', 'update', 'status', 'approve', 'reject');
         $this->middleware('permission:properties-delete')->only('destroy', 'deleteAll');
@@ -182,7 +182,7 @@ class PropertyController extends Controller
         ]);
     }
 
-    public function acnooFilter(Request $request)
+    public function filter(Request $request)
     {
         $properties = $this->service->listForChannel(Channel::Admin, auth()->user(), array_merge($request->all(), ['per_page' => 20]));
 

@@ -12,7 +12,7 @@ class NotificationController extends Controller
 {
     public function __construct(protected NotificationService $service)
     {
-        $this->middleware('permission:notifications-read')->only('mtIndex', 'mtView', 'mtReadAll', 'acnooFilter');
+        $this->middleware('permission:notifications-read')->only('mtIndex', 'mtView', 'mtReadAll', 'filter');
     }
 
     public function mtIndex()
@@ -22,7 +22,7 @@ class NotificationController extends Controller
         return view('admin.notifications.index', compact('notifications'));
     }
 
-    public function acnooFilter(Request $request)
+    public function filter(Request $request)
     {
         $notifications = $this->service->listForChannel(Channel::Admin, auth()->user(), $request->all());
 
