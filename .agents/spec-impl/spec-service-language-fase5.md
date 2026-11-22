@@ -1,7 +1,7 @@
 ---
 id: spec-service-language-fase5
 titulo: "Service Language — controlador < 200 líneas (Fase 5 / 5.13, hijo 1)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.13) — DT-C4
 cobertura: Migración de Admin/LanguageController (264 líneas) a app/Services/LanguageService.php, una sola capa (Admin), sin duplicación entre capas
@@ -106,11 +106,11 @@ class LanguageService
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `LanguageService` con el contrato §4 en verde (U1–U4).
-- [ ] Contrato F1–F11 en verde antes de migrar; sigue en verde después.
-- [ ] `Admin/LanguageController` < 200 líneas, sin `HasTableActions`, sin `File::` directo.
-- [ ] Desviación del orden interno de `deleteAll` (§5) implementada y documentada en §11 (Revisión).
-- [ ] Suite + PHPStan (sin nuevas entradas) + Pint en verde.
+- [x] `LanguageService` con el contrato §4 en verde (U1–U4).
+- [x] Contrato F1–F11 en verde antes de migrar; sigue en verde después.
+- [x] `Admin/LanguageController` < 200 líneas, sin `HasTableActions`, sin `File::` directo.
+- [x] Desviación del orden interno de `deleteAll` (§5) implementada y documentada en §11 (Revisión).
+- [x] Suite + PHPStan (sin nuevas entradas) + Pint en verde.
 
 ## 8. Riesgos
 
@@ -145,3 +145,24 @@ Auditoría `revisar-spec` previa a la implementación. Hallazgos y resoluciones:
 | H8 | Firma `setDefault(Language)` forzaría `findOrFail` o cambiaría el quirk del id inexistente (tx corre igual, sin `forgetModel`) | bajo | Firma `setDefault(string $id): ?Language` (port exacto, quirk §5.2) |
 
 **Estado:** `Borrador` → `Aprobado` (decisor autoriza enmendar + aprobar + implementar en la misma sesión de revisión; paraguas aprobado en el mismo acto por H2).
+
+### Implementación (2026-11-21) — rama `spec/service-language-fase5-impl`
+
+**Desviación `deleteAll` (§5, aprobada en grill Q15):** implementada. El service captura las rutas de los `lang/{code}.json` → borra las filas en tx (`each->delete()`, dispara observers → `forgetModel`) → borra los JSON tras el commit (best-effort). El guard muerto de iconos (`file_exists` relativo al CWD, quirk §5.1) se omite en el port: nunca llegó a disparar, el observable es idéntico (F5/F6 lo congelan en verde pre y post).
+
+**Decisión de implementación — arrays explícitos en `store`/`update`:** el controlador original pasaba `$request->except('icon')` a `create()`/`update()`; el nuevo controlador construye arrays explícitos (`name`, `code`, `order`, `icon`), heredando el patrón Fase 4 (`IncomeCategoryService`) y la convención 5.11 + checklist secure-coding #7/#17. Delta observable: payloads crafted con campos fillable extra (`status`, `is_default`) ya no aplican en store/update — ni F1–F11 ni la red existente congelan ese edge, y los 43 sitios `except()` restantes siguen fuera de scope (paraguas §2 OUT).
+
+**Quirks preservados (§5):** los tres, verificados por F5/F6 (iconos no borrados), U2 (default excluida) y el port find-or-null de `setDefault` (firma `string $id`).
+
+**Evidencia DoD:**
+
+| Criterio | Evidencia |
+|---|---|
+| Controlador < 200 | `wc -l` → **168** líneas (antes 264) |
+| Sin `HasTableActions` / `File::` / `DB::` / `Storage::` en controlador | `grep -c` → **0** ocurrencias |
+| Contrato pre-migración | F1–F11: **11 passed** contra el controlador original (43 assertions) |
+| Contrato post-migración | F1–F11: **11 passed** tras la migración; U1–U4 **4 passed** |
+| Suite completa | **402 passed (4721 assertions)** — antes 387; 0 fallidos |
+| PHPStan (level 5 + baseline congelado) | **[OK] No errors** — sin entradas nuevas |
+| Pint (preset laravel) | **passed** |
+| Rutas | `routes/admin.php` intacto — cero rutas muertas nuevas (regla paraguas §5.4) |

@@ -2,24 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\Language;
-use App\Traits\HasTableActions;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator as LengthAwarePaginatorContract;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\LanguageService;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
 
 class LanguageController extends Controller
 {
-    use HasTableActions;
-    use HasUploader;
-
-    public function __construct()
+    public function __construct(private LanguageService $service)
     {
         $this->middleware('permission:languages-read')->only('index', 'show', 'filter');
         $this->middleware('permission:languages-create')->only('store');
@@ -29,9 +20,7 @@ class LanguageController extends Controller
 
     public function index()
     {
-        $languages = Language::orderBy('order', 'asc')
-            ->latest()
-            ->paginate(20);
+        $languages = $this->service->list();
 
         return view('admin.languages.index', compact('languages'));
     }
@@ -45,16 +34,12 @@ class LanguageController extends Controller
             'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        Language::create($request->except('icon') + [
-            'icon' => $request->icon ? $this->upload($request, 'icon') : null,
+        $this->service->store([
+            'order' => $request->order,
+            'name' => $request->name,
+            'code' => $request->code,
+            'icon' => $request->file('icon'),
         ]);
-
-        $source = base_path('lang/en.json');
-        $destination = base_path("lang/{$request->code}.json");
-
-        if (! File::exists($destination)) {
-            File::copy($source, $destination);
-        }
 
         return response()->json([
             'message' => __('Laguage created successfully'),
@@ -64,39 +49,24 @@ class LanguageController extends Controller
 
     public function show(Request $request, $code)
     {
-        $lang = Language::where('code', $code)->firstOrFail();
-        $path = base_path("lang/{$code}.json");
+        $result = $this->service->translations(
+            $code,
+            $request->filled('search') ? $request->search : null
+        );
 
-        if (! File::exists($path)) {
+        if ($result === null) {
             abort(404, 'Language file not found');
         }
 
-        $translations = json_decode(File::get($path), true) ?? [];
+        $lang = $result['language'];
+        $entries = $result['entries'];
 
-        // Search
-        if ($request->filled('search')) {
-            $search = strtolower($request->search);
-            $translations = array_filter($translations, function ($value, $key) use ($search) {
-                return str_contains(strtolower($key), $search)
-                    || str_contains(strtolower($value), $search);
-            }, ARRAY_FILTER_USE_BOTH);
-        }
-
-        // Convert to collection
-        $collection = collect($translations)->map(function ($value, $key) {
-            return [
-                'key' => $key,
-                'value' => $value,
-            ];
-        })->values();
-
-        // Pagination
         $perPage = 20;
         $page = $request->get('page', 1);
 
         $rows = new LengthAwarePaginator(
-            $collection->forPage($page, $perPage),
-            $collection->count(),
+            $entries->forPage($page, $perPage),
+            $entries->count(),
             $perPage,
             $page,
             ['path' => url()->current(), 'query' => $request->query()]
@@ -120,17 +90,11 @@ class LanguageController extends Controller
             'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        if ($language->code !== $request->code) {
-            $oldPath = base_path("lang/{$language->code}.json");
-            $newPath = base_path("lang/{$request->code}.json");
-
-            if (File::exists($oldPath)) {
-                File::move($oldPath, $newPath);
-            }
-        }
-
-        $language->update($request->except('icon') + [
-            'icon' => $request->icon ? $this->upload($request, 'icon', $language->icon) : $language->icon,
+        $this->service->update($language, [
+            'name' => $request->name,
+            'code' => $request->code,
+            'order' => $request->order,
+            'icon' => $request->file('icon'),
         ]);
 
         return response()->json([
@@ -147,17 +111,7 @@ class LanguageController extends Controller
             ], 403);
         }
 
-        if (file_exists($language->icon)) {
-            Storage::delete($language->icon);
-        }
-
-        $langPath = base_path("lang/{$language->code}.json");
-
-        if (File::exists($langPath)) {
-            File::delete($langPath);
-        }
-
-        $language->delete();
+        $this->service->delete($language);
 
         return response()->json([
             'message' => __('Language deleted successfully'),
@@ -175,32 +129,14 @@ class LanguageController extends Controller
             ], 403);
         }
 
-        $language->update(['status' => $request->status]);
+        $this->service->setStatus($language, $request->status);
 
         return response()->json(['message' => __('Language')]);
     }
 
     public function isDefault(string $id)
     {
-        $language = Language::find($id);
-
-        DB::transaction(function () use ($id) {
-            Language::query()->update([
-                'is_default' => 0,
-            ]);
-
-            Language::where('id', $id)->update([
-                'is_default' => 1,
-                'order' => 0,
-                'created_at' => now(),
-            ]);
-        });
-
-        // Excepción masiva (spec 4.9, Q15a): los updates masivos no
-        // disparan observers; invalidación explícita tras el commit.
-        if ($language) {
-            forgetModel($language);
-        }
+        $this->service->setDefault($id);
 
         return response()->json([
             'message' => __('Default language updated successfully'),
@@ -209,20 +145,7 @@ class LanguageController extends Controller
 
     public function deleteAll(Request $request)
     {
-        $languages = Language::whereIn('id', $request->ids)->where('is_default', 0)->get();
-
-        foreach ($languages as $language) {
-            if (file_exists($language->icon)) {
-                Storage::delete($language->icon);
-            }
-
-            $langPath = base_path("lang/{$language->code}.json");
-            if (File::exists($langPath)) {
-                File::delete($langPath);
-            }
-        }
-
-        $languages->each->delete();
+        $this->service->deleteMany($request->ids);
 
         return response()->json([
             'message' => __('Selected Language deleted successfully'),
@@ -230,35 +153,16 @@ class LanguageController extends Controller
         ]);
     }
 
-    protected function model(): string
+    public function filter(Request $request)
     {
-        return Language::class;
-    }
+        $rows = $this->service->list($request->only(['search', 'per_page']));
 
-    protected function query(Request $request): Builder
-    {
-        return Language::orderBy('order', 'asc')
-            ->when($request->search, function ($q) use ($request) {
-                $q->where(function ($q) use ($request) {
-                    $q->where('name', 'like', '%'.$request->search.'%')
-                        ->orWhere('code', 'like', '%'.$request->search.'%');
-                });
-            })
-            ->latest();
-    }
+        if ($request->ajax()) {
+            return response()->json([
+                'data' => view('admin.languages.datas', ['languages' => $rows])->render(),
+            ]);
+        }
 
-    protected function view(): string
-    {
-        return 'admin.languages.datas';
-    }
-
-    protected function viewData(LengthAwarePaginatorContract $rows): array
-    {
-        return ['languages' => $rows];
-    }
-
-    protected function perPage(): int
-    {
-        return 20;
+        return redirect(url()->previous());
     }
 }
