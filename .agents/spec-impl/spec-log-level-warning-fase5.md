@@ -1,7 +1,7 @@
 ---
 id: spec-log-level-warning-fase5
 titulo: "LOG_LEVEL=warning safe-by-default + patrón de evidencia operacional ops:verify-deploy (Fase 5 / 5.9)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.9, l.114) — .analisis/seguridad.md (Seg-26, l.145)
 cobertura: Cerrar Seg-26 con la palanca repo-side: fallback de config `'debug'`→`'warning'` en 6 canales de logging (safe-by-default, idem patrón 5.5) + comentario guía en `.env.example`; deprecaciones confirmadas cerradas (canal `null`, l.34 + pin l.10). Además fija el **patrón 5.9** de evidencia operacional que las filas 5.5/5.6 tienen pendiente: comando artisan `ops:verify-deploy` (5 checks HARD + 3 WARN, tabla esperado/efectivo/resultado, exit code binario, enforcement gateado por `APP_ENV=production`) que verifica config efectivo (flip + re-cache) y cuya salida pegada en `.analisis/` es la evidencia. Tests U1–U2 (arch) + F1–F4 (consola), suite esperada 325+6=331. Decisiones selladas en grilling Q1–Q14 (2026-11-21). Auditado (revisar-spec, 2026-11-21): H1/H2 bajos corregidos en la rama (refs `phpunit.xml` l.25/l.37; footer del sketch siempre visible per Q12); sin hallazgos altos.
@@ -137,19 +137,19 @@ Ninguno: el estado inseguro (fallback `debug`) se **elimina en este mismo spec**
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `config/logging.php`: exactamente 6 fallbacks `'debug'`→`'warning'` (single l.63, daily l.69, papertrail l.83, stderr l.94, syslog l.104, errorlog l.109); slack l.78 `'critical'` intacto; deprecaciones ll.33–36 intactas.
-- [ ] `.env.example`: comentario guía sobre `LOG_LEVEL` (producción hereda `warning` del default de config; dev puede pinear `debug` localmente).
-- [ ] `app/Console/Commands/VerifyDeploy.php`: firma `ops:verify-deploy`; 5 HARD + 3 WARN + línea INFO `APP_ENV`; enforcement solo con `APP_ENV=production` (report-only en el resto); tabla esperado/efectivo/resultado; footer de evidencia `.analisis/`; sin `env()` ni `request()` (reglas 4.3/4.4); sin impresión de secretos.
-- [ ] U1–U2 en verde (focal: 2 passed, TestCase puro).
-- [ ] F1–F4 en verde (focal: 4 passed; `Artisan::call` + `BufferedOutput`).
-- [ ] Suite completa: **331 passed** — exacto 325+6, verificados contra salida real de `php artisan test`.
-- [ ] `composer analyse` sin nuevas entradas vs baseline; `composer lint` limpio.
-- [ ] `.env` local (gitignored): `LOG_LEVEL=debug` pineado — sin commit.
-- [ ] `AGENTS.md`: línea en Tooling documentando `ops:verify-deploy` + conteo de suite corregido **301 → 331** (stale desde 5.8, P2).
-- [ ] `tests/README.md`: conteo 331, árbol con `LoggingArchTest` + `VerifyDeployTest`, mini-sección "## Verificación de deploy (Fase 5 / 5.9)".
-- [ ] `.agents/README.md`: índice fase5 (9 specs), conteo 54 (commiteado con el draft).
-- [ ] Cierres locales `.analisis/` (gitignored): `seguridad.md` #26 → Mitigado + residual; `plan-accion.md` fila 5.9 + refs del mecanismo en residuales 5.5/5.6 + métrica (redacciones exactas en §Notas 8).
-- [ ] Rama `spec/log-level-warning-fase5-impl` + PR (squash, 1 aprobación + CI); sin push a `main`.
+- [x] `config/logging.php`: exactamente 6 fallbacks `'debug'`→`'warning'` (single l.63, daily l.69, papertrail l.83, stderr l.94, syslog l.104, errorlog l.109); slack l.78 `'critical'` intacto; deprecaciones ll.33–36 intactas.
+- [x] `.env.example`: comentario guía sobre `LOG_LEVEL` (producción hereda `warning` del default de config; dev puede pinear `debug` localmente).
+- [x] `app/Console/Commands/VerifyDeploy.php`: firma `ops:verify-deploy`; 5 HARD + 3 WARN + línea INFO `APP_ENV`; enforcement solo con `APP_ENV=production` (report-only en el resto); tabla esperado/efectivo/resultado; footer de evidencia `.analisis/`; sin `env()` ni `request()` (reglas 4.3/4.4); sin impresión de secretos.
+- [x] U1–U2 en verde (focal: 2 passed, TestCase puro).
+- [x] F1–F4 en verde (focal: 4 passed; `Artisan::call` + `BufferedOutput`).
+- [x] Suite completa: **331 passed** — exacto 325+6, verificados contra salida real de `php artisan test` (1773 assertions; base P1 verificada 325/1743 antes de empezar).
+- [x] `composer analyse` sin nuevas entradas vs baseline (OK, sin tocar baseline — P8); `composer lint` limpio (tras `lint:fix` de 3 fixers de estilo en el comando).
+- [x] `.env` local (gitignored): `LOG_LEVEL=debug` pineado — sin commit.
+- [x] `AGENTS.md`: línea en Tooling documentando `ops:verify-deploy` + conteo de suite corregido **301 → 331** (stale desde 5.8, P2).
+- [x] `tests/README.md`: conteo 331, árbol con `LoggingArchTest` + `VerifyDeployTest`, mini-sección "## Verificación de deploy (Fase 5 / 5.9)".
+- [x] `.agents/README.md`: índice fase5 (9 specs), conteo 54 (commiteado con el draft).
+- [x] Cierres locales `.analisis/` (gitignored): `seguridad.md` #26 → Mitigado + residual; `plan-accion.md` fila 5.9 + refs del mecanismo en residuales 5.5/5.6 + métrica (redacciones exactas en §Notas 8).
+- [x] Rama `spec/log-level-warning-fase5-impl` + PR #56 (squash, 1 aprobación + CI); sin push a `main`.
 
 ---
 
