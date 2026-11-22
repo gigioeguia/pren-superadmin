@@ -4,7 +4,8 @@ use App\Http\Controllers as Web;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [Web\WebController::class, 'index'])->name('home');
-Route::resource('blogs', Web\BlogController::class)->only('index', 'show', 'store');
+Route::resource('blogs', Web\BlogController::class)->only('index', 'show');
+Route::post('/blogs', [Web\BlogController::class, 'store'])->name('blogs.store')->middleware('throttle:5,1');
 Route::resource('highlights', Web\HighlightController::class)->only('show');
 Route::get('/filter-blogs-by-tag', [Web\BlogController::class, 'filterBlogsByTag'])->name('blogs.tag.filter');
 Route::get('/plans', [Web\PlanController::class, 'index'])->name('plan.index');
@@ -13,7 +14,7 @@ Route::get('/terms-conditions', [Web\TermServiceController::class, 'index'])->na
 Route::get('/privacy-policy', [Web\PolicyController::class, 'index'])->name('policy.index');
 
 Route::get('/contact-us', [Web\ContactController::class, 'index'])->name('contact.index');
-Route::post('/contact/store', [Web\ContactController::class, 'store'])->name('contact.store');
+Route::post('/contact/store', [Web\ContactController::class, 'store'])->name('contact.store')->middleware('throttle:5,1');
 
 // Security Deposit & Rent payment
 Route::get('/online-payments-gateways/{payment_id}', [Web\PaymentController::class, 'DepositRentPayment'])->name('online.payments-gateways.index')->middleware('signed');

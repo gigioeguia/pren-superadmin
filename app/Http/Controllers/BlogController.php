@@ -29,19 +29,25 @@ class BlogController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email',
+            'email' => 'required|email|max:255',
             'comment' => 'required|string|max:255',
+            'blog_id' => 'required|integer|exists:blogs,id',
         ]);
 
-        Comment::create($request->except('blog_id') + [
-            'blog_id' => $request->blog_id,
+        $blog = Blog::findOrFail((int) $validated['blog_id']);
+
+        Comment::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'comment' => $validated['comment'],
+            'blog_id' => $validated['blog_id'],
         ]);
 
         return response()->json([
             'message' => __('Your Comment Submitted successfully'),
-            'redirect' => route('blogs.show', $request->blog_slug),
+            'redirect' => route('blogs.show', $blog->slug),
         ]);
     }
 

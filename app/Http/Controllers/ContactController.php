@@ -16,15 +16,21 @@ class ContactController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'required|email|max:255',
             'company_name' => 'nullable|string|max:255',
-            'message' => 'required|string',
+            'message' => 'required|string|max:255',
         ]);
 
-        Message::create($request->all());
+        Message::create([
+            'name' => $validated['name'],
+            'phone' => $validated['phone'],
+            'email' => $validated['email'],
+            'company_name' => $validated['company_name'] ?? null,
+            'message' => $validated['message'],
+        ]);
 
         return response()->json([
             'message' => __('Your Message Submitted successfully'),
