@@ -1,7 +1,7 @@
 ---
 id: spec-devdeps-limpieza-fase5
 titulo: "Limpieza de dependencias no usadas: eliminación del pipeline frontend y stray composer (Fase 5 / 5.12)"
-estado: Revisado
+estado: Aprobado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.12) — .analisis/deuda-tecnica.md (DT-B5, DT-B6; DT-A5 vía supersede de 4.5)
 cobertura: Eliminación del pipeline frontend npm completo (5 devDeps + archivos + job de CI) por ser código muerto demostrable (0 directivas @vite), remoción de laravel/sail del require-dev y de 4 paquetes symfony/* no usados del require; conservación documentada de mockery/collision/faker/guzzle (claims de DT-B5 obsoletos) + barrido documental coherente en AGENTS.md, README.md, plan-accion.md y deuda-tecnica.md
