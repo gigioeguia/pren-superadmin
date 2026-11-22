@@ -1,7 +1,7 @@
 ---
 id: spec-public-writes-throttle-fase5
 titulo: "Throttle y validación de los writes públicos del sitio (blogs + contacto)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-22
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.14) + .analisis/seguridad.md Seg-27
 cobertura: "throttle:5,1 + validación endurecida en POST /blogs y POST /contact/store; DemoMode bloquea ambos en demo; guard arch-test; sin moderación (hallazgo lateral #28)"
@@ -116,16 +116,23 @@ Ninguno: el comportamiento inseguro actual se corrige dentro de este mismo spec;
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `routes/web.php`: `POST /blogs` y `POST /contact/store` llevan `throttle:5,1`; `GET /blogs`, `GET /blogs/{slug}` y `GET /filter-blogs-by-tag` quedan sin throttle.
-- [ ] El nombre de ruta `blogs.store` se preserva tras el split (guards existentes `RouteNamesSmokeTest` + `RouteMethodsReflectionTest` en verde, sin cambios en sus allowlists).
-- [ ] `BlogController::store`: `blog_id` validado `required|integer|exists:blogs,id`; `email` con `max:255`; redirect construido exclusivamente con el slug del blog cargado server-side; `blog_slug` no se lee.
-- [ ] `ContactController::store`: `email` y `message` con `max:255`.
-- [ ] 0 `$request->except(` / `$request->all(` en `BlogController` y `ContactController` — `PublicWritesArchTest` en verde.
-- [ ] `resources/views/web/blog/show.blade.php` sin hidden input `blog_slug`.
-- [ ] `DemoMode::ADMIN_DISABLED_ROUTES` incluye `blogs.store` y `contact.store`.
-- [ ] `CommentFactory` creada; Pub1–Pub7 en verde sobre `dbrentpro_test` (suite 488 + 7 = 495).
-- [ ] Suite completa en verde; PHPStan nivel 5 sin regresiones de baseline; Pint en verde.
-- [ ] Cierres documentales: `seguridad.md` #27 corregido (dos writes públicos, ambos cerrados) + **#28 "sin moderación de comentarios"** nuevo; `plan-accion.md` fila 5.14 cerrada con referencia a este spec + fila **5.19** nueva (dueño: spec futuro de moderación).
+- [x] `routes/web.php`: `POST /blogs` y `POST /contact/store` llevan `throttle:5,1`; `GET /blogs`, `GET /blogs/{slug}` y `GET /filter-blogs-by-tag` quedan sin throttle. — Evidencia: Pub2/Pub6 → 429 con `Retry-After`; GETs existentes del smoke en verde.
+- [x] El nombre de ruta `blogs.store` se preserva tras el split (guards existentes `RouteNamesSmokeTest` + `RouteMethodsReflectionTest` en verde, sin cambios en sus allowlists). — Evidencia: `tests/Feature/Routes/` 15/15 en verde con allowlists intactas en el diff.
+- [x] `BlogController::store`: `blog_id` validado `required|integer|exists:blogs,id`; `email` con `max:255`; redirect construido exclusivamente con el slug del blog cargado server-side; `blog_slug` no se lee. — Evidencia: Pub1 (redirect con slug real ante `blog_slug` basura), Pub3 (422 ante FK junk, antes 500), Pub5 (422 email 256 chars); grep `blog_slug` = 0 en `app/`/`resources/`.
+- [x] `ContactController::store`: `email` y `message` con `max:255`. — Evidencia: diff del controlador; smoke de contacto en verde.
+- [x] 0 `$request->except(` / `$request->all(` en `BlogController` y `ContactController` — `PublicWritesArchTest` en verde. — Evidencia: U19 verde.
+- [x] `resources/views/web/blog/show.blade.php` sin hidden input `blog_slug`. — Evidencia: grep `blog_slug` en vistas = 0.
+- [x] `DemoMode::ADMIN_DISABLED_ROUTES` incluye `blogs.store` y `contact.store`. — Evidencia: Pub7 → 499 JSON en ambos + 0 filas creadas.
+- [x] `CommentFactory` creada; Pub1–Pub7 en verde sobre `dbrentpro_test` (suite 488 + 7 = 495). — Evidencia: `database/factories/CommentFactory.php` nueva; dominio público 17/17; suite completa **496/496** (488 + 7 Pub + 1 guard U19, que el conteo del ítem no incluía).
+- [x] Suite completa en verde; PHPStan nivel 5 sin regresiones de baseline; Pint en verde. — Evidencia: 496 passed (5926 assertions); `composer analyse` OK sin errores (baseline intacta); Pint verde tras `lint:fix` (import order en el test file).
+- [x] Cierres documentales: `seguridad.md` #27 corregido (dos writes públicos, ambos cerrados) + **#28 "sin moderación de comentarios"** nuevo; `plan-accion.md` fila 5.14 cerrada con referencia a este spec + fila **5.19** nueva (dueño: spec futuro de moderación). — Evidencia: ambos archivos actualizados. **Desviación D1 (documental):** el hallazgo se registró como **#30**, no #28 — #28/#29 ya estaban tomados por hallazgos del spec 5.11 (colisión detectada al cierre); sin cambio de diseño ni de comportamiento.
+
+### Cierre (2026-11-22)
+
+Implementado en rama `spec/public-writes-throttle-fase5-impl`. Suite 496/496, PHPStan OK, Pint OK. Detalle de implementación relevante:
+
+- Pub7 requirió `withoutMiddleware(VerifyCsrfToken::class)` — patrón ya establecido por `DemoModeTest` (F2/F3 del spec 3.5): con `APP_ENV=demo`, `runningUnitTests()` (que compara `env === 'testing'`) devuelve false y CSRF exige token en tests. Import correcto: `App\Http\Middleware\VerifyCsrfToken` (clase concreta del pipeline).
+- `Blog::findOrFail((int) $validated['blog_id'])` lleva cast explícito: el array de `validate()` es `array<string, mixed>` y el cast mantiene el código limpio en PHPStan nivel 5.
 
 ---
 
@@ -152,7 +159,7 @@ Ninguno: el comportamiento inseguro actual se corrige dentro de este mismo spec;
 ## 10. Referencias
 
 - `.analisis/plan/plan-accion.md` → Fase 5 / 5.14 (y fila 5.19 nueva al cierre)
-- `.analisis/seguridad.md` → Seg-27 (+ #28 nuevo al cierre)
+- `.analisis/seguridad.md` → Seg-27 (+ #30 "sin moderación" nuevo al cierre; #28/#29 ocupados por spec 5.11)
 - `.agents/spec-impl/spec-throttle-otp-login-fase3.md` → precedente de `throttle:5,1` inline y patrón de test 429 + `Retry-After` (L7/A20/A21)
 - `.agents/spec-impl/spec-typos-rutas-fase5.md` → registró Seg-27 como hallazgo lateral (Q11(A))
 - `.agents/spec-impl/spec-user-fillable-restrictivo-fase5.md` → convención de arrays explícitos y arch-test espejo (U6)
