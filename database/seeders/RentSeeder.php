@@ -12,7 +12,7 @@ class RentSeeder extends Seeder
     public function run(): void
     {
         $landlord = User::demoLandlords()->first();
-        $tenant = User::whereEmail('tenant@acnoo.com')->first();
+        $tenant = User::whereEmail('tenant@example.com')->first();
         $propertyId = PropertyDetail::where('property_info->property_title', 'New House')->value('property_id');
 
         if (! $landlord || ! $tenant || ! $propertyId) {

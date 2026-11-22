@@ -24,7 +24,7 @@ class WithdrawController extends Controller
             ->paginate($request->per_page ?? 10);
 
         return response([
-            'meassage' => 'Data fetched successfully',
+            'message' => 'Data fetched successfully',
             'data' => $withdraws,
         ]);
     }

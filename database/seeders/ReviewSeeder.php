@@ -12,7 +12,7 @@ class ReviewSeeder extends Seeder
 {
     public function run(): void
     {
-        $tenant = User::whereEmail('tenant@acnoo.com')->first();
+        $tenant = User::whereEmail('tenant@example.com')->first();
         $propertyId = PropertyDetail::where('property_info->property_title', 'New House')->value('property_id');
         $rent = Rent::where('property_id', $propertyId)->where('tenant_id', $tenant?->id)->first();
 

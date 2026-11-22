@@ -91,10 +91,10 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'name' => 'Alex',
-            'email' => 'landlord@acnoo.com',
+            'email' => 'landlord@example.com',
             'image' => 'uploads/25/05-132/1748140914.jpeg',
             'phone' => ['mobile_code' => '+880', 'mobile_no' => '01933445566'],
-            'password' => DemoCredentials::hash(DemoCredentials::password('landlord@acnoo.com')),
+            'password' => DemoCredentials::hash(DemoCredentials::password('landlord@example.com')),
             'unique_id' => '687324',
             'is_setupped' => 1,
             'balance' => 1000,
@@ -115,9 +115,9 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'name' => 'Britanni Edwards',
-            'email' => 'tenant@acnoo.com',
+            'email' => 'tenant@example.com',
             'phone' => ['mobile_code' => '+260', 'mobile_no' => '34'],
-            'password' => DemoCredentials::hash(DemoCredentials::password('tenant@acnoo.com')),
+            'password' => DemoCredentials::hash(DemoCredentials::password('tenant@example.com')),
             'unique_id' => '000004',
             'is_setupped' => 1,
             'balance' => 0,

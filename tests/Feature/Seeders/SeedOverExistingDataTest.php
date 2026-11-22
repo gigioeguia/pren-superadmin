@@ -31,7 +31,7 @@ class SeedOverExistingDataTest extends TestCase
         $this->assertDatabaseHas('currencies', ['id' => $realCurrency->id, 'code' => 'ZZZ']);
 
         // sin duplicados del dataset demo
-        $this->assertSame(1, User::whereEmail('landlord@acnoo.com')->count());
+        $this->assertSame(1, User::whereEmail('landlord@example.com')->count());
         $this->assertSame(1, Currency::where('code', 'USD')->count());
 
         // dataset demo completo, colgado del landlord demo (is_demo), no del real

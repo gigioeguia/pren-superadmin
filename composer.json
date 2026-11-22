@@ -66,11 +66,6 @@
         "lint": "php vendor/bin/pint --test",
         "lint:fix": "php vendor/bin/pint"
     },
-    "extra": {
-        "laravel": {
-            "dont-discover": []
-        }
-    },
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",

@@ -37,7 +37,7 @@ php artisan serve
 
 ## Credenciales demo
 
-`migrate --seed` crea 4 usuarios demo (`superadmin@` / `admin@` / `landlord@` / `tenant@acnoo.com`) — **solo para evaluación local, nunca en producción**. Sus passwords **no son predecibles** (ítem 5.2 del plan, implementado):
+`migrate --seed` crea 4 usuarios demo (`superadmin@` / `admin@` / `landlord@` / `tenant@example.com`) — **solo para evaluación local, nunca en producción**. Sus passwords **no son predecibles** (ítem 5.2 del plan, implementado):
 
 - Si fijas `DEMO_USER_PASSWORD` en tu `.env` antes de sembrar, los 4 usuarios usan ese valor.
 - Si la dejas vacía, se genera una aleatoria por usuario y se **imprime en consola al crearlas** — cópialas entonces: un re-seed no las vuelve a mostrar.
@@ -53,7 +53,7 @@ Nada se commitea directo a `main`: cada tarea trabaja en una rama dedicada (`spe
 La suite corre sobre la DB MySQL dedicada `dbrentpro_test` (configurada en `phpunit.xml`, decisión ADR-0001; nunca sobre la DB del `.env`):
 
 ```bash
-php artisan test                           # suite completa (283 tests)
+php artisan test                           # suite completa (334 tests)
 php artisan test --group=characterization  # 1 test de caracterización (documenta deuda
                                            # pendiente; ver tests/README.md)
 ```

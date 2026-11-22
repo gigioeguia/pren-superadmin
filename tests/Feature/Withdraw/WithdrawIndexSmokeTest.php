@@ -83,4 +83,20 @@ class WithdrawIndexSmokeTest extends TestCase
             ->assertJsonCount(1, 'data.data')
             ->assertJsonPath('data.data.0.id', $withdrawA->id);
     }
+
+    public function test_f4_index_message_key_is_well_formed(): void
+    {
+        // Arrange
+        $landlord = $this->createLandlord();
+        $this->createWithdraw($landlord->id);
+        Sanctum::actingAs($landlord, ['*']);
+
+        // Act
+        $response = $this->getJson('/api/v1/landlord/withdraw');
+
+        // Assert — key corregida desde 'meassage' (spec 5.10)
+        $response->assertOk()
+            ->assertJsonPath('message', 'Data fetched successfully')
+            ->assertJsonMissingPath('meassage');
+    }
 }
