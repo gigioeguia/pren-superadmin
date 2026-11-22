@@ -1,7 +1,7 @@
 ---
 id: spec-log-level-warning-fase5
 titulo: "LOG_LEVEL=warning safe-by-default + patrón de evidencia operacional ops:verify-deploy (Fase 5 / 5.9)"
-estado: Revisado
+estado: Aprobado
 fecha: 2026-11-21
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.9, l.114) — .analisis/seguridad.md (Seg-26, l.145)
 cobertura: Cerrar Seg-26 con la palanca repo-side: fallback de config `'debug'`→`'warning'` en 6 canales de logging (safe-by-default, idem patrón 5.5) + comentario guía en `.env.example`; deprecaciones confirmadas cerradas (canal `null`, l.34 + pin l.10). Además fija el **patrón 5.9** de evidencia operacional que las filas 5.5/5.6 tienen pendiente: comando artisan `ops:verify-deploy` (5 checks HARD + 3 WARN, tabla esperado/efectivo/resultado, exit code binario, enforcement gateado por `APP_ENV=production`) que verifica config efectivo (flip + re-cache) y cuya salida pegada en `.analisis/` es la evidencia. Tests U1–U2 (arch) + F1–F4 (consola), suite esperada 325+6=331. Decisiones selladas en grilling Q1–Q14 (2026-11-21). Auditado (revisar-spec, 2026-11-21): H1/H2 bajos corregidos en la rama (refs `phpunit.xml` l.25/l.37; footer del sketch siempre visible per Q12); sin hallazgos altos.
