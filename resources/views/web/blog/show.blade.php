@@ -60,7 +60,6 @@
                                 class="form-section ajaxform_instant_reload">
                                 @csrf
                                 <input type="hidden" name="blog_id" value="{{ $blog->id }}">
-                                <input type="hidden" name="blog_slug" value="{{ $blog->slug }}">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="full-name" class="col-form-label fw-medium">{{ __('Full Name') }}*</label>

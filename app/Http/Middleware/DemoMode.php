@@ -15,6 +15,8 @@ class DemoMode
         'admin.blogs.status',
         'admin.blogs.update',
         'admin.blogs.destroy',
+        'blogs.store',
+        'contact.store',
         'admin.facilities.delete-all',
         'admin.facilities.status',
         'admin.facilities.update',
