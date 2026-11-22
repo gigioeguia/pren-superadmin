@@ -8,9 +8,10 @@ caracterizaciones nuevas): spec del trait de la Fase 0 (Fase 0 / 0.3, DT-C3 —
 índice en `.agents/README.md`).
 
 > **Nota (2026-11-21):** la suite creció con las fases 1–5 y hoy totaliza
-> **334 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
+> **371 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
 > spec 5.3 + 4 del spec 5.4 + 7 del spec 5.5 + 10 del spec 5.6 + 18 del spec
-> 5.7 + 24 del spec 5.8 + 6 del spec 5.9 + 3 del spec 5.10). Este README documenta el origen smoke de Fase 0
+> 5.7 + 24 del spec 5.8 + 6 del spec 5.9 + 3 del spec 5.10 + 37 del spec
+> 5.11). Este README documenta el origen smoke de Fase 0
 > y las convenciones; los dominios añadidos se listan abajo.
 
 ## Cómo correr la suite
@@ -82,13 +83,20 @@ tests/
 │   ├── Support/                  # CacheKeysTest (4.9) + OtpTest (4.6) + OptionsTest U1–U9 (5.7)
 │   ├── Config/                   # SessionConfigTest U1–U5 (5.5) + ForceHttpsConfigTest U1–U6 (5.6) + LoggingArchTest U1–U2 (5.9)
 │   ├── Views/                    # arch-tests U10–U11: 0 get_option()[...] sin guard, 0 logo_setting (5.7)
+│   ├── Models/                   # UserFillableTest U1–U5 (5.11): allowlist + fill/forceFill
+│   ├── Hygiene/                  # arch-tests U6: 0 $request->except( en los 4 User writers (5.11)
 │   └── Seeders/                  # arch-tests U1–U3 + demoReset U4 (spec 4.10)
 └── Feature/
     ├── Auth/                     # L (login web), S (signup+OTP), R (reset), A (API)
+    │   └── *MassAssignmentTest    # S1–S6 + A1–A4 (5.11): inyección cerrada + forceFill
     ├── Payment/                  # P (flujos de pago + whitelist de namespace)
+    │   └── BalanceForceFillTest   # P1–P3 (5.11): balance vía forceFill
     ├── Public/                   # Pub (CMS frontal)
     ├── Admin/                    # G (guard admin + denegación de permisos 3.8)
+    │   └── *SelfTest/*SubscriptionTest/*MassAssignmentTest  # G1–G9 (5.11)
     ├── Landlord/                 # H (guard landlord + expired)
+    │   └── TenantForceFillTest   # H1–H2 (5.11)
+    ├── Api/                      # H3 (5.11): profile_type validado en profileSetUp
     ├── Maintenance/              # M (rutas Artisan)
     ├── Cache/                    # invalidación centralizada (4.9)
     ├── Demo/                     # DemoMode + demoReset (3.5)
@@ -240,6 +248,53 @@ esperado/efectivo/resultado); enforcement solo con `APP_ENV=production`
 valor de `APP_KEY` (F4). La suite fuerza config en runtime (patrón
 ForceHttpsSmokeTest), sin mutar `$_ENV`. Spec:
 `spec-log-level-warning-fase5`.
+
+## `$fillable` de `User` restrictivo (Fase 5 / 5.11)
+
+Allowlist de 7 columnas + fin del patrón `$request->except()` en los 6
+escritores de `User` + mapa `forceFill` (~18 sitios) — cierra DT-B3 y los
+hallazgos **Seg-28** (inyección masiva + override por merge-order en
+signup público web/Api y sitios admin) y **Seg-29** (IDOR de
+`Admin/ProfileController::update`: el id de ruta resolvía cualquier
+cuenta; ahora el target es siempre el usuario de sesión).
+
+- `U1`–`U5` (`tests/Unit/Models/UserFillableTest.php`): allowlist exacto,
+  `fill()` ignora las 8 retiradas, `forceFill()` sí asigna, factories
+  unguarded intactas, hooks `booted()`/`boot()` intactos.
+- `U6` (`tests/Unit/Hygiene/UserMassAssignmentArchTest.php`): arch-test
+  scoped — 0 `$request->except(` en los 4 controladores migrados (los 43
+  sitios no-`User` quedan como lateral audit-pending del spec).
+- `S1`–`S6` / `A1`–`A4` (`WebSignupMassAssignmentTest` /
+  `ApiSignupMassAssignmentTest`): las inyecciones se ignoran (S1/S2/A1
+  nacieron como caracterización de Seg-28 y se flipearon en el mismo PR);
+  valores server-side (OTP, verificación, free-plan trío) persisten vía
+  forceFill.
+- `G1`–`G9` (`UserAdminMassAssignmentTest`, `AdminProfileSelfTest`,
+  `LandlordStoreSubscriptionTest`, `SubscriptionPaidTest`): inyección
+  admin ignorada, self-profile siempre sobre el usuario de sesión (G4/G5),
+  trío del free-plan y de `paid()` persistido — `paid()` además invalida
+  `plan-data-{user_id}` estructuralmente (G9, cierre del gap §3 P5 de
+  4.9).
+- `P1`–`P3` (`Payment/BalanceForceFillTest.php`): balance acreditado
+  (payment success security_deposit) y debitado (withdraw web/Api) vía
+  forceFill.
+- `H1`–`H2` (`Landlord/TenantForceFillTest.php`): `landlord_id` y OTP del
+  tenant persisten vía forceFill (web y Api).
+- `H3` (`Api/ProfileSetUpValidationTest.php`): `profile_type` validado
+  (`nullable|string`) en `profileSetUp`.
+- `F1`–`F5` (`Seeders/SeededRoleAlignmentTest.php`): columna `role` del
+  seeder alineada con Spatie por asignación explícita (Q6) + login
+  redirect, gate de sign-in Api, `notify_users()` y receptor de soporte.
+
+Desviación **D1** (documentada en el spec): el "quirk 1.4" del seeder no
+era reproducible — `SeedCommand` corre los seeders dentro de
+`Model::unguarded()` (vendor `SeedCommand.php:69`), así que la clave
+`'role'` de `firstOrCreate` sí se persistía; F2/F5 quedaron como
+regresión pura y la reestructuración del seeder es hardening
+(unguard-independiente). Desviación **D2**: `IdorPolicySmokeTest` no tenía
+trait de DB y commiteaba sus fixtures a la DB compartida — ahora usa
+`DatabaseTransactions` (descubierto por la sensibilidad al orden de F4).
+Suite: 334 + 37 = **371**. Spec: `spec-user-fillable-restrictivo-fase5`.
 
 ## Desviaciones vs el catálogo del spec
 

@@ -33,7 +33,7 @@ class ForgotPasswordController extends Controller
         $expire = now()->addMinutes(15);
         $code = random_int(100000, 999999);
         $user = User::where('email', $request->email)->first();
-        $user->update(['remember_token' => $code, 'email_verified_at' => $expire]);
+        $user->forceFill(['remember_token' => $code, 'email_verified_at' => $expire])->save();
 
         $data = [
             'code' => $code,
@@ -82,7 +82,10 @@ class ForgotPasswordController extends Controller
             ], 406);
         }
 
-        User::where('email', $request->email)->first()->update(['remember_token' => $code, 'email_verified_at' => $expire]);
+        User::where('email', $request->email)->first()->forceFill([
+            'remember_token' => $code,
+            'email_verified_at' => $expire,
+        ])->save();
 
         return response()->json([
             'message' => 'An otp code has been sent to your email. Please check and confirm.',

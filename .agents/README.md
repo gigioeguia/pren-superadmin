@@ -11,7 +11,7 @@ Carpeta de convenciones, especificaciones, skills y decisiones que rigen cómo t
 ├── spec/                      # convenciones + plantilla para specs
 │   ├── spec-conventions.md
 │   └── spec-template.md
-├── spec-impl/                 # specs concretos (54; un archivo por spec)
+├── spec-impl/                 # specs concretos (55; un archivo por spec)
 │   │
 │   ├── fase0 (3):  spec-tests-smoke-fase0 · spec-phpstan-pint-ci-fase0 · spec-trait-acnoo-fase0
 │   ├── fase1 (6):  spec-admin-middleware-fase1 · spec-env-inseguro-fase1 · spec-registro-api-role-arbitrario-fase1 ·
@@ -30,11 +30,12 @@ Carpeta de convenciones, especificaciones, skills y decisiones que rigen cómo t
 │   │               spec-helpers-globales-clases-fase4 · spec-plan-duration-days-fase4 ·
 │   │               spec-db-transactions-no-external-io-fase4 · spec-cache-invalidacion-centralizada-fase4 ·
 │   │               spec-seeders-firstorcreate-fase4
-│   ├── fase5 (10): spec-comand-txt-credenciales-fase5 · spec-demo-user-passwords-fase5 ·
+│   ├── fase5 (11): spec-comand-txt-credenciales-fase5 · spec-demo-user-passwords-fase5 ·
 │   │               spec-withdraw-index-request-fase5 · spec-trust-hosts-fase5 ·
 │   │               spec-session-database-secure-fase5 · spec-app-url-https-force-tls-fase5 ·
 │   │               spec-get-option-tipos-consistentes-fase5 · spec-typos-rutas-fase5 ·
-│   │               spec-log-level-warning-fase5 · spec-acnoo-rename-fase5
+│   │               spec-log-level-warning-fase5 · spec-acnoo-rename-fase5 ·
+│   │               spec-user-fillable-restrictivo-fase5
 │   └── meta (1):   spec-reconciliacion-analisis-fase0-3
 │
 ├── skills/                    # procedimientos operacionales

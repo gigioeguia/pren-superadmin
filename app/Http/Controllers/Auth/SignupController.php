@@ -61,16 +61,19 @@ class SignupController extends Controller
         try {
             if ($otpStatus === 'off') {
 
-                $user = User::updateOrCreate(['email' => $request->email], $request->except('password', 'role') + [
-                    'remember_token' => null,
-                    'email_verified_at' => now(),
+                $user = User::updateOrCreate(['email' => $request->email], [
+                    'name' => $request->name,
+                    'email' => $request->email,
                     'password' => Hash::make($request->password),
                     'is_setupped' => 1,
-                ]
-                );
+                ]);
 
+                // Columnas fuera del contrato fillable: exclusivas server-side
                 $user->role = 'landlord';
-                $user->save();
+                $user->forceFill([
+                    'remember_token' => null,
+                    'email_verified_at' => now(),
+                ])->save();
 
                 session()->put('user_id', $user->id);
                 session()->put('plan_id', $request->plan_id);
@@ -88,17 +91,19 @@ class SignupController extends Controller
                 ]);
             }
 
-            $user = User::updateOrCreate(['email' => $request->email], $request->except('password', 'role') + [
-                'remember_token' => $code,
-                'role' => 'landlord',
-                'email_verified_at' => $expire,
+            $user = User::updateOrCreate(['email' => $request->email], [
+                'name' => $request->name,
+                'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'is_setupped' => 1,
-            ]
-            );
+            ]);
 
+            // Columnas fuera del contrato fillable: exclusivas server-side
             $user->role = 'landlord';
-            $user->save();
+            $user->forceFill([
+                'remember_token' => $code,
+                'email_verified_at' => $expire,
+            ])->save();
 
             session()->put('user_id', $user->id);
             session()->put('plan_id', $request->plan_id);
@@ -147,10 +152,10 @@ class SignupController extends Controller
 
                 Auth::login($user);
 
-                $user->update([
+                $user->forceFill([
                     'remember_token' => null,
                     'email_verified_at' => now(),
-                ]);
+                ])->save();
 
             } else {
                 return response()->json([
@@ -181,11 +186,11 @@ class SignupController extends Controller
                     'payment_status' => 'paid',
                 ]);
 
-                $user->update([
+                $user->forceFill([
                     'plan_subscribe_id' => $subscribe->id,
                     'will_expire' => now()->addDays($duration),
                     'subscriptionDate' => now(),
-                ]);
+                ])->save();
 
                 $message = __('OTP verified successfully. Free plan activated!');
                 $redirect_url = route('landlord.dashboard');
@@ -233,7 +238,10 @@ class SignupController extends Controller
             ], 406);
         }
 
-        User::where('email', $request->email)->first()->update(['remember_token' => $code, 'email_verified_at' => $expire]);
+        User::where('email', $request->email)->first()->forceFill([
+            'remember_token' => $code,
+            'email_verified_at' => $expire,
+        ])->save();
 
         return response()->json([
             'message' => 'An otp code has been sent to your email. Please check and confirm.',

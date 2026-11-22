@@ -32,11 +32,11 @@ class ResetPasswordController extends Controller
             ], 422);
         }
 
-        $user->update([
+        $user->forceFill([
             'password' => bcrypt($request->password),
             'remember_token' => null,
             'email_verified_at' => now(),
-        ]);
+        ])->save();
 
         return response()->json([
             'message' => 'Your password has been changed!',

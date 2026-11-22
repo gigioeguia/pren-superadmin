@@ -29,22 +29,17 @@ class User extends Authenticatable
         });
     }
 
+    // Contrato 5.11 (DT-B3): allowlist mínima de perfil. El resto de
+    // columnas (tenancy, saldo, suscripción, verificación, OTP) se
+    // escribe solo server-side vía forceFill explícito.
     protected $fillable = [
-        'landlord_id',
-        'plan_subscribe_id',
-        'unique_id',
         'name',
         'email',
         'image',
         'phone',
         'password',
-        'is_setupped',
-        'balance',
         'profile_type',
-        'subscriptionDate',
-        'will_expire',
-        'email_verified_at',
-        'remember_token',
+        'is_setupped',
     ];
 
     /**

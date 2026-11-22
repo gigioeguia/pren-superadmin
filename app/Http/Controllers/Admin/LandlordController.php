@@ -94,7 +94,6 @@ class LandlordController extends Controller
                 'is_setupped' => 1,
                 'name' => $request->name,
                 'email' => $request->email,
-                'plan_subscribe_id' => $request->plan_subscribe_id,
                 'phone' => $request->input('phone'),
                 'password' => Hash::make($request->password),
             ]);
@@ -129,11 +128,11 @@ class LandlordController extends Controller
                     'payment_status' => 'paid',
                 ]);
 
-                $user->update([
+                $user->forceFill([
                     'plan_subscribe_id' => $subscribe->id,
                     'will_expire' => now()->addDays($duration),
                     'subscriptionDate' => now(),
-                ]);
+                ])->save();
             }
 
             DB::commit();

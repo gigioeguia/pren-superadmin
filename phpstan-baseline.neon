@@ -662,42 +662,6 @@ parameters:
 			path: app/Http/Controllers/Api/WithdrawController.php
 
 		-
-			message: '#^Access to property \$balance on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/WithdrawController.php
-
-		-
-			message: '#^Access to property \$balance on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/WithdrawController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/WithdrawController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/WithdrawController.php
-
-		-
-			message: '#^Call to method update\(\) on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/WithdrawController.php
-
-		-
-			message: '#^Call to method update\(\) on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Api/WithdrawController.php
-
-		-
 			message: '#^Relation ''account_info'' is not found in App\\Models\\Withdraw model\.$#'
 			identifier: larastan.relationExistence
 			count: 3
@@ -1057,42 +1021,6 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 2
 			path: app/Http/Controllers/Landlord/SupportController.php
-
-		-
-			message: '#^Access to property \$balance on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Landlord/WithdrawController.php
-
-		-
-			message: '#^Access to property \$balance on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Landlord/WithdrawController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Landlord/WithdrawController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Landlord/WithdrawController.php
-
-		-
-			message: '#^Call to method update\(\) on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Landlord/WithdrawController.php
-
-		-
-			message: '#^Call to method update\(\) on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Landlord/WithdrawController.php
 
 		-
 			message: '#^Relation ''account_info'' is not found in App\\Models\\Withdraw model\.$#'

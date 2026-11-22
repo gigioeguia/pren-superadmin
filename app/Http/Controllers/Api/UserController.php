@@ -40,6 +40,7 @@ class UserController extends Controller
             'mobile_no' => 'nullable|string',
             'mobile_code' => 'nullable|string',
             'email' => 'nullable|email|unique:users,email,'.auth()->user()->id,
+            'profile_type' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,gif|max:10240',
             'mykad.front_image' => 'nullable|image|mimes:jpeg,png,gif|max:10240',
             'mykad.back_image' => 'nullable|image|mimes:jpeg,png,gif|max:10240',

@@ -87,7 +87,6 @@ class ProfileController extends Controller
         try {
 
             $user->update([
-                'landlord_id' => auth()->user()->id,
                 'image' => $image,
                 'is_setupped' => 1,
                 'name' => $request->name,
@@ -96,6 +95,9 @@ class ProfileController extends Controller
                 'profile_type' => $request->profile_type,
                 'password' => $request->password ? Hash::make($request->password) : $user->password,
             ]);
+
+            // Columna de tenancy fuera del contrato fillable (spec 5.11)
+            $user->forceFill(['landlord_id' => auth()->user()->id])->save();
 
             // Before updating user details, ensure it exists
             $userDetails = $user->user_details;

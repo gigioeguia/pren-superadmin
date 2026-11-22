@@ -8,13 +8,17 @@ use App\Models\Rent;
 use App\Models\RentPayment;
 use App\Models\SecurityDeposit;
 use App\Models\Withdraw;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Gate;
 use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
 
 class IdorPolicySmokeTest extends TestCase
 {
-    use CreatesUsers;
+    // Antes sin trait de DB: sus fixtures quedaban commiteados en la DB
+    // compartida de tests y contaminaban a tests posteriores sensibles
+    // al orden (descubierto por F4 del spec 5.11).
+    use CreatesUsers, DatabaseTransactions;
 
     protected function setUp(): void
     {

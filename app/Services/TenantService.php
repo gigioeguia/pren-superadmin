@@ -135,7 +135,6 @@ class TenantService
         DB::beginTransaction();
         try {
             $user = User::create([
-                'landlord_id' => $landlordId,
                 'image' => $image,
                 'is_setupped' => $isSetupped,
                 'name' => $data['name'] ?? null,
@@ -145,8 +144,9 @@ class TenantService
                 'profile_type' => $data['profile_type'] ?? null,
             ]);
 
+            // `role` y columna de tenancy: asignación server-side (spec 5.11)
             $user->role = 'tenant';
-            $user->save();
+            $user->forceFill(['landlord_id' => $landlordId])->save();
 
             UserDetail::create([
                 'user_id' => $user->id,
@@ -168,12 +168,12 @@ class TenantService
             if ($channel === Channel::Api) {
                 $code = random_int(100000, 999999);
                 $expire = now()->addMinutes((int) (config('auth.otp_visibility_time') ?? 3));
-                $user->update([
+
+                $user->role = 'tenant';
+                $user->forceFill([
                     'remember_token' => $code,
                     'email_verified_at' => $expire,
-                ]);
-                $user->role = 'tenant';
-                $user->save();
+                ])->save();
 
                 $mailData = [
                     'code' => $code,
@@ -253,7 +253,6 @@ class TenantService
         DB::beginTransaction();
         try {
             $user->update([
-                'landlord_id' => $actor ? $actor->id : $user->landlord_id,
                 'image' => $image,
                 'is_setupped' => 1,
                 'name' => $data['name'] ?? $user->name,
@@ -263,8 +262,11 @@ class TenantService
                 'profile_type' => $data['profile_type'] ?? $user->profile_type,
             ]);
 
+            // `role` y columna de tenancy: asignación server-side (spec 5.11)
             $user->role = 'tenant';
-            $user->save();
+            $user->forceFill([
+                'landlord_id' => $actor ? $actor->id : $user->landlord_id,
+            ])->save();
 
             if ($userDetail) {
                 $userDetail->update([
