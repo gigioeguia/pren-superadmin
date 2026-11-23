@@ -1,7 +1,7 @@
 ---
 id: spec-session-serialization-json-fase5
 titulo: "Flip session `serialization: json` con precondición escalar en el flujo de pagos (Fase 5 / 5.21)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-23
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.21) — desviación confirmada por el decisor del spec 5.15 (§5/§8, "Pendiente de decisión" cerrado 2026-11-22); endurecimiento anti gadget-chain paralelo al `serializable_classes: false` (D2 del spec 5.15)
 cobertura: Endurecer el canal SESSION con `serialization: json` (default del skeleton L13, sin válvula env) tras refactorar el único stash de modelos del repo (`PaymentController:96-97`, load-bearing para 2 de 3 flujos de pago) a IDs escalares + rehidratación consolidada en `PaymentService::success`; guard doble anti-objetos (custom PHPStan rule + arch-test allowlist), 7º check HARD en `ops:verify-deploy` y migración de los 6 bloques `withSession` con modelos. Decisiones selladas en grilling Q1–Q13 (2026-11-23).
@@ -35,7 +35,7 @@ Cerrar el endurecimiento anti gadget-chain del canal **sesión** (el cache ya qu
 - **Micro-fixes de tipado** (precondición de la regla PHPStan, `mixed` rechazado): `PaymentController:34` (`'platform'` → guard `is_string`) y `TapPayment:76` (`'secret_key'` → cast/guard) + cualquier otro write `mixed` que la regla detecte al activarse (presupuesto acotado, ver §8).
 - **Guard doble anti-objetos-en-sesión (Q7):**
   - **(a) Custom PHPStan rule** `phpstan/Rules/SessionPayloadRule.php` + `phpstan/rules.neon` incluido desde `phpstan.neon.dist` (primer custom rule del repo). Formas cubiertas (Q11): `put`/`push`/`flash`/`now` (Store y fachada `Session`), `session([...])` (forma array), `RedirectResponse::with()` (flash data es data de sesión). Estrictitud (Q12): valor top-level `scalar|array|null`; `mixed` y objetos/enums rechazados; contenidos de arrays sin recursión; **0 entradas al baseline**.
-  - **(b) Arch-test** `tests/Unit/Session/SessionWritersArchTest.php`: allowlist congelada de los **14 archivos escritores** (`SignupController`, `PaymentController`, `SetLocale` + 11 gateways de `app/Library/`); archivo nuevo que escriba sesión ⇒ rojo.
+  - **(b) Arch-test** `tests/Unit/Session/SessionWritersArchTest.php`: allowlist congelada de los **15 archivos escritores** (`SignupController`, `PaymentController`, `SetLocale`, `RespondsJson` + 11 gateways de `app/Library/`); archivo nuevo que escriba sesión ⇒ rojo.
 - **`ops:verify-deploy`** — 7º check HARD: `config('session.serialization') === 'json'` (patrón 5.9/5.20, evidencia runtime del flip de producción).
 - **Tests:**
   - `PaymentFlowSmokeTest`: aserciones 148-149 → scalares (`session('plan_id')`); los 5 bloques `withSession` con modelos (ll.164-165/368-369/387-388/407-408/427-428) migran a `plan_id`/`user_id` — pasan a cubrir la ruta de rehidratación; forget post-success (ll.475-476) sobre claves scalares; **nuevo caso** success `rent_payment` rehidratado (hoy sin cobertura, ver §6.2).
@@ -92,7 +92,7 @@ phpstan/
 phpstan.neon.dist                                             # MODIFICADO: +1 include (phpstan/rules.neon)
 app/Console/Commands/VerifyDeploy.php                         # MODIFICADO: 7º check HARD session serialization
 
-tests/Unit/Session/SessionWritersArchTest.php                # NUEVO: allowlist congelada de 14 escritores (U)
+tests/Unit/Session/SessionWritersArchTest.php                # NUEVO: allowlist congelada de 15 escritores (U)
 tests/Unit/Config/SessionSerializationConfigTest.php         # NUEVO: U (carpeta Config/ de 5.5)
 tests/Unit/Support/PaymentStateTest.php                       # NUEVO: U
 tests/Unit/Console/VerifyDeploySessionTest.php                # NUEVO: U (patrón VerifyDeployPhpFloorTest)
@@ -138,7 +138,7 @@ Fijadas (grilling Q1–Q13, 2026-11-23), no negociables salvo volver el spec a `
 | U1 | config flip literal | `require config/session.php` fresco (sin `$_ENV` mutada) | evaluar el archivo | `['serialization'] === 'json'` y el archivo no introduce `env()` nueva |
 | U2 | `PaymentState` escalar | sesión con `payment_type`/`plan_id`/`user_id`/`gateway_id`/`amount`/`payment_info` scalares | `PaymentState::fromSession()` | props espejo scalares; `planId === (int)` esperado |
 | U3 | basura en sesión tolerada | `session(['plan_id' => ['array'], 'user_id' => []])` | `PaymentState::fromSession()` | props basura → `null` (tratadas como ausentes, sin crash) |
-| U4 | arch-test allowlist congelada | árbol `app/` actual (14 escritores) | escanear formas `put/push/flash/now/Session::/session([` | exactamente los 14 archivos de la allowlist contienen writes; cualquier otro archivo ⇒ fail |
+| U4 | arch-test allowlist congelada | árbol `app/` actual (15 escritores) | escanear formas `put/push/flash/now/Session::/session([` | exactamente los 15 archivos de la allowlist contienen writes; cualquier otro archivo ⇒ fail |
 | U22 | check puro json | `VerifyDeploy::sessionSerializationPasses('json')` | llamada directa | `true` |
 | U23 | check puro php | `VerifyDeploy::sessionSerializationPasses('php')` y `('')` | llamada directa | `false` |
 
@@ -195,26 +195,26 @@ Hallazgos resueltos en el mismo paso (regla del skill: H altos ⇒ vuelta a `Bor
 | H4 | Caso nuevo (P4) podía embeber sufijo `pN` colisionable en el nombre del método → nota: nombre sin prefijo (precedente: método de P13 sin `pN`) | bajo |
 | H5 | `SessionPayloadRule` sin FQCN en nota 4 → especificado namespace `PHPStanRules\` (cargado vía `scanDirectories`, sin composer autoload nuevo) | bajo |
 
-Nota de estado: el decisor había marcado `Aprobado` pre-audit (2026-11-23, sin commit); H1/H2 exigían `Borrador` por convención ("Aprobado solo tras revisión sin altos"). El estado pasa a `Revisado` tras las correcciones — el re-aprobar es decisión del decisor sobre esta versión corregida.
+Nota de estado: el decisor había marcado `Aprobado` pre-audit (2026-11-23, sin commit); H1/H2 exigían `Borrador` por convención ("Aprobado solo tras revisión sin altos"). El estado pasó a `Revisado` tras las correcciones y a `Implementado` el 2026-11-23 al cerrar el DoD en rama `spec/session-serialization-json-fase5-impl`.
 
 ---
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `config/session.php`: exactamente +1 key `'serialization' => 'json'` (diff de 1 línea + comentario); sin `env()` nueva; resto del archivo intacto (Q1).
-- [ ] `PaymentController`: put `plan_id` escalar; puts `user`/`plan` eliminados; forget lists sin `plan`/`user`; identity check a `$state->userId`.
-- [ ] `PaymentState`: sin props `plan`/`user` ni branches de modelo; docblock actualizado al contrato escalar.
-- [ ] `PaymentService::success`: rehidratación única (`findOrFail` por `planId`/`userId`); sin lecturas de modelo desde `PaymentState`.
-- [ ] Micro-fixes de tipado: `platform` (PaymentController:34) y `secret_key` (TapPayment:76) — y cualquier otro `mixed` que la regla reporte al activarse (0 restantes).
-- [ ] `phpstan/Rules/SessionPayloadRule.php` + `phpstan/rules.neon` + include en `phpstan.neon.dist`; `composer analyse` **verde con la regla activa y 0 entradas nuevas al baseline** (regla single-use).
-- [ ] `tests/Unit/Session/SessionWritersArchTest.php` verde; allowlist = los 14 archivos exactos (§6.1 U4).
-- [ ] `ops:verify-deploy`: 7º check HARD presente; U22/U23 + F6 en verde.
-- [ ] U1–U4, U22–U23, P1–P9, F6 en verde; suite completa **569 passed (561 + 8)** — verificar contra salida real de `php artisan test`.
-- [ ] `composer lint` limpio (incluido `phpstan/Rules/`); `composer audit --locked` → 0 advisories.
-- [ ] Los 3 payment types cruzan `success()` por rehidratación (P2/P3/P4).
-- [ ] Docs: `AGENTS.md` gotcha (sesión `json`: solo scalares/arrays; flip invalida sesiones) + conteo 569; `README.md`/`tests/README.md` conteos + mini-sección; `.agents/README.md` fase5 26 (total 71).
-- [ ] Cierres locales `.analisis/` (gitignored): `plan-accion.md` fila 5.21 → Mitigado (2026-11-23) + métrica ✅.
-- [ ] Rama `spec/session-serialization-json-fase5-impl` + PR (squash, 1 aprobación + CI 4/4); sin push a `main`.
+- [x] `config/session.php`: exactamente +1 key `'serialization' => 'json'` (diff de 1 línea + comentario); sin `env()` nueva; resto del archivo intacto (Q1).
+- [x] `PaymentController`: put `plan_id` escalar; puts `user`/`plan` eliminados; forget lists sin `plan`/`user`; identity check a `$state->userId`.
+- [x] `PaymentState`: sin props `plan`/`user` ni branches de modelo; docblock actualizado al contrato escalar; `scalarValue()` compartido para writers.
+- [x] `PaymentService::success`: rehidratación única (`findOrFail` por `planId`/`userId`); sin lecturas de modelo desde `PaymentState`.
+- [x] Micro-fixes de tipado: `platform` (PaymentController), `secret_key` (TapPayment), `Razorpay::get_response(): array`, `SetLocale` locale, `RespondsJson` firmas `string`, `SignupController` plan_id vía `PaymentState::scalarValue` — 0 `mixed` restantes reportados por la regla.
+- [x] `phpstan/Rules/SessionPayloadRule.php` + `phpstan/rules.neon` + include en `phpstan.neon.dist`; `composer analyse` **[OK] No errors** con la regla activa y 0 entradas nuevas al baseline (regla single-use). Clase cargada vía `composer.json` `autoload-dev` `PHPStanRules\\` (requerido por el contenedor DIC de PHPStan 2).
+- [x] `tests/Unit/Session/SessionWritersArchTest.php` verde; allowlist = los **15** archivos exactos (el guard atrapó `Traits/RespondsJson.php`, omitido por el inventario original — ver desviaciones).
+- [x] `ops:verify-deploy`: 7º check HARD presente; U22/U23 + F6 en verde; evidencia local `.analisis/verify-deploy-session-json-2026-11-23.md`.
+- [x] U1–U4, U22–U23, P1–P9, F6 en verde; suite completa **569 passed (6301 assertions, 561 + 8)** — salida real de `php artisan test`.
+- [x] `composer lint` limpio (incluido `phpstan/Rules/`); `composer audit --locked` → 0 advisories.
+- [x] Los 3 payment types cruzan `success()` por rehidratación (P2/P3/P4).
+- [x] Docs: `AGENTS.md` gotcha (sesión `json`: solo scalares/arrays; flip invalida sesiones) + conteo 569; `README.md`/`tests/README.md` conteos + mini-sección; `.agents/README.md` fase5 26 (total 71).
+- [x] Cierres locales `.analisis/` (gitignored): `plan-accion.md` fila 5.21 → Mitigado (2026-11-23) + métrica ✅; evidencia `verify-deploy-session-json-2026-11-23.md`.
+- [ ] Rama `spec/session-serialization-json-fase5-impl` + PR (squash, 1 aprobación + CI 4/4); sin push a `main`. PR pendiente de apertura.
 
 ---
 
@@ -331,8 +331,8 @@ Nota de estado: el decisor había marcado `Aprobado` pre-audit (2026-11-23, sin 
    - `phpstan.neon.dist` → `includes:` + `- phpstan/rules.neon`.
    - Verificación de arranque: `composer analyse` sobre `app/` con la regla activa → los 2-3 `mixed` conocidos (platform, secret_key, y cualquiera adicional) se corrigen en el mismo PR; **prohibido** tocar `phpstan-baseline.neon`.
 
-5. **Arch-test** (`tests/Unit/Session/SessionWritersArchTest.php`): escanear `app/` recursivo; un archivo "escribe sesión" si contiene alguna de: `session()->put(`, `Session::put(`, `->flash(`, `->now(`, `session([`). Assert: conjunto de archivos detectados === allowlist de 14:
-   `Auth/SignupController`, `PaymentController`, `Middleware/SetLocale`, `Library/Billplz`, `Library/FedaPayGateway`, `Library/Thawani`, `Library/Paystack`, `Library/Razorpay`, `Library/Toyyibpay`, `Library/Flutterwave`, `Library/Mollie`, `Library/StripeGateway`, `Library/TapPayment`, `Library/Instamojo`. (El helper `session([` de `SetLocale` entra por la forma array.) `with()` NO se escanea aquí (vive en todos los controladores; lo cubre la regla PHPStan por tipo).
+5. **Arch-test** (`tests/Unit/Session/SessionWritersArchTest.php`): escanear `app/` recursivo; un archivo "escribe sesión" si contiene alguna de: `session()->put(`, `Session::put(`, `->flash(`, `->now(`, `session([`). Assert: conjunto de archivos detectados === allowlist congelada de 15:
+   `Auth/SignupController`, `PaymentController`, `Middleware/SetLocale`, `Library/Billplz`, `Library/FedaPayGateway`, `Library/Thawani`, `Library/Paystack`, `Library/Razorpay`, `Library/Toyyibpay`, `Library/Flutterwave`, `Library/Mollie`, `Library/StripeGateway`, `Library/TapPayment`, `Library/Instamojo`, `Traits/RespondsJson`. (El helper `session([` de `SetLocale` entra por la forma array; `RespondsJson` fue detectado por el propio guard en implementación — desviación documentada.) `with()` NO se escanea aquí (vive en todos los controladores; lo cubre la regla PHPStan por tipo).
 
 6. **7º check HARD** (`VerifyDeploy`): helper puro `public static function sessionSerializationPasses(?string $value): bool` → `'json' === $value`; consumido con `config('session.serialization')`. Fila en la tabla con etiqueta `session serialization=json`, sección HARD (misma mecánica del check php floor: 5.20). F6 usa override runtime `config(['session.serialization' => 'php'])` para la rama FAIL, patrón `VerifyDeployTest`.
 
@@ -348,7 +348,7 @@ Nota de estado: el decisor había marcado `Aprobado` pre-audit (2026-11-23, sin 
 8. **Suite/conteos:** 561 (base 5.20) + 8 nuevos — U1 (config), U2–U3 (PaymentState), U4 (arch-test), U22–U23 (verify-deploy), P4 (rent_payment nuevo), F6 (VerifyDeployTest) = **569 esperados** — verificar contra salida real y actualizar `AGENTS.md`/`README.md`/`tests/README.md` antes de cerrar el PR.
 
 9. **Redacciones documentales (patrón 5.5):**
-   - `plan-accion.md` fila 5.21 → "**Mitigado (2026-11-23):** spec `spec-session-serialization-json-fase5` — stash de `PaymentController` a `plan_id` escalar + rehidratación única en `PaymentService::success` (`PaymentState` 100% escalar); flip `'serialization' => 'json'` (literal, sin válvula; invalida sesiones — sin usuarios activos); guard doble (custom PHPStan rule `phpstan/Rules/` + arch-test allowlist 14) y 7º check HARD en `ops:verify-deploy`; U1–U4 + U22–U23 + P1–P9 + F6, suite 569. Residual: flip + re-cache de producción pendientes de evidencia (patrón 5.9)."
+   - `plan-accion.md` fila 5.21 → "**Mitigado (2026-11-23):** spec `spec-session-serialization-json-fase5` — stash de `PaymentController` a `plan_id` escalar + rehidratación única en `PaymentService::success` (`PaymentState` 100% escalar); flip `'serialization' => 'json'` (literal, sin válvula; invalida sesiones — sin usuarios activos); guard doble (custom PHPStan rule `phpstan/Rules/` + arch-test allowlist 15) y 7º check HARD en `ops:verify-deploy`; U1–U4 + U22–U23 + P1–P9 + F6, suite 569. Residual: flip + re-cache de producción pendientes de evidencia (patrón 5.9)."
    - `plan-accion.md` métricas → "✅ Session `serialization: json` + contrato escalar de sesión del flujo de pagos (Fase 5 / 5.21 — spec-session-serialization-json-fase5, 2026-11-23; residual operativo: `.env`/config de producción)".
    - `AGENTS.md` Gotchas → nueva viñeta: "**Sesión bajo `serialization: json`:** todo payload de sesión debe ser scalar/array (regla PHPStan `SessionPayloadRule` + arch-test `SessionWritersArchTest`); prohibido stashear modelos — rehidratar por ID (patrón `PaymentService::success`). El flip invalida sesiones viejas."
    - `tests/README.md` → árbol (`Unit/Session/`, `Unit/Config/` +1, `Unit/Console/` +1) + mini-sección "## Session serialization (Fase 5 / 5.21)".
@@ -360,3 +360,24 @@ Nota de estado: el decisor había marcado `Aprobado` pre-audit (2026-11-23, sin 
     composer lint && php artisan test
     php artisan ops:verify-deploy   # fila session serialization PASS
     ```
+
+---
+
+## 9. Desviaciones de implementación (2026-11-23)
+
+- **D1 — allowlist arch-test 15 (no 14):** el guard `SessionWritersArchTest` (U4) detectó `app/Traits/RespondsJson.php` (`session()->flash()` en `setSuccess`/`setError`/`setDelete`) que el inventario del spec no había listado — forma `flash()` omitida por el patrón de escaneo original. Se añadió a la allowlist congelada y se tiparon las firmas a `string $message` (micro-fix, sin callers externos). El guard cumplió su propósito.
+- **D2 — autoload-dev para la regla PHPStan:** el spec (§4.4, H5) proponía `scanDirectories` nativo; en PHPStan 2 el contenedor DIC requiere la clase cargable al compilar el servicio. Se registró `PHPStanRules\\: phpstan/Rules` en `composer.json` `autoload-dev` y se quitó `scanDirectories` de `phpstan/rules.neon`. Desviación mecánica (layout de carga), no de contrato.
+- **D3 — micro-fixes adicionales de tipado:** además de `platform` y `TapPayment secret_key`, la regla reportó `mixed` en `PaymentController::failed/orderStatus` (`payment_msg`/`message` flash), `SetLocale` (`$request->get('lang')`), `TapPayment` (mensaje de `paymentDetails`), `Razorpay::get_response()` (tipo de retorno) y `SignupController::signUp` (`plan_id` de request). Se resolvieron con guards `is_string`/cast/firmas, sin baseline.
+- **D4 — `PaymentState::scalarValue()` compartido:** para mantener `SignupController` < 200 líneas (arch-test), la coerción escalar se promovió a `PaymentState::scalarValue(mixed): int|string|null` (contrato público del spec) en lugar de helper privado del controlador.
+- **D5 — endurecimiento `payment_type` desconocido:** `PaymentService::success` ahora rechaza `payment_type` no reconocido como `InvalidCredentials` vía `match default => null` (antes una sesión crafteda podía caer en `Success` sin escritura). Cambio intencional, documentado en §6 ("Cambio de comportamiento intencional").
+
+---
+
+## 10. Cierre (2026-11-23)
+
+- Rama: `spec/session-serialization-json-fase5-impl` (desde draft aprobado).
+- Verificación: `php artisan test` → **569 passed (6301 assertions)**; `composer analyse` → [OK] No errors (regla `SessionPayloadRule` activa, baseline intacto); `composer lint` → PASS; `composer audit --locked` → 0 advisories.
+- Evidencia runtime local: `php artisan ops:verify-deploy` muestra `session.serialization | json | json | PASS` (ver `.analisis/verify-deploy-session-json-2026-11-23.md`, gitignored).
+- Cierres locales `.analisis/` (gitignored): `plan-accion.md` fila 5.21 → Mitigado + métrica ✅.
+- Residual operativo: re-cache/flip de producción pendiente de evidencia (patrón 5.9); el 7º check HARD es la prueba cuando `APP_ENV=production`.
+- PR: pendiente de apertura (squash, CI 4/4 + 1 aprobación; sin merge directo a `main`).
