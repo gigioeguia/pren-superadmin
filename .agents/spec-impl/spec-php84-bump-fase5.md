@@ -1,7 +1,7 @@
 ---
 id: spec-php84-bump-fase5
 titulo: "Bump de runtime PHP 8.3 → 8.4: floor ^8.4.1, Symfony 8.1 y evidencia de runtime (Fase 5 / 5.20)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-23
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.20) — residual del spec 5.15 (§8 riesgos / DoD: "Bump de PHP 8.3 → 8.4, fila nueva del plan")
 cobertura: Bump de runtime 8.3 → 8.4 (contrato ^8.4.1 + platform pin 8.4.1 + CI single 8.4 + phpVersion 80400) con full update del lock (Symfony 7.4 → 8.1 familia unificada e ignition 2.12.1 → 2.13 como line-items explícitos — D1), 6º check HARD de ops:verify-deploy como mecanismo de evidencia del flip de producción, y cierre adelantado del residual del 5.15 (deadline holgado: security 8.3 hasta 2027-12-31)
@@ -146,16 +146,16 @@ Ninguno — spec de infraestructura (como 5.15/4.1); no documenta comportamiento
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `composer.json`: exactamente 2 líneas editadas — `php: ^8.4.1`, `config.platform.php: "8.4.1"` (D1); resto de constraints intactos (Q11 auditable en el diff).
-- [ ] `composer update --with-all-dependencies` exit 0; **diff del lock verificado**: Symfony 7.4.x → **8.1.x familia unificada** (console 8.1.11, http-kernel/http-foundation/routing 8.1.11, mime 8.1.10), `spatie/laravel-ignition` 2.12.1 → **2.13.x**, `laravel/framework` 13.x latest, `nunomaduro/collision` 8.9.x, `phpunit/phpunit` 12.x, `nesbot/carbon` 3.x, `laravel/tinker` 3.x.
-- [ ] CI: `php-version: '8.4'` en los 4 jobs; **run 4/4 success con link** como evidencia (guard real del bump — cierra el proxy inverso del 5.15/F13).
-- [ ] Suite completa en verde sobre 8.4: **561/561** (558 + F5 + U20 + U21 del catálogo; conteo exacto según momento del impl).
-- [ ] PHPStan `phpVersion: 80400` exit 0; **0 adiciones al baseline**; saneo de entradas stale solo con justificación en el PR.
-- [ ] Pint exit 0.
-- [ ] `composer audit --locked` → **0 advisories** (job `audit` verde sobre el lock con Symfony 8).
-- [ ] `php artisan ops:verify-deploy` local: fila `php version` PASS (effective 8.4.27); salida pegada como evidencia bajo `.analisis/` (gitignored).
-- [ ] Docs actualizadas: `AGENTS.md` (l.3/l.5/l.95), `README.md` (l.7 con "Laravel 11.x"→"13.x" de paso, l.13, l.60), `plan-accion.md` (fila 5.20 → Cerrado + métrica l.169 stale + l.181), `.agents/README.md` (índice fase5 19 + spec listado), comentario `phpstan.neon.dist`.
-- [ ] Specs históricos intactos (5.15, 4.1): 0 edits a `.agents/spec-impl/` preexistente.
+- [x] `composer.json`: exactamente 2 líneas editadas — `php: ^8.4.1`, `config.platform.php: "8.4.1"` (D1); resto de constraints intactos (Q11 auditable en el diff: commits `81a40bb`+`f37be72`).
+- [x] `composer update --with-all-dependencies` exit 0; **diff del lock verificado**: Symfony 7.4.x → **8.1.x familia unificada** (console 8.1.11, http-kernel/http-foundation/routing 8.1.11, mime 8.1.10), `spatie/laravel-ignition` 2.12.1 → **2.13.0**, `laravel/framework` 13.43.0, `nunomaduro/collision` 8.9.6, `phpunit/phpunit` 12.5.45, `nesbot/carbon` 3.15.1, `laravel/tinker` 3.2.0.
+- [x] CI: `php-version: '8.4'` en los 4 jobs; **run 4/4 success** — https://github.com/gigioeguia/pren-superadmin/actions/runs/45190685231 (PR #72; cierra el proxy inverso del 5.15/F13).
+- [x] Suite completa en verde sobre 8.4: **561/561** (558 + F5 + U20 + U21; 6254 assertions, 78.4s local + job `tests` en CI).
+- [x] PHPStan `phpVersion: 80400` exit 0; **0 adiciones al baseline** — `[OK] No errors` (0 saneos necesarios).
+- [x] Pint exit 0 — `composer lint` passed.
+- [x] `composer audit --locked` → **0 advisories** (job `audit` verde sobre el lock con Symfony 8.1).
+- [x] `php artisan ops:verify-deploy` local: fila `php version | >= 8.4.1 | 8.4.27 | PASS` — evidencia en `.analisis/verify-deploy-php84-bump-2026-11-23.md` (gitignored).
+- [x] Docs actualizadas: `AGENTS.md` (l.3/l.5/l.95), `README.md` (l.7 "Laravel 11.x"→"13.x" corregido de paso, l.13, l.60), `plan-accion.md` (fila 5.20 → Cerrado + métrica l.169 stale corregida + l.181), `.agents/README.md` (índice regenerado completo: fase5 25, total 70), comentario `phpstan.neon.dist`.
+- [x] Specs históricos intactos (5.15, 4.1): 0 edits a `.agents/spec-impl/` preexistente.
 
 ---
 
@@ -214,3 +214,14 @@ Auditoría `revisar-spec` contra `.agents/spec/spec-conventions.md` + plantilla.
 ## 12. Desviaciones
 
 - **D1 — floor 8.4.0 → 8.4.1 (válvula Q10, decidido por el decisor 2026-11-23, opción A).** El primer full update con pin `"8.4"` (≡ 8.4.0) partió la familia Symfony: `console/http-foundation/http-kernel/mime/routing` quedaron en 7.4.x mientras el resto subía a 8.0.x — el line-item DoD "Symfony → 8.0.x" era inseguible tal cual. Causa raíz: `nunomaduro/collision 8.9.6` y `nunomaduro/termwind 2.4.1` exigen `symfony/console ^7.4.23 || ^8.1.11` (la rama 8.0.x no existe para ellos), y `symfony/console v8.1.11` exige **PHP >= 8.4.1**. Nota forense: `composer why-not` no lo reporta porque solo mira constraints de dependientes, no floors de PHP del propio candidato; el bloqueo real salió del dry-run `composer update symfony/console:v8.1.11 ...`. Enmienda aplicada (misma línea, valor distinto — Q11 intacto): require `php: ^8.4.1`, platform pin `8.4.1`, check HARD `>= 8.4.1` (umbral de `phpFloorPasses` y F5), line-item DoD "Symfony 7.4.x → **8.1.x familia unificada**" (mejora del 8.0.x prometido). Verificado con dry-run doble (pin 8.4.1 y 8.4.27 → misma resolución: console/http-kernel/http-foundation/routing 8.1.11, mime 8.1.10). Mismo criterio de honestidad del Q2: el lock con console 8.1.11 no instala en 8.4.0 → declarar `^8.4` sería la trampa que Q2 rechazó para `^8.3`. Runtime: CI `setup-php '8.4'` instala el último patch (>= 8.4.27 hoy) ✓; local 8.4.27 ✓; residual prod exige >= 8.4.1 (cualquier instalación 2026-era lo cumple).
+
+---
+
+## 13. Cierre (2026-11-23)
+
+DoD verificado íntegro (§7 tachado con evidencia). Rama `spec/php84-bump-fase5-impl` → **PR #72**, CI 4/4 sobre PHP 8.4: [run 45190685231](https://github.com/gigioeguia/pren-superadmin/actions/runs/45190685231). Suite 561/561, PHPStan `80400` [OK] (0 adiciones), Pint, `composer audit --locked` 0, `ops:verify-deploy` local PASS (evidencia `.analisis/verify-deploy-php84-bump-2026-11-23.md`). Fila 5.20 del plan → Cerrado (código+CI).
+
+**Residuales con dueño (operacionales, patrón 5.9):**
+
+- **Flip del runtime de producción** a >= 8.4.1: la captura del check `php version` sobre `APP_ENV=production` es la evidencia que cierra (mismo mecanismo que 5.5/5.6/5.9 comparten).
+- **PHP 8.5**: sin fila (security 8.4 → 2028-12-31 cubre todo el ciclo de L13; se decide junto al próximo framework mayor).
