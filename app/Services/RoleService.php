@@ -21,7 +21,7 @@ class RoleService
     public function store(array $data): Role
     {
         return DB::transaction(function () use ($data): Role {
-            $role = Role::create([
+            $role = Role::query()->create([
                 'name' => $data['name'],
             ]);
 

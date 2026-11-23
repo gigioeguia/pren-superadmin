@@ -231,25 +231,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\Withdraw\:\:\$user\.$#'
 			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Admin/WithdrawRequestController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
-			identifier: class.notFound
 			count: 1
-			path: app/Http/Controllers/Admin/WithdrawRequestController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Admin/WithdrawRequestController.php
-
-		-
-			message: '#^If condition is always true\.$#'
-			identifier: if.alwaysTrue
-			count: 2
 			path: app/Http/Controllers/Admin/WithdrawRequestController.php
 
 		-
@@ -511,12 +493,6 @@ parameters:
 			path: app/Http/Controllers/Api/UserController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Withdraw\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/WithdrawController.php
-
-		-
 			message: '#^Relation ''account_info'' is not found in App\\Models\\Withdraw model\.$#'
 			identifier: larastan.relationExistence
 			count: 3
@@ -675,18 +651,12 @@ parameters:
 		-
 			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\Tenant\.$#'
 			identifier: class.notFound
-			count: 2
+			count: 1
 			path: app/Http/Controllers/Landlord/ProfileController.php
 
 		-
 			message: '#^Access to property \$id on an unknown class App\\Models\\Api\\User\.$#'
 			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Landlord/ProfileController.php
-
-		-
-			message: '#^Array has 2 duplicate keys with value ''email'' \(''email'', ''email''\)\.$#'
-			identifier: array.duplicateKey
 			count: 1
 			path: app/Http/Controllers/Landlord/ProfileController.php
 

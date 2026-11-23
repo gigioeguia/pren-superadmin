@@ -48,7 +48,7 @@ class WithdrawService
             if ($channel === Channel::Api) {
                 sendNotification(
                     $withdraw->id,
-                    notify_users([$withdraw->user->id]),
+                    notify_users([$user->id]),
                     landlord_url: route('landlord.withdraw.index', ['id' => $withdraw->id]),
                     admin_msg: __('A new withdrawal request has been submitted. Please review and process it.'),
                     landlord_msg: __('Your withdrawal request has been submitted successfully. Awaiting approval.')
@@ -70,6 +70,9 @@ class WithdrawService
      */
     public function approve(User $admin, Withdraw $withdraw, ?string $reason, ?string $notes): Transaction
     {
+        // Relaciones explícitas tipadas, leídas fuera de la tx (Fase 4 / 4.8)
+        $method = $withdraw->account_info()->first()?->withdraw_method()->first();
+
         DB::beginTransaction();
 
         try {
@@ -82,7 +85,7 @@ class WithdrawService
                 'payment_type' => 'withdraw',
                 'amount' => $withdraw->amount,
                 'charge' => $withdraw->charge,
-                'payment_method' => $withdraw->account_info->withdraw_method->name ?? '',
+                'payment_method' => $method->name ?? '',
                 'notes' => $notes,
             ]);
 
@@ -117,7 +120,7 @@ class WithdrawService
                 'reason' => $reason,
             ]);
 
-            $withdraw->user->increment('balance', $totalRefund);
+            User::findOrFail($withdraw->user_id)->increment('balance', $totalRefund);
         });
     }
 }
