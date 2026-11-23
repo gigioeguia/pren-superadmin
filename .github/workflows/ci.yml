@@ -28,7 +28,7 @@ jobs:
         with:
           php-version: '8.4'
           extensions: mbstring, pdo_mysql, gd, zip
-          coverage: none
+          coverage: pcov
 
       - name: Install PHP dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
@@ -67,6 +67,64 @@ jobs:
           DB_PORT: 3306
           DB_USERNAME: root
           DB_PASSWORD: root
+
+  coverage:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: dbrentpro_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_mysql, gd, zip
+          coverage: pcov
+
+      - name: Install PHP dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Create installer marker
+        run: echo '{"marker":"installer"}' > vendor/autoload1.php
+
+      - name: Create empty env file
+        run: touch .env
+
+      - name: Migrate test database
+        run: php artisan migrate --force
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: dbrentpro_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+
+      - name: Run test suite with coverage
+        run: php artisan test --coverage --min=40 --coverage-clover=coverage.xml
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_USERNAME: root
+          DB_PASSWORD: root
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 14
 
   static-analysis:
     runs-on: ubuntu-latest

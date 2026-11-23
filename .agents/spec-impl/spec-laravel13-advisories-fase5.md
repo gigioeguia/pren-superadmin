@@ -1,7 +1,7 @@
 ---
 id: spec-laravel13-advisories-fase5
 titulo: "Remediación de advisories de laravel/framework: upgrade 11.57.1 → 13.x + hardening de serialización (Fase 5 / 5.15, absorbe 5.16)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-22
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.15; absorbe 5.16) — hallazgo lateral del spec 5.12 (composer audit, 2026-11-21)
 cobertura: Upgrade de laravel/framework 11.57.1 (security-EOL) a 13.x cerrando los 4 advisories únicos del audit (1 high expuesto, 1 medium + 2 low no expuestos), rename nunomaduro/larastan → larastan/larastan (5.16), guard CI composer audit bloqueante y hardening de serialización de cache (D2); sin cambio de runtime (PHP 8.3, floor de L13)

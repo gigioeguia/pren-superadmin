@@ -48,7 +48,7 @@ Nada se commitea directo a `main`: cada tarea trabaja en una rama dedicada (`spe
 La suite corre sobre la DB MySQL dedicada `dbrentpro_test` (configurada en `phpunit.xml`, decisión ADR-0001; nunca sobre la DB del `.env`):
 
 ```bash
-php artisan test                           # suite completa (569 tests)
+php artisan test                           # suite completa (588 tests)
 php artisan test --group=characterization  # 1 test de caracterización (documenta deuda
                                            # pendiente; ver tests/README.md)
 ```
@@ -57,7 +57,7 @@ Precondiciones, mocks obligatorios y cobertura de endpoints: ver [`tests/README.
 
 ## Seguridad conocida
 
-- Laravel 13 y PHP 8.4 con Fases 0–5 del plan de remediación. El plan por fases (26 vulnerabilidades, 28 ítems de deuda) vive en `.analisis/plan/plan-accion.md` (carpeta gitignored, solo local). Estado actual: Fases 0–4 implementadas; Fase 5 (higiene) ongoing — ver `plan-accion.md` para el detalle.
+- Laravel 13 y PHP 8.4 con Fases 0–5 del plan de remediación completas en código/CI. El plan por fases (26 vulnerabilidades, 28 ítems de deuda) vive en `.analisis/plan/plan-accion.md` (carpeta gitignored, solo local). Residuales operativos (flips/re-cache de producción, re-seed, evidencia) pendientes — ver `plan-accion.md` y `.analisis/runbook-residuales-operativos.md`.
 - Passwords demo **no predecibles** (ítem 5.2 implementado, ver "Credenciales demo"): `DEMO_USER_PASSWORD` en `.env` o aleatorias impresas al sembrar. Instancias sembradas con versiones previas: rotar/desactivar las cuentas demo.
 
 ## Documentación interna
