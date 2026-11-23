@@ -60,4 +60,16 @@ class RentPaymentPolicy
     {
         return $this->owns($user, $payment);
     }
+
+    public function offlinePayment(User $user, RentPayment $payment): bool
+    {
+        $rent = $payment->rent()->first();
+
+        if (! $rent) {
+            return false;
+        }
+
+        return $user->id === $rent->getAttribute('landlord_id')
+            || $user->id === $rent->getAttribute('tenant_id');
+    }
 }

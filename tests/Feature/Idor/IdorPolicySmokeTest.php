@@ -156,6 +156,22 @@ class IdorPolicySmokeTest extends TestCase
         $this->assertFalse(Gate::forUser($this->landlordA)->allows('view', $paymentB));
     }
 
+    public function test_524_tenant_cannot_offline_pay_foreign_rent_payment(): void
+    {
+        $rent = Rent::create([
+            'landlord_id' => $this->landlordB->id,
+            'tenant_id' => $this->tenantB->id,
+            'property_id' => Property::factory()->create(['landlord_id' => $this->landlordB->id])->id,
+        ]);
+
+        $paymentB = RentPayment::create([
+            'rent_id' => $rent->id,
+        ]);
+
+        $this->assertFalse(Gate::forUser($this->tenantA)->allows('offlinePayment', $paymentB));
+        $this->assertTrue(Gate::forUser($this->tenantB)->allows('offlinePayment', $paymentB));
+    }
+
     public function test_f23_tenant_cannot_update_property(): void
     {
         $propertyB = Property::factory()->create(['landlord_id' => $this->landlordB->id]);

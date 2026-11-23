@@ -6,6 +6,7 @@ use App\Enums\Channel;
 use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\Gateway;
+use App\Models\RentPayment;
 use App\Models\SecurityDeposit;
 use App\Models\User;
 use App\Services\SecurityDepositService;
@@ -68,6 +69,8 @@ class SecurityDepositController extends Controller
                 // depósito ajeno mantiene el 500 'Payment failed' congelado (F13b)
                 if ($request->payment_type == 'security_deposit') {
                     $this->authorize('offlinePayment', SecurityDeposit::findOrFail($id));
+                } elseif ($request->payment_type == 'rent_payment') {
+                    $this->authorize('offlinePayment', RentPayment::findOrFail($id));
                 }
 
                 $this->service->offlinePayment($tenant, [
