@@ -5,6 +5,8 @@ namespace Tests\Feature\Security;
 use App\Http\Kernel;
 use App\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery as FrameworkPreventRequestForgery;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use PHPUnit\Framework\Attributes\Group;
 use ReflectionClass;
 use Tests\TestCase;
@@ -24,8 +26,8 @@ class PreventRequestForgerySmokeTest extends TestCase
         $webGroup = $this->app->make(Kernel::class)->getMiddlewareGroups()['web'];
 
         $this->assertContains(PreventRequestForgery::class, $webGroup);
-        $this->assertNotContains(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class, $webGroup);
-        $this->assertNotContains(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class, $webGroup);
+        $this->assertNotContains(VerifyCsrfToken::class, $webGroup);
+        $this->assertNotContains(ValidateCsrfToken::class, $webGroup);
     }
 
     public function test_f5_csrf_middleware_has_no_exemptions(): void
