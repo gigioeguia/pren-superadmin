@@ -16,7 +16,7 @@ class VerifyDeploy extends Command
 {
     protected $signature = 'ops:verify-deploy';
 
-    protected $description = 'Verify effective deploy posture (LOG_LEVEL, session, TLS) — evidence for Fase 5 residuals';
+    protected $description = 'Verify effective deploy posture (LOG_LEVEL, session, TLS, PHP runtime) — evidence for Fase 5 residuals';
 
     public function handle(): int
     {
@@ -62,6 +62,7 @@ class VerifyDeploy extends Command
             $this->row('session.driver', 'database', (string) config('session.driver'), config('session.driver') === 'database'),
             $this->row('app.url', 'https://…', (string) config('app.url'), str_starts_with((string) config('app.url'), 'https://')),
             $this->row('app.force_https', 'true', config('app.force_https') ? 'true' : 'false', config('app.force_https') === true),
+            $this->row('php version', '>= 8.4.1', PHP_VERSION, self::phpFloorPasses(PHP_VERSION)),
         ];
     }
 
@@ -81,6 +82,16 @@ class VerifyDeploy extends Command
             $this->warnRow('app.trusted_proxies', 'set only behind a TLS-terminating LB', $trustedProxies === '' ? '(empty)' : 'set', $trustedProxies !== ''),
             $this->warnRow('app.key', 'set', $appKeySet ? 'set' : 'missing', $appKeySet),
         ];
+    }
+
+    /**
+     * Floor de runtime del spec 5.20 (Q9): helper puro porque PHP_VERSION es
+     * verdad del runtime, no config — la rama FAIL no es simulable por
+     * config() y se cubre en tests unitarios.
+     */
+    public static function phpFloorPasses(string $version): bool
+    {
+        return version_compare($version, '8.4.1', '>=');
     }
 
     /**

@@ -1,8 +1,8 @@
 # AGENTS.md
 
-Laravel 13.x / PHP 8.3 SaaS for property rental management (roles: `superadmin`, `admin`, `landlord`, `tenant`). Multi-tenant by landlord; payments via 11 gateways.
+Laravel 13.x / PHP 8.4 SaaS for property rental management (roles: `superadmin`, `admin`, `landlord`, `tenant`). Multi-tenant by landlord; payments via 11 gateways.
 
-> Stack actualizado a Laravel 13.x / PHP 8.3 (upgrade 11→13 desde rama security-EOL; spec `spec-laravel13-advisories-fase5`, 2026-11-22, cierra 5.15 + 5.16). Plan de remediación restante (Fase 5, higiene) en `.analisis/plan/plan-accion.md`.
+> Stack actualizado a Laravel 13.x / PHP 8.4 (upgrade 11→13 desde rama security-EOL; spec `spec-laravel13-advisories-fase5`, 2026-11-22, cierra 5.15 + 5.16; runtime 8.3 → 8.4, spec `spec-php84-bump-fase5`, 2026-11-23, cierra 5.20 — floor `^8.4.1`, Symfony 8.1, pin `8.4.1`). Plan de remediación restante (Fase 5, higiene) en `.analisis/plan/plan-accion.md`.
 
 ## Commands
 
@@ -92,7 +92,7 @@ Desde Fase 5 / 5.7 `App\Support\Options` fija el contrato tipado de las options:
 
 ## Tooling
 
-- **PHPStan (Larastan 3.x)**: `composer analyse` — level 5, paths `app/`, target PHP 8.3 (`phpVersion: 80300`), incluye `phpstan-baseline.neon` (156 entradas legacy congeladas; saneado −1 entrada stale en el upgrade a L13 — `spec-laravel13-advisories-fase5.md` §12). Desde 5.16 el paquete es `larastan/larastan` (rename de `nunomaduro/larastan`, abandonado).
+- **PHPStan (Larastan 3.x)**: `composer analyse` — level 5, paths `app/`, target PHP 8.4 (`phpVersion: 80400`, floor `^8.4.1` — spec 5.20/D1), incluye `phpstan-baseline.neon` (156 entradas legacy congeladas; saneado −1 entrada stale en el upgrade a L13 — `spec-laravel13-advisories-fase5.md` §12). Desde 5.16 el paquete es `larastan/larastan` (rename de `nunomaduro/larastan`, abandonado).
 - **Baseline rule**: the baseline is single-use. Regenerating it to make a PR pass is forbidden; only with documented justification + diff review of the file in the PR. New/modified code errors must fail.
 - **Pint (preset laravel)**: `composer lint` (test mode, CI-enforced) / `composer lint:fix` (auto-fix). Config in `pint.json`.
 - **CI**: `.github/workflows/ci.yml` — 4 jobs on push to `main` + PRs: `tests` (MySQL 8 service over `dbrentpro_test`), `static-analysis` (phpstan), `style` (pint), `audit` (`composer audit --locked` bloqueante; válvula `audit.ignore` en composer.json solo para advisories sin fix, con justificación en el PR — spec 5.15 / F13). Note: the `tests` job must recreate the `vendor/autoload1.php` marker after `composer install`, create an **empty `.env`** (`touch .env` — sin él, el `@file_get_contents('.env')` de phpdotenv lo reporta el printer de Collision como warning en cada test) and run `php artisan migrate --force` **antes** de la suite (los unit tests con `DatabaseTransactions` no migran y corren sobre el esquema pre-creado).
