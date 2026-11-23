@@ -35,7 +35,6 @@ class ControllersLineLimitArchTest extends TestCase
         'Admin/RoleController.php',              // deuda lateral — plan-accion
         'Admin/WithdrawRequestController.php',  // deuda lateral (dinero) — plan-accion
         'Landlord/ProfileController.php',        // deuda lateral — plan-accion
-        'Landlord/WithdrawController.php',      // deuda lateral (dinero) — plan-accion
     ];
 
     /**
