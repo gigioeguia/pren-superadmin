@@ -59,7 +59,13 @@ class ExpenseCategoryController extends Controller
     {
         $expense_categories = $this->service->listForChannel(Channel::Landlord, auth()->user(), array_merge($request->all(), ['per_page' => 20]));
 
-        return view('landlord.expense-categories.datas', ['expense_categories' => $expense_categories]);
+        if ($request->ajax()) {
+            return response()->json([
+                'data' => view('landlord.expense-categories.datas', ['expense_categories' => $expense_categories])->render(),
+            ]);
+        }
+
+        return redirect(url()->previous());
     }
 
     // Restaurado (spec 5.17): statusMessage verbatim pre-4.2, sin __().

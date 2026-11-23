@@ -65,7 +65,13 @@ class IncomeCategoryController extends Controller
     {
         $income_categories = $this->service->listForChannel(Channel::Admin, auth()->user(), array_merge($request->all(), ['per_page' => 20]));
 
-        return view('admin.income-categories.datas', ['income_categories' => $income_categories]);
+        if ($request->ajax()) {
+            return response()->json([
+                'data' => view('admin.income-categories.datas', ['income_categories' => $income_categories])->render(),
+            ]);
+        }
+
+        return redirect(url()->previous());
     }
 
     public function deleteAll(Request $request)

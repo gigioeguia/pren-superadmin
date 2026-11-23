@@ -59,7 +59,13 @@ class IncomeCategoryController extends Controller
     {
         $income_categories = $this->service->listForChannel(Channel::Landlord, auth()->user(), array_merge($request->all(), ['per_page' => 20]));
 
-        return view('landlord.income-categories.datas', ['income_categories' => $income_categories]);
+        if ($request->ajax()) {
+            return response()->json([
+                'data' => view('landlord.income-categories.datas', ['income_categories' => $income_categories])->render(),
+            ]);
+        }
+
+        return redirect(url()->previous());
     }
 
     // Restaurado (spec 5.17): statusMessage verbatim pre-4.2, sin __().

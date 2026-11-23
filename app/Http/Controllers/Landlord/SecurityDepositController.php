@@ -33,7 +33,13 @@ class SecurityDepositController extends Controller
     {
         $security_deposits = $this->service->listForChannel(Channel::Landlord, auth()->user(), array_merge($request->all(), ['per_page' => $request->per_page ?? 20]));
 
-        return view('landlord.security-deposits.datas', ['security_deposits' => $security_deposits]);
+        if ($request->ajax()) {
+            return response()->json([
+                'data' => view('landlord.security-deposits.datas', ['security_deposits' => $security_deposits])->render(),
+            ]);
+        }
+
+        return redirect(url()->previous());
     }
 
     // Restaurado (spec 5.17): filename verbatim pre-4.2.

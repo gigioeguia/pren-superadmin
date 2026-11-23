@@ -33,7 +33,13 @@ class RentPaymentController extends Controller
     {
         $rent_payments = $this->service->listForChannel(Channel::Landlord, auth()->user(), array_merge($request->all(), ['per_page' => $request->per_page ?? 20]));
 
-        return view('landlord.rent-payments.datas', ['rent_payments' => $rent_payments]);
+        if ($request->ajax()) {
+            return response()->json([
+                'data' => view('landlord.rent-payments.datas', ['rent_payments' => $rent_payments])->render(),
+            ]);
+        }
+
+        return redirect(url()->previous());
     }
 
     /**
