@@ -136,4 +136,26 @@ class OfflinePaymentContractTest extends TestCase
         $response->assertStatus(500)->assertJsonPath('message', 'Payment failed');
         $this->assertSame($originalStatus, $deposit->fresh()->status);
     }
+
+    public function test_524_foreign_rent_payment_offline_returns_500(): void
+    {
+        Storage::fake(config('filesystems.default'));
+
+        $rentPayment = RentPayment::factory()->create();
+        $rentPayment->update(['payment_status' => 'paid']);
+        $owner = $rentPayment->rent->tenant;
+
+        $intruder = $this->createTenant();
+        $gateway = Gateway::factory()->manual()->create();
+        Sanctum::actingAs($intruder);
+
+        $response = $this->post("/api/v1/tenant/offline-payment/{$gateway->id}/{$rentPayment->id}", [
+            'payment_type' => 'rent_payment',
+            'payment_note' => 'Not mine',
+            'payment_receipt' => UploadedFile::fake()->image('receipt.jpg'),
+        ]);
+
+        $response->assertStatus(500)->assertJsonPath('message', 'Payment failed');
+        $this->assertSame('paid', $rentPayment->fresh()->payment_status);
+    }
 }
