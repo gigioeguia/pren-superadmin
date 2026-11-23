@@ -9,36 +9,18 @@ use RecursiveIteratorIterator;
 
 /**
  * Arch-test del paraguas spec-unificar-capas-services-fase5 (§5.2),
- * activado por el spec-controladores-residuales-fase5 (U1–U2). Estilo
- * SeedersArchTest: lee archivos, sin DB.
+ * activado por el spec-controladores-residuales-fase5 (U1–U2) y
+ * cerrado por el spec-tx-legadas-services-fase5 (U1 absoluto,
+ * 2026-11-22). Estilo SeedersArchTest: lee archivos, sin DB.
  *
- * U2 — allowlist D1 (decisor 2026-11-22): la premisa del paraguas
- * ("los 8 controladores con tx están todos en scope") era inexacta.
- * Las 9 excepciones viven en entidades OUT del paraguas (§2: withdraw,
- * profile, role, api user/security-deposit) o fueron conservadas a
- * propósito (Api/Auth/RegistrationController, hijo 4 §11). Cualquier
- * tx NUEVA en un controlador rompe este test; la migración de las 9
- * exige specs propios (rastreadas en .analisis/plan/plan-accion.md).
+ * U2 — regla absoluta desde spec-tx-legadas-services-fase5: las 9 tx
+ * legadas del allowlist D1 (8 deuda lateral + Registration, cuyo
+ * supersede del hijo 4 §11 movió la tx a LandlordService) viven hoy en
+ * services. Ningún controlador puede declarar una transacción: la tx
+ * va en el service (Fase 4/4.8) — sin excepciones.
  */
 class ControllersLineLimitArchTest extends TestCase
 {
-    /**
-     * Controladores con transacciones legadas documentadas.
-     *
-     * @var array<int, string>
-     */
-    private const TX_ALLOWLIST = [
-        'Api/Auth/RegistrationController.php',   // hijo 4 §11: unidad atómica User+trío, diseño intencional
-        'Api/SecurityDepositController.php',     // deuda lateral (offline deposit) — plan-accion
-        'Api/UserController.php',                // deuda lateral (profile-setup) — plan-accion
-        'Api/WithdrawController.php',           // deuda lateral (dinero) — plan-accion
-        'Admin/ProfileController.php',          // deuda lateral — plan-accion
-        'Admin/RoleController.php',              // deuda lateral — plan-accion
-        'Admin/WithdrawRequestController.php',  // deuda lateral (dinero) — plan-accion
-        'Landlord/ProfileController.php',        // deuda lateral — plan-accion
-        'Landlord/WithdrawController.php',      // deuda lateral (dinero) — plan-accion
-    ];
-
     /**
      * @return array<int, string>
      */
@@ -78,16 +60,7 @@ class ControllersLineLimitArchTest extends TestCase
 
     public function test_u2_no_business_transactions_in_controllers(): void
     {
-        $allowlist = array_map(
-            fn (string $relative) => str_replace('/', DIRECTORY_SEPARATOR, __DIR__.'/../../../app/Http/Controllers/'.$relative),
-            self::TX_ALLOWLIST
-        );
-
         foreach ($this->controllerFiles() as $file) {
-            if (in_array($file, $allowlist, true)) {
-                continue;
-            }
-
             $content = (string) file_get_contents($file);
 
             $this->assertStringNotContainsString(
@@ -100,20 +73,6 @@ class ControllersLineLimitArchTest extends TestCase
                 'DB::transaction(',
                 $content,
                 sprintf('%s abre una transacción en el controlador — la tx va en el service (Fase 4/4.8).', basename($file))
-            );
-        }
-
-        // Guard del allowlist: cada entrada debe existir y seguir
-        // declarando una tx (retirarla cuando el service la absorba).
-        foreach ($allowlist as $file) {
-            $this->assertFileExists($file, 'Entrada del TX_ALLOWLIST inexistente — limpiarla.');
-
-            $content = (string) file_get_contents($file);
-            $hasTransaction = str_contains($content, 'DB::beginTransaction') || str_contains($content, 'DB::transaction(');
-
-            $this->assertTrue(
-                $hasTransaction,
-                sprintf('%s ya no declara tx — retirarla del TX_ALLOWLIST.', basename($file))
             );
         }
     }

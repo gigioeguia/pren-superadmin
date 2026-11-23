@@ -6,13 +6,10 @@ use App\Enums\Channel;
 use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\Gateway;
-use App\Models\Plan;
-use App\Models\PlanSubscribe;
-use App\Models\RentPayment;
 use App\Models\SecurityDeposit;
+use App\Models\User;
 use App\Services\SecurityDepositService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ViewErrorBag;
 
 class SecurityDepositController extends Controller
@@ -62,78 +59,41 @@ class SecurityDepositController extends Controller
             // Upload antes de abrir la transacción; se calcula una sola vez (Fase 4 / 4.8)
             $receiptPath = $request->payment_receipt ? $this->upload($request, 'payment_receipt') : null;
 
-            DB::beginTransaction();
+            // Tipado explícito: auth()->user() es union de guards con modelos
+            // fantasma en config (spec 5.11 — writes sobre User tipado).
+            $tenant = User::findOrFail(auth()->id());
+
             try {
-                $payment_data = [
-                    'payment_note' => $request->payment_note,
-                    'payment_receipt' => $receiptPath,
-                ];
-
-                if ($request->payment_type == 'subscription') {
-                    $plan = Plan::findOrFail($id);
-                    $duration = $plan->durationInDays();
-
-                    PlanSubscribe::create([
-                        'user_id' => auth()->id(),
-                        'plan_id' => $plan->id,
-                        'plan_name' => $plan->subscriptionName,
-                        'number_of_property' => $plan->number_of_property,
-                        'number_of_tenant' => $plan->number_of_tenant,
-                        'number_of_labor' => $plan->number_of_labor,
-                        'gateway_id' => $gateway_id,
-                        'price' => $plan->offerPrice ?? $plan->subscriptionPrice,
-                        'duration' => $duration,
-                        'payment_status' => 'unpaid',
-                        'notes' => [
-                            'manual_data' => $request->payment_note,
-                            'attachment' => $receiptPath,
-                        ],
-                    ]);
-
-                    DB::commit();
-
-                    session()->forget('user_id');
-
-                    return response()->json([
-                        'message' => 'New subscription purchased requested.',
-                    ]);
-                }
-
+                // El authorize corre dentro del try como en el original: un
+                // depósito ajeno mantiene el 500 'Payment failed' congelado (F13b)
                 if ($request->payment_type == 'security_deposit') {
-
-                    $security_deposit = SecurityDeposit::findOrFail($id);
-                    $this->authorize('offlinePayment', $security_deposit);
-                    $security_deposit->update([
-                        'payment_date' => today(),
-                        'status' => 'pending',
-                        'gateway_id' => $gateway->id,
-                        'payment_data' => $payment_data,
-
-                    ]);
-                } elseif ($request->payment_type == 'rent_payment') {
-
-                    $rent_payment = RentPayment::findOrFail($id);
-                    $rent_payment->update([
-                        'payment_date' => today(),
-                        'payment_status' => 'pending',
-                        'gateway_id' => $gateway->id,
-                        'payment_data' => $payment_data,
-
-                    ]);
+                    $this->authorize('offlinePayment', SecurityDeposit::findOrFail($id));
                 }
 
-                DB::commit();
-
-                return response()->json([
-                    'message' => 'Payment sent successfully',
+                $this->service->offlinePayment($tenant, [
+                    'payment_type' => $request->payment_type,
+                    'id' => $id,
+                    'gateway_id' => $gateway->id,
+                    'receipt_path' => $receiptPath,
+                    'payment_note' => $request->payment_note,
                 ]);
             } catch (\Exception $e) {
-                DB::rollback();
-
                 return response()->json([
                     'message' => 'Payment failed',
                 ], 500);
             }
+
+            if ($request->payment_type == 'subscription') {
+                session()->forget('user_id');
+
+                return response()->json([
+                    'message' => 'New subscription purchased requested.',
+                ]);
+            }
+
+            return response()->json([
+                'message' => 'Payment sent successfully',
+            ]);
         }
 
         return response()->json([

@@ -9,13 +9,15 @@ use App\Models\Currency;
 use App\Models\Facility;
 use App\Models\Gateway;
 use App\Models\User;
+use App\Services\ProfileService;
 use App\Support\ErrorMessage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
     use HasUploader;
+
+    public function __construct(protected ProfileService $service) {}
 
     public function userInfo(Request $request)
     {
@@ -78,56 +80,27 @@ class UserController extends Controller
             $backImage = $user->user_details->mykad['back_image'] ?? null;
         }
 
-        DB::beginTransaction();
-
         try {
-
-            $user->update([
-                'image' => $image,
-                'is_setupped' => 1,
+            $this->service->profileSetUp($user, [
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->input('phone'),
                 'profile_type' => $request->profile_type,
+                'image' => $image,
+                'gender' => $request->gender,
+                'birth_date' => $request->birth_date,
+                'mykad_id' => $request->mykad_id,
+                'company_info' => $request->input('company_info'),
+                'address_info' => $request->input('address_info'),
+                'nominee_info' => $request->input('nominee_info'),
+                'emergency_contact' => $request->input('emergency_contact'),
+                'workplace' => $request->input('workplace'),
+                'vehicles_info' => $request->input('vehicles_info'),
+                'mykad' => [
+                    'front_image' => $frontImage ?? null,
+                    'back_image' => $backImage ?? null,
+                ],
             ]);
-
-            if ($user->user_details) {
-                $user->user_details->update([
-                    'user_id' => $user->id,
-                    'gender' => $request->gender,
-                    'birth_date' => $request->birth_date,
-                    'mykad_id' => $request->mykad_id,
-                    'company_info' => $request->input('company_info'),
-                    'address_info' => $request->input('address_info'),
-                    'nominee_info' => $request->input('nominee_info'),
-                    'emergency_contact' => $request->input('emergency_contact'),
-                    'workplace' => $request->input('workplace'),
-                    'vehicles_info' => $request->input('vehicles_info'),
-                    'mykad' => [
-                        'front_image' => $frontImage,
-                        'back_image' => $backImage,
-                    ],
-                ]);
-            } else {
-                $user->user_details()->create([
-                    'user_id' => $user->id,
-                    'gender' => $request->gender,
-                    'birth_date' => $request->birth_date,
-                    'mykad_id' => $request->mykad_id,
-                    'company_info' => $request->input('company_info'),
-                    'address_info' => $request->input('address_info'),
-                    'nominee_info' => $request->input('nominee_info'),
-                    'emergency_contact' => $request->input('emergency_contact'),
-                    'workplace' => $request->input('workplace'),
-                    'vehicles_info' => $request->input('vehicles_info'),
-                    'mykad' => [
-                        'front_image' => $frontImage,
-                        'back_image' => $backImage,
-                    ],
-                ]);
-            }
-
-            DB::commit();
 
             // Borrado best-effort tras el commit
             foreach ($oldPaths as $path) {
@@ -140,7 +113,6 @@ class UserController extends Controller
             ]);
         } catch (\Exception $e) {
             report($e);
-            DB::rollBack();
 
             return response()->json([
                 'message' => __('Profile update failed.'),

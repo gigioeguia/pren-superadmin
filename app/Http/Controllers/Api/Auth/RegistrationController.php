@@ -13,7 +13,6 @@ use App\Support\Otp;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class RegistrationController extends Controller
@@ -55,25 +54,19 @@ class RegistrationController extends Controller
             ];
         }
 
-        // tx externa + savepoints del service: una sola unidad atómica (User + trío), como el original
-        DB::beginTransaction();
-
+        // Unidad atómica (User + trío) propiedad del service — supersede del
+        // diseño intencional del hijo 4 §11 (spec 5.18): misma atomicidad,
+        // la tx ya no vive en el controlador.
         try {
-            $user = $this->landlords->createAccount(
+            $user = $this->landlords->createAccountWithFreePlan(
                 $request->validated(),
                 Channel::Api,
                 $otpStatus === 'on' ? $code : null,
-                $expire
+                $expire,
+                $free_plan
             );
 
-            // assign free plan
-            if ($free_plan) {
-                $this->landlords->activateFreePlan($user, Channel::Api, $free_plan);
-            }
-
             if ($otpStatus === 'off') {
-                DB::commit();
-
                 Auth::login($user);
 
                 $token = $user->createToken('api-token')->plainTextToken;
@@ -84,12 +77,8 @@ class RegistrationController extends Controller
                     'token' => $token,
                 ]);
             }
-
-            DB::commit();
         } catch (\Throwable $th) {
             report($th);
-
-            DB::rollBack();
 
             return response()->json([
                 'message' => 'Something went wrong. Please contact the admin.',

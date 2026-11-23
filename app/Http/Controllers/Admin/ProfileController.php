@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\Channel;
 use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ProfileService;
 use App\Support\ErrorMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
     use HasUploader;
 
-    public function __construct()
+    public function __construct(protected ProfileService $service)
     {
         $this->middleware('permission:profile-read')->only('index');
         $this->middleware('permission:profile-update')->only('update');
@@ -65,23 +66,15 @@ class ProfileController extends Controller
             $image = $this->upload($request, 'image');
         }
 
-        DB::beginTransaction();
-
         try {
-
-            $user->update([
+            $this->service->update($user, [
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->input('phone'),
                 'image' => $image,
-            ] + ($request->filled('password') ? ['password' => Hash::make($request->password)] : []));
-
-            $user->user_details()->updateOrCreate(
-                ['user_id' => $user->id],
-                ['gender' => $request->gender]
-            );
-
-            DB::commit();
+                'gender' => $request->gender,
+                'password' => $request->filled('password') ? $request->password : null,
+            ], Channel::Admin);
 
             // Borrado best-effort tras el commit
             if ($oldImagePath) {
@@ -94,7 +87,6 @@ class ProfileController extends Controller
             ]);
         } catch (\Exception $e) {
             report($e);
-            DB::rollBack();
 
             return response()->json([
                 'message' => __('Profile updated failed.'),

@@ -2,21 +2,24 @@
 
 namespace App\Http\Controllers\Landlord;
 
+use App\Enums\Channel;
 use App\Exports\LandlordWithdrawMethodExport;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserMethod;
 use App\Models\Withdraw;
 use App\Models\WithdrawMethod;
+use App\Services\WithdrawService;
 use App\Traits\HasTableActions;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class WithdrawController extends Controller
 {
     use HasTableActions;
+
+    public function __construct(protected WithdrawService $service) {}
 
     public function index()
     {
@@ -66,39 +69,24 @@ class WithdrawController extends Controller
             ], 400);
         }
 
-        DB::beginTransaction();
+        // Lectura fuera de la tx (Fase 4/4.8): la unidad atómica vive en el service
+        if ($user->balance < $total_amount) {
+            return response()->json(
+                [
+                    'message' => 'Insufficient balance',
+                ],
+                400
+            );
+        }
+
         try {
+            $this->service->store($user, $user_method, $request->amount, $charge, Channel::Landlord);
 
-            if ($user->balance >= $total_amount) {
-
-                Withdraw::create([
-                    'user_id' => $user->id,
-                    'amount' => $request->amount,
-                    'user_method_id' => $request->user_method_id,
-                    'charge' => $charge,
-                ]);
-
-                $user->forceFill([
-                    'balance' => $user->balance - $total_amount,
-                ])->save();
-
-                DB::commit();
-
-                return response()->json([
-                    'message' => 'withdraw request has been send',
-                    'modal' => true,
-                ]);
-            } else {
-                return response()->json(
-                    [
-                        'message' => 'Insufficient balance',
-                    ],
-                    400
-                );
-            }
+            return response()->json([
+                'message' => 'withdraw request has been send',
+                'modal' => true,
+            ]);
         } catch (\Exception $e) {
-            DB::rollback();
-
             return response()->json(['error' => 'Transaction failed'], 500);
         }
     }

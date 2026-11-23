@@ -29,8 +29,10 @@ use Illuminate\Support\Facades\Storage;
  *    El canal api deja payment_status en su default 'unpaid' (quirk
  *    congelado por F11a); admin/web lo setean 'paid'.
  *  - activateFreePlan no abre transacción: la unidad atómica la define el
- *    caller (store/maanRegistration envuelven; submitOtp va sin tx, igual
- *    que el original).
+ *    caller (store/createAccountWithFreePlan envuelven; submitOtp va sin
+ *    tx, igual que el original).
+ *  - createAccountWithFreePlan (api): dueño de la tx User+trío —
+ *    supersede del diseño intencional del hijo 4 §11 (spec 5.18).
  *  - delete/deleteMany: media capturada dentro de la tx, borrado
  *    best-effort tras el commit vía Storage::exists (spec §5).
  */
@@ -328,6 +330,42 @@ class LandlordService
             'remember_token' => $otpCode,
             'email_verified_at' => $expiresAt ?? now(),
         ])->save();
+
+        return $user;
+    }
+
+    /**
+     * Unidad atómica de registro: cuenta + trío free-plan en una sola
+     * transacción propiedad del service.
+     *
+     * Supersede del diseño intencional del hijo 4 §11 (spec-tx-legadas-
+     * services-fase5): la atomicidad User+trío se preserva tal cual; la
+     * propiedad de la tx pasa del controlador (maanRegistration) al
+     * service. El trío bare de submitOtp (web) queda intacto: ese caller
+     * no abre unidad atómica, como el original.
+     *
+     * @param  array{name?: string, email?: string, password?: string}  $data
+     * @param  string|null  $otpCode  token OTP server-side (null cuando OTP está off)
+     * @param  CarbonInterface|null  $expiresAt  expiración del OTP (null → verified now)
+     * @param  Plan|null  $freePlan  plan resuelto por el caller ANTES de abrir la tx (Fase 4 / 4.8)
+     */
+    public function createAccountWithFreePlan(array $data, Channel $channel, ?string $otpCode = null, ?CarbonInterface $expiresAt = null, ?Plan $freePlan = null): User
+    {
+        DB::beginTransaction();
+
+        try {
+            $user = $this->createAccount($data, $channel, $otpCode, $expiresAt);
+
+            if ($freePlan) {
+                $this->activateFreePlan($user, $channel, $freePlan);
+            }
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            throw $e;
+        }
 
         return $user;
     }

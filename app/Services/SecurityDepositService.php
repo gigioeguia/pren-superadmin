@@ -3,9 +3,13 @@
 namespace App\Services;
 
 use App\Enums\Channel;
+use App\Models\Plan;
+use App\Models\PlanSubscribe;
+use App\Models\RentPayment;
 use App\Models\SecurityDeposit;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class SecurityDepositService
 {
@@ -90,5 +94,71 @@ class SecurityDepositService
     public function delete(SecurityDeposit $deposit, Channel $channel): void
     {
         $deposit->delete();
+    }
+
+    /**
+     * Pago offline (manual): dueño de la tx (spec-tx-legadas-services-fase5).
+     *
+     * Ramas preservadas tal cual: subscription (PlanSubscribe 'unpaid' +
+     * notes con attachment), security_deposit y rent_payment (update +
+     * gateway). Un payment_type desconocido no escribe nada, como el
+     * original. El authorize de la rama deposit lo evalúa el controlador
+     * dentro de su try (el 500 'Payment failed' actual es parte del
+     * contrato congelado por F13b).
+     *
+     * @param  array{payment_type: mixed, id: string, gateway_id: int|string, receipt_path: ?string, payment_note: ?string}  $data
+     */
+    public function offlinePayment(User $tenant, array $data): void
+    {
+        DB::beginTransaction();
+
+        try {
+            $payment_data = [
+                'payment_note' => $data['payment_note'],
+                'payment_receipt' => $data['receipt_path'],
+            ];
+
+            if ($data['payment_type'] == 'subscription') {
+                $plan = Plan::findOrFail($data['id']);
+                $duration = $plan->durationInDays();
+
+                PlanSubscribe::create([
+                    'user_id' => $tenant->id,
+                    'plan_id' => $plan->id,
+                    'plan_name' => $plan->subscriptionName,
+                    'number_of_property' => $plan->number_of_property,
+                    'number_of_tenant' => $plan->number_of_tenant,
+                    'number_of_labor' => $plan->number_of_labor,
+                    'gateway_id' => $data['gateway_id'],
+                    'price' => $plan->offerPrice ?? $plan->subscriptionPrice,
+                    'duration' => $duration,
+                    'payment_status' => 'unpaid',
+                    'notes' => [
+                        'manual_data' => $data['payment_note'],
+                        'attachment' => $data['receipt_path'],
+                    ],
+                ]);
+            } elseif ($data['payment_type'] == 'security_deposit') {
+                SecurityDeposit::findOrFail($data['id'])->update([
+                    'payment_date' => today(),
+                    'status' => 'pending',
+                    'gateway_id' => $data['gateway_id'],
+                    'payment_data' => $payment_data,
+                ]);
+            } elseif ($data['payment_type'] == 'rent_payment') {
+                RentPayment::findOrFail($data['id'])->update([
+                    'payment_date' => today(),
+                    'payment_status' => 'pending',
+                    'gateway_id' => $data['gateway_id'],
+                    'payment_data' => $payment_data,
+                ]);
+            }
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            throw $e;
+        }
     }
 }

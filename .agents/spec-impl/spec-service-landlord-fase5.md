@@ -215,4 +215,6 @@ Commits: `159d994` (contrato F1–F12 pre-migración) → `d1c0b90` (service + F
 
 **Error-paths preservados:** `update` resuelve `User::findOrFail` fuera del try (404 como hoy); `destroy` dentro (500 genérico como hoy); submitOtp sin tx (trío bare, como el original); `maanRegistration` conserva la tx externa del controlador + savepoints del service (unidad atómica User+trío, como hoy).
 
+> **SUPERSEDE (2026-11-22, spec `spec-tx-legadas-services-fase5` / fila 5.18):** la frase anterior sobre `maanRegistration` quedó obsoleta — la tx externa del controlador pasó a ser propiedad de `LandlordService::createAccountWithFreePlan` (misma unidad atómica User+trío, mismo contrato observable congelado por F11a/b; el plan se resuelve antes de abrir la tx, Fase 4 / 4.8). El trío bare de `submitOtp` web sigue intencional.
+
 **Mejoras en paths no cubiertos por contrato (documentadas):** `update` sin `user_details` ya no crashea (guard explícito; era 500 por null); `deleteAll` con `ids` ausente es no-op 200 (era crash). Ningún test del catálogo cubría esos edges.
