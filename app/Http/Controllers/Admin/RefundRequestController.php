@@ -43,7 +43,13 @@ class RefundRequestController extends Controller
     {
         $refund_requests = $this->service->listForChannel(Channel::Admin, auth()->user(), array_merge($request->all(), ['per_page' => $request->per_page ?? 20]));
 
-        return view('admin.reports.refund-request.datas', ['refund_requests' => $refund_requests]);
+        if ($request->ajax()) {
+            return response()->json([
+                'data' => view('admin.reports.refund-request.datas', ['refund_requests' => $refund_requests])->render(),
+            ]);
+        }
+
+        return redirect(url()->previous());
     }
 
     public function exportExcel()

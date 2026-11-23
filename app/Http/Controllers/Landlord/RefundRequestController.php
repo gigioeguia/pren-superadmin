@@ -32,7 +32,13 @@ class RefundRequestController extends Controller
     {
         $refund_requests = $this->service->listForChannel(Channel::Landlord, auth()->user(), array_merge($request->all(), ['per_page' => $request->per_page ?? 20]));
 
-        return view('landlord.refund-request.datas', ['refund_requests' => $refund_requests]);
+        if ($request->ajax()) {
+            return response()->json([
+                'data' => view('landlord.refund-request.datas', ['refund_requests' => $refund_requests])->render(),
+            ]);
+        }
+
+        return redirect(url()->previous());
     }
 
     // Restaurado (spec 5.17): filename verbatim pre-4.2.

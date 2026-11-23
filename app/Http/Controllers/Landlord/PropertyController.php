@@ -137,7 +137,13 @@ class PropertyController extends Controller
     {
         $properties = $this->service->listForChannel(Channel::Landlord, auth()->user(), array_merge($request->all(), ['per_page' => 20]));
 
-        return view('landlord.properties.datas', ['properties' => $properties]);
+        if ($request->ajax()) {
+            return response()->json([
+                'data' => view('landlord.properties.datas', ['properties' => $properties])->render(),
+            ]);
+        }
+
+        return redirect(url()->previous());
     }
 
     public function status(Request $request, string $id)
