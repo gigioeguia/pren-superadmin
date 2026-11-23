@@ -2,16 +2,19 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "The Laravel Framework.",
-    "keywords": ["framework", "laravel"],
+    "keywords": [
+        "framework",
+        "laravel"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.3",
         "fedapay/fedapay-php": "^0.4.7",
         "guzzlehttp/guzzle": "^7.2",
-        "laravel/framework": "^13.0",
+        "laravel/framework": "11.57.1",
         "laravel/sanctum": "^4.0",
         "nesbot/carbon": "^3.0",
-        "laravel/tinker": "^3.0",
+        "laravel/tinker": "^2.10",
         "maatwebsite/excel": "^3.1",
         "mollie/mollie-api-php": "^2.65",
         "razorpay/razorpay": "^2.9",
@@ -71,6 +74,11 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "policy": {
+            "advisories": {
+                "block": false
+            }
         }
     },
     "minimum-stability": "dev",
