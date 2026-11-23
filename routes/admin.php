@@ -50,7 +50,7 @@ Route::resource('gateways', Admin\GatewayController::class)->only('index', 'upda
 // Route::resource('banner', Admin\BannerController::class)->only(['index', 'create', 'update']);
 Route::resource('service-charges', Admin\ServiceChargeController::class)->only('index', 'update');
 
-Route::resource('refund-reason', Admin\RefundReasonController::class)->except('show');
+Route::resource('refund-reason', Admin\RefundReasonController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('refund-reason/filter', [Admin\RefundReasonController::class, 'filter'])->name('refund-reason.filter');
 Route::post('refund-reason/delete-all', [Admin\RefundReasonController::class, 'deleteAll'])->name('refund-reason.delete-all');
 Route::post('refund-reason/status/{id}', [Admin\RefundReasonController::class, 'status'])->name('refund-reason.status');
@@ -58,19 +58,19 @@ Route::post('refund-reason/status/{id}', [Admin\RefundReasonController::class, '
 Route::resource('plans', Admin\PlanController::class)->except('show');
 
 // House Type
-Route::resource('house-types', Admin\HouseTypeController::class)->except('show');
+Route::resource('house-types', Admin\HouseTypeController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('house-types/filter', [Admin\HouseTypeController::class, 'filter'])->name('house-types.filter');
 Route::post('house-types/delete-all', [Admin\HouseTypeController::class, 'deleteAll'])->name('house-types.delete-all');
 Route::post('house-types/status/{id}', [Admin\HouseTypeController::class, 'status'])->name('house-types.status');
 
 // Facility
-Route::resource('facilities', Admin\FacilityController::class)->except('show');
+Route::resource('facilities', Admin\FacilityController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('facilities/filter', [Admin\FacilityController::class, 'filter'])->name('facilities.filter');
 Route::post('facilities/delete-all', [Admin\FacilityController::class, 'deleteAll'])->name('facilities.delete-all');
 Route::post('facilities/status/{id}', [Admin\FacilityController::class, 'status'])->name('facilities.status');
 
 // Amenity
-Route::resource('amenities', Admin\AmenityController::class)->except('show');
+Route::resource('amenities', Admin\AmenityController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('amenities/filter', [Admin\AmenityController::class, 'filter'])->name('amenities.filter');
 Route::post('amenities/delete-all', [Admin\AmenityController::class, 'deleteAll'])->name('amenities.delete-all');
 Route::post('amenities/status/{id}', [Admin\AmenityController::class, 'status'])->name('amenities.status');
@@ -175,26 +175,26 @@ Route::post('supports/reply', [Admin\SupportController::class, 'reply'])->name('
 Route::post('supports/filter', [Admin\SupportController::class, 'filter'])->name('supports.filter');
 
 // Income Category
-Route::resource('income-categories', Admin\IncomeCategoryController::class)->except('show');
+Route::resource('income-categories', Admin\IncomeCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('income-categories/filter', [Admin\IncomeCategoryController::class, 'filter'])->name('income-categories.filter');
 Route::post('income-categories/delete-all', [Admin\IncomeCategoryController::class, 'deleteAll'])->name('income-categories.delete-all');
 Route::post('income-categories/status/{id}', [Admin\IncomeCategoryController::class, 'status'])->name('income-categories.status');
 
 // Income
-Route::resource('incomes', Admin\IncomeController::class)->except('show');
+Route::resource('incomes', Admin\IncomeController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('incomes/filter', [Admin\IncomeController::class, 'filter'])->name('incomes.filter');
 Route::post('incomes/delete-all', [Admin\IncomeController::class, 'deleteAll'])->name('incomes.delete-all');
 Route::get('incomes-excel', [Admin\IncomeController::class, 'exportExcel'])->name('incomes.excel');
 Route::get('incomes-csv', [Admin\IncomeController::class, 'exportCsv'])->name('incomes.csv');
 
 // Expenses Category
-Route::resource('expense-categories', Admin\ExpenseCategoryController::class)->except('show');
+Route::resource('expense-categories', Admin\ExpenseCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('expense-categories/filter', [Admin\ExpenseCategoryController::class, 'filter'])->name('expense-categories.filter');
 Route::post('expense-categories/delete-all', [Admin\ExpenseCategoryController::class, 'deleteAll'])->name('expense-categories.delete-all');
 Route::post('expense-categories/status/{id}', [Admin\ExpenseCategoryController::class, 'status'])->name('expense-categories.status');
 
 // Expenses
-Route::resource('expenses', Admin\ExpenseController::class)->except('show');
+Route::resource('expenses', Admin\ExpenseController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('expenses/filter', [Admin\ExpenseController::class, 'filter'])->name('expenses.filter');
 Route::post('expenses/delete-all', [Admin\ExpenseController::class, 'deleteAll'])->name('expenses.delete-all');
 Route::get('expenses-excel', [Admin\ExpenseController::class, 'exportExcel'])->name('expenses.excel');

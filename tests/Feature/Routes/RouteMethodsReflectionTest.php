@@ -12,51 +12,18 @@ use Tests\TestCase;
  * método existente — el bug de las rutas muertas de 4.2 no puede
  * volver a entrar sin romper CI.
  *
- * Allowlist temporal (decisor 2026-11-22, D1 escalonado): quedan 32 rutas
- * create/edit declaradas-sin-método desde el import inicial (verbos resource
- * zombis; las 22 view-referenciadas ya fueron restauradas por el spec 5.17).
- * El slice de limpieza de ese mismo spec las retira de aquí (la segunda
- * aserción fuerza ese retiro).
+ * Allowlist vacía desde el cierre del spec 5.17 (2026-11-22): las 54
+ * entradas fueron restauradas (22, spec de restauración) o eliminadas
+ * (32, verbos resource zombis que nunca tuvieron método). El guard
+ * queda bidireccional y permanente: una ruta muerta nueva rompe CI
+ * hasta que se restaure (spec) o se elimine (ruta).
  */
 class RouteMethodsReflectionTest extends TestCase
 {
     /**
-     * Rutas muertas conocidas con dueño (limpieza create/edit, spec 5.17).
+     * Rutas muertas conocidas (restauración/limpieza CRUD 4.2 — cerrado).
      */
-    private const RESTORATION_PENDING = [
-        'admin.amenities.create',
-        'admin.amenities.edit',
-        'admin.expense-categories.create',
-        'admin.expense-categories.edit',
-        'admin.expenses.create',
-        'admin.expenses.edit',
-        'admin.facilities.create',
-        'admin.facilities.edit',
-        'admin.house-types.create',
-        'admin.house-types.edit',
-        'admin.income-categories.create',
-        'admin.income-categories.edit',
-        'admin.incomes.create',
-        'admin.incomes.edit',
-        'admin.refund-reason.create',
-        'admin.refund-reason.edit',
-        'landlord.amenities.create',
-        'landlord.amenities.edit',
-        'landlord.expense-categories.create',
-        'landlord.expense-categories.edit',
-        'landlord.expenses.create',
-        'landlord.expenses.edit',
-        'landlord.facilities.create',
-        'landlord.facilities.edit',
-        'landlord.income-categories.create',
-        'landlord.income-categories.edit',
-        'landlord.incomes.create',
-        'landlord.incomes.edit',
-        'landlord.labors.create',
-        'landlord.labors.edit',
-        'landlord.withdraw-method.create',
-        'landlord.withdraw-method.edit',
-    ];
+    private const RESTORATION_PENDING = [];
 
     public function test_u3_every_declared_route_resolves_to_an_existing_method(): void
     {
