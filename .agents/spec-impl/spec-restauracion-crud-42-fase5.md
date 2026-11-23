@@ -1,7 +1,7 @@
 ---
 id: spec-restauracion-crud-42-fase5
 titulo: "Restauración CRUD 4.2: 22 rutas rotas restauradas + 32 rutas zombis eliminadas (Fase 5 / 5.17)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-22
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.17) — DT-C4; desviación D6 del hijo 6 (spec-controladores-residuales-fase5 §12)
 cobertura: 54 entradas del allowlist RESTORATION_PENDING: 22 restauradas con contrato observable verbatim pre-4.2 (excel/csv ×14, status ×5, delete-all ×2, filter ×1) + 32 create/edit eliminadas (métodos nunca existieron); allowlist 54→0
@@ -177,15 +177,15 @@ Fijadas por el decisor (sesión de diseño 2026-11-22, Q1–Q14); no negociables
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `RouteMethodsReflectionTest` en verde con `RESTORATION_PENDING = []` (las 54 retiradas; guard permanente).
-- [ ] 22 restauradas funcionales: G1–G11 + H1–H11 en verde, con filenames verbatim (content-disposition) y mensajes verbatim §12/blob.
-- [ ] 32 eliminadas: F1 verde; modales intactos (F2/F3); grep previo sobre referencias a los 32 nombres (tests/vistas/JS/DemoMode) sin adaptaciones ocultas — cualquier adaptación documentada como desviación.
-- [ ] Fix Q11 verificado: `PermissionSeeder` siembra `security-deposits-read/update`; G9 verde con rol admin real; residual de filas stale documentado.
-- [ ] ExpiredMiddleware: H5 verde (allowlist +2).
-- [ ] DemoMode: G11/H11 verde **sin cambios en las listas**.
-- [ ] Suite completa + PHPStan nivel 5 (0 adiciones a baseline) + Pint en verde.
-- [ ] Arch-tests en verde: todos los controladores < 200 tras los añadidos; 0 tx nuevas.
-- [ ] Errata aplicada: fila 5.17 de plan-accion reescrita (22 restauradas + 32 eliminadas, no 54 implementaciones) + fila nueva para L1 expandido (~10).
+- [x] `RouteMethodsReflectionTest` en verde con `RESTORATION_PENDING = []` — commit `3c0483b`; reflexión post-cierre: 0 rutas muertas (guard bidireccional permanente).
+- [x] 22 restauradas funcionales: G1–G11 + H1–H11 en verde (commit `3e10df3`), filenames verbatim via content-disposition y mensajes verbatim extraídos del blob `537a626^` (cross-check §12 de `spec-trait-acnoo-fase0`). Sin bit-rot: index/datas/excel-csv renderizan hoy vía el index vivo y los tests lo prueban end-to-end.
+- [x] 32 eliminadas: F1 verde; modales intactos (F2/F3); grep-previo ejecutado — únicas referencias encontradas: el propio allowlist (retirado), los `@include` de vistas (viven) y 5 entradas muertas en `ExpiredMiddleware` retiradas en el mismo slice (precedente D6, commit `3c0483b`).
+- [x] Fix Q11 verificado: seeder pluraliza `security-deposits` (commit `5124643`); G9 verde con rol admin real; residual de filas stale documentado (§11).
+- [x] ExpiredMiddleware: H5 verde **con cero cambios de middleware** — desviación D1 (§11): la lista es de bloqueo y los exports nunca estuvieron en ella (verbatim pre-4.2); la asimetría queda congelada por H5.
+- [x] DemoMode: G11/H11 verde **sin cambios en las listas** (el branch landlord exige `is_demo`, cubierto por H11).
+- [x] Suite completa **535/535** (510 previas + 25 nuevas, 6085 assertions) + PHPStan nivel 5 `[OK] No errors` (0 adiciones a baseline) + Pint passed.
+- [x] Arch-tests en verde: 12 controladores tocados, máximo `Admin/WithdrawMethodController` **112** líneas (headroom ≥ 87); 0 tx nuevas.
+- [x] Errata aplicada: fila 5.17 de plan-accion reescrita (22 restauradas + 32 eliminadas, no 54 implementaciones) + fila nueva **5.22** para L1 expandido (~10).
 
 ---
 
@@ -223,3 +223,28 @@ Fijadas por el decisor (sesión de diseño 2026-11-22, Q1–Q14); no negociables
 - `.agents/spec-impl/spec-trait-acnoo-fase0.md` → §12 (inventario verbatim: filenames/mensajes/per-page)
 - `.agents/spec-impl/spec-unificar-capas-services-fase5.md` → L105 (decisión D2 re-statada)
 - `tests/Feature/Routes/RouteMethodsReflectionTest.php` (54 entradas) · `tests/Feature/Routes/RestoredTableActionsSmokeTest.php` (patrón de la red)
+
+---
+
+## 11. Implementación (2026-11-22) — rama `spec/restauracion-crud-42-fase5-impl`
+
+Slices en el orden Q6: restauraciones (`5124643`) → limpieza (`3c0483b`) → red de tests (`3e10df3`, fixers `928ae0a`).
+
+### Desviaciones
+
+| # | Desviación | Detalle |
+|---|-----------|---------|
+| D1 | Premisa Q12 invertida — cero cambios de ExpiredMiddleware | La lista de `ExpiredMiddleware` es de **bloqueo** (rutas listadas → redirect/406 con plan expirado), no un allowlist. `landlord.refund-request.excel/csv` nunca estuvieron en ella (verbatim pre-4.2, confirmado en el blob `537a626^`), así que los exports YA eran accesibles para landlords con plan expirado; el "muro" asumido por Q12 no existía. El intento del decisor (exports utilizables) se cumple con el no-op; H5 congela la asimetría real: index/show bloqueados, exports abiertos. |
+| D2 | Limpieza de 5 entradas muertas en ExpiredMiddleware | El grep-previo de las 32 detectó `landlord.{labors,income-categories,incomes,expense-categories,expenses}.create` en la lista de bloqueo — rutas que dejaron de existir en este mismo spec. Retiradas en `3c0483b` (precedente D6: entradas que solo referencian rutas muertas se limpian junto con la ruta). |
+
+### Hallazgos laterales (follow-up fuera de este spec)
+
+- **ExpiredMiddleware:105 crash latente (preexistente):** un landlord **sin fila `PlanSubscribe`** que pide una ruta NO listada cae en `$plan_subscribe->plan` sobre null → 500 (`plan_data(): ?PlanSubscribe`). Solo lo pisan rutas no-listadas (p. ej. los exports restaurados con plan ausente); el resto de rutas landlord está listada y redirige antes. No bloquea este cierre; los tests usan planes presentes/expirados.
+- **vendor local desincronizado:** el entorno tenía laravel/framework 11.57.1 instalado contra el lock 13.43.0 (post-merge 5.15) — `composer install` lo alineó antes de correr la suite; hallazgo ambiental, no del spec.
+
+### Evidencia (DoD)
+
+- `php artisan test` → **535 passed (6085 assertions)** — 510 previas + 25 nuevas; H7 marcada `#[Group('characterization')]` (Seg-5).
+- `composer analyse` → `[OK] No errors` · `composer lint` → passed.
+- `wc -l`: 12 controladores tocados, máximo `Admin/WithdrawMethodController` **112** (headroom ≥ 87 vs el arch-test < 200).
+- Reflexión post-cierre: `RESTORATION_PENDING = []`, 0 rutas muertas declaradas (guard bidireccional en CI cuando el PR merguee).
