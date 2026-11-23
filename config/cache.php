@@ -19,6 +19,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Serializable Classes
+    |--------------------------------------------------------------------------
+    |
+    | Hardening L13 (spec 5.15 / D2): restricciones sobre que clases pueden
+    | rehidratarse desde el store de cache. `false` bloquea toda
+    | deserializacion de objetos (protege contra gadget chains si APP_KEY
+    | se filtra); los payloads de este app se guardan como arrays
+    | (`plan_data`, `languages`, `Currency::default`).
+    |
+    */
+
+    'serializable_classes' => false,
+
+    /*
+    |--------------------------------------------------------------------------
     | Cache Stores
     |--------------------------------------------------------------------------
     |
