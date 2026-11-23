@@ -3,17 +3,18 @@
 namespace Tests\Feature\Admin;
 
 use App\Http\Middleware\PreventRequestForgery;
+use App\Models\Currency;
 use App\Models\ExpenseCategory;
 use App\Models\IncomeCategory;
 use App\Models\SecurityDeposit;
+use App\Models\User;
 use App\Models\WithdrawMethod;
-use App\Models\Currency;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\Group;
-use Spatie\Permission\PermissionRegistrar;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
 
@@ -47,7 +48,7 @@ class RestoredCrudActionsHttpTest extends TestCase
      * Crea un admin con rol 'admin' al que se le revoca un permiso
      * (patrón PermissionDenialSmokeTest).
      */
-    private function adminWithout(string $permission): \App\Models\User
+    private function adminWithout(string $permission): User
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
         $role = Role::findByName('admin', 'web');
@@ -56,7 +57,7 @@ class RestoredCrudActionsHttpTest extends TestCase
         }
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        $admin = \App\Models\User::factory()->admin()->create();
+        $admin = User::factory()->admin()->create();
         $admin->assignRole($role);
 
         return $admin;
