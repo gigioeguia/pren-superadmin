@@ -61,4 +61,26 @@ class IncomeCategoryController extends Controller
 
         return view('landlord.income-categories.datas', ['income_categories' => $income_categories]);
     }
+
+    // Restaurado (spec 5.17): statusMessage verbatim pre-4.2, sin __().
+    public function status(Request $request, string $id)
+    {
+        $category = IncomeCategory::findOrFail($id);
+        $this->service->updateStatus($category, (int) $request->status);
+
+        return response()->json(['message' => 'Income Category']);
+    }
+
+    // Restaurado (spec 5.17): deleteMany scoped del service — desviación
+    // security-positive vs el unscoped verbatim del trait (Q7, §5 del spec).
+    public function deleteAll(Request $request)
+    {
+        $actor = $request->user();
+        $this->service->deleteMany($request->ids ?? [], Channel::Landlord, $actor);
+
+        return response()->json([
+            'message' => __('Selected Income Category Deleted Successfully'),
+            'redirect' => route('landlord.income-categories.index'),
+        ]);
+    }
 }

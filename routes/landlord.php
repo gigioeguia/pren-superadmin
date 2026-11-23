@@ -38,7 +38,7 @@ Route::post('maintenance-reports/filter', [Landlord\MaintenanceReportController:
 Route::get('maintenance-reports-excel', [Landlord\MaintenanceReportController::class, 'exportExcel'])->name('maintenance-reports.excel');
 Route::get('maintenance-reports-csv', [Landlord\MaintenanceReportController::class, 'exportCsv'])->name('maintenance-reports.csv');
 
-Route::resource('labors', Landlord\LaborController::class)->except('show');
+Route::resource('labors', Landlord\LaborController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('labors/filter', [Landlord\LaborController::class, 'filter'])->name('labors.filter');
 Route::post('labors/delete-all', [Landlord\LaborController::class, 'deleteAll'])->name('labors.delete-all');
 Route::get('labors-excel', [Landlord\LaborController::class, 'exportExcel'])->name('labors.excel');
@@ -76,7 +76,7 @@ Route::get('rents-excel', [Landlord\RentInvitationController::class, 'exportExce
 Route::get('rents-csv', [Landlord\RentInvitationController::class, 'exportCsv'])->name('rents.csv');
 Route::get('get-units', [Landlord\RentInvitationController::class, 'getUnit'])->name('get.units');
 
-Route::resource('withdraw-method', Landlord\WithdrawMethodController::class)->except('show');
+Route::resource('withdraw-method', Landlord\WithdrawMethodController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('withdraw-method/filter', [Landlord\WithdrawMethodController::class, 'filter'])->name('withdraw-method.filter');
 Route::post('withdraw-method/delete-all', [Landlord\WithdrawMethodController::class, 'deleteAll'])->name('withdraw-method.delete-all');
 Route::get('withdraw-method-excel', [Landlord\WithdrawMethodController::class, 'exportExcel'])->name('withdraw-method.excel');
@@ -91,39 +91,39 @@ Route::resource('supports', Landlord\SupportController::class)->only('index', 's
 Route::get('support/get-message', [Landlord\SupportController::class, 'getMessage'])->name('supports.get-message');
 
 // Income Category
-Route::resource('income-categories', Landlord\IncomeCategoryController::class)->except('show');
+Route::resource('income-categories', Landlord\IncomeCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('income-categories/filter', [Landlord\IncomeCategoryController::class, 'filter'])->name('income-categories.filter');
 Route::post('income-categories/delete-all', [Landlord\IncomeCategoryController::class, 'deleteAll'])->name('income-categories.delete-all');
 Route::post('income-categories/status/{id}', [Landlord\IncomeCategoryController::class, 'status'])->name('income-categories.status');
 
 // Income
-Route::resource('incomes', Landlord\IncomeController::class)->except('show');
+Route::resource('incomes', Landlord\IncomeController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('incomes/filter', [Landlord\IncomeController::class, 'filter'])->name('incomes.filter');
 Route::post('incomes/delete-all', [Landlord\IncomeController::class, 'deleteAll'])->name('incomes.delete-all');
 Route::get('incomes-excel', [Landlord\IncomeController::class, 'exportExcel'])->name('incomes.excel');
 Route::get('incomes-csv', [Landlord\IncomeController::class, 'exportCsv'])->name('incomes.csv');
 
 // Expenses Category
-Route::resource('expense-categories', Landlord\ExpenseCategoryController::class)->except('show');
+Route::resource('expense-categories', Landlord\ExpenseCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('expense-categories/filter', [Landlord\ExpenseCategoryController::class, 'filter'])->name('expense-categories.filter');
 Route::post('expense-categories/delete-all', [Landlord\ExpenseCategoryController::class, 'deleteAll'])->name('expense-categories.delete-all');
 Route::post('expense-categories/status/{id}', [Landlord\ExpenseCategoryController::class, 'status'])->name('expense-categories.status');
 
 // Expenses
-Route::resource('expenses', Landlord\ExpenseController::class)->except('show');
+Route::resource('expenses', Landlord\ExpenseController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('expenses/filter', [Landlord\ExpenseController::class, 'filter'])->name('expenses.filter');
 Route::post('expenses/delete-all', [Landlord\ExpenseController::class, 'deleteAll'])->name('expenses.delete-all');
 Route::get('expenses-excel', [Landlord\ExpenseController::class, 'exportExcel'])->name('expenses.excel');
 Route::get('expenses-csv', [Landlord\ExpenseController::class, 'exportCsv'])->name('expenses.csv');
 
 // Facility
-Route::resource('facilities', Landlord\FacilityController::class)->except('show');
+Route::resource('facilities', Landlord\FacilityController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('facilities/filter', [Landlord\FacilityController::class, 'filter'])->name('facilities.filter');
 Route::post('facilities/delete-all', [Landlord\FacilityController::class, 'deleteAll'])->name('facilities.delete-all');
 Route::post('facilities/status/{id}', [Landlord\FacilityController::class, 'status'])->name('facilities.status');
 
 // Amenity
-Route::resource('amenities', Landlord\AmenityController::class)->except('show');
+Route::resource('amenities', Landlord\AmenityController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('amenities/filter', [Landlord\AmenityController::class, 'filter'])->name('amenities.filter');
 Route::post('amenities/delete-all', [Landlord\AmenityController::class, 'deleteAll'])->name('amenities.delete-all');
 Route::post('amenities/status/{id}', [Landlord\AmenityController::class, 'status'])->name('amenities.status');

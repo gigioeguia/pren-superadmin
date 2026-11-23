@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Landlord;
 
 use App\Enums\Channel;
+use App\Exports\LandlordSecurityDepositExport;
 use App\Http\Controllers\Controller;
 use App\Models\SecurityDeposit;
 use App\Services\SecurityDepositService;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SecurityDepositController extends Controller
 {
@@ -32,5 +34,16 @@ class SecurityDepositController extends Controller
         $security_deposits = $this->service->listForChannel(Channel::Landlord, auth()->user(), array_merge($request->all(), ['per_page' => $request->per_page ?? 20]));
 
         return view('landlord.security-deposits.datas', ['security_deposits' => $security_deposits]);
+    }
+
+    // Restaurado (spec 5.17): filename verbatim pre-4.2.
+    public function exportExcel()
+    {
+        return Excel::download(new LandlordSecurityDepositExport, 'security-deposits.xlsx');
+    }
+
+    public function exportCsv()
+    {
+        return Excel::download(new LandlordSecurityDepositExport, 'security-deposits.csv');
     }
 }

@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Landlord;
 
 use App\Enums\Channel;
+use App\Exports\LandlordRefundRequestExport;
 use App\Http\Controllers\Controller;
 use App\Models\RefundRequest;
 use App\Services\RefundRequestService;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class RefundRequestController extends Controller
 {
@@ -31,5 +33,16 @@ class RefundRequestController extends Controller
         $refund_requests = $this->service->listForChannel(Channel::Landlord, auth()->user(), array_merge($request->all(), ['per_page' => $request->per_page ?? 20]));
 
         return view('landlord.refund-request.datas', ['refund_requests' => $refund_requests]);
+    }
+
+    // Restaurado (spec 5.17): filename verbatim pre-4.2.
+    public function exportExcel()
+    {
+        return Excel::download(new LandlordRefundRequestExport, 'refund-request.xlsx');
+    }
+
+    public function exportCsv()
+    {
+        return Excel::download(new LandlordRefundRequestExport, 'refund-request.csv');
     }
 }

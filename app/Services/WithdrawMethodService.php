@@ -115,4 +115,10 @@ class WithdrawMethodService
     {
         return (int) WithdrawMethod::whereIn('id', $ids)->delete();
     }
+
+    // Seg-5 (contrato del trait, spec 5.17 §5): sin scoping — las policies lo cerrarán.
+    public function updateStatus(WithdrawMethod $method, int $status): void
+    {
+        $method->update(['status' => $status]);
+    }
 }
