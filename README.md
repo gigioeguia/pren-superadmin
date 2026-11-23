@@ -4,13 +4,13 @@ SaaS de gestión de alquileres de propiedades. Roles: `superadmin`, `admin`, `la
 
 ## Stack
 
-- **Backend:** Laravel 11.x, PHP 8.3, MySQL 8, Sanctum (API), Spatie Permission
+- **Backend:** Laravel 13.x, PHP 8.4, MySQL 8, Sanctum (API), Spatie Permission
 - **Frontend:** Blade + Bootstrap (assets estáticos en `public/backend/`, servidos directamente — sin build step)
 - **Pagos:** 11 gateways en `app/Library/` (Stripe, Mollie, Razorpay, FedaPay, Paystack, Flutterwave, Instamojo, Toyyibpay, Thawani, Tap, Billplz)
 
 ## Requisitos
 
-- PHP 8.3 (extensiones: `mbstring`, `pdo_mysql`, `gd`, `zip`, entre otras de Laravel)
+- PHP 8.4.1+ (extensiones: `mbstring`, `pdo_mysql`, `gd`, `zip`, entre otras de Laravel)
 - MySQL 8
 - Composer
 
@@ -57,7 +57,7 @@ Precondiciones, mocks obligatorios y cobertura de endpoints: ver [`tests/README.
 
 ## Seguridad conocida
 
-- Laravel 11 y PHP 8.3 con **Fase 4 completa (4.1–4.10)**. El plan de remediación por fases (26 vulnerabilencias, 28 ítems de deuda) vive en `.analisis/plan/plan-accion.md` (carpeta gitignored, solo local). Estado actual: Fases 0–4 implementadas; Fase 5 (higiene) ongoing — ver `plan-accion.md` para el detalle.
+- Laravel 13 y PHP 8.4 con Fases 0–5 del plan de remediación. El plan por fases (26 vulnerabilidades, 28 ítems de deuda) vive en `.analisis/plan/plan-accion.md` (carpeta gitignored, solo local). Estado actual: Fases 0–4 implementadas; Fase 5 (higiene) ongoing — ver `plan-accion.md` para el detalle.
 - Passwords demo **no predecibles** (ítem 5.2 implementado, ver "Credenciales demo"): `DEMO_USER_PASSWORD` en `.env` o aleatorias impresas al sembrar. Instancias sembradas con versiones previas: rotar/desactivar las cuentas demo.
 
 ## Documentación interna
