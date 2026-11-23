@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Landlord;
 
-use App\Http\Middleware\VerifyCsrfToken;
+use App\Http\Middleware\PreventRequestForgery;
 use App\Models\Plan;
 use App\Models\PlanSubscribe;
 use App\Models\User;
@@ -71,7 +71,7 @@ class AdminLandlordHttpTest extends TestCase
 
         // Act
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->postJson('/admin/landlords', [
                 'name' => 'Contract Landlord',
                 'email' => 'contract-f1@example.test',
@@ -125,7 +125,7 @@ class AdminLandlordHttpTest extends TestCase
 
         // Act
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->postJson('/admin/landlords', [
                 'name' => 'Crafted Landlord',
                 'email' => 'contract-f2@example.test',
@@ -165,7 +165,7 @@ class AdminLandlordHttpTest extends TestCase
 
         // Act
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->postJson("/admin/landlords/{$landlord->id}", [
                 '_method' => 'PUT',
                 'name' => 'Updated Landlord',
@@ -197,7 +197,7 @@ class AdminLandlordHttpTest extends TestCase
 
         // Act
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->deleteJson("/admin/landlords/{$landlord->id}");
 
         // Assert — contrato HTTP + DB
@@ -219,7 +219,7 @@ class AdminLandlordHttpTest extends TestCase
 
         // Act
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->postJson('/admin/landlords/delete-all', [
                 'ids' => [$deleteA->id, $deleteB->id],
             ]);

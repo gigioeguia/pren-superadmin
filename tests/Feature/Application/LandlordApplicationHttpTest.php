@@ -14,6 +14,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
 
@@ -377,9 +378,8 @@ class LandlordApplicationHttpTest extends TestCase
     /**
      * // Expected to fail after the file_download quirk fix (follow-up
      * // outside 5.13, spec §5) — update to unified behavior when it fails.
-     *
-     * @group characterization
      */
+    #[Group('characterization')]
     public function test_f10_file_download_web_ignores_type_parameter(): void
     {
         // Arrange — bug conocido (spec §5): el canal web ignora $type y
@@ -414,9 +414,8 @@ class LandlordApplicationHttpTest extends TestCase
     /**
      * // Expected to fail after the file_download quirk fix (follow-up
      * outside 5.13, spec §5) — update to unified behavior when it fails.
-     *
-     * @group characterization
      */
+    #[Group('characterization')]
     public function test_f11_file_download_api_reads_missing_file_attribute(): void
     {
         // Arrange — bug conocido (spec §5): el canal api lee $application->file,

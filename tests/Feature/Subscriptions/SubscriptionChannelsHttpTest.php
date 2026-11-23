@@ -6,7 +6,7 @@ use App\Models\Gateway;
 use App\Models\Plan;
 use App\Models\PlanSubscribe;
 use App\Notifications\SendNotification;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
@@ -62,7 +62,7 @@ class SubscriptionChannelsHttpTest extends TestCase
 
         // Act
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->post('/admin/subscriptions/filter', [
                 'search' => 'paid',
                 'per_page' => 10,
@@ -114,7 +114,7 @@ class SubscriptionChannelsHttpTest extends TestCase
 
         // Act
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->postJson("/admin/subscriptions/reject/{$subscription->id}", [
                 'notes' => 'Wrong amount',
             ]);
@@ -137,7 +137,7 @@ class SubscriptionChannelsHttpTest extends TestCase
 
         // Act
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->postJson("/admin/subscriptions/reject/{$subscription->id}");
 
         // Assert
@@ -159,7 +159,7 @@ class SubscriptionChannelsHttpTest extends TestCase
 
         // Act
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->postJson("/admin/subscriptions/paid/{$subscription->id}", [
                 'notes' => 'Manual approval',
             ]);
@@ -182,7 +182,7 @@ class SubscriptionChannelsHttpTest extends TestCase
 
         // Act
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->postJson("/admin/subscriptions/paid/{$subscription->id}");
 
         // Assert

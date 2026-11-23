@@ -6,7 +6,7 @@ use App\Models\Plan;
 use App\Models\PlanSubscribe;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
 use Tests\Concerns\CreatesUsers;
@@ -41,7 +41,7 @@ class LandlordStoreSubscriptionTest extends TestCase
 
         // Act
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->postJson('/admin/landlords', [
                 'name' => 'Legit Landlord',
                 'email' => 'legit-landlord@example.test',
@@ -67,7 +67,7 @@ class LandlordStoreSubscriptionTest extends TestCase
 
         // Act
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->postJson('/admin/landlords', [
                 'name' => 'Crafted Landlord',
                 'email' => 'crafted@example.test',

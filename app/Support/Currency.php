@@ -51,8 +51,29 @@ class Currency
 
     public static function default(?string $key = null, ?CurrencyModel $currency = null): mixed
     {
-        $currency = $currency ?? cache_remember(CacheKeys::defaultCurrency(), function () {
-            return CurrencyModel::where('is_default', 1)->first() ?? (object) [
+        $currency ??= self::defaultCurrency();
+
+        return $key ? $currency->{$key} : $currency;
+    }
+
+    /**
+     * D2 (spec 5.15): el store cachea la fila como array (`serializable_classes`
+     * = false); la lectura rehidrata el modelo o construye el fallback USD
+     * cuando no existe fila default.
+     */
+    private static function defaultCurrency(): object
+    {
+        $buildRows = fn (): ?array => CurrencyModel::where('is_default', 1)->first()?->getAttributes();
+
+        $rows = cache_remember(CacheKeys::defaultCurrency(), $buildRows);
+
+        // Payload stale/venenado (formato pre-D2): recomputar sin escribir.
+        if (! is_array($rows)) {
+            $rows = $buildRows();
+        }
+
+        if ($rows === null) {
+            return (object) [
                 'name' => 'US Dollar',
                 'code' => 'USD',
                 'rate' => 1,
@@ -61,8 +82,8 @@ class Currency
                 'status' => true,
                 'is_default' => true,
             ];
-        });
+        }
 
-        return $key ? $currency->{$key} : $currency;
+        return CurrencyModel::hydrate([$rows])->first();
     }
 }

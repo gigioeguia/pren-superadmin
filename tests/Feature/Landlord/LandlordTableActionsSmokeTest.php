@@ -14,6 +14,7 @@ use App\Traits\HasTableActions;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use PHPUnit\Framework\Attributes\Group;
 use ReflectionClass;
 use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
@@ -29,9 +30,8 @@ use Tests\TestCase;
  * locales. Tras el PR 3 (adopción Landlord) los mismos endpoints son servidos
  * por HasTableActions y estos tests deben seguir en verde — esa continuidad es
  * la prueba de que el refactor preserva el comportamiento.
- *
- * @group smoke
  */
+#[Group('smoke')]
 class LandlordTableActionsSmokeTest extends TestCase
 {
     use CreatesUsers, RefreshDatabase;
@@ -165,9 +165,7 @@ class LandlordTableActionsSmokeTest extends TestCase
         Storage::disk($disk)->assertExists('properties/302/floorplan.jpg');
     }
 
-    /**
-     * @group characterization
-     */
+    #[Group('characterization')]
     public function test_delete_all_deletes_foreign_amenities_without_ownership_check(): void
     {
         // Expected to fail after Phase 2 (Seg-5 fix) — update to secure behavior

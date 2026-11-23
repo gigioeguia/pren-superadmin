@@ -8,7 +8,7 @@ use App\Models\SecurityDeposit;
 use App\Models\User;
 use App\Models\UserMethod;
 use App\Models\WithdrawMethod;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\CreatesUsers;
@@ -86,7 +86,7 @@ class BalanceForceFillTest extends TestCase
 
         // Act
         $response = $this->actingAs($landlord)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->postJson('/landlord/withdraw', [
                 'user_method_id' => $userMethod->id,
                 'amount' => '10',

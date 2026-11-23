@@ -6,12 +6,11 @@ use App\Models\Withdraw;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Laravel\Sanctum\Sanctum;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
 
-/**
- * @group smoke
- */
+#[Group('smoke')]
 class WithdrawIndexSmokeTest extends TestCase
 {
     use CreatesUsers, DatabaseTransactions;
@@ -63,9 +62,7 @@ class WithdrawIndexSmokeTest extends TestCase
             ->assertJsonCount(1, 'data.data');
     }
 
-    /**
-     * @group security
-     */
+    #[Group('security')]
     public function test_f3_index_scopes_to_own_withdraws(): void
     {
         // Arrange

@@ -49,7 +49,7 @@ php artisan test tests/Feature/Auth/     # un dominio
    `SignupController` lo exige de forma incondicional. El test S8 lo unsetea
    en runtime (`$_ENV`/`$_SERVER`/`putenv`) y lo restaura en `tearDown`.
 
-## `@group characterization`
+## `#[Group('characterization')]`
 
 Estos tests **no validan comportamiento correcto**: documentan el
 comportamiento actual **inseguro** para que, al aplicar el fix de la fase
@@ -61,8 +61,12 @@ detectable**. Un fallo se interpreta como "el fix funcionó":
 ```
 
 Al fallar uno: confirmar que el fallo corresponde a la fase indicada,
-actualizar el test al comportamiento seguro, quitar `@group characterization`
+actualizar el test al comportamiento seguro, quitar `#[Group('characterization')]`
 y el comentario, y actualizar el spec (ver skill `.agents/skills/tests-caracterizacion.md`).
+
+> PHPUnit 12 no lee docblocks `@group`: los marcadores son atributos
+> `#[Group('...')]` (`smoke`, `security`, `characterization`) desde el
+> upgrade a Laravel 13 (spec `spec-laravel13-advisories-fase5.md`).
 
 | Test | Bug caracterizado | Debe fallar tras |
 |------|-------------------|------------------|
@@ -150,7 +154,7 @@ Casos de denegación (`403`) para admin autenticado sin el permiso requerido: `G
 
 Regresión HTTP del bug Seg-20 (`index` sin `Request` inyectado; fix absorbido
 por Fase 4 / 4.4): `F1` per_page respetado (`data.per_page` + 5 items),
-`F2` rango `from_date`/`to_date`, `F3` scoping por `user_id` (`@group security`).
+`F2` rango `from_date`/`to_date`, `F3` scoping por `user_id` (`#[Group('security')]`).
 Archivo: `tests/Feature/Withdraw/WithdrawIndexSmokeTest.php` — spec
 `spec-withdraw-index-request-fase5`. La key de respuesta se aserta como
 `'message'` desde el spec 5.10 (el typo `'meassage'` original quedó corregido).

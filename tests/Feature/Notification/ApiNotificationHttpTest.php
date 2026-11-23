@@ -5,6 +5,7 @@ namespace Tests\Feature\Notification;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
 
@@ -12,9 +13,8 @@ use Tests\TestCase;
  * A1–A4 del spec-typos-rutas-fase5: contrato HTTP de las rutas de
  * notifications del canal API — URI renombrada read-notifications y
  * la typo'd fuera.
- *
- * @group smoke
  */
+#[Group('smoke')]
 class ApiNotificationHttpTest extends TestCase
 {
     use CreatesUsers, DatabaseTransactions;

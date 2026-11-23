@@ -229,12 +229,6 @@ parameters:
 			path: app/Http/Controllers/Admin/TransactionReportController.php
 
 		-
-			message: '#^Parameter \#1 \$ids of method Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany\<Illuminate\\Database\\Eloquent\\Model,Illuminate\\Database\\Eloquent\\Model,Illuminate\\Database\\Eloquent\\Relations\\Pivot,string\>\:\:sync\(\) expects array\|Illuminate\\Database\\Eloquent\\Model\|Illuminate\\Support\\Collection, int\|string given\.$#'
-			identifier: argument.type
-			count: 2
-			path: app/Http/Controllers/Admin/UserController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Withdraw\:\:\$user\.$#'
 			identifier: property.notFound
 			count: 3

@@ -114,23 +114,57 @@ function plan_data(?string $landlord_id = null): ?PlanSubscribe
 {
     $userId = (int) ($landlord_id ?? auth()->id());
 
-    return cache_remember(CacheKeys::planData($userId), function () use ($userId) {
+    // D2 (spec 5.15): el store cachea un payload array (`serializable_classes`
+    // = false); la lectura rehidrata el modelo y el contrato publico no cambia.
+    $buildPayload = function () use ($userId): ?array {
         $planSubscribe = PlanSubscribe::where('user_id', $userId)->latest()->first();
 
-        if ($planSubscribe) {
-            $user = User::find($planSubscribe->user_id);
-            $planSubscribe->will_expire = $user->will_expire ?? null;
+        if (! $planSubscribe) {
+            return null;
         }
 
-        return $planSubscribe;
-    });
+        $user = User::find($planSubscribe->user_id);
+
+        return [
+            'plan_subscribe' => $planSubscribe->getAttributes(),
+            'will_expire' => $user->will_expire ?? null,
+        ];
+    };
+
+    $payload = cache_remember(CacheKeys::planData($userId), $buildPayload);
+
+    // Payload stale/venenado (formato pre-D2 o inyeccion de tests 4.9):
+    // recomputar sin escribir; la invalidacion o expiracion lo limpia.
+    if (! is_array($payload) || ! is_array($payload['plan_subscribe'] ?? null)) {
+        $payload = $buildPayload();
+    }
+
+    if ($payload === null) {
+        return null;
+    }
+
+    $planSubscribe = PlanSubscribe::hydrate([$payload['plan_subscribe']])->first();
+    $planSubscribe->will_expire = $payload['will_expire'];
+
+    return $planSubscribe;
 }
 
 function languages()
 {
-    return cache_remember(CacheKeys::languages(), function () {
-        return Language::orderBy('order', 'asc')->where('status', 1)->get();
-    });
+    // D2 (spec 5.15): store array; rehidratacion a Collection Eloquent para
+    // mantener el contrato (vistas header usan ->where()/->first()).
+    $buildRows = fn (): array => Language::orderBy('order', 'asc')->where('status', 1)
+        ->get()
+        ->map(fn (Language $language): array => $language->getAttributes())
+        ->all();
+
+    $rows = cache_remember(CacheKeys::languages(), $buildRows);
+
+    if (! is_array($rows)) {
+        $rows = $buildRows();
+    }
+
+    return Language::hydrate($rows);
 }
 
 function demoReset(): bool

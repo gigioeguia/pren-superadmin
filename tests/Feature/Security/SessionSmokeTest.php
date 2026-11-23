@@ -4,14 +4,13 @@ namespace Tests\Feature\Security;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Cookie;
 use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
 
-/**
- * @group smoke
- * @group security
- */
+#[Group('smoke')]
+#[Group('security')]
 class SessionSmokeTest extends TestCase
 {
     use CreatesUsers, RefreshDatabase;

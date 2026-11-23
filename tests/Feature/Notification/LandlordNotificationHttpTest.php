@@ -7,6 +7,7 @@ use App\Models\PlanSubscribe;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
 
@@ -14,9 +15,8 @@ use Tests\TestCase;
  * H1–H5 del spec-typos-rutas-fase5: contrato HTTP de las rutas de
  * notifications del canal landlord (post-tidy: filter sin segmento
  * redundante ni slash final).
- *
- * @group smoke
  */
+#[Group('smoke')]
 class LandlordNotificationHttpTest extends TestCase
 {
     use CreatesUsers, DatabaseTransactions;

@@ -4,7 +4,7 @@ namespace Tests\Feature\Landlord;
 
 use App\Models\PlanSubscribe;
 use App\Models\User;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Laravel\Sanctum\Sanctum;
@@ -42,7 +42,7 @@ class TenantForceFillTest extends TestCase
 
         // Act
         $response = $this->actingAs($landlord)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->postJson('/landlord/tenants', [
                 'name' => 'Tenant User',
                 'email' => 'tenant-created@example.test',

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Routes;
 
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\Finder\Finder;
 use Tests\TestCase;
 
@@ -9,9 +10,8 @@ use Tests\TestCase;
  * F14–F18 del spec-typos-rutas-fase5: guards de higiene de la tabla de
  * rutas — unicidad de nombres, 0 nombres de prefijo desnudo, rename
  * pineado, colisión maintenance resuelta y salud de fuente.
- *
- * @group smoke
  */
+#[Group('smoke')]
 class RouteNamesSmokeTest extends TestCase
 {
     public function test_f14_route_names_are_unique(): void

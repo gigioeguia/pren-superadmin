@@ -6,6 +6,7 @@ use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\Request;
 use Illuminate\Testing\TestResponse;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Tests\TestCase;
 
@@ -16,10 +17,9 @@ use Tests\TestCase;
  * `Request::create` sobrescribe `HTTP_HOST` con el host de esa URI absoluta —
  * por eso el Host custom se inyecta construyendo la request Symfony con URI
  * relativa y pasando por el kernel real (stack global incluido).
- *
- * @group smoke
- * @group security
  */
+#[Group('smoke')]
+#[Group('security')]
 class TrustHostsSmokeTest extends TestCase
 {
     use DatabaseTransactions;

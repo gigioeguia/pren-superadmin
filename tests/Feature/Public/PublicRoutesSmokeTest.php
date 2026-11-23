@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Public;
 
-use App\Http\Middleware\VerifyCsrfToken;
+use App\Http\Middleware\PreventRequestForgery;
 use App\Models\Blog;
 use App\Models\Option;
 use App\Models\Plan;
@@ -234,7 +234,7 @@ class PublicRoutesSmokeTest extends TestCase
         $blog = Blog::factory()->create();
 
         // Act + Assert
-        $this->withoutMiddleware(VerifyCsrfToken::class)->postJson('/blogs', [
+        $this->withoutMiddleware(PreventRequestForgery::class)->postJson('/blogs', [
             'name' => 'John Doe',
             'email' => 'john@example.test',
             'comment' => 'Great article!',

@@ -6,6 +6,7 @@ use App\Models\Notification;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
 
@@ -13,9 +14,8 @@ use Tests\TestCase;
  * G1–G5 del spec-typos-rutas-fase5: contrato HTTP de las rutas de
  * notifications del canal admin (post-tidy: filter sin segmento
  * redundante ni slash final).
- *
- * @group smoke
  */
+#[Group('smoke')]
 class AdminNotificationHttpTest extends TestCase
 {
     use CreatesUsers, DatabaseTransactions;

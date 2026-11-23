@@ -4,6 +4,7 @@ namespace Tests\Feature\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Tests\TestCase;
 
@@ -13,10 +14,9 @@ use Tests\TestCase;
  * (patrón ForceHttpsSmokeTest, 5.6) y nunca muta `$_ENV`; el comando se
  * invoca con Artisan::call + BufferedOutput para asertar exit code y
  * salida.
- *
- * @group smoke
- * @group security
  */
+#[Group('smoke')]
+#[Group('security')]
 class VerifyDeployTest extends TestCase
 {
     /**
