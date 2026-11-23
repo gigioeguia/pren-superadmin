@@ -30,8 +30,8 @@ Carpeta de convenciones, especificaciones, skills y decisiones que rigen cómo t
 │   │               spec-helpers-globales-clases-fase4 · spec-plan-duration-days-fase4 ·
 │   │               spec-db-transactions-no-external-io-fase4 · spec-cache-invalidacion-centralizada-fase4 ·
 │   │               spec-seeders-firstorcreate-fase4
-│   ├── fase5 (26): spec-comand-txt-credenciales-fase5 · spec-demo-user-passwords-fase5 ·
-│   │               spec-withdraw-index-request-fase5 · spec-trust-hosts-fase5 ·
+│   ├── fase5 (27): spec-comand-txt-credenciales-fase5 · spec-demo-user-passwords-fase5 ·
+│   │               spec-withdraw-index-request-fase5 · spec-ownership-withdraw-store-fase5 · spec-trust-hosts-fase5 ·
 │   │               spec-session-database-secure-fase5 · spec-app-url-https-force-tls-fase5 ·
 │   │               spec-get-option-tipos-consistentes-fase5 · spec-typos-rutas-fase5 ·
 │   │               spec-log-level-warning-fase5 · spec-acnoo-rename-fase5 ·
@@ -57,7 +57,7 @@ Carpeta de convenciones, especificaciones, skills y decisiones que rigen cómo t
     └── 0001-mysql-test-db.md
 ```
 
-> Índice regenerado 2026-11-23 (fase5 completa 26: añade devdeps, public-writes, laravel13-advisories, restauracion-crud-42, tx-legadas, moderacion, php84-bump y session-serialization-json; total 71 specs): solo contenido trackeado; los archivos locales sin extensión bajo `skills/` (herramientas de agente) no se listan.
+> Índice regenerado 2026-11-23 (fase5 completa 27: añade devdeps, public-writes, laravel13-advisories, restauracion-crud-42, tx-legadas, moderacion, php84-bump, session-serialization-json y ownership-withdraw-store; total 73 specs): solo contenido trackeado; los archivos locales sin extensión bajo `skills/` (herramientas de agente) no se listan.
 
 ## Orden de lectura sugerido (para un agente nuevo)
 

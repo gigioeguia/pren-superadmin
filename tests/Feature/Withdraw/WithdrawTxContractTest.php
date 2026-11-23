@@ -270,4 +270,44 @@ class WithdrawTxContractTest extends TestCase
         $this->assertSame('pending', $withdraw->fresh()->status);
         $this->assertSame(0, Transaction::count());
     }
+
+    public function test_f7_api_store_rejects_foreign_user_method(): void
+    {
+        // Arrange
+        [$owner, $ownerMethod] = $this->landlordWithMethod(balance: 100);
+        [$attacker] = $this->landlordWithMethod(balance: 100);
+        Sanctum::actingAs($attacker);
+
+        // Act
+        $response = $this->postJson('/api/v1/landlord/withdraw', [
+            'user_method_id' => $ownerMethod->id,
+            'amount' => '10',
+        ]);
+
+        // Assert — 5.23: lookup scopeado, sin efectos colaterales
+        $response->assertNotFound();
+        $this->assertSame(0, Withdraw::count());
+        $this->assertSame(100.0, (float) $attacker->fresh()->balance);
+        $this->assertSame(0, DB::table('notifications')->where('type', SendNotification::class)->count());
+    }
+
+    public function test_f8_web_store_rejects_foreign_user_method(): void
+    {
+        // Arrange
+        [$owner, $ownerMethod] = $this->landlordWithPlanAndMethod(balance: 100);
+        [$attacker] = $this->landlordWithPlanAndMethod(balance: 100);
+
+        // Act
+        $response = $this->actingAs($attacker)
+            ->withoutMiddleware(PreventRequestForgery::class)
+            ->postJson('/landlord/withdraw', [
+                'user_method_id' => $ownerMethod->id,
+                'amount' => '10',
+            ]);
+
+        // Assert — 5.23: lookup scopeado, sin efectos colaterales
+        $response->assertNotFound();
+        $this->assertSame(0, Withdraw::count());
+        $this->assertSame(100.0, (float) $attacker->fresh()->balance);
+    }
 }

@@ -44,7 +44,7 @@ class WithdrawController extends Controller
         // Tipado explícito: auth()->user() es union de guards con modelos
         // fantasma en config (spec 5.11 — writes sobre User tipado).
         $user = User::findOrFail(auth()->id());
-        $user_method = UserMethod::findOrFail($request->user_method_id);
+        $user_method = UserMethod::where('user_id', $user->id)->findOrFail($request->user_method_id);
         $method = WithdrawMethod::findOrFail($user_method->method_id);
 
         // Calculate charge

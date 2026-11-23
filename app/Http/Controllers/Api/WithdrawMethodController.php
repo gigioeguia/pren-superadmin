@@ -74,7 +74,7 @@ class WithdrawMethodController extends Controller
             'method_id' => 'required|integer',
         ]);
 
-        $method = UserMethod::findOrFail($id);
+        $method = UserMethod::where('user_id', auth()->id())->findOrFail($id);
         $method->update($request->except('user_id') + [
             'user_id' => auth()->id(),
         ]);
@@ -87,7 +87,7 @@ class WithdrawMethodController extends Controller
 
     public function destroy(string $id)
     {
-        UserMethod::findOrFail($id)->delete();
+        UserMethod::where('user_id', auth()->id())->findOrFail($id)->delete();
 
         return response()->json([
             'message' => __('Withdraw method deleted successfully.'),
