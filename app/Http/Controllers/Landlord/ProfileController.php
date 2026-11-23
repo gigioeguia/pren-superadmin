@@ -2,18 +2,21 @@
 
 namespace App\Http\Controllers\Landlord;
 
+use App\Enums\Channel;
 use App\Helpers\HasUploader;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ProfileService;
 use App\Support\ErrorMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
     use HasUploader;
+
+    public function __construct(protected ProfileService $service) {}
 
     public function index()
     {
@@ -29,17 +32,25 @@ class ProfileController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'name' => 'required|string:255px',
-            'email' => 'required|email',
+            // D-FIX-validation: 'required|string:255px' era una regla rota
+            // (el parámetro se ignoraba y un nombre largo moría en la DB 1406)
+            'name' => 'required|string|max:255',
+            // D-FIX-validation: clave 'email' duplicada — la segunda regla
+            // sobrescribía a la primera; consolidada. D-IDOR: unique contra
+            // el target real (usuario de sesión, no el id de la ruta).
+            'email' => 'nullable|email|unique:users,email,'.auth()->id(),
             'phone' => 'nullable|array',
             'profile_type' => 'nullable|string:255',
-            'email' => 'nullable|email|unique:users,email,'.$id,
             'image' => 'nullable|image|mimes:jpeg,png,gif|max:1024',
             'mykad.front_image' => 'nullable|image|mimes:jpeg,png,gif|max:1024',
             'mykad.back_image' => 'nullable|image|mimes:jpeg,png,gif|max:1024',
         ]);
 
-        $user = User::findOrFail($id);
+        // D-IDOR (patrón Seg-29): el target es siempre el usuario de
+        // sesión; el id de la ruta se ignora (antes resolvía cualquier
+        // cuenta vía findOrFail — cuenta ajena sobrescrita, incluido
+        // landlord_id e is_setupped).
+        $user = User::findOrFail(Auth::id());
 
         // Comprobaciones y uploads antes de abrir la transacción (Fase 4 / 4.8)
         if ($request->password || $request->current_password) {
@@ -82,52 +93,24 @@ class ProfileController extends Controller
             $backImage = $user->user_details->mykad['back_image'] ?? null;
         }
 
-        DB::beginTransaction();
-
         try {
-
-            $user->update([
-                'image' => $image,
-                'is_setupped' => 1,
+            $this->service->update($user, [
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->input('phone'),
+                'image' => $image,
                 'profile_type' => $request->profile_type,
-                'password' => $request->password ? Hash::make($request->password) : $user->password,
-            ]);
-
-            // Columna de tenancy fuera del contrato fillable (spec 5.11)
-            $user->forceFill(['landlord_id' => auth()->user()->id])->save();
-
-            // Before updating user details, ensure it exists
-            $userDetails = $user->user_details;
-
-            if (! $userDetails) {
-                $userDetails = $user->user_details()->create([
-                    'user_id' => $user->id,
-                    'gender' => $request->gender,
-                    'birth_date' => $request->birth_date,
-                    'mykad_id' => $request->mykad_id,
-                    'address_info' => $request->input('address_info'),
-                    'mykad' => [
-                        'front_image' => $frontImage ?? null,
-                        'back_image' => $backImage ?? null,
-                    ],
-                ]);
-            } else {
-                $userDetails->update([
-                    'gender' => $request->gender,
-                    'birth_date' => $request->birth_date,
-                    'mykad_id' => $request->mykad_id,
-                    'address_info' => $request->input('address_info'),
-                    'mykad' => [
-                        'front_image' => $frontImage ?? null,
-                        'back_image' => $backImage ?? null,
-                    ],
-                ]);
-            }
-
-            DB::commit();
+                'gender' => $request->gender,
+                'birth_date' => $request->birth_date,
+                'mykad_id' => $request->mykad_id,
+                'address_info' => $request->input('address_info'),
+                'mykad' => [
+                    'front_image' => $frontImage ?? null,
+                    'back_image' => $backImage ?? null,
+                ],
+                'password' => $request->password,
+                'landlord_id' => auth()->id(),
+            ], Channel::Landlord);
 
             // Borrado best-effort tras el commit
             foreach ($oldPaths as $path) {
@@ -140,7 +123,6 @@ class ProfileController extends Controller
             ]);
         } catch (\Exception $e) {
             report($e);
-            DB::rollBack();
 
             return response()->json([
                 'message' => __('Profile updated failed.'),

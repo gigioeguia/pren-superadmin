@@ -66,34 +66,38 @@ class ProfileTxContractTest extends TestCase
         $this->assertSame('male', $fresh->user_details->gender);
     }
 
-    public function test_f9_landlord_update_resolves_target_by_route_id_today(): void
+    public function test_f9_landlord_update_ignores_foreign_id(): void
     {
-        // Arrange — congela el IDOR (D-IDOR lo corrige en el slice 5)
+        // Arrange — D-IDOR (patrón Seg-29) aplicada en el slice 5: el
+        // route-id se ignora y el target es siempre el usuario de sesión
         $attacker = $this->landlordWithPlan();
-        $attackerName = $attacker->name;
         $victim = $this->createLandlord(['name' => 'Victim']);
+        $victimLandlordId = $victim->landlord_id;
 
         // Act
         $response = $this->actingAs($attacker)
             ->withoutMiddleware(PreventRequestForgery::class)
             ->putJson("/landlord/profile/{$victim->id}", [
                 'name' => 'Hacked Name',
-                'email' => $victim->email,
+                'email' => $attacker->email,
             ]);
 
-        // Assert — HOY: el route-id gana; la cuenta ajena se sobreescribe
-        // (incluido landlord_id del atacante e is_setupped=1 en la víctima)
+        // Assert — se actualiza el propio; la cuenta ajena queda intacta
+        // (antes: la víctima se sobrescribía con landlord_id del atacante)
         $response->assertOk();
-        $this->assertSame('Hacked Name', $victim->fresh()->name);
-        $this->assertSame($attacker->id, $victim->fresh()->landlord_id);
-        $this->assertSame(1, (int) $victim->fresh()->is_setupped);
-        $this->assertSame($attackerName, $attacker->fresh()->name);
+        $this->assertSame('Hacked Name', $attacker->fresh()->name);
+        $this->assertSame($attacker->id, $attacker->fresh()->landlord_id);
+        $this->assertSame(1, (int) $attacker->fresh()->is_setupped);
+        $this->assertSame('Victim', $victim->fresh()->name);
+        $this->assertSame($victimLandlordId, $victim->fresh()->landlord_id);
     }
 
-    public function test_f10_landlord_name_over_255_chars_is_accepted_today(): void
+    public function test_f10_landlord_name_over_255_chars_is_rejected(): void
     {
-        // Arrange — congela la regla rota 'string:255px' (D-FIX-validation en slice 5)
+        // Arrange — D-FIX-validation: 'string:255px' → 'string|max:255'
+        // (antes: pasaba la validación rota y moría en la DB 1406 → 500)
         $landlord = $this->landlordWithPlan();
+        $originalName = $landlord->name;
 
         // Act
         $response = $this->actingAs($landlord)
@@ -103,10 +107,10 @@ class ProfileTxContractTest extends TestCase
                 'email' => $landlord->email,
             ]);
 
-        // Assert — HOY la regla rota deja pasar el nombre hasta la DB, que
-        // trunca (1406) → 500 con rollback; D-FIX-validation lo vuelve 422
-        $response->assertStatus(500);
-        $this->assertNotSame(256, strlen((string) $landlord->fresh()->name));
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('name');
+        $this->assertSame($originalName, $landlord->fresh()->name);
     }
 
     public function test_f11_api_profile_setup_updates_user_and_details(): void
