@@ -1,7 +1,7 @@
 ---
 id: spec-cobertura-flujos-criticos-fase5
 titulo: "Cobertura de tests ≥ 60 % en flujos críticos (auth, pagos, IDOR)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-23
 origen: .analisis/plan/plan-accion.md (Métricas de éxito — "Cobertura de tests ≥ 60 % en flujos críticos (auth, pagos, IDOR)") + Fase 0 / 0.1 (tests smoke) + Seg-5 (IDOR) + Seg-6 (pagos)
 cobertura: Medir y elevar la cobertura de app/ en los flujos críticos (auth, pagos, IDOR) a ≥ 60 %, con driver PCOV y umbral en CI.

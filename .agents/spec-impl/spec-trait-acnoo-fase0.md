@@ -1,7 +1,7 @@
 ---
 id: spec-trait-acnoo-fase0
 titulo: "Trait único HasAcnooActions para acnooFilter/deleteAll/status/exportExcel/exportCsv"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-11
 origen: .analisis/plan/plan-accion.md (Fase 0 / 0.3) — DT-C3
 cobertura: Extracción de 169 métodos duplicados (55 acnooFilter + 33 deleteAll + 19 status + 62 exports) en 55 controladores Admin/Landlord a app/Traits/HasAcnooActions.php con comportamiento observable idéntico
