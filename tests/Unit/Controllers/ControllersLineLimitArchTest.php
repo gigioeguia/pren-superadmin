@@ -31,7 +31,6 @@ class ControllersLineLimitArchTest extends TestCase
         'Api/Auth/RegistrationController.php',   // hijo 4 §11: unidad atómica User+trío, diseño intencional
         'Api/SecurityDepositController.php',     // deuda lateral (offline deposit) — plan-accion
         'Api/UserController.php',                // deuda lateral (profile-setup) — plan-accion
-        'Admin/ProfileController.php',          // deuda lateral — plan-accion
         'Admin/RoleController.php',              // deuda lateral — plan-accion
         'Landlord/ProfileController.php',        // deuda lateral — plan-accion
     ];
