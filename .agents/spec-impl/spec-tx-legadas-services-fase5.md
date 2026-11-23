@@ -1,7 +1,7 @@
 ---
 id: spec-tx-legadas-services-fase5
 titulo: "Migrar las 9 tx legadas de controladores a services (Fase 5 / 5.18)"
-estado: Borrador
+estado: Aprobado
 fecha: 2026-11-22
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.18; decisión D5 de .agents/spec-impl/spec-controladores-residuales-fase5.md §12; premisa inexacta del paraguas spec-unificar-capas-services-fase5.md §5.2)
 cobertura: "9 tx del allowlist U2 → 3 services nuevos (WithdrawService, ProfileService, RoleService) + 2 extensiones (SecurityDepositService::offlinePayment, LandlordService método compuesto de registration); TX_ALLOWLIST → 0 con guard U2 absoluto; verbatim + 4 desviaciones pre-declaradas"
