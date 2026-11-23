@@ -197,7 +197,7 @@ Ninguno: este spec no documenta bugs de aplicación; valida un upgrade de infrae
 - [x] Guard F2 (`EmailRuleCrlfRejectionTest`) en verde.
 - [x] D2: `'serializable_classes' => false` en `config/cache.php` con test de enforcement (F11); payloads de las 3 claves en array (F9); contratos públicos invariantes (F10); suite de invalidación 4.9 en verde (F12).
 - [x] Session `serialization` documentado como `php` + residual registrado con su precondición (§5, §8 y fila nueva en `plan-accion.md`).
-- [ ] CI en verde con 4 jobs (`tests`, `static-analysis`, `style`, `audit`) — URL del run en el PR (F13); sonda del job documentada (F14). **Pendiente post-push** (§12).
+- [x] CI en verde con 4 jobs (`tests`, `static-analysis`, `style`, `audit`) — [run 45090339197](https://github.com/gigioeguia/pren-superadmin/actions/runs/45090339197) sobre el head pre-closeout; revalidado sobre el head final del PR (F13); sonda ejecutada: job `audit` **failure** con los 5 PKSA sobre un lock 11.57.1 ([PR draft #67, cerrado sin merge](https://github.com/gigioeguia/pren-superadmin/pull/67)) (F14).
 - [x] Suite completa 100 % en verde sobre L13 + phpunit 12: 510 passed / 5.961 assertions (F15).
 - [x] `composer analyse` exit 0, nivel 5; diff del baseline revisado en el PR — saneado −1 entrada stale, 0 adiciones (política (b)) (F7).
 - [x] `composer lint` exit 0 (Pint).
@@ -288,5 +288,7 @@ Implementado en rama `spec/laravel13-advisories-fase5-impl` (entregas D1/D2 en c
 
 ### Pendiente post-push
 
-- **F13/F14**: run de CI con los 4 jobs (URL al PR) + sonda del job `audit` (rama desechable con advisory conocido, nunca mergeada).
-- Flip del spec a `Implementado` al verificar el run del PR (decisor).
+- ~~**F13/F14**: run de CI con los 4 jobs (URL al PR) + sonda del job `audit`~~ → **completados (2026-11-22):**
+  - **F13**: PR #66 — CI **4/4 jobs success** sobre el head `ae90a16`: [run 45090339197](https://github.com/gigioeguia/pren-superadmin/actions/runs/45090339197) (`tests` sobre PHP 8.3 real — cierra el riesgo proxy 8.4→8.3, `static-analysis`, `style`, `audit`).
+  - **F14**: sonda ejecutada según diseño — PR draft **#67** (base `spec/laravel13-advisories-fase5-impl`, nunca tocó `main`), lock degradado a `11.57.1` con `policy.advisories.block=false` para que el ROJO naciera del step `composer audit --locked`: job `audit` **failure** ([run 45091530059](https://github.com/gigioeguia/pren-superadmin/actions/runs/45091530059/job/137421962982), job 137421962982) con los 5 PKSA; `style` verde en el mismo run (diseño confirmado). Cerrada sin merge + rama borrada; evidencia en comentario del PR. Nota: Composer 2.11 bloqueó por sí mismo el primer intento de downgrade **por los mismos advisories** (`require` falló citando los 5 PKSA) — el guard también opera a nivel de Composer, no solo de CI.
+- ~~Flip del spec a `Implementado` al verificar el run del PR (decisor).~~ → pendiente: tras el merge (decisor verifica DoD).
