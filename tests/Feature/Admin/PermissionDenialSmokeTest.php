@@ -109,4 +109,12 @@ class PermissionDenialSmokeTest extends TestCase
         $admin = $this->adminWithout('languages-read');
         $this->actingAs($admin)->get('/admin/languages')->assertForbidden();
     }
+
+    // F52 — spec-moderacion-comentarios-fase5 (5.19): toggle de status gated
+    // por comments-update (espejo blogs-update → status).
+    public function test_f52_admin_without_comments_update_receives_403(): void
+    {
+        $admin = $this->adminWithout('comments-update');
+        $this->actingAs($admin)->post('/admin/comments/status/1')->assertForbidden();
+    }
 }

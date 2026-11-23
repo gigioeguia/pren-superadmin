@@ -31,6 +31,7 @@ class DemoMode
         'admin.clients.destroy',
         'admin.comments.delete-all',
         'admin.comments.destroy',
+        'admin.comments.status',
         'admin.currencies.default',
         'admin.currencies.delete-all',
         'admin.currencies.update',

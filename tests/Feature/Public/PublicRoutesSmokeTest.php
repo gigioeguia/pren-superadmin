@@ -4,6 +4,7 @@ namespace Tests\Feature\Public;
 
 use App\Http\Middleware\PreventRequestForgery;
 use App\Models\Blog;
+use App\Models\Comment;
 use App\Models\Option;
 use App\Models\Plan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -253,5 +254,32 @@ class PublicRoutesSmokeTest extends TestCase
         // 0 filas creadas
         $this->assertDatabaseCount('comments', 0);
         $this->assertDatabaseCount('messages', 0);
+    }
+
+    // Pub8 — spec-moderacion-comentarios-fase5: el whereStatus(1) del front
+    // se vuelve el contrato de moderación — el comentario ocultado por el
+    // admin no renderiza; el aprobado sí.
+    public function test_pub8_hidden_comment_is_not_rendered_on_blog_show(): void
+    {
+        // Arrange
+        $blog = Blog::factory()->create();
+        Comment::factory()->create([
+            'blog_id' => $blog->id,
+            'status' => 1,
+            'comment' => 'Visible approved comment',
+        ]);
+        Comment::factory()->create([
+            'blog_id' => $blog->id,
+            'status' => 0,
+            'comment' => 'Hidden spam comment',
+        ]);
+
+        // Act
+        $response = $this->get("/blogs/{$blog->slug}");
+
+        // Assert
+        $response->assertOk();
+        $this->assertStringContainsString('Visible approved comment', $response->getContent());
+        $this->assertStringNotContainsString('Hidden spam comment', $response->getContent());
     }
 }

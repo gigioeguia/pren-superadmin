@@ -242,6 +242,7 @@ Route::post('highlights/delete-all', [Admin\HighlightController::class, 'deleteA
 Route::resource('comments', Admin\CommentController::class)->only('destroy');
 Route::post('comments/delete-all', [Admin\CommentController::class, 'deleteAll'])->name('comments.delete-all');
 Route::post('comments/filter', [Admin\CommentController::class, 'filter'])->name('comments.filter');
+Route::post('comments/status/{id}', [Admin\CommentController::class, 'status'])->name('comments.status');
 
 Route::resource('faqs', Admin\FaqController::class)->except('show');
 Route::post('faqs/delete-all', [Admin\FaqController::class, 'deleteAll'])->name('faqs.delete-all');

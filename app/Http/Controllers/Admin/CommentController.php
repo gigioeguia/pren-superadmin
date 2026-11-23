@@ -16,12 +16,15 @@ class CommentController extends Controller
     public function __construct()
     {
         $this->middleware('permission:comments-read')->only('filter');
+        $this->middleware('permission:comments-update')->only('status');
         $this->middleware('permission:comments-delete')->only('destroy', 'deleteAll');
     }
 
     public function destroy($id)
     {
-        Comment::where('id', $id)->delete();
+        // D-FIX-2 (spec 5.19): findOrFail — id inexistente → 404 en vez del
+        // 200 success silent no-op del where()->delete() legado.
+        Comment::findOrFail($id)->delete();
 
         return response()->json([
             'message' => __('Comment deleted successfully.'),
@@ -36,7 +39,12 @@ class CommentController extends Controller
 
     protected function query(Request $request): Builder
     {
-        return Comment::when($request->input('search'), function ($q) use ($request) {
+        // D-FIX-1 (spec 5.19): scope opcional por blog — el listador per-blog
+        // pasa blog_id en sus forms; sin input, el contrato sin scope se
+        // preserva (comportamiento anterior exacto).
+        return Comment::when($request->input('blog_id'), function ($q) use ($request) {
+            $q->where('blog_id', $request->input('blog_id'));
+        })->when($request->input('search'), function ($q) use ($request) {
             $q->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%'.$request->input('search').'%')
                     ->orWhere('email', 'like', '%'.$request->input('search').'%')
@@ -59,6 +67,13 @@ class CommentController extends Controller
     protected function redirectRoute(): string
     {
         return 'admin.blogs.index';
+    }
+
+    protected function statusMessage(): string
+    {
+        // Espejo verbatim del patrón ('Blog', sin __()): el JS del toggle
+        // añade " status published/unpublished" (custom-ajax.js).
+        return 'Comment';
     }
 
     protected function deleteMessage(): string
