@@ -63,6 +63,7 @@ class VerifyDeploy extends Command
             $this->row('app.url', 'https://…', (string) config('app.url'), str_starts_with((string) config('app.url'), 'https://')),
             $this->row('app.force_https', 'true', config('app.force_https') ? 'true' : 'false', config('app.force_https') === true),
             $this->row('php version', '>= 8.4.1', PHP_VERSION, self::phpFloorPasses(PHP_VERSION)),
+            $this->row('session.serialization', 'json', (string) config('session.serialization'), self::sessionSerializationPasses((string) config('session.serialization'))),
         ];
     }
 
@@ -92,6 +93,16 @@ class VerifyDeploy extends Command
     public static function phpFloorPasses(string $version): bool
     {
         return version_compare($version, '8.4.1', '>=');
+    }
+
+    /**
+     * Serialización de sesión del spec 5.21 (Q6): helper puro para que la
+     * rama FAIL viva en tests unitarios (U22/U23); el consumo real lee
+     * config('session.serialization') — config:cache friendly.
+     */
+    public static function sessionSerializationPasses(?string $value): bool
+    {
+        return $value === 'json';
     }
 
     /**

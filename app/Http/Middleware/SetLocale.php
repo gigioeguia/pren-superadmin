@@ -16,7 +16,8 @@ class SetLocale
         }
 
         if ($request->has('lang')) {
-            $locale = $request->get('lang');
+            $lang = $request->get('lang');
+            $locale = is_string($lang) ? $lang : (string) config('app.locale');
             app()->setLocale($locale);
             session(['locale' => $locale]);
         } elseif (session()->has('locale')) {

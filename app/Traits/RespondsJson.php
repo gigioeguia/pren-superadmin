@@ -89,19 +89,19 @@ trait RespondsJson
         ],
     ];
 
-    protected function setSuccess($message)
+    protected function setSuccess(string $message)
     {
         session()->flash('type', 'success');
         session()->flash('message', $message);
     }
 
-    protected function setError($message)
+    protected function setError(string $message)
     {
         session()->flash('type', 'warning');
         session()->flash('message', $message);
     }
 
-    protected function setDelete($message)
+    protected function setDelete(string $message)
     {
         session()->flash('type', 'warning');
         session()->flash('message', $message);

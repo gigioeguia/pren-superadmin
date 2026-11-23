@@ -18,6 +18,7 @@ use App\Models\PropertyDetail;
 use App\Models\RentPayment;
 use App\Models\SecurityDeposit;
 use App\Models\Transaction;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -145,9 +146,9 @@ class PaymentFlowSmokeTest extends TestCase
 
         $this->assertEquals(8, StubGateway::$lastPaymentData['amount']);
 
-        $this->assertEquals($plan->id, session('plan')->id);
-        $this->assertEquals($landlord->id, session('user')->id);
+        $this->assertEquals($plan->id, session('plan_id'));
         $this->assertEquals($gateway->id, session('gateway_id'));
+        $response->assertSessionMissing(['user', 'plan']);
     }
 
     public function test_payment_success_processes_subscription_from_session(): void
@@ -161,8 +162,8 @@ class PaymentFlowSmokeTest extends TestCase
         // Act
         $response = $this->actingAs($landlord)->withSession([
             'payment_type' => 'subscription',
-            'plan' => $plan,
-            'user' => $landlord,
+            'plan_id' => $plan->id,
+            'user_id' => $landlord->id,
             'amount' => 8,
             'gateway_id' => $gateway->id,
             'platform' => 'web',
@@ -189,6 +190,51 @@ class PaymentFlowSmokeTest extends TestCase
             now()->addDays(30)->toDateString(),
             $landlord->fresh()->will_expire
         );
+
+        // La sesión del flujo se limpia tras el success (forget lists, P7).
+        $this->assertNull(session('plan_id'));
+        $this->assertNull(session('user_id'));
+        $this->assertNull(session('gateway_id'));
+        $this->assertNull(session('amount'));
+        $this->assertNull(session('payment_info'));
+    }
+
+    /**
+     * P4 del spec 5.21 (nuevo): rent_payment rehidratado por IDs — sin
+     * cobertura previa de la rama success del rent vía sesión escalar.
+     */
+    public function test_success_rent_payment_rehydrated_marks_paid_and_credits_landlord(): void
+    {
+        // Arrange
+        $rentPayment = RentPayment::factory()->create();
+        $rent = $rentPayment->rent()->first();
+        $tenant = User::where('id', $rent->getAttribute('tenant_id'))->firstOrFail();
+        $landlord = User::where('id', $rent->getAttribute('landlord_id'))->firstOrFail();
+        $gateway = Gateway::factory()->create();
+        $balanceBefore = (float) $landlord->balance;
+
+        // Act
+        $response = $this->actingAs($tenant)->withSession([
+            'payment_type' => 'rent_payment',
+            'plan_id' => $rentPayment->id,
+            'user_id' => $tenant->id,
+            'amount' => $rentPayment->total_amount,
+            'gateway_id' => $gateway->id,
+            'platform' => 'web',
+            'payment_info' => ['status' => 1],
+        ])->get('/payment/success');
+
+        // Assert
+        $response->assertRedirect(route('order.status', ['status' => 'success']));
+
+        $this->assertSame('paid', $rentPayment->fresh()->payment_status);
+        $this->assertSame($balanceBefore + (float) $rentPayment->total_amount, (float) $landlord->fresh()->balance);
+        $this->assertDatabaseHas('transactions', [
+            'paid_by' => $tenant->id,
+            'received_by' => $landlord->id,
+            'rent_payment_id' => $rentPayment->id,
+            'type' => 'debit',
+        ]);
     }
 
     public function test_payment_success_without_session_redirects_to_failed(): void
@@ -365,8 +411,8 @@ class PaymentFlowSmokeTest extends TestCase
 
         $response = $this->withSession([
             'payment_type' => 'subscription',
-            'plan' => $plan,
-            'user' => $landlord,
+            'plan_id' => $plan->id,
+            'user_id' => $landlord->id,
             'amount' => 8,
             'gateway_id' => $gateway->id,
             'platform' => 'web',
@@ -384,8 +430,8 @@ class PaymentFlowSmokeTest extends TestCase
 
         $response = $this->actingAs($landlord)->withSession([
             'payment_type' => 'subscription',
-            'plan' => $plan,
-            'user' => $landlord,
+            'plan_id' => $plan->id,
+            'user_id' => $landlord->id,
             'amount' => 8,
             'gateway_id' => $gateway->id,
             'platform' => 'web',
@@ -404,8 +450,8 @@ class PaymentFlowSmokeTest extends TestCase
 
         $response = $this->actingAs($landlordA)->withSession([
             'payment_type' => 'subscription',
-            'plan' => $plan,
-            'user' => $landlordB,
+            'plan_id' => $plan->id,
+            'user_id' => $landlordB->id,
             'amount' => 8,
             'gateway_id' => $gateway->id,
             'platform' => 'web',
@@ -424,8 +470,8 @@ class PaymentFlowSmokeTest extends TestCase
 
         $session = [
             'payment_type' => 'subscription',
-            'plan' => $plan,
-            'user' => $landlord,
+            'plan_id' => $plan->id,
+            'user_id' => $landlord->id,
             'amount' => 8,
             'gateway_id' => $gateway->id,
             'platform' => 'web',
@@ -472,8 +518,8 @@ class PaymentFlowSmokeTest extends TestCase
             'user_id' => $landlord->id,
             'plan_id' => $plan->id,
         ]);
-        $this->assertNull(session('plan'));
-        $this->assertNull(session('user'));
+        // El 403 de resolvePayment ocurre antes del stash escalar.
+        $this->assertNull(session('plan_id'));
         $this->assertNull(session('gateway_id'));
     }
 

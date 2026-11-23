@@ -198,4 +198,20 @@ return [
 
     'same_site' => 'lax',
 
+    /*
+    |--------------------------------------------------------------------------
+    | Session Serialization
+    |--------------------------------------------------------------------------
+    |
+    | This value controls the serialization strategy for session data.
+    | JSON prevents PHP object injection ("gadget chain") attacks even
+    | if the APP_KEY is leaked. Session payloads must be scalar/array
+    | only — rehydrate models by ID instead of stashing them.
+    |
+    | Supported: "json", "php"
+    |
+    */
+
+    'serialization' => 'json',
+
 ];

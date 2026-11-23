@@ -31,7 +31,8 @@ class PaymentController extends Controller
             abort(403);
         }
 
-        session()->put('platform', $request->input('platform') ?? 'web');
+        $platform = $request->input('platform');
+        session()->put('platform', is_string($platform) ? $platform : 'web');
         session()->put('user_id', $context['tenant_id']);
 
         return view('payments.online_payment', ['gateways' => $context['gateways'], 'plan' => $context['plan']]);
@@ -50,7 +51,7 @@ class PaymentController extends Controller
             abort(403);
         }
 
-        session()->put('platform', $platform ?? 'web');
+        session()->put('platform', is_string($platform) ? $platform : 'web');
         session()->put('user_id', $landlord_id);
         session()->put('payment_type', 'subscription');
 
@@ -93,8 +94,8 @@ class PaymentController extends Controller
         session()->put('fund_callback.success_url', '/payment/success');
         session()->put('fund_callback.cancel_url', '/payment/failed');
 
-        session()->put('user', $context->user);
-        session()->put('plan', $context->plan);
+        // Scalar-only session payloads (serialization=json): rehydrate by ID in success(), never stash models.
+        session()->put('plan_id', (int) $plan_id);
         session()->put('gateway_id', $context->gateway->id);
         session()->put('amount', $context->amount);
 
@@ -113,13 +114,13 @@ class PaymentController extends Controller
         }
 
         // Identity check: the authenticated user must be the session payer.
-        if ($state->user && auth()->id() !== (int) $state->user->id && auth()->id() !== (int) $state->userId) {
+        if ($state->userId && auth()->id() !== (int) $state->userId) {
             abort(403);
         }
 
         // Idempotency: already processed in this session.
         if (session('payment_processed')) {
-            session()->forget(['plan', 'plan_id', 'user', 'user_id', 'gateway_id', 'amount', 'payment_info', 'payment_processed']);
+            session()->forget(['plan_id', 'user_id', 'gateway_id', 'amount', 'payment_info', 'payment_processed']);
 
             return redirect(route('order.status', ['status' => 'success']))->with('message', __('Payment successfully.'));
         }
@@ -128,7 +129,7 @@ class PaymentController extends Controller
 
         if ($outcome === PaymentOutcome::Success) {
             session()->put('payment_processed', true);
-            session()->forget(['plan', 'plan_id', 'user', 'user_id', 'gateway_id', 'amount', 'payment_info']);
+            session()->forget(['plan_id', 'user_id', 'gateway_id', 'amount', 'payment_info']);
         }
 
         return redirect(route('order.status', ['status' => $outcome->status()]))
@@ -164,17 +165,24 @@ class PaymentController extends Controller
         $payment_msg = session('payment_msg');
         session()->forget('payment_msg');
 
+        // Session payloads are scalar-only (serialization=json): flash a
+        // guaranteed string instead of the raw session value.
+        $message = is_string($payment_msg) ? $payment_msg : __('Transaction failed for invalid credentials, Please try again later or contact with admin.');
+
         if (session('platform') == 'web') {
-            return redirect(route('landlord.subscriptions.index'))->with('error', $payment_msg ?? __('Transaction failed for invalid credentials, Please try again later or contact with admin.'));
+            return redirect(route('landlord.subscriptions.index'))->with('error', $message);
         }
 
-        return redirect(route('order.status', ['status' => 'failed', 'message' => $payment_msg ?? __('Transaction failed for invalid credentials, Please try again later or contact with admin.')]));
+        return redirect(route('order.status', ['status' => 'failed', 'message' => $message]));
     }
 
     public function orderStatus(Request $request)
     {
         if (session('platform') == 'web' && session('payment_type') == 'subscription') {
-            return redirect(route('landlord.subscriptions.index'))->with('message', $request->input('message') ?? __('New subscription order successfully.'));
+            $message = $request->input('message');
+
+            return redirect(route('landlord.subscriptions.index'))
+                ->with('message', is_string($message) ? $message : __('New subscription order successfully.'));
         }
 
         session()->forget('platform');

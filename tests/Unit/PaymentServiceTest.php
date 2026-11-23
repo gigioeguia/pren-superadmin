@@ -51,9 +51,7 @@ class PaymentServiceTest extends TestCase
 
         $state = new PaymentState(
             paymentType: 'security_deposit',
-            plan: $deposit,
-            planId: null,
-            user: $tenant,
+            planId: $deposit->id,
             userId: $tenant->id,
             amount: 100,
             gatewayId: $gateway->id,
@@ -84,15 +82,13 @@ class PaymentServiceTest extends TestCase
     public function test_u2a_success_with_spent_session_state_writes_nothing(): void
     {
         // Arrange — sesión ya gastada por un success previo: el
-        // controlador olvidó plan/user/amount/gateway_id/payment_info y
-        // solo queda payment_type (que no está en la lista de forget).
+        // controlador olvidó plan_id/user_id/amount/gateway_id/payment_info
+        // y solo queda payment_type (que no está en la lista de forget).
         $gateway = Gateway::factory()->create();
 
         $state = new PaymentState(
             paymentType: 'subscription',
-            plan: null,
             planId: null,
-            user: null,
             userId: null,
             amount: null,
             gatewayId: null,
@@ -123,9 +119,7 @@ class PaymentServiceTest extends TestCase
 
         $state = new PaymentState(
             paymentType: 'subscription',
-            plan: $plan,
-            planId: null,
-            user: $landlord,
+            planId: $plan->id,
             userId: $landlord->id,
             amount: 8,
             gatewayId: $gateway->id,
