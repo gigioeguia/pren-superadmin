@@ -3,7 +3,7 @@
 namespace Tests\Feature\Demo;
 
 use App\Http\Middleware\DemoMode;
-use App\Http\Middleware\VerifyCsrfToken;
+use App\Http\Middleware\PreventRequestForgery;
 use App\Models\PlanSubscribe;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -35,7 +35,7 @@ class DemoModeTest extends TestCase
 
         $admin = $this->createAdmin();
 
-        $response = $this->actingAs($admin)->withoutMiddleware(VerifyCsrfToken::class)->deleteJson('/admin/blogs/1');
+        $response = $this->actingAs($admin)->withoutMiddleware(PreventRequestForgery::class)->deleteJson('/admin/blogs/1');
 
         $this->assertNotEquals(499, $response->getStatusCode());
     }
@@ -46,7 +46,7 @@ class DemoModeTest extends TestCase
 
         $admin = $this->createAdmin();
 
-        $response = $this->actingAs($admin)->withoutMiddleware(VerifyCsrfToken::class)->deleteJson('/admin/blogs/1');
+        $response = $this->actingAs($admin)->withoutMiddleware(PreventRequestForgery::class)->deleteJson('/admin/blogs/1');
 
         $response->assertStatus(499);
         $response->assertJson(['message' => 'This action is disabled in demo mode.']);
@@ -58,7 +58,7 @@ class DemoModeTest extends TestCase
 
         $landlord = User::factory()->landlord()->demo()->create();
 
-        $response = $this->actingAs($landlord)->withoutMiddleware(VerifyCsrfToken::class)->putJson('/landlord/properties/1');
+        $response = $this->actingAs($landlord)->withoutMiddleware(PreventRequestForgery::class)->putJson('/landlord/properties/1');
 
         $response->assertStatus(499);
         $response->assertJson(['message' => 'This action is disabled in demo account. Please sign up your own account for full access.']);
@@ -70,7 +70,7 @@ class DemoModeTest extends TestCase
 
         $landlord = $this->createLandlord();
 
-        $response = $this->actingAs($landlord)->withoutMiddleware(VerifyCsrfToken::class)->putJson('/landlord/properties/1');
+        $response = $this->actingAs($landlord)->withoutMiddleware(PreventRequestForgery::class)->putJson('/landlord/properties/1');
 
         $this->assertNotEquals(499, $response->getStatusCode());
     }
@@ -79,7 +79,7 @@ class DemoModeTest extends TestCase
     {
         app()->detectEnvironment(fn () => 'demo');
 
-        $response = $this->withoutMiddleware(VerifyCsrfToken::class)->putJson('/landlord/properties/1');
+        $response = $this->withoutMiddleware(PreventRequestForgery::class)->putJson('/landlord/properties/1');
 
         $this->assertNotEquals(499, $response->getStatusCode());
     }
@@ -124,7 +124,7 @@ class DemoModeTest extends TestCase
 
         $admin = $this->createAdmin();
 
-        $response = $this->actingAs($admin)->withoutMiddleware(VerifyCsrfToken::class)->postJson('/admin/subscriptions/paid/1');
+        $response = $this->actingAs($admin)->withoutMiddleware(PreventRequestForgery::class)->postJson('/admin/subscriptions/paid/1');
 
         $response->assertStatus(499);
         $response->assertJson(['message' => 'This action is disabled in demo mode.']);
@@ -136,7 +136,7 @@ class DemoModeTest extends TestCase
 
         $admin = $this->createAdmin();
 
-        $response = $this->actingAs($admin)->withoutMiddleware(VerifyCsrfToken::class)->postJson('/admin/subscriptions/reject/1');
+        $response = $this->actingAs($admin)->withoutMiddleware(PreventRequestForgery::class)->postJson('/admin/subscriptions/reject/1');
 
         $response->assertStatus(499);
         $response->assertJson(['message' => 'This action is disabled in demo mode.']);

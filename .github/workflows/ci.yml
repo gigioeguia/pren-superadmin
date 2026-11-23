@@ -100,3 +100,23 @@ jobs:
 
       - name: Pint (test mode)
         run: vendor/bin/pint --test
+
+  # Guard anti-reincidencia (spec 5.15 / F13): el lock no puede arrastrar
+  # advisories de seguridad. Valvula documentada: si un advisory sin fix
+  # disponible debe bloquear el merge, se ignora de forma explicita via
+  # `audit.ignore` en composer.json con justificacion en el PR.
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Install PHP dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Composer audit (security advisories)
+        run: composer audit --locked

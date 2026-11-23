@@ -7,7 +7,7 @@ use App\Models\PlanSubscribe;
 use App\Models\User;
 use App\Support\CacheKeys;
 use Carbon\Carbon;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\Models\Permission;
@@ -48,7 +48,7 @@ class SubscriptionPaidTest extends TestCase
 
         // Act
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->postJson("/admin/subscriptions/paid/{$subscribe->id}", [
                 'notes' => 'Manual approval',
             ]);
@@ -83,7 +83,7 @@ class SubscriptionPaidTest extends TestCase
 
         // Act
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->postJson("/admin/subscriptions/paid/{$subscribe->id}", [
                 'notes' => 'Manual approval',
             ]);

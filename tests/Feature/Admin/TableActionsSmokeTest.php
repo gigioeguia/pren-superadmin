@@ -14,6 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
+use PHPUnit\Framework\Attributes\Group;
 use ReflectionClass;
 use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
@@ -30,9 +31,8 @@ use Tests\TestCase;
  * en verde — esa continuidad es la prueba de que el refactor preserva el
  * comportamiento. La prueba estructural de que los métodos enrutados provienen
  * del trait se añade junto con la adopción.
- *
- * @group smoke
  */
+#[Group('smoke')]
 class TableActionsSmokeTest extends TestCase
 {
     use CreatesUsers, RefreshDatabase;

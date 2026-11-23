@@ -7,6 +7,7 @@ use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
 
@@ -17,9 +18,8 @@ use Tests\TestCase;
  * vuelven a resolver, con el shape que exige el JS (custom-ajax.js:
  * dataType json + res.data). Los OTP de tenants admin, sin referencias,
  * se eliminan.
- *
- * @group smoke
  */
+#[Group('smoke')]
 class RestoredTableActionsSmokeTest extends TestCase
 {
     use CreatesUsers, RefreshDatabase;

@@ -5,6 +5,7 @@ namespace Tests\Feature\Api;
 use App\Models\Amenity;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
 
@@ -13,9 +14,8 @@ use Tests\TestCase;
  * endpoints que consumen el array $message legado a través del trait
  * RespondsJson. Tras mover los 15 helpers + $message del Controller base
  * al trait, estos mensajes deben seguir siendo byte-idénticos.
- *
- * @group smoke
  */
+#[Group('smoke')]
 class RespondsJsonCompatTest extends TestCase
 {
     use CreatesUsers, RefreshDatabase;

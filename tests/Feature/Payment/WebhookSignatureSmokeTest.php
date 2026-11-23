@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Payment;
 
-use App\Http\Middleware\VerifyCsrfToken;
+use App\Http\Middleware\PreventRequestForgery;
 use Illuminate\Support\Facades\Http;
 use ReflectionClass;
 use Tests\TestCase;
@@ -20,7 +20,7 @@ class WebhookSignatureSmokeTest extends TestCase
     // P11 — la exención CSRF huérfana /billplz-callback se eliminó.
     public function test_p11_csrf_exemption_removed(): void
     {
-        $reflection = new ReflectionClass(VerifyCsrfToken::class);
+        $reflection = new ReflectionClass(PreventRequestForgery::class);
         $property = $reflection->getProperty('except');
         $defaults = $property->getDefaultValue();
 

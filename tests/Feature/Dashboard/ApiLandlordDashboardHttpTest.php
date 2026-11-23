@@ -6,6 +6,7 @@ use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
 
@@ -14,9 +15,8 @@ use Tests\TestCase;
  * actual del dashboard API de landlord ANTES de extraer DashboardService.
  * Tras la migración al service estos tests deben seguir en verde sin cambios
  * (la continuidad es la prueba de que el refactor preserva el contrato).
- *
- * @group smoke
  */
+#[Group('smoke')]
 class ApiLandlordDashboardHttpTest extends TestCase
 {
     use CreatesUsers, RefreshDatabase;

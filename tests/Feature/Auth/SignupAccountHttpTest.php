@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Http\Middleware\VerifyCsrfToken;
+use App\Http\Middleware\PreventRequestForgery;
 use App\Mail\WelcomeMail;
 use App\Models\Option;
 use App\Models\Plan;
@@ -11,6 +11,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\Concerns\CreatesUsers;
 use Tests\TestCase;
 
@@ -188,9 +189,7 @@ class SignupAccountHttpTest extends TestCase
         $this->assertSame(0, PlanSubscribe::where('user_id', $user->id)->count());
     }
 
-    /**
-     * @group characterization
-     */
+    #[Group('characterization')]
     public function test_f12_demo_mode_does_not_block_signup(): void
     {
         // Expected to fail when signup is blocked in demo (gap registrado
@@ -202,7 +201,7 @@ class SignupAccountHttpTest extends TestCase
         $this->otpOption('off');
 
         // Act
-        $response = $this->withoutMiddleware(VerifyCsrfToken::class)
+        $response = $this->withoutMiddleware(PreventRequestForgery::class)
             ->postJson('/signup', [
                 'name' => 'Demo Gap Landlord',
                 'email' => 'f12@example.test',

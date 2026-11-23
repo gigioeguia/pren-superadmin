@@ -3,7 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\User;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
 use Tests\Concerns\CreatesUsers;
@@ -37,7 +37,7 @@ class AdminProfileSelfTest extends TestCase
 
         // Act
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->putJson("/admin/profile/{$admin->id}", [
                 'name' => 'Updated Admin',
                 'email' => 'updated-admin@example.test',
@@ -65,7 +65,7 @@ class AdminProfileSelfTest extends TestCase
 
         // Act — el id de la ruta apunta a otra cuenta
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->putJson("/admin/profile/{$victim->id}", [
                 'name' => 'Hacked Name',
                 'email' => 'hacked@example.test',

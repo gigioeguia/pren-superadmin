@@ -3,7 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\User;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -39,7 +39,7 @@ class UserAdminMassAssignmentTest extends TestCase
 
         // Act
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->postJson('/admin/users', [
                 'name' => 'Staff User',
                 'email' => 'staff@example.test',
@@ -75,7 +75,7 @@ class UserAdminMassAssignmentTest extends TestCase
 
         // Act
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->putJson("/admin/users/{$victim->id}", [
                 'name' => 'Staff User',
                 'email' => 'victim@example.test',
@@ -103,7 +103,7 @@ class UserAdminMassAssignmentTest extends TestCase
 
         // Act
         $response = $this->actingAs($admin)
-            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->withoutMiddleware(PreventRequestForgery::class)
             ->postJson('/admin/users', [
                 'name' => 'Staff User',
                 'email' => 'staff-role@example.test',

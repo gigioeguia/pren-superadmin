@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Config;
 
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -12,9 +13,7 @@ use PHPUnit\Framework\TestCase;
  */
 class LoggingArchTest extends TestCase
 {
-    /**
-     * @group smoke
-     */
+    #[Group('smoke')]
     public function test_u1_env_example_pins_safe_log_defaults(): void
     {
         // Arrange
@@ -25,9 +24,7 @@ class LoggingArchTest extends TestCase
         $this->assertStringContainsString('LOG_DEPRECATIONS_CHANNEL=null', $content);
     }
 
-    /**
-     * @group smoke
-     */
+    #[Group('smoke')]
     public function test_u2_config_never_reintroduces_debug_fallback(): void
     {
         // Arrange

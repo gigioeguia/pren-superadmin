@@ -6,6 +6,7 @@ use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\Request;
 use Illuminate\Testing\TestResponse;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Tests\TestCase;
 
@@ -16,10 +17,9 @@ use Tests\TestCase;
  * Mismo patrón que TrustHostsSmokeTest (5.4): la request se construye con
  * SymfonyRequest::create (el cliente de test normaliza URIs absolutas) y
  * pasa por el kernel real (stack global incluido).
- *
- * @group smoke
- * @group security
  */
+#[Group('smoke')]
+#[Group('security')]
 class ForceHttpsSmokeTest extends TestCase
 {
     use DatabaseTransactions;
