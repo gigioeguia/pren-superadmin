@@ -1,0 +1,85 @@
+services:
+  - type: web
+    name: propertyrent-demo
+    runtime: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: APP_NAME
+        value: PropertyRent Demo
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        sync: false
+      - key: APP_KEY
+        sync: false
+      - key: LOG_LEVEL
+        value: warning
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_DATABASE
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_DRIVER
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: FILESYSTEM_DISK
+        value: public
+      - key: FORCE_HTTPS
+        value: "true"
+      - key: TRUSTED_PROXIES
+        value: "*"
+      - key: DEMO_USER_PASSWORD
+        sync: false
+      - key: STRIPE_KEY
+        sync: false
+      - key: STRIPE_SECRET
+        sync: false
+      - key: MOLLIE_KEY
+        sync: false
+      - key: FEDAPAY_PUBLIC_KEY
+        sync: false
+      - key: FEDAPAY_SECRET_KEY
+        sync: false
+      - key: PAYSTACK_PUBLIC_KEY
+        sync: false
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      - key: RAZORPAY_KEY
+        sync: false
+      - key: RAZORPAY_SECRET
+        sync: false
+      - key: INSTAMOJO_KEY
+        sync: false
+      - key: INSTAMOJO_TOKEN
+        sync: false
+      - key: TOYYIBPAY_SECRET
+        sync: false
+      - key: TOYYIBPAY_CATEGORY
+        sync: false
+      - key: FLUTTERWAVE_PUBLIC_KEY
+        sync: false
+      - key: FLUTTERWAVE_SECRET_KEY
+        sync: false
+      - key: THAWANI_PUBLISHABLE_KEY
+        sync: false
+      - key: THAWANI_SECRET_KEY
+        sync: false
+      - key: TAP_SECRET_KEY
+        sync: false
+      - key: BILLPLZ_API_KEY
+        sync: false
+      - key: BILLPLZ_COLLECTION_ID
+        sync: false
