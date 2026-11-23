@@ -1,7 +1,7 @@
 ---
 id: spec-tx-legadas-services-fase5
 titulo: "Migrar las 9 tx legadas de controladores a services (Fase 5 / 5.18)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-22
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.18; decisión D5 de .agents/spec-impl/spec-controladores-residuales-fase5.md §12; premisa inexacta del paraguas spec-unificar-capas-services-fase5.md §5.2)
 cobertura: "9 tx del allowlist U2 → 3 services nuevos (WithdrawService, ProfileService, RoleService) + 2 extensiones (SecurityDepositService::offlinePayment, LandlordService método compuesto de registration); TX_ALLOWLIST → 0 con guard U2 absoluto; verbatim + 4 desviaciones pre-declaradas"
@@ -210,17 +210,17 @@ Ninguno. Los bugs conocidos del inventario (reject sin tx, role update sin tx, I
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `TX_ALLOWLIST` eliminada de `ControllersLineLimitArchTest`; U2 = escaneo absoluto bidireccional permanente (0 tx en `app/Http/Controllers/`, sin excepciones). **Evidencia:** diff del test + grep pegado.
-- [ ] grep de no-regresión: 0 `DB::beginTransaction` y 0 `DB::transaction(` en `app/Http/Controllers/`; `wc -l` de los 9 controladores pegado en el PR, todos < 200.
-- [ ] 9/9 tx con dueño en service (`WithdrawService`, `ProfileService`, `RoleService`, `SecurityDepositService::offlinePayment`, `LandlordService::createAccountWithFreePlan`).
-- [ ] Contract tests F1–F15 escritos **antes** de cada move y en verde tras cada move; los casos `[D-fix]` actualizados en el commit de su desviación.
-- [ ] Divergencia de notificaciones preservada y congelada por test (F1 notifica / F2 no notifica / F4 tras commit).
-- [ ] P4 resuelto con evidencia en el PR: check de ownership existente congelado, o D-IDOR aplicada (con registro Seg-31 si corresponde).
-- [ ] Suite completa en verde con conteo exacto pegado (535 + casos nuevos del spec).
-- [ ] `composer analyse` [OK] nivel 5; sin adiciones netas al baseline (entradas migradas retiradas con justificación en el PR).
-- [ ] `composer lint` passed.
-- [ ] Documentación: AGENTS.md actualizado ("0 tx fuera del allowlist de 9" → 0 tx en controladores, regla absoluta), nota de supersede añadida a `spec-service-landlord-fase5.md` §11, fila 5.18 de plan-accion flip a Implementado con evidencia al cierre.
-- [ ] Rama única `spec/tx-legadas-services-fase5-impl`, un PR, commits por slice en el orden del §2 IN.
+- [x] `TX_ALLOWLIST` eliminada de `ControllersLineLimitArchTest`; U2 = escaneo absoluto bidireccional permanente (0 tx en `app/Http/Controllers/`, sin excepciones). **Evidencia:** commit `f93fa48` — constante y guard de allowlist fuera; docblock actualizado. Grep: `DB::beginTransaction|DB::transaction(` en `app/Http/Controllers/` → **0 matches**.
+- [x] grep de no-regresión: 0 tx en controladores; `wc -l` pegado, todos < 200. **Evidencia:** Api/Withdraw **124**, Landlord/Withdraw **156**, Admin/WithdrawRequest **147**, Admin/Profile **97**, Landlord/Profile **133**, Api/User **157**, Api/SecurityDeposit **103**, Admin/Role **103**, Api/Auth/Registration **155**.
+- [x] 9/9 tx con dueño en service. **Evidencia:** `WithdrawService` (store/approve/reject), `ProfileService` (update ×2 canales + profileSetUp), `RoleService` (store/update), `SecurityDepositService::offlinePayment`, `LandlordService::createAccountWithFreePlan` — `grep -l "DB::transaction\|DB::beginTransaction" app/Services/`.
+- [x] Contract tests F1–F15 escritos **antes** de cada move y en verde tras cada move; casos `[D-fix]` actualizados en el commit de su desviación. **Evidencia:** commits de freeze previos a cada move (`4e1860b` dinero, `dad7161` profile, `3734b1e` offline, `59ff789` role); F9/F10 actualizados en `ed20caa` (mismo commit del fix).
+- [x] Divergencia de notificaciones preservada y congelada por test. **Evidencia:** F1 notifica (in-tx) / F2 no notifica / F4 notifica tras commit — en verde.
+- [x] P4 resuelto con evidencia: no existía check de ownership → D-IDOR aplicada. **Evidencia:** F9 actualizado (cuenta ajena intacta); **Seg-31** registrada en `.analisis/seguridad.md` (gemelo landlord de Seg-29).
+- [x] Suite completa en verde con conteo exacto. **Evidencia:** `php artisan test` → **550 passed (6214 assertions)** — 535 baseline + 15 casos nuevos del spec.
+- [x] `composer analyse` [OK] nivel 5; sin adiciones netas al baseline (entradas migradas retiradas con justificación en el PR). **Evidencia:** No errors; saneo **−4 entradas** en `5fe8fbf` (3 huérfanas: unknown-class ×2 + alwaysTrue en WithdrawRequestController, `Withdraw::$user` en Api/WithdrawController, dup `'email'` en Landlord/ProfileController; 3 counts ajustados a los usos que quedan). Código nuevo corregido en fuente (`Role::query()->create()`, relaciones tipadas explícitas), nunca al baseline.
+- [x] `composer lint` passed. **Evidencia:** `{"tool":"pint","result":"passed"}`.
+- [x] Documentación: AGENTS.md actualizado (regla absoluta 0 tx), nota de supersede en `spec-service-landlord-fase5.md` §11, fila 5.18 de plan-accion flip a Cerrado con evidencia (+ filas 5.23/5.24 para laterales L1/L2).
+- [x] Rama única `spec/tx-legadas-services-fase5-impl`, commits por slice en el orden del §2 IN. **Evidencia:** `4e1860b` (freeze dinero) → `c681a83` (slice 1) → `96633ea` (2) → `17b81e4` (3) → `dad7161` (freeze profile) → `c31131b` (4) → `ed20caa` (5) → `03dad6c` (6) → `3734b1e` (freeze offline) → `dc75cc2` (7) → `59ff789` (freeze role) → `635fe64` (8) → `f93fa48` (9 + guard absoluto) → `5fe8fbf` (phpstan saneo).
 
 ---
 
@@ -261,3 +261,42 @@ Ninguno. Los bugs conocidos del inventario (reject sin tx, role update sin tx, I
 - `tests/Feature/Payment/BalanceForceFillTest.php` (p2/p3, débito de balance — base de F1/F2)
 - `tests/Feature/Auth/RegistrationAccountHttpTest.php` (F11a/b — base de A1)
 - `AGENTS.md` → "Gotchas: Transacciones sin E/S externa (Fase 4 / 4.8)" y "Controller layout (patrón Services)"
+
+---
+
+## 12. Implementación (2026-11-22) — rama `spec/tx-legadas-services-fase5-impl`
+
+El spec pasó `Borrador → Aprobado` por decisión directa del decisor tras la sesión de grilling (sin auditoría `revisar-spec` intermedia). Desviaciones y hallazgos de la implementación:
+
+**Desviaciones:**
+
+| # | Desviación | Detalle |
+|---|-----------|---------|
+| D1 | D-FIX-reject (pre-declarada §5.2) | `reject` envuelto en tx (`WithdrawService::reject`); happy path invariante (F5). El else-404 inalcanzable (post-`findOrFail`) se retiró — sin cambio observable. |
+| D2 | D-FIX-role-update (pre-declarada §5.2) | `RoleService::update` envuelve rename + resync en tx; happy path invariante (F15). La property muerta `$role` del controlador se retiró. |
+| D3 | D-IDOR (pre-declarada, condicional a P4) | P4 confirmó que NO había check: aplicado el patrón Seg-29 (target `Auth::id()`, route-id ignorado, `unique` contra auth). **Seg-31** registrada en `.analisis/seguridad.md`. F9 congeló el hole vivo primero y se actualizó en el mismo commit del fix. |
+| D4 | D-FIX-validation (pre-declarada §5.2, con errata de premisa) | `'string:255px'` → `'string|max:255'`; dup `'email'` consolidada (la 2ª regla era la vigente). **Errata del catálogo:** F10 decía "hoy pasa" — en realidad pasa la validación rota y muere en la DB (`1406 Data too long` → **500 con rollback**); el freeze real fue ese 500, post-fix 422 limpio. |
+| D5 | Errata F6 | "Bloqueado como hoy" resultó ser **302 → login** (`AdminMiddleware` redirige en vez de abortar), no 403. F6 congela el observable real. |
+| D6 | Firmas ajustadas (permitido por §4 "firmas finales ajustadas en impl") | `offlinePayment(User, array): void` (el controlador posee las 3 respuestas y el `session()->forget`); `WithdrawService::store(User, UserMethod, amount, charge, Channel)` en vez de `array $data`; `createAccountWithFreePlan(..., ?Plan $freePlan)` — el plan se resuelve ANTES de abrir la tx (4.8). |
+| D7 | Lecturas reordenadas fuera de la tx (4.8-compliant) | El chequeo de balance de ambos withdraw stores y la resolución del método en `approve` ocurren antes de abrir la tx (antes vivían dentro). Sin cambio observable. |
+| D8 | Limpieza muerta sin cambio observable | `$landlord` muerto en `approve`; `Role::create` → `Role::query()->create()` (tipado de spatie, semántica idéntica); relaciones mágicas del service resueltas vía calls tipadas (`account_info()->first()`...). |
+
+**Observaciones empíricas congeladas:**
+
+- **F13b (caso añadido al catálogo):** offline payment sobre depósito ajeno → `AuthorizationException` dentro del try → **500 'Payment failed'**, no 403 (el Gate sí bloquea la escritura). Congelado verbatim; su corrección (authorize fuera del try → 403) exigiría cambiar un contrato observable sin desviación aprobada.
+- `notify_users()` = usuarios con `role in (superadmin, admin)` + ids dados — la fila de notificación del landlord es la que F1 congela.
+- `Auth::login` + `createToken` permanecen **dentro** del try del controlador en `maanRegistration` — un fallo de token conserva el 403 verbatim (no un 500 del handler).
+- `submitOtp` web (trío bare) intacto, como declaró hijo 4 y confirmó §2 OUT.
+
+**Hallazgos laterales (follow-up fuera de este slice):**
+
+| # | Hallazgo | Tratamiento |
+|---|----------|-------------|
+| L1 | `WithdrawService::store` (Api y Landlord) resuelve `UserMethod::findOrFail($request->user_method_id)` **sin ownership** — un landlord puede retirar referenciando el método bancario de otro usuario (dinero) | Fila **5.23** del plan |
+| L2 | Rama `rent_payment` de `offlinePayment`: `RentPayment::findOrFail($id)` **sin authorize** (la rama `security_deposit` sí tiene Gate) — tenant puede marcar pending una renta ajena (dinero) | Fila **5.24** del plan |
+| L3 | Depósito ajeno → 500 en vez de 403 (authorize dentro del try) | Congelado por F13b; documentado |
+| L4 | `Landlord/Withdraw` catch sin `report()` (gap de log) y `'profile_type' => 'nullable|string:255'` segunda regla con param ignorado | Preservados verbatim; registrados |
+
+**Suite y guards:** 550/550 (535 + 15 nuevos; 6214 assertions) · PHPStan nivel 5 **[OK]** con baseline saneo −4 entradas migradas (justificación en `5fe8fbf`) · Pint passed · `TX_ALLOWLIST` eliminada (U2 absoluto) · 9/9 controladores sin tx y < 200 líneas (máx. 157).
+
+**Commits:** `4e1860b` freeze F1–F6 → `c681a83` slice 1 → `96633ea` slice 2 → `17b81e4` slice 3 → `dad7161` freeze F8–F11 → `c31131b` slice 4 → `ed20caa` slice 5 (D-IDOR + D-FIX-validation) → `03dad6c` slice 6 → `3734b1e` freeze F12–F13 → `dc75cc2` slice 7 → `59ff789` freeze F14–F15 → `635fe64` slice 8 → `f93fa48` slice 9 + guard absoluto → `5fe8fbf` phpstan saneo → docs de cierre.
