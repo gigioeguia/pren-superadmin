@@ -117,4 +117,25 @@ class VerifyDeployTest extends TestCase
         $this->assertStringContainsString('app.key', $out);
         $this->assertStringNotContainsString((string) config('app.key'), $out);
     }
+
+    /**
+     * F5 del spec 5.20 (PHP 8.4): el 6º HARD `php version` es visible con
+     * expected/effective correctos y pasa — PHP_VERSION es runtime, en
+     * todo entorno donde esta suite puede correr es >= 8.4.1 (floor D1).
+     */
+    public function test_f5_php_version_row_visible_and_passes(): void
+    {
+        // Arrange
+        config(self::PRODUCTION_POSTURE);
+
+        // Act
+        [$code, $out] = $this->runCommand();
+
+        // Assert
+        $this->assertSame(Command::SUCCESS, $code);
+        $this->assertStringContainsString('php version', $out);
+        $this->assertStringContainsString('>= 8.4.1', $out);
+        $this->assertStringContainsString(PHP_VERSION, $out);
+        $this->assertStringNotContainsString('FAIL', $out);
+    }
 }

@@ -1,10 +1,10 @@
 ---
 id: spec-php84-bump-fase5
-titulo: "Bump de runtime PHP 8.3 → 8.4: floor ^8.4, Symfony 8 y evidencia de runtime (Fase 5 / 5.20)"
+titulo: "Bump de runtime PHP 8.3 → 8.4: floor ^8.4.1, Symfony 8.1 y evidencia de runtime (Fase 5 / 5.20)"
 estado: Aprobado
 fecha: 2026-11-23
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.20) — residual del spec 5.15 (§8 riesgos / DoD: "Bump de PHP 8.3 → 8.4, fila nueva del plan")
-cobertura: Bump de runtime 8.3 → 8.4 (contrato ^8.4 + platform pin 8.4 + CI single 8.4 + phpVersion 80400) con full update del lock (Symfony 7.4 → 8.0 e ignition 2.12.1 → 2.13 como line-items explícitos), 6º check HARD de ops:verify-deploy como mecanismo de evidencia del flip de producción, y cierre adelantado del residual del 5.15 (deadline holgado: security 8.3 hasta 2027-12-31)
+cobertura: Bump de runtime 8.3 → 8.4 (contrato ^8.4.1 + platform pin 8.4.1 + CI single 8.4 + phpVersion 80400) con full update del lock (Symfony 7.4 → 8.1 familia unificada e ignition 2.12.1 → 2.13 como line-items explícitos — D1), 6º check HARD de ops:verify-deploy como mecanismo de evidencia del flip de producción, y cierre adelantado del residual del 5.15 (deadline holgado: security 8.3 hasta 2027-12-31)
 ---
 
 # Spec — Bump de runtime PHP 8.3 → 8.4 (Fase 5 / 5.20)
@@ -29,11 +29,11 @@ Sacar el runtime de la línea con EOL de seguridad a la vista (8.3 termina secur
 
 ### IN
 
-- **`composer.json` — exactamente 2 líneas** (Q11): `php: ^8.3 → ^8.4` (drop formal de 8.3) y `config.platform.php: 8.3 → 8.4`. Cero edits de otros constraints de root.
-- **Lock regenerado con full update** (`composer update --with-all-dependencies`, precedente 5.15): Symfony 7.4.x → **8.0.x** (line-item explícito del DoD, Q4 — framework 13.43 permite `^7.4.0 || ^8.0.0` y el pin 8.4 habilita la rama 8; bug-support de Symfony 7.4 termina Nov-2026) y `spatie/laravel-ignition` 2.12.1 → **2.13.x** (exige `^8.4`, hoy excluido por el pin). El resto (framework 13.x latest, collision 8.9.x, phpunit 12.x, carbon 3.x, tinker 3.x) llega por resolución natural.
+- **`composer.json` — exactamente 2 líneas** (Q11, valores D1): `php: ^8.3 → ^8.4.1` y `config.platform.php: 8.3 → 8.4.1`. Cero edits de otros constraints de root. El floor es 8.4.**1** (no 8.4.0): `symfony/console` 8.x exige `^8.1.11` (collision/termwind no aceptan 8.0.x) y esa línea exige **PHP >= 8.4.1** — con pin 8.4.0 el solver parte la familia Symfony (ver §12/D1).
+- **Lock regenerado con full update** (`composer update --with-all-dependencies`, precedente 5.15): Symfony 7.4.x → **8.1.x, familia unificada** (line-item explícito del DoD, Q4+D1 — framework 13.43 permite `^7.4.0 || ^8.0.0` y el pin 8.4.1 habilita la rama 8.1 de console; bug-support de Symfony 7.4 termina Nov-2026) y `spatie/laravel-ignition` 2.12.1 → **2.13.x** (exige `^8.4`, hoy excluido por el pin). El resto (framework 13.x latest, collision 8.9.x, phpunit 12.x, carbon 3.x, tinker 3.x) llega por resolución natural.
 - **CI**: `php-version: '8.4'` en los 4 jobs (`tests`, `static-analysis`, `style`, `audit`), single version, sin matrix (Q3).
 - **PHPStan**: `phpstan.neon.dist` → `phpVersion: 80400` + comentario actualizado (Q5). Regla de baseline vigente: 0 adiciones; saneo de entradas stale solo con justificación en el PR.
-- **`ops:verify-deploy`**: **6º check HARD** `php version` — expected `>= 8.4.0`, effective `PHP_VERSION` runtime real, vía helper puro estático `phpFloorPasses(string $version): bool` (Q9). Enforcement igual que los 5 existentes: FAIL → exit 1 solo con `APP_ENV=production`; report-only en el resto. Descripción del comando actualizada (`LOG_LEVEL, session, TLS, PHP runtime`). Es el mecanismo de evidencia del flip de producción, mismo patrón que 5.9/5.5/5.6.
+- **`ops:verify-deploy`**: **6º check HARD** `php version` — expected `>= 8.4.1`, effective `PHP_VERSION` runtime real, vía helper puro estático `phpFloorPasses(string $version): bool` (Q9, umbral D1). Enforcement igual que los 5 existentes: FAIL → exit 1 solo con `APP_ENV=production`; report-only en el resto. Descripción del comando actualizada (`LOG_LEVEL, session, TLS, PHP runtime`). Es el mecanismo de evidencia del flip de producción, mismo patrón que 5.9/5.5/5.6.
 - **Docs**: `AGENTS.md` (l.3/l.5 header + l.95 Tooling), `README.md` (l.7 — corrige de paso el stale "Laravel 11.x" → 13.x —, l.13, l.60), `.analisis/plan/plan-accion.md` (fila 5.20 → Cerrado + métrica l.169 stale "Laravel 11 + PHP 8.3" → "Laravel 13 + PHP 8.4" + l.181), `.agents/README.md` (índice: fase5 18 → 19 + spec listado).
 
 ### OUT
@@ -73,8 +73,8 @@ Sacar el runtime de la línea con EOL de seguridad a la vista (8.3 termina secur
 ### Archivos a modificar
 
 ```
-composer.json                                  # 2 líneas: php ^8.4, platform.php 8.4 (Q11)
-composer.lock                                  # full regen: Symfony 8.0.x, ignition 2.13.x, framework 13.x latest
+composer.json                                  # 2 líneas: php ^8.4.1, platform.php 8.4.1 (Q11 + D1)
+composer.lock                                  # full regen: Symfony 8.1.x familia unificada, ignition 2.13.x, framework 13.x latest
 phpstan.neon.dist                              # phpVersion: 80400 + comentario del contrato
 .github/workflows/ci.yml                       # php-version '8.3' → '8.4' (×4 jobs)
 app/Console/Commands/VerifyDeploy.php         # 6º HARD check php version + helper estático phpFloorPasses + descripción
@@ -90,13 +90,13 @@ README.md                                      # l.7 (+ Laravel 11.x→13.x stal
 
 ```php
 // VerifyDeploy::hardChecks() += fila
-$this->row('php version', '>= 8.4.0', PHP_VERSION, self::phpFloorPasses(PHP_VERSION)),
+$this->row('php version', '>= 8.4.1', PHP_VERSION, self::phpFloorPasses(PHP_VERSION)),
 
 // Helper puro, unit-testeable sin mock ni seam (PHP_VERSION es runtime,
 // no config: la rama FAIL no es simulable por config())
 public static function phpFloorPasses(string $version): bool
 {
-    return version_compare($version, '8.4.0', '>=');
+    return version_compare($version, '8.4.1', '>=');
 }
 ```
 
@@ -109,7 +109,7 @@ public static function phpFloorPasses(string $version): bool
 Fijadas por grilling (Q1–Q13, 2026-11-23), no negociables salvo volver el spec a `Borrador`:
 
 - **Target 8.4, no 8.5** (Q1): matchea el runtime local instalado (8.4.27, cero cambio de máquina), desbloquea ignition 2.13, security hasta 2028-12-31 > EOL L13. 8.5 = nota §8, sin fila.
-- **Floor `^8.4`, no `^8.3` + pin alto** (Q2): el lock regenerado bajo pin 8.4 contendrá paquetes `^8.4` que no instalan en 8.3 — mantener `^8.3` declararía un soporte que el lock ya no da. Platform pin se queda (5.15 demostró que gana su keep).
+- **Floor `^8.4.1`, no `^8.3` + pin alto** (Q2 + D1): el lock regenerado contendrá paquetes que no instalan en 8.4.0 (`symfony/console 8.1.11` exige PHP >= 8.4.1) ni en 8.3 — mantener `^8.3`/pin 8.4.0 declararía un soporte que el lock ya no da. Platform pin se queda (5.15 demostró que gana su keep).
 - **CI single 8.4** (Q3): app, no librería; matrix mantendría vivo un runtime descartado por el floor.
 - **Full update con Symfony 8 explícito** (Q4): `composer update --with-all-dependencies` (precedente 5.15); Symfony 7.4 → 8.0 es line-item del DoD con diff verificado (estilo P7 del 5.15). Retener 7.4 exigiría constraints artificiales y su bug-support termina Nov-2026. La matriz resultante es la que un install fresco sobre 8.4 daría = la soportada.
 - **composer.json en 2 líneas** (Q11): Symfony 8 e ignition 2.13 llegan por resolución natural; constraints de root intactos = diff auditable.
@@ -129,14 +129,14 @@ Fijadas por grilling (Q1–Q13, 2026-11-23), no negociables salvo volver el spec
 
 | ID | Escenario | Dado | Cuando | Entonces |
 |----|-----------|------|--------|----------|
-| F5 | Fila `php version` visible y PASS | postura de producción completa (`PRODUCTION_POSTURE`) | `Artisan::call('ops:verify-deploy')` | exit 0; salida contiene fila `php version` con expected `>= 8.4.0`, effective = `PHP_VERSION` real, `PASS`; sin `FAIL` en salida |
+| F5 | Fila `php version` visible y PASS | postura de producción completa (`PRODUCTION_POSTURE`) | `Artisan::call('ops:verify-deploy')` | exit 0; salida contiene fila `php version` con expected `>= 8.4.1`, effective = `PHP_VERSION` real, `PASS`; sin `FAIL` en salida |
 
 ### 6.2 Helper puro del floor (`prefijo U`)
 
 | ID | Escenario | Dado | Cuando | Entonces |
 |----|-----------|------|--------|----------|
-| U20 | Versiones bajo el floor | `phpFloorPasses('8.3.29')`, `phpFloorPasses('8.3.99')` | invocación directa del helper estático | `false` (única cobertura de la rama FAIL — no simulable por config) |
-| U21 | Versiones en/sobre el floor | `phpFloorPasses('8.4.0')`, `phpFloorPasses('8.4.27')`, `phpFloorPasses('8.5.3')`, `phpFloorPasses('8.10.0')` | invocación directa del helper estático | `true` |
+| U20 | Versiones bajo el floor | `phpFloorPasses('8.3.29')`, `phpFloorPasses('8.3.99')`, `phpFloorPasses('8.4.0')` | invocación directa del helper estático | `false` (única cobertura de la rama FAIL — no simulable por config; 8.4.0 bajo el floor por D1) |
+| U21 | Versiones en/sobre el floor | `phpFloorPasses('8.4.1')`, `phpFloorPasses('8.4.27')`, `phpFloorPasses('8.5.3')`, `phpFloorPasses('8.10.0')` | invocación directa del helper estático | `true` |
 
 ### Tests de caracterización
 
@@ -146,8 +146,8 @@ Ninguno — spec de infraestructura (como 5.15/4.1); no documenta comportamiento
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `composer.json`: exactamente 2 líneas editadas — `php: ^8.4`, `config.platform.php: "8.4"`; resto de constraints intactos (Q11 auditable en el diff).
-- [ ] `composer update --with-all-dependencies` exit 0; **diff del lock verificado**: Symfony 7.4.x → **8.0.x**, `spatie/laravel-ignition` 2.12.1 → **2.13.x**, `laravel/framework` 13.x latest, `nunomaduro/collision` 8.9.x, `phpunit/phpunit` 12.x, `nesbot/carbon` 3.x, `laravel/tinker` 3.x.
+- [ ] `composer.json`: exactamente 2 líneas editadas — `php: ^8.4.1`, `config.platform.php: "8.4.1"` (D1); resto de constraints intactos (Q11 auditable en el diff).
+- [ ] `composer update --with-all-dependencies` exit 0; **diff del lock verificado**: Symfony 7.4.x → **8.1.x familia unificada** (console 8.1.11, http-kernel/http-foundation/routing 8.1.11, mime 8.1.10), `spatie/laravel-ignition` 2.12.1 → **2.13.x**, `laravel/framework` 13.x latest, `nunomaduro/collision` 8.9.x, `phpunit/phpunit` 12.x, `nesbot/carbon` 3.x, `laravel/tinker` 3.x.
 - [ ] CI: `php-version: '8.4'` en los 4 jobs; **run 4/4 success con link** como evidencia (guard real del bump — cierra el proxy inverso del 5.15/F13).
 - [ ] Suite completa en verde sobre 8.4: **561/561** (558 + F5 + U20 + U21 del catálogo; conteo exacto según momento del impl).
 - [ ] PHPStan `phpVersion: 80400` exit 0; **0 adiciones al baseline**; saneo de entradas stale solo con justificación en el PR.
@@ -163,9 +163,9 @@ Ninguno — spec de infraestructura (como 5.15/4.1); no documenta comportamiento
 
 | Riesgo | Impacto | Mitigación |
 |--------|---------|------------|
-| Ignition 2.13 sin constraint `^13` de framework o sin rama Symfony 8 (hereda el riesgo medio del 5.15 §8) | medio | Válvula Q10: resolución lo decide; si no resuelve → Borrador (o quedarse en 2.12.x si es compatible con el grafo, documentado como desviación) |
-| Symfony 7.4 → 8.0 = mayor simultáneo al bump de runtime | medio | Suite 561 + PHPStan + audit en el mismo PR; fixes delgados = D-x; cambios estructurales no contemplados = Borrador |
-| Behavioral changes de Symfony 8 (removals de deprecations 7.x) | medio | Red de 558 casos existentes; suite completa sobre 8.4 en CI antes del merge |
+| Ignition 2.13 sin constraint `^13` de framework o sin rama Symfony 8 (hereda el riesgo medio del 5.15 §8) | medio | Válvula Q10: resolución lo decide; si no resuelve → Borrador (o quedarse en 2.12.x si es compatible con el grafo, documentado como desviación). **No materializado**: 2.13.0 resuelve con L13 + Symfony 8.1 |
+| Symfony 7.4 → 8.1 = mayor simultáneo al bump de runtime | medio | Suite 561 + PHPStan + audit en el mismo PR; fixes delgados = D-x; cambios estructurales no contemplados = Borrador. **Materializado sin sorpresa estructural** (D1: familia unifica con pin 8.4.1) |
+| Behavioral changes de Symfony 8.1 (removals de deprecations 7.x) | medio | Red de 558 casos existentes; suite completa sobre 8.4 en CI antes del merge |
 | Advisory sin fix en Symfony 8.0.x recién salido | bajo | Válvula `audit.ignore` documentada (AGENTS.md / spec 5.15 F13) con justificación en el PR, o re-target de versión |
 | `phpVersion: 80400` surfice errores PHPStan nuevos | bajo | Regla de baseline vigente: fallo del PR, no regeneración |
 | Producción despliega el lock `^8.4` sobre runtime 8.3 | bajo | `composer install` falla antes de servir; el check HARD nuevo es la señal de evidencia |
@@ -208,3 +208,9 @@ Auditoría `revisar-spec` contra `.agents/spec/spec-conventions.md` + plantilla.
 | H2 | Conteo inconsistente: §5 declaraba "2 tests" con 3 filas de catálogo; DoD y §8 decían 560 (558+3=561) | medio | Alineado a 3 tests (F5 + U20 + U21) → 561/561 en §5/DoD/§8 |
 | H3 | Referencia php.net no canónica (`/eol.php` redirige) | bajo | → `https://www.php.net/supported-versions.php` |
 | H4 | Typo "PAssea" (§4) | bajo | Corregido |
+
+---
+
+## 12. Desviaciones
+
+- **D1 — floor 8.4.0 → 8.4.1 (válvula Q10, decidido por el decisor 2026-11-23, opción A).** El primer full update con pin `"8.4"` (≡ 8.4.0) partió la familia Symfony: `console/http-foundation/http-kernel/mime/routing` quedaron en 7.4.x mientras el resto subía a 8.0.x — el line-item DoD "Symfony → 8.0.x" era inseguible tal cual. Causa raíz: `nunomaduro/collision 8.9.6` y `nunomaduro/termwind 2.4.1` exigen `symfony/console ^7.4.23 || ^8.1.11` (la rama 8.0.x no existe para ellos), y `symfony/console v8.1.11` exige **PHP >= 8.4.1**. Nota forense: `composer why-not` no lo reporta porque solo mira constraints de dependientes, no floors de PHP del propio candidato; el bloqueo real salió del dry-run `composer update symfony/console:v8.1.11 ...`. Enmienda aplicada (misma línea, valor distinto — Q11 intacto): require `php: ^8.4.1`, platform pin `8.4.1`, check HARD `>= 8.4.1` (umbral de `phpFloorPasses` y F5), line-item DoD "Symfony 7.4.x → **8.1.x familia unificada**" (mejora del 8.0.x prometido). Verificado con dry-run doble (pin 8.4.1 y 8.4.27 → misma resolución: console/http-kernel/http-foundation/routing 8.1.11, mime 8.1.10). Mismo criterio de honestidad del Q2: el lock con console 8.1.11 no instala en 8.4.0 → declarar `^8.4` sería la trampa que Q2 rechazó para `^8.3`. Runtime: CI `setup-php '8.4'` instala el último patch (>= 8.4.27 hoy) ✓; local 8.4.27 ✓; residual prod exige >= 8.4.1 (cualquier instalación 2026-era lo cumple).
