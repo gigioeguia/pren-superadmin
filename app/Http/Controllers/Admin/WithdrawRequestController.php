@@ -4,21 +4,20 @@ namespace App\Http\Controllers\Admin;
 
 use App\Exports\AdminWithdrawRequestExport;
 use App\Http\Controllers\Controller;
-use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Withdraw;
+use App\Services\WithdrawService;
 use App\Support\ErrorMessage;
 use App\Traits\HasTableActions;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class WithdrawRequestController extends Controller
 {
     use HasTableActions;
 
-    public function __construct()
+    public function __construct(protected WithdrawService $service)
     {
         $this->middleware('permission:withdraw-request-read')->only('index', 'show', 'filter', 'exportExcel', 'exportCsv');
         $this->middleware('permission:withdraw-request-update')->only('store', 'approve', 'reject');
@@ -54,24 +53,13 @@ class WithdrawRequestController extends Controller
         $withdraw_reject = Withdraw::with('user:id,name')->findOrFail($id);
         $this->authorize('reject', $withdraw_reject);
 
-        if ($withdraw_reject) {
+        // D-FIX-reject (spec 5.2): status + refund ahora atómicos en el service
+        $this->service->reject($withdraw_reject, $request->reason);
 
-            $totalRefund = $withdraw_reject->amount + $withdraw_reject->charge;
-
-            $withdraw_reject->update([
-                'status' => 'rejected',
-                'reason' => $request->reason,
-            ]);
-
-            $withdraw_reject->user->increment('balance', $totalRefund);
-
-            return response()->json([
-                'message' => 'Withdrawal rejected successfully',
-                'redirect' => route('admin.withdraw-request.index'),
-            ]);
-        } else {
-            return response()->json(['message' => 'Withdrawal request not found'], 404);
-        }
+        return response()->json([
+            'message' => 'Withdrawal rejected successfully',
+            'redirect' => route('admin.withdraw-request.index'),
+        ]);
     }
 
     public function approve(Request $request, string $id)
@@ -82,46 +70,25 @@ class WithdrawRequestController extends Controller
 
         $withdraw = Withdraw::with('user:id,name')->findOrFail($id);
         $this->authorize('approve', $withdraw);
-        $landlord = User::where('id', $withdraw->user->id)->first();
 
-        if ($withdraw) {
+        // Tipado explícito: auth()->user() es union de guards con modelos
+        // fantasma en config (spec 5.11 — writes sobre User tipado).
+        $admin = User::findOrFail(auth()->id());
 
-            DB::beginTransaction();
-            try {
-                Transaction::create([
-                    'paid_by' => auth()->user()->id,
-                    'received_by' => $withdraw->user_id,
-                    'withdraw_id' => $withdraw->id,
-                    'date' => today(),
-                    'type' => 'debit',
-                    'payment_type' => 'withdraw',
-                    'amount' => $withdraw->amount,
-                    'charge' => $withdraw->charge,
-                    'payment_method' => $withdraw->account_info->withdraw_method->name ?? '',
-                    'notes' => $request->notes,
-                ]);
+        try {
+            $this->service->approve($admin, $withdraw, $request->reason, $request->notes);
 
-                $withdraw->update([
-                    'status' => 'approved',
-                    'reason' => $request->reason,
-                ]);
+            // Notificación tras el commit, como el original
+            sendNotification($withdraw->id, notify_users([$withdraw->user->id]), admin_url: route('admin.withdraw-request.index', ['id' => $withdraw->id]), landlord_url: route('landlord.withdraw.index', ['id' => $withdraw->id]), admin_msg: __('A withdrawal request has been approved.'), landlord_msg: __('Your withdrawal request has been approved.'));
 
-                DB::commit();
+            return response()->json([
+                'message' => 'Withdrawal Approve successfully',
+                'redirect' => route('admin.withdraw-request.index'),
+            ]);
+        } catch (\Exception $e) {
+            report($e);
 
-                sendNotification($withdraw->id, notify_users([$withdraw->user->id]), admin_url: route('admin.withdraw-request.index', ['id' => $withdraw->id]), landlord_url: route('landlord.withdraw.index', ['id' => $withdraw->id]), admin_msg: __('A withdrawal request has been approved.'), landlord_msg: __('Your withdrawal request has been approved.'));
-
-                return response()->json([
-                    'message' => 'Withdrawal Approve successfully',
-                    'redirect' => route('admin.withdraw-request.index'),
-                ]);
-            } catch (\Exception $e) {
-                report($e);
-                DB::rollback();
-
-                return response()->json(['error' => __(ErrorMessage::TRANSACTION)], 500);
-            }
-        } else {
-            return response()->json(['message' => 'Withdrawal request not found'], 404);
+            return response()->json(['error' => __(ErrorMessage::TRANSACTION)], 500);
         }
     }
 
