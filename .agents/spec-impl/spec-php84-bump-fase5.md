@@ -1,7 +1,7 @@
 ---
 id: spec-php84-bump-fase5
 titulo: "Bump de runtime PHP 8.3 → 8.4: floor ^8.4, Symfony 8 y evidencia de runtime (Fase 5 / 5.20)"
-estado: Borrador
+estado: Revisado
 fecha: 2026-11-23
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.20) — residual del spec 5.15 (§8 riesgos / DoD: "Bump de PHP 8.3 → 8.4, fila nueva del plan")
 cobertura: Bump de runtime 8.3 → 8.4 (contrato ^8.4 + platform pin 8.4 + CI single 8.4 + phpVersion 80400) con full update del lock (Symfony 7.4 → 8.0 e ignition 2.12.1 → 2.13 como line-items explícitos), 6º check HARD de ops:verify-deploy como mecanismo de evidencia del flip de producción, y cierre adelantado del residual del 5.15 (deadline holgado: security 8.3 hasta 2027-12-31)
@@ -63,7 +63,7 @@ Sacar el runtime de la línea con EOL de seguridad a la vista (8.3 termina secur
 | P3 | Lock resuelto sobre pin 8.3 | `composer.lock` con Symfony 7.4.x + ignition 2.12.1 | Editar las 2 líneas (Q11) + `composer update --with-all-dependencies`; el content-hash del lock queda inválido al tocar `composer.json` → regen obligatoria |
 | P4 | CI en 8.3 | `php-version: '8.3'` ×4 jobs | Flip a `'8.4'` ×4 |
 | P5 | PHPStan targeteando 8.3 | `phpVersion: 80300` + comentario | Bump a `80400` + comentario |
-| P6 | `ops:verify-deploy` con 5 HARD | Check de versión PHP inexistente | 6º HARD `php version >= 8.4.0` + helper puro + tests F5/U1–U2 |
+| P6 | `ops:verify-deploy` con 5 HARD | Check de versión PHP inexistente | 6º HARD `php version >= 8.4.0` + helper puro + tests F5/U20–U21 |
 | P7 | Docs con "8.3"/stale | `AGENTS.md` ×3, `README.md` ×3 (+ l.7 "Laravel 11.x"), `plan-accion.md` fila 5.20 + métrica l.169 stale | Actualizar en el mismo PR (specs históricos intactos — registro inmutable) |
 
 ---
@@ -79,7 +79,7 @@ phpstan.neon.dist                              # phpVersion: 80400 + comentario 
 .github/workflows/ci.yml                       # php-version '8.3' → '8.4' (×4 jobs)
 app/Console/Commands/VerifyDeploy.php         # 6º HARD check php version + helper estático phpFloorPasses + descripción
 tests/Feature/Console/VerifyDeployTest.php     # F5: fila visible + PASS bajo postura de producción
-tests/Unit/Console/VerifyDeployPhpFloorTest.php # U1–U2: helper puro (rama FAIL no simulable por config)
+tests/Unit/Console/VerifyDeployPhpFloorTest.php # U20–U21: helper puro (rama FAIL no simulable por config)
 AGENTS.md                                      # header (l.3/l.5) + Tooling (l.95): PHP 8.4, phpVersion 80400
 README.md                                      # l.7 (+ Laravel 11.x→13.x stale), l.13, l.60
 .agents/README.md                              # índice: fase5 (18) → 19, spec-php84-bump-fase5
@@ -100,7 +100,7 @@ public static function phpFloorPasses(string $version): bool
 }
 ```
 
-**Nota sobre la rama FAIL:** inalcanzable por feature test — el floor `^8.4` impide que la suite misma instale en un runtime < 8.4. Por eso la cobertura de la rama FAIL vive en el helper puro (U1), no en `HARD_DEVIATIONS` (F2 queda con sus 5 checks config-simulables). F1/F3/F4 existentes no se rompen: la fila nueva PAssea en todo entorno donde los tests pueden correr.
+**Nota sobre la rama FAIL:** inalcanzable por feature test — el floor `^8.4` impide que la suite misma instale en un runtime < 8.4. Por eso la cobertura de la rama FAIL vive en el helper puro (U20), no en `HARD_DEVIATIONS` (F2 queda con sus 5 checks config-simulables). F1/F3/F4 existentes no se rompen: la fila nueva pasa en todo entorno donde los tests pueden correr.
 
 ---
 
@@ -116,25 +116,27 @@ Fijadas por grilling (Q1–Q13, 2026-11-23), no negociables salvo volver el spec
 - **`phpVersion: 80400`** (Q5): el comentario de `phpstan.neon.dist` targetea el contrato de composer.json; 80300 sería un mismatch documentado.
 - **Check HARD, no WARN** (Q9): invariante de deploy — el lock `^8.4` no instala en < 8.4; FAIL en production es exactamente la señal de que el flip no se hizo. Report-only en el resto (filosofía 5.9 intacta).
 - **Válvula de escape** (Q10, mirror 5.15 §9/§11): fixes delgados (suite/PHPStan por semántica 8.4 o Symfony 8) = desviación D-x documentada, se sigue; **decisión no contemplada** (ignition 2.13 sin constraint `^13` / compatible con Symfony 8, paquete del grafo sin rama Symfony 8, advisory sin fix) = volver a `Borrador`.
-- **Tests**: 0 tests para el bump mismo (el guard es el run de CI sobre 8.4 real, estilo F13 del 5.15); 2 tests para el check nuevo (F5 + U1–U2) — **ajuste documentado vs Q13**, la regla del repo exige cobertura para código nuevo (precedente 5.9: cada check con sus tests).
+- **Tests**: 0 tests para el bump mismo (el guard es el run de CI sobre 8.4 real, estilo F13 del 5.15); 3 tests para el check nuevo (F5 + U20–U21) — **ajuste documentado vs Q13**, la regla del repo exige cobertura para código nuevo (precedente 5.9: cada check con sus tests).
 - **Docs**: specs históricos intactos (5.15/4.1 mencionan 8.3 como registro); métrica stale l.169 del plan corregida de paso.
 
 ---
 
 ## 6. Catálogo de casos
 
+> **Numeración (H1 de revisión):** `F5` continúa el F1–F4 del spec 5.9 (mismo archivo `VerifyDeployTest`, método `test_f5`); `U20–U21` continúa tras el máximo vigente (U19, spec 5.14). Renumeración para evitar colisión con IDs citados en la fila 5.9 del plan (precedente 5.19: F43→F52).
+
 ### 6.1 Evidencia de runtime (`ops:verify-deploy`, prefijo `F`)
 
 | ID | Escenario | Dado | Cuando | Entonces |
 |----|-----------|------|--------|----------|
-| F1 | Fila `php version` visible y PASS | postura de producción completa (`PRODUCTION_POSTURE`) | `Artisan::call('ops:verify-deploy')` | exit 0; salida contiene fila `php version` con expected `>= 8.4.0`, effective = `PHP_VERSION` real, `PASS`; sin `FAIL` en salida |
+| F5 | Fila `php version` visible y PASS | postura de producción completa (`PRODUCTION_POSTURE`) | `Artisan::call('ops:verify-deploy')` | exit 0; salida contiene fila `php version` con expected `>= 8.4.0`, effective = `PHP_VERSION` real, `PASS`; sin `FAIL` en salida |
 
 ### 6.2 Helper puro del floor (`prefijo U`)
 
 | ID | Escenario | Dado | Cuando | Entonces |
 |----|-----------|------|--------|----------|
-| U1 | Versiones bajo el floor | `phpFloorPasses('8.3.29')`, `phpFloorPasses('8.3.99')` | invocación directa del helper estático | `false` (única cobertura de la rama FAIL — no simulable por config) |
-| U2 | Versiones en/sobre el floor | `phpFloorPasses('8.4.0')`, `phpFloorPasses('8.4.27')`, `phpFloorPasses('8.5.3')`, `phpFloorPasses('8.10.0')` | invocación directa del helper estático | `true` |
+| U20 | Versiones bajo el floor | `phpFloorPasses('8.3.29')`, `phpFloorPasses('8.3.99')` | invocación directa del helper estático | `false` (única cobertura de la rama FAIL — no simulable por config) |
+| U21 | Versiones en/sobre el floor | `phpFloorPasses('8.4.0')`, `phpFloorPasses('8.4.27')`, `phpFloorPasses('8.5.3')`, `phpFloorPasses('8.10.0')` | invocación directa del helper estático | `true` |
 
 ### Tests de caracterización
 
@@ -147,7 +149,7 @@ Ninguno — spec de infraestructura (como 5.15/4.1); no documenta comportamiento
 - [ ] `composer.json`: exactamente 2 líneas editadas — `php: ^8.4`, `config.platform.php: "8.4"`; resto de constraints intactos (Q11 auditable en el diff).
 - [ ] `composer update --with-all-dependencies` exit 0; **diff del lock verificado**: Symfony 7.4.x → **8.0.x**, `spatie/laravel-ignition` 2.12.1 → **2.13.x**, `laravel/framework` 13.x latest, `nunomaduro/collision` 8.9.x, `phpunit/phpunit` 12.x, `nesbot/carbon` 3.x, `laravel/tinker` 3.x.
 - [ ] CI: `php-version: '8.4'` en los 4 jobs; **run 4/4 success con link** como evidencia (guard real del bump — cierra el proxy inverso del 5.15/F13).
-- [ ] Suite completa en verde sobre 8.4: **560/560** (558 + F1 + U1–U2 del catálogo; conteo exacto según momento del impl).
+- [ ] Suite completa en verde sobre 8.4: **561/561** (558 + F5 + U20 + U21 del catálogo; conteo exacto según momento del impl).
 - [ ] PHPStan `phpVersion: 80400` exit 0; **0 adiciones al baseline**; saneo de entradas stale solo con justificación en el PR.
 - [ ] Pint exit 0.
 - [ ] `composer audit --locked` → **0 advisories** (job `audit` verde sobre el lock con Symfony 8).
@@ -162,7 +164,7 @@ Ninguno — spec de infraestructura (como 5.15/4.1); no documenta comportamiento
 | Riesgo | Impacto | Mitigación |
 |--------|---------|------------|
 | Ignition 2.13 sin constraint `^13` de framework o sin rama Symfony 8 (hereda el riesgo medio del 5.15 §8) | medio | Válvula Q10: resolución lo decide; si no resuelve → Borrador (o quedarse en 2.12.x si es compatible con el grafo, documentado como desviación) |
-| Symfony 7.4 → 8.0 = mayor simultáneo al bump de runtime | medio | Suite 560 + PHPStan + audit en el mismo PR; fixes delgados = D-x; cambios estructurales no contemplados = Borrador |
+| Symfony 7.4 → 8.0 = mayor simultáneo al bump de runtime | medio | Suite 561 + PHPStan + audit en el mismo PR; fixes delgados = D-x; cambios estructurales no contemplados = Borrador |
 | Behavioral changes de Symfony 8 (removals de deprecations 7.x) | medio | Red de 558 casos existentes; suite completa sobre 8.4 en CI antes del merge |
 | Advisory sin fix en Symfony 8.0.x recién salido | bajo | Válvula `audit.ignore` documentada (AGENTS.md / spec 5.15 F13) con justificación en el PR, o re-target de versión |
 | `phpVersion: 80400` surfice errores PHPStan nuevos | bajo | Regla de baseline vigente: fallo del PR, no regeneración |
@@ -176,7 +178,7 @@ Ninguno — spec de infraestructura (como 5.15/4.1); no documenta comportamiento
 ## 9. Estimación
 
 - Mecánica (composer 2 líneas + full update + diff del lock + CI ×4 + phpstan): 0.5–1 día
-- Check `ops:verify-deploy` + tests F1/U1–U2: 0.25 día
+- Check `ops:verify-deploy` + tests F5/U20–U21: 0.25 día
 - Docs (AGENTS/README/plan-accion/índice) + PR: 0.25 día
 
 **Total: ~1 día.**
@@ -192,4 +194,17 @@ Ninguno — spec de infraestructura (como 5.15/4.1); no documenta comportamiento
 - `.agents/spec/spec-conventions.md` → estados, frontmatter, prefijos de casos
 - `.agents/skills/workflow-ramas.md` → rama `spec/php84-bump-fase5-impl` (nunca `main`)
 - Laravel support policy: 13 hasta 2028-03-17, PHP 8.3–8.5 — https://laravel.com/framework/docs/13.x/releases
-- PHP support timeline: 8.3 security → 2027-12-31; 8.4 security → 2028-12-31 — https://www.php.net/eol.php (contexto del deadline "4T-2027" de la fila 5.20)
+- PHP support timeline: 8.3 security → 2027-12-31; 8.4 security → 2028-12-31 — https://www.php.net/supported-versions.php (contexto del deadline "4T-2027" de la fila 5.20)
+
+---
+
+## 11. Revisión (2026-11-23)
+
+Auditoría `revisar-spec` contra `.agents/spec/spec-conventions.md` + plantilla. Sin hallazgos **altos** → pasa a `Revisado`.
+
+| H# | Hallazgo | Severidad | Resolución |
+|----|----------|-----------|------------|
+| H1 | Colisión de IDs: `F1`/`U1–U2` ya viven en `spec-log-level-warning-fase5` (fila 5.9 del plan, mismo archivo `VerifyDeployTest`); e inconsistencia interna F1 (catálogo/estimación) vs F5 (§3–§5) | medio | Renumeración F5 + U20–U21 con nota de numeración en §6 (precedente 5.19: F43→F52) |
+| H2 | Conteo inconsistente: §5 declaraba "2 tests" con 3 filas de catálogo; DoD y §8 decían 560 (558+3=561) | medio | Alineado a 3 tests (F5 + U20 + U21) → 561/561 en §5/DoD/§8 |
+| H3 | Referencia php.net no canónica (`/eol.php` redirige) | bajo | → `https://www.php.net/supported-versions.php` |
+| H4 | Typo "PAssea" (§4) | bajo | Corregido |
