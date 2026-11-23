@@ -1,8 +1,8 @@
 # AGENTS.md
 
-Laravel 11.x / PHP 8.3 SaaS for property rental management (roles: `superadmin`, `admin`, `landlord`, `tenant`). Multi-tenant by landlord; payments via 11 gateways.
+Laravel 13.x / PHP 8.3 SaaS for property rental management (roles: `superadmin`, `admin`, `landlord`, `tenant`). Multi-tenant by landlord; payments via 11 gateways.
 
-> Stack actualizado a Laravel 11.x / PHP 8.3 — **Fase 4 completa (4.1–4.10, 2026-11-21)**. Plan de remediación restante (Fase 5, higiene) en `.analisis/plan/plan-accion.md`.
+> Stack actualizado a Laravel 13.x / PHP 8.3 (upgrade 11→13 desde rama security-EOL; spec `spec-laravel13-advisories-fase5`, 2026-11-22, cierra 5.15 + 5.16). Plan de remediación restante (Fase 5, higiene) en `.analisis/plan/plan-accion.md`.
 
 ## Commands
 
@@ -11,7 +11,7 @@ composer install
 php artisan key:generate
 php artisan storage:link          # public/storage symlink is NOT committed
 php artisan migrate --seed        # runs 24 seeders in order (see DatabaseSeeder)
-php artisan test                  # suite completa (488 casos) over dbrentpro_test — see tests/README.md
+php artisan test                  # suite completa (510 casos) over dbrentpro_test — see tests/README.md
 php artisan serve                 # local dev server
 ```
 
@@ -92,10 +92,12 @@ Desde Fase 5 / 5.7 `App\Support\Options` fija el contrato tipado de las options:
 
 ## Tooling
 
-- **PHPStan (Larastan 3.x)**: `composer analyse` — level 5, paths `app/`, target PHP 8.3 (`phpVersion: 80300`), incluye `phpstan-baseline.neon` (157 entradas / 255 errores legacy congelados; hijo 5 resolvió 23 entradas legacy tipando las relaciones `BelongsTo<X, $this>` de Gateway/PlanSubscribe/RentPayment — regeneración justificada en `spec-service-payment-fase5.md` §11).
+- **PHPStan (Larastan 3.x)**: `composer analyse` — level 5, paths `app/`, target PHP 8.3 (`phpVersion: 80300`), incluye `phpstan-baseline.neon` (156 entradas legacy congeladas; saneado −1 entrada stale en el upgrade a L13 — `spec-laravel13-advisories-fase5.md` §12). Desde 5.16 el paquete es `larastan/larastan` (rename de `nunomaduro/larastan`, abandonado).
 - **Baseline rule**: the baseline is single-use. Regenerating it to make a PR pass is forbidden; only with documented justification + diff review of the file in the PR. New/modified code errors must fail.
 - **Pint (preset laravel)**: `composer lint` (test mode, CI-enforced) / `composer lint:fix` (auto-fix). Config in `pint.json`.
-- **CI**: `.github/workflows/ci.yml` — 3 jobs on push to `main` + PRs: `tests` (MySQL 8 service over `dbrentpro_test`), `static-analysis` (phpstan), `style` (pint). Note: the `tests` job must recreate the `vendor/autoload1.php` marker after `composer install`, create an **empty `.env`** (`touch .env` — sin él, el `@file_get_contents('.env')` de phpdotenv lo reporta el printer de Collision como warning en cada test) and run `php artisan migrate --force` **antes** de la suite (los unit tests con `DatabaseTransactions` no migran y corren sobre el esquema pre-creado).
+- **CI**: `.github/workflows/ci.yml` — 4 jobs on push to `main` + PRs: `tests` (MySQL 8 service over `dbrentpro_test`), `static-analysis` (phpstan), `style` (pint), `audit` (`composer audit --locked` bloqueante; válvula `audit.ignore` en composer.json solo para advisories sin fix, con justificación en el PR — spec 5.15 / F13). Note: the `tests` job must recreate the `vendor/autoload1.php` marker after `composer install`, create an **empty `.env`** (`touch .env` — sin él, el `@file_get_contents('.env')` de phpdotenv lo reporta el printer de Collision como warning en cada test) and run `php artisan migrate --force` **antes** de la suite (los unit tests con `DatabaseTransactions` no migran y corren sobre el esquema pre-creado).
+- **phpunit 12**: los grupos se marcan con atributos `#[Group('smoke')]`/`#[Group('characterization')]` (PHPUnit 12 no lee docblocks `@group` — migrados en el upgrade a L13). CSRF: el middleware app es `PreventRequestForgery` (L13 renombró `VerifyCsrfToken`; los aliases deprecados no se usan).
+- **`serializable_classes => false` (L13)**: el cache no deserializa objetos (hardening anti gadget-chain, spec 5.15 / D2). `plan_data()`, `languages()` y `Currency::default()` guardan payloads **array** y rehidratan modelos en lectura (contrato público invariante). No cachear objetos en nuevas claves: arrays + rehidratación.
 - **`php artisan ops:verify-deploy`**: verifica postura operacional efectiva (LOG_LEVEL/session/TLS; patrón de evidencia 5.9 para los residuales de 5.9/5.5/5.6; tabla PASS/FAIL/WARN + exit code; enforcement solo en `APP_ENV=production`, resto report-only; la salida se pega como evidencia bajo `.analisis/`, gitignored).
 - `.editorconfig` exists. No pre-commit hooks (CI is the gate).
 

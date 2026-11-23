@@ -190,20 +190,20 @@ Ninguno: este spec no documenta bugs de aplicación; valida un upgrade de infrae
 
 ## 7. Criterios de aceptación (Definition of Done)
 
-- [ ] `composer audit --locked` → **0 advisories**; salida pegada como evidencia en el PR.
-- [ ] Diff del lock verificado (P7): framework 13.43+, phpunit 12.x, carbon 3.x, tinker 3.x, `larastan/larastan` 3.13.x, ignition 2.12.x, collision 8.9.x, Symfony 7.4.x (F3).
-- [ ] CSRF: stub renombrado a `PreventRequestForgery`, Kernel actualizado, smoke 419 sin token + cross-site rechazado (F5).
-- [ ] 0 docblocks `@group` en `tests/`; `--group=smoke` ejecuta > 0 casos (F6).
-- [ ] Guard F2 (`EmailRuleCrlfRejectionTest`) en verde.
-- [ ] D2: `'serializable_classes' => false` en `config/cache.php` con test de enforcement (F11); payloads de las 3 claves en array (F9); contratos públicos invariantes (F10); suite de invalidación 4.9 en verde (F12).
-- [ ] Session `serialization` documentado como `php` + residual registrado con su precondición (ver §8).
-- [ ] CI en verde con 4 jobs (`tests`, `static-analysis`, `style`, `audit`) — URL del run en el PR (F13); sonda del job documentada (F14).
-- [ ] Suite completa 100 % en verde sobre L13 + phpunit 12 (F15).
-- [ ] `composer analyse` exit 0, nivel 5; diff del baseline revisado en el PR (solo adiciones de preexistente, política (b)) (F7).
-- [ ] `composer lint` exit 0 (Pint).
-- [ ] `GET /install` sin 500 (F16).
-- [ ] `AGENTS.md` actualizado: stack Laravel 13 / PHP 8.3, larastan rename (5.16 cerrado), CI 4 jobs, gotchas nuevos si aparecen.
-- [ ] Residuales registrados en `plan-accion.md`: bump PHP 8.4 (antes del 4T-2027), flip session `json` con precondición, evidencia de safiull sobre 13.
+- [x] `composer audit --locked` → **0 advisories**; salida pegada como evidencia en el PR (§12).
+- [x] Diff del lock verificado (P7): framework 13.43+, phpunit 12.5.45, carbon 3.15.1, tinker 3.2.0, `larastan/larastan` 3.15.0, ignition 2.12.1, collision 8.9.6, Symfony 7.4.23 (F3).
+- [x] CSRF: stub renombrado a `PreventRequestForgery`, Kernel actualizado, smoke de wiring + evidencia 419/cross-site contra `artisan serve` (F5, desviación D2 de §12).
+- [x] 0 docblocks `@group` en `tests/`; `--group=smoke` ejecuta 73 casos (F6).
+- [x] Guard F2 (`EmailRuleCrlfRejectionTest`) en verde.
+- [x] D2: `'serializable_classes' => false` en `config/cache.php` con test de enforcement (F11); payloads de las 3 claves en array (F9); contratos públicos invariantes (F10); suite de invalidación 4.9 en verde (F12).
+- [x] Session `serialization` documentado como `php` + residual registrado con su precondición (§5, §8 y fila nueva en `plan-accion.md`).
+- [ ] CI en verde con 4 jobs (`tests`, `static-analysis`, `style`, `audit`) — URL del run en el PR (F13); sonda del job documentada (F14). **Pendiente post-push** (§12).
+- [x] Suite completa 100 % en verde sobre L13 + phpunit 12: 510 passed / 5.961 assertions (F15).
+- [x] `composer analyse` exit 0, nivel 5; diff del baseline revisado en el PR — saneado −1 entrada stale, 0 adiciones (política (b)) (F7).
+- [x] `composer lint` exit 0 (Pint).
+- [x] `GET /install` sin 500: 404 por guard `canInstall` (F16, desviación D4 de §12).
+- [x] `AGENTS.md` actualizado: stack Laravel 13 / PHP 8.3, larastan rename (5.16 cerrado), CI 4 jobs, phpunit 12 `#[Group]`, gotcha `serializable_classes`.
+- [x] Residuales registrados en `plan-accion.md`: bump PHP 8.4 (antes del 4T-2027), flip session `json` con precondición, evidencia de safiull sobre 13.
 
 ---
 
@@ -248,3 +248,45 @@ Ninguno: este spec no documenta bugs de aplicación; valida un upgrade de infrae
 - Laravel support policy (11 security-EOL 2026-03-12; 12 hasta 2027-02-24; 13 hasta 2028-03-17, PHP 8.3–8.5): https://laravel.com/framework/docs/13.x/releases
 - GHSA-5vg9-5847-vvmq (CRLF email, high), GHSA-crmm-hgp2-wgrp (signed URL filesystem, medium), GHSA-63hm-g96r-2m2q (task output, low), GHSA-jh5r-qr3c-85q8 (debug page XSS, low) — github.com/laravel/framework/security/advisories
 - `.agents/spec/spec-conventions.md`
+
+---
+
+## 11. Revisión
+
+Sin revisión formal intermedia: el decisor aprobó directamente (frontmatter → `Aprobado`, 2026-11-22), confirmando la desviación de session `serialization` (§8 pendiente de decisión) y la implementación.
+
+---
+
+## 12. Notas de implementación (2026-11-22)
+
+Implementado en rama `spec/laravel13-advisories-fase5-impl` (entregas D1/D2 en commits separados, sobre `spec/laravel13-advisories-fase5-draft` + commit de estado `Aprobado`).
+
+### Desviaciones menores
+
+| # | Punto | Detalle |
+|---|-------|---------|
+| D1 | CSRF sweep ampliado | El spec decía "2 archivos, 0 referencias en tests"; la realidad: +`config/sanctum.php` (`validate_csrf_token` apuntaba a `ValidateCsrfToken`, alias deprecated) + ~12 archivos de tests con 43 referencias `withoutMiddleware(...)`/`ReflectionClass` (el grep original solo cubrió `app/`). Mecánico, misma naturaleza; sweep completo sin aliases deprecados. |
+| D2 | F5 reformulado dentro de la suite | L13 by-passea CSRF bajo phpunit (`runningUnitTests()` en `handle()`), así que el "419 sin token" no es observable en la suite. El smoke in-suite aserta wiring (clase en el grupo `web`, sin aliases deprecados), `$except === []` y el slot de sanctum; la evidencia del rechazo real se tomó contra `artisan serve` (curl): sin token → 419; same-origin sin token → pasa (401 de credenciales); cross-site sin token → **419**. Nota de framework: con token **válido** el cross-site pasa — el token es la credencial; la verificación de origen cubre el caso sin token. |
+| D3 | Shape-guards defensivos en D2 | El spec no los preveía: los 3 productores recomputan (sin escribir) si el payload cacheado no tiene el shape esperado (`'stale'` de los tests 4.9 o modelos cacheados pre-deploy con formato pre-D2). Protege la rehidratación y hace la transición del deploy auto-curable. |
+| D4 | F16: `/install` → 404 | No-500 ✓, pero vía el guard `canInstall` del paquete (`storage/installed` existe → `abort(404)` por config `installedAlreadyAction: default`). Semántica: el wizard carga sus rutas sobre L13 sin error y responde el guard diseñado. |
+| D5 | Baseline: saneado, no adiciones | larastan 3.15 sobre L13 no marcó preexistente nuevo; solo quedó 1 entrada **stale** (`Admin/UserController` `BelongsToMany::sync`) que se eliminó. La política (b) no llegó a usarse para adiciones. |
+| D6 | `phpunit.xml` | Puntero de schema 10.1 → 12.5 (sin `--migrate-configuration`, para conservar los comentarios de ADR/determinismo). |
+| D7 | Ruta sin fila default en `Currency::default()` | Pre-D2 cacheaba el **objeto** fallback cuando no existía fila; post-D2 el fallback se construye en lectura y el store solo cachea filas reales (null nunca cachea → re-query por call en esa ruta marginal, más correcto). |
+
+### Evidencia (DoD §7)
+
+- `composer update --with-all-dependencies` exit 0. Lock: `laravel/framework v13.43.0`, `phpunit 12.5.45`, `carbon 3.15.1`, `tinker 3.2.0`, `larastan/larastan v3.15.0` (nunomaduro fuera), `ignition 2.12.1` (la 2.13 exige PHP 8.4: excluida por el platform pin, el riesgo medio de §8 no se materializó), `collision 8.9.6`, `Symfony http-kernel 7.4.23`, `sanctum 4.5.0`, `permission 6.25.0`, `excel 3.1.70`.
+- `composer audit --locked` → **"No security vulnerability advisories found."** (antes: 5 entradas / 4 únicos).
+- `php artisan about` → Laravel 13.43.0; `php artisan migrate:fresh --seed` exit 0 (corrida 2× — seeders idempotentes; una corrida temprana tocó la DB dev del `.env` por error mío, regenerada idéntica por los seeders idempotentes, sin pérdida de datos).
+- `php artisan test` → **510 passed (5.961 assertions)**: 496 preexistentes + 3 smoke CSRF (F5) + 9 guards D2 (F9 ×3, F10 ×5, F11) + 2 guard F2.
+- `php artisan test --group=smoke` → 73 casos (atributos `#[Group]` funcionales; 0 docblocks `@group` vivos).
+- `composer analyse` → `[OK] No errors` (nivel 5, baseline −1 entrada stale).
+- `composer lint` → `passed`.
+- F5 en vivo (`artisan serve` + curl): sin token → **419**; same-origin sin token → 401 (CSRF pasa); cross-site sin token → **419**.
+- F16: `GET /install` → **404** (guard `canInstall`, no-500).
+- F2: la regla `email` de 13.43 rechaza `\r\n`/`\n`/`\r` y acepta direcciones limpias (tinker, luego test).
+
+### Pendiente post-push
+
+- **F13/F14**: run de CI con los 4 jobs (URL al PR) + sonda del job `audit` (rama desechable con advisory conocido, nunca mergeada).
+- Flip del spec a `Implementado` al verificar el run del PR (decisor).
