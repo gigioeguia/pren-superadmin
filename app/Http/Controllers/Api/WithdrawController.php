@@ -2,19 +2,22 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Channel;
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\UserMethod;
 use App\Models\Withdraw;
 use App\Models\WithdrawMethod;
+use App\Services\WithdrawService;
 use App\Support\ErrorMessage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ViewErrorBag;
 
 class WithdrawController extends Controller
 {
+    public function __construct(protected WithdrawService $service) {}
+
     public function index(Request $request)
     {
         $withdraws = Withdraw::select('id', 'user_method_id', 'status', 'created_at', 'amount')->with('account_info:id,method_id', 'account_info.withdraw_method:id,name')->where('user_id', auth()->id())
@@ -68,41 +71,22 @@ class WithdrawController extends Controller
             ], 400);
         }
 
-        DB::beginTransaction();
+        // Lectura fuera de la tx (Fase 4/4.8): la unidad atómica vive en el service
+        if ($user->balance < $total_amount) {
+            return response()->json([
+                'message' => 'Insufficient balance',
+            ], 400);
+        }
+
         try {
+            $withdraw = $this->service->store($user, $user_method, $request->amount, $charge, Channel::Api);
 
-            if ($user->balance >= $total_amount) {
-
-                $withdraw = Withdraw::create([
-                    'user_id' => $user->id,
-                    'amount' => $request->amount,
-                    'user_method_id' => $user_method->id,
-                    'charge' => $charge,
-                ]);
-
-                $user->forceFill([
-                    'balance' => $user->balance - $total_amount,
-                ])->save();
-
-                sendNotification($withdraw->id, notify_users([$withdraw->user->id]), landlord_url: route('landlord.withdraw.index', ['id' => $withdraw->id]), admin_msg: __('A new withdrawal request has been submitted. Please review and process it.'), landlord_msg: __('Your withdrawal request has been submitted successfully. Awaiting approval.'));
-
-                DB::commit();
-
-                return response()->json([
-                    'message' => 'Balance withdraw request send successfully',
-                    'data' => $withdraw,
-                ]);
-            } else {
-                return response()->json(
-                    [
-                        'message' => 'Insufficient balance',
-                    ],
-                    400
-                );
-            }
+            return response()->json([
+                'message' => 'Balance withdraw request send successfully',
+                'data' => $withdraw,
+            ]);
         } catch (\Exception $e) {
             report($e);
-            DB::rollback();
 
             return response()->json(['error' => __(ErrorMessage::TRANSACTION)], 500);
         }
