@@ -29,7 +29,6 @@ class ControllersLineLimitArchTest extends TestCase
      */
     private const TX_ALLOWLIST = [
         'Api/Auth/RegistrationController.php',   // hijo 4 §11: unidad atómica User+trío, diseño intencional
-        'Admin/RoleController.php',              // deuda lateral — plan-accion
     ];
 
     /**

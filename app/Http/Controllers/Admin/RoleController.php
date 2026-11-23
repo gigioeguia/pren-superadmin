@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Services\RoleService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
-    private $role;
-
-    public function __construct()
+    public function __construct(protected RoleService $service)
     {
         $this->middleware('permission:roles-read')->only('index', 'show');
         $this->middleware('permission:roles-create')->only('create', 'store');
@@ -49,13 +47,10 @@ class RoleController extends Controller
             'permissions.*' => ['required', 'exists:permissions,id'],
         ]);
 
-        DB::transaction(function () use ($request) {
-            $this->role = Role::create([
-                'name' => $request->input('name'),
-            ]);
-
-            $this->role->permissions()->sync($request->input('permissions'));
-        });
+        $this->service->store([
+            'name' => $request->input('name'),
+            'permissions' => $request->input('permissions'),
+        ]);
 
         return response()->json([
             'message' => __('Role created successfully'),
@@ -84,11 +79,10 @@ class RoleController extends Controller
             'permissions.*' => ['required', 'exists:permissions,id'],
         ]);
 
-        $role->update([
+        $this->service->update($role, [
             'name' => $request->input('name'),
+            'permissions' => $request->input('permissions'),
         ]);
-
-        $role->permissions()->sync($request->input('permissions'));
 
         return response()->json([
             'message' => __('Role update successfully'),
