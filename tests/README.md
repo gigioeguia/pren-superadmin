@@ -8,7 +8,7 @@ caracterizaciones nuevas): spec del trait de la Fase 0 (Fase 0 / 0.3, DT-C3 —
 índice en `.agents/README.md`).
 
 > **Nota (2026-11-23):** la suite creció con las fases 1–5 y hoy totaliza
-> **569 casos** (371 al cierre de 5.11 + specs 5.12–5.20 — upgrade L13,
+> **588 casos** (371 al cierre de 5.11 + specs 5.12–5.24 + cobertura CI):
 > controladores residuales, tx legadas, PHP 8.4 — + 8 del spec 5.21;
 > conteo verificado contra salida real de `php artisan test`). Este README
 > documenta el origen smoke de Fase 0
@@ -128,7 +128,7 @@ Mocks obligatorios (ver `.agents/skills/testing-conventions.md`):
 ## Cobertura de endpoints críticos
 
 > Snapshot del catálogo smoke de **Fase 0** (52 endpoints críticos); la suite
-> total creció con las fases 1–5 (569 casos al cierre de 5.21) sin renovar
+> total creció con las fases 1–5 (588 casos al cierre de 5.24) sin renovar
 > este conteo.
 
 Criterio del spec: rutas de auth (web + API), pagos, status de gateways,

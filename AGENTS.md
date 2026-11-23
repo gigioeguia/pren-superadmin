@@ -11,7 +11,7 @@ composer install
 php artisan key:generate
 php artisan storage:link          # public/storage symlink is NOT committed
 php artisan migrate --seed        # runs 24 seeders in order (see DatabaseSeeder)
-php artisan test                  # suite completa (569 casos) over dbrentpro_test — see tests/README.md
+php artisan test                  # suite completa (588 casos) over dbrentpro_test — see tests/README.md
 php artisan serve                 # local dev server
 ```
 
