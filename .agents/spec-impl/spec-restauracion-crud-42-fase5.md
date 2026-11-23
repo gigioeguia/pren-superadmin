@@ -1,7 +1,7 @@
 ---
 id: spec-restauracion-crud-42-fase5
 titulo: "Restauración CRUD 4.2: 22 rutas rotas restauradas + 32 rutas zombis eliminadas (Fase 5 / 5.17)"
-estado: Borrador
+estado: Aprobado
 fecha: 2026-11-22
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.17) — DT-C4; desviación D6 del hijo 6 (spec-controladores-residuales-fase5 §12)
 cobertura: 54 entradas del allowlist RESTORATION_PENDING: 22 restauradas con contrato observable verbatim pre-4.2 (excel/csv ×14, status ×5, delete-all ×2, filter ×1) + 32 create/edit eliminadas (métodos nunca existieron); allowlist 54→0
