@@ -1,7 +1,7 @@
 ---
 id: spec-php84-bump-fase5
 titulo: "Bump de runtime PHP 8.3 → 8.4: floor ^8.4, Symfony 8 y evidencia de runtime (Fase 5 / 5.20)"
-estado: Revisado
+estado: Aprobado
 fecha: 2026-11-23
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.20) — residual del spec 5.15 (§8 riesgos / DoD: "Bump de PHP 8.3 → 8.4, fila nueva del plan")
 cobertura: Bump de runtime 8.3 → 8.4 (contrato ^8.4 + platform pin 8.4 + CI single 8.4 + phpVersion 80400) con full update del lock (Symfony 7.4 → 8.0 e ignition 2.12.1 → 2.13 como line-items explícitos), 6º check HARD de ops:verify-deploy como mecanismo de evidencia del flip de producción, y cierre adelantado del residual del 5.15 (deadline holgado: security 8.3 hasta 2027-12-31)
