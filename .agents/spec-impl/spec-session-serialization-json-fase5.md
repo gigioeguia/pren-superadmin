@@ -1,7 +1,7 @@
 ---
 id: spec-session-serialization-json-fase5
 titulo: "Flip session `serialization: json` con precondición escalar en el flujo de pagos (Fase 5 / 5.21)"
-estado: Revisado
+estado: Aprobado
 fecha: 2026-11-23
 origen: .analisis/plan/plan-accion.md (Fase 5 / 5.21) — desviación confirmada por el decisor del spec 5.15 (§5/§8, "Pendiente de decisión" cerrado 2026-11-22); endurecimiento anti gadget-chain paralelo al `serializable_classes: false` (D2 del spec 5.15)
 cobertura: Endurecer el canal SESSION con `serialization: json` (default del skeleton L13, sin válvula env) tras refactorar el único stash de modelos del repo (`PaymentController:96-97`, load-bearing para 2 de 3 flujos de pago) a IDs escalares + rehidratación consolidada en `PaymentService::success`; guard doble anti-objetos (custom PHPStan rule + arch-test allowlist), 7º check HARD en `ops:verify-deploy` y migración de los 6 bloques `withSession` con modelos. Decisiones selladas en grilling Q1–Q13 (2026-11-23).
