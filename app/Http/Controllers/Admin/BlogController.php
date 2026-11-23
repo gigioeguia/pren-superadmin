@@ -107,9 +107,11 @@ class BlogController extends Controller
     public function filterComment($id)
     {
         $blog = Blog::findOrFail($id);
-        $comments = Comment::with('blog:id')->whereStatus(1)->where('blog_id', $blog->id)->latest()->paginate(10);
+        // Seg-30 (spec 5.19): sin filtro de status — el listador debe ver
+        // TODO el inventario, incluidos los ocultos, para poder re-aprobarlos.
+        $comments = Comment::with('blog:id')->where('blog_id', $blog->id)->latest()->paginate(10);
 
-        return view('admin.blogs.comments.index', compact('comments'));
+        return view('admin.blogs.comments.index', compact('comments', 'blog'));
     }
 
     protected function model(): string

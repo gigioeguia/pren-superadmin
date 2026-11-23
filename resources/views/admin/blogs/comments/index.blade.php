@@ -19,6 +19,7 @@
                                 class="filter-form form-inline d-flex align-items-center gap-3 flex-wrap"
                                 table="#comments-datas">
                                 @csrf
+                                <input type="hidden" name="blog_id" value="{{ $blog->id }}">
                                 <div class="d-flex align-items-center gap-2 d-print-none custom-select">
                                     <select name="per_page" class="select-drop">
                                         <option value="10">{{ __('Show- 10') }}</option>
@@ -41,6 +42,7 @@
                                 class="filter-form form-inline d-flex align-items-center gap-3 flex-wrap"
                                 table="#comments-datas">
                                 @csrf
+                                <input type="hidden" name="blog_id" value="{{ $blog->id }}">
                                 <div>
                                     <div class="position-relative d-print-none">
                                         <input class="search-input" placeholder="{{ __('Search') }}" name="search" aria-label="Search">
@@ -72,6 +74,7 @@
                                     <th>{{ __('Name') }}</th>
                                     <th>{{ __('Email') }}</th>
                                     <th>{{ __('Comment') }}</th>
+                                    <th>{{ __('Status') }}</th>
                                     <th class="d-print-none">{{ __('Action') }}</th>
                                 </tr>
                             </thead>
@@ -96,7 +99,3 @@
 @push('modal')
     @include('admin.component.multi-delete-modal')
 @endpush
-
-
-
-

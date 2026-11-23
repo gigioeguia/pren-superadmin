@@ -8,6 +8,18 @@
         <td>{{ $comment->name }}</td>
         <td>{{ $comment->email }}</td>
         <td>{{  Str::limit($comment->comment, 20, '...') }}</td>
+        <td class="w-150">
+            <div class="d-flex align-items-center justify-content-center gap-2">
+                <label class="switch">
+                    <input type="checkbox" {{ $comment->status == 1 ? 'checked' : '' }} class="status"
+                        data-url="{{ route('admin.comments.status', $comment->id) }}">
+                    <span class="slider round"></span>
+                </label>
+                @if ($comment->status == 0)
+                    <span class="badge bg-danger">{{ __('Hidden') }}</span>
+                @endif
+            </div>
+        </td>
         <td class="d-print-none">
             <div class="d-flex align-items-center justify-content-center action-container gap-2">
                 <div>
