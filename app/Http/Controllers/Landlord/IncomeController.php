@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Landlord;
 
 use App\Enums\Channel;
+use App\Exports\LandlordIncomeExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Income\StoreIncomeRequest;
 use App\Http\Requests\Income\UpdateIncomeRequest;
@@ -10,6 +11,7 @@ use App\Models\Income;
 use App\Models\IncomeCategory;
 use App\Services\IncomeService;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class IncomeController extends Controller
 {
@@ -82,5 +84,16 @@ class IncomeController extends Controller
             'message' => __('Selected Income Deleted Successfully'),
             'redirect' => route('landlord.incomes.index'),
         ]);
+    }
+
+    // Restaurado (spec 5.17): filename verbatim pre-4.2.
+    public function exportExcel()
+    {
+        return Excel::download(new LandlordIncomeExport, 'landlord-incomes.xlsx');
+    }
+
+    public function exportCsv()
+    {
+        return Excel::download(new LandlordIncomeExport, 'landlord-incomes.csv');
     }
 }

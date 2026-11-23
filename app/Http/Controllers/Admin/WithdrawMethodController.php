@@ -91,6 +91,15 @@ class WithdrawMethodController extends Controller
         ]);
     }
 
+    // Restaurado (spec 5.17): statusMessage verbatim pre-4.2, sin __().
+    public function status(Request $request, string $id)
+    {
+        $method = WithdrawMethod::findOrFail($id);
+        $this->service->updateStatus($method, (int) $request->status);
+
+        return response()->json(['message' => 'withdrawMethod']);
+    }
+
     public function exportExcel()
     {
         return Excel::download(new AdminWithdrawMethodExport, 'withdraw-methods.xlsx');

@@ -85,4 +85,10 @@ class ExpenseCategoryService
 
         return (int) $count;
     }
+
+    // Seg-5 (contrato del trait, spec 5.17 §5): sin scoping — las policies lo cerrarán.
+    public function updateStatus(ExpenseCategory $category, int $status): void
+    {
+        $category->update(['status' => $status]);
+    }
 }

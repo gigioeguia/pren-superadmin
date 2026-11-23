@@ -78,4 +78,13 @@ class IncomeCategoryController extends Controller
             'redirect' => route('admin.income-categories.index'),
         ]);
     }
+
+    // Restaurado (spec 5.17): statusMessage verbatim pre-4.2, sin __().
+    public function status(Request $request, string $id)
+    {
+        $category = IncomeCategory::findOrFail($id);
+        $this->service->updateStatus($category, (int) $request->status);
+
+        return response()->json(['message' => 'Income Category']);
+    }
 }

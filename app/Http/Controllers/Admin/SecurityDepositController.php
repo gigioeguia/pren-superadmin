@@ -3,17 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\Channel;
+use App\Exports\AdminSecurityDepositExport;
 use App\Http\Controllers\Controller;
 use App\Models\SecurityDeposit;
 use App\Services\SecurityDepositService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SecurityDepositController extends Controller
 {
     public function __construct(protected SecurityDepositService $service)
     {
-        $this->middleware('permission:security-deposits-read')->only('index');
+        $this->middleware('permission:security-deposits-read')->only('index', 'filter', 'exportExcel', 'exportCsv');
         $this->middleware('permission:security-deposits-update')->only('approve', 'rejected');
     }
 
@@ -66,5 +68,31 @@ class SecurityDepositController extends Controller
             'message' => __('Security Deposit Rejected successfully'),
             'redirect' => route('admin.security-deposits.index'),
         ]);
+    }
+
+    // Restaurado (spec 5.17, Q14-a): contrato verbatim pre-4.2 — el branch
+    // Admin del service no aplica search/status/date (inputs del form = no-op).
+    public function filter(Request $request)
+    {
+        $security_deposits = $this->service->listForChannel(Channel::Admin, auth()->user(), ['per_page' => $request->per_page ?? 20]);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'data' => view('admin.security-deposits.datas', ['security_deposits' => $security_deposits])->render(),
+            ]);
+        }
+
+        return redirect(url()->previous());
+    }
+
+    // Restaurado (spec 5.17): filename verbatim pre-4.2.
+    public function exportExcel()
+    {
+        return Excel::download(new AdminSecurityDepositExport, 'security-deposits.xlsx');
+    }
+
+    public function exportCsv()
+    {
+        return Excel::download(new AdminSecurityDepositExport, 'security-deposits.csv');
     }
 }

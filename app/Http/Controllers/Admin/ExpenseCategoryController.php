@@ -78,4 +78,13 @@ class ExpenseCategoryController extends Controller
             'redirect' => route('admin.expense-categories.index'),
         ]);
     }
+
+    // Restaurado (spec 5.17): statusMessage verbatim pre-4.2, sin __().
+    public function status(Request $request, string $id)
+    {
+        $category = ExpenseCategory::findOrFail($id);
+        $this->service->updateStatus($category, (int) $request->status);
+
+        return response()->json(['message' => 'Expense Category']);
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\Channel;
+use App\Exports\AdminExpensesExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Expense\StoreExpenseRequest;
 use App\Http\Requests\Expense\UpdateExpenseRequest;
@@ -10,6 +11,7 @@ use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Services\ExpenseService;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ExpenseController extends Controller
 {
@@ -88,5 +90,16 @@ class ExpenseController extends Controller
             'message' => __('Selected Expense Deleted Successfully'),
             'redirect' => route('admin.expenses.index'),
         ]);
+    }
+
+    // Restaurado (spec 5.17): filename verbatim pre-4.2.
+    public function exportExcel()
+    {
+        return Excel::download(new AdminExpensesExport, 'admin-expenses.xlsx');
+    }
+
+    public function exportCsv()
+    {
+        return Excel::download(new AdminExpensesExport, 'admin-expenses.csv');
     }
 }
