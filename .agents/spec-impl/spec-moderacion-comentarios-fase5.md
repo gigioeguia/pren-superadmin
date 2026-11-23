@@ -1,7 +1,7 @@
 ---
 id: spec-moderacion-comentarios-fase5
 titulo: "Moderación de comentarios de blogs (hide/re-approve admin)"
-estado: Aprobado
+estado: Implementado
 fecha: 2026-11-23
 origen: .analisis/plan/plan-accion.md Fase 5 / 5.19 (Seg-30)
 cobertura: Ruta admin de toggle de status de comentarios (post-moderación) + permiso comments-update + listador per-blog sin filtro de status + D-FIX-1/D-FIX-2 declarados; 8 tests (F43, G1–G6, Pub8)
