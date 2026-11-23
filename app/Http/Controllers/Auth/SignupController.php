@@ -10,6 +10,7 @@ use App\Models\Plan;
 use App\Models\User;
 use App\Services\LandlordService;
 use App\Support\Otp;
+use App\Support\PaymentState;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -49,7 +50,7 @@ class SignupController extends Controller
                 $user = $this->landlords->createAccount($request->validated(), Channel::Landlord);
 
                 session()->put('user_id', $user->id);
-                session()->put('plan_id', $request->plan_id);
+                session()->put('plan_id', PaymentState::scalarValue($request->input('plan_id')));
 
                 Auth::login($user);
 
@@ -65,7 +66,7 @@ class SignupController extends Controller
             $user = $this->landlords->createAccount($request->validated(), Channel::Landlord, $code, $expire);
 
             session()->put('user_id', $user->id);
-            session()->put('plan_id', $request->plan_id);
+            session()->put('plan_id', PaymentState::scalarValue($request->input('plan_id')));
         } catch (\Throwable $th) {
             report($th);
 

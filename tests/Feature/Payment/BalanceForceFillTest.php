@@ -53,8 +53,8 @@ class BalanceForceFillTest extends TestCase
         // Act
         $response = $this->actingAs($tenant)->withSession([
             'payment_type' => 'security_deposit',
-            'plan' => $deposit,
-            'user' => $tenant,
+            'plan_id' => $deposit->id,
+            'user_id' => $tenant->id,
             'amount' => $deposit->total_amount,
             'gateway_id' => $gateway->id,
             'platform' => 'web',

@@ -42,6 +42,7 @@ class VerifyDeployTest extends TestCase
         'session.driver' => ['session.driver' => 'file'],
         'app.url' => ['app.url' => 'http://prod.example.com'],
         'app.force_https' => ['app.force_https' => false],
+        'session.serialization' => ['session.serialization' => 'php'],
     ];
 
     /**
@@ -136,6 +137,26 @@ class VerifyDeployTest extends TestCase
         $this->assertStringContainsString('php version', $out);
         $this->assertStringContainsString('>= 8.4.1', $out);
         $this->assertStringContainsString(PHP_VERSION, $out);
+        $this->assertStringNotContainsString('FAIL', $out);
+    }
+
+    /**
+     * F6 del spec 5.21 (session serialization=json): el 7º HARD es
+     * visible y pasa con el default del config (la rama FAIL la cubre la
+     * matriz de F2 vía `session.serialization` => php).
+     */
+    public function test_f6_session_serialization_row_visible_and_passes(): void
+    {
+        // Arrange
+        config(self::PRODUCTION_POSTURE);
+
+        // Act
+        [$code, $out] = $this->runCommand();
+
+        // Assert
+        $this->assertSame(Command::SUCCESS, $code);
+        $this->assertStringContainsString('session.serialization', $out);
+        $this->assertStringContainsString('json', $out);
         $this->assertStringNotContainsString('FAIL', $out);
     }
 }

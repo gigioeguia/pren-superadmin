@@ -30,7 +30,7 @@ Carpeta de convenciones, especificaciones, skills y decisiones que rigen cómo t
 │   │               spec-helpers-globales-clases-fase4 · spec-plan-duration-days-fase4 ·
 │   │               spec-db-transactions-no-external-io-fase4 · spec-cache-invalidacion-centralizada-fase4 ·
 │   │               spec-seeders-firstorcreate-fase4
-│   ├── fase5 (25): spec-comand-txt-credenciales-fase5 · spec-demo-user-passwords-fase5 ·
+│   ├── fase5 (26): spec-comand-txt-credenciales-fase5 · spec-demo-user-passwords-fase5 ·
 │   │               spec-withdraw-index-request-fase5 · spec-trust-hosts-fase5 ·
 │   │               spec-session-database-secure-fase5 · spec-app-url-https-force-tls-fase5 ·
 │   │               spec-get-option-tipos-consistentes-fase5 · spec-typos-rutas-fase5 ·
@@ -39,6 +39,7 @@ Carpeta de convenciones, especificaciones, skills y decisiones que rigen cómo t
 │   │               spec-public-writes-throttle-fase5 · spec-laravel13-advisories-fase5 ·
 │   │               spec-restauracion-crud-42-fase5 · spec-tx-legadas-services-fase5 ·
 │   │               spec-moderacion-comentarios-fase5 · spec-php84-bump-fase5 ·
+│   │               spec-session-serialization-json-fase5 ·
 │   │               spec-unificar-capas-services-fase5 (+6 hijos 5.13: spec-service-language-fase5 ·
 │   │               spec-service-rent-fase5 · spec-service-application-fase5 · spec-service-landlord-fase5 ·
 │   │               spec-service-payment-fase5 · spec-controladores-residuales-fase5)
@@ -56,7 +57,7 @@ Carpeta de convenciones, especificaciones, skills y decisiones que rigen cómo t
     └── 0001-mysql-test-db.md
 ```
 
-> Índice regenerado 2026-11-23 (fase5 completa 25: añade devdeps, public-writes, laravel13-advisories, restauracion-crud-42, tx-legadas, moderacion y php84-bump; total 70 specs): solo contenido trackeado; los archivos locales sin extensión bajo `skills/` (herramientas de agente) no se listan.
+> Índice regenerado 2026-11-23 (fase5 completa 26: añade devdeps, public-writes, laravel13-advisories, restauracion-crud-42, tx-legadas, moderacion, php84-bump y session-serialization-json; total 71 specs): solo contenido trackeado; los archivos locales sin extensión bajo `skills/` (herramientas de agente) no se listan.
 
 ## Orden de lectura sugerido (para un agente nuevo)
 

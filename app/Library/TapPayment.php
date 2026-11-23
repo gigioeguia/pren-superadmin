@@ -73,7 +73,7 @@ class TapPayment
                 'json' => $data,
             ]);
 
-            session()->put('secret_key', $array['secret_key']);
+            session()->put('secret_key', is_string($array['secret_key'] ?? null) ? $array['secret_key'] : '');
 
             $responseBody = json_decode($response->getBody(), true);
 
@@ -108,7 +108,8 @@ class TapPayment
 
                 return redirect(self::redirect_if_payment_success());
             } else {
-                session()->put('payment_msg', $paymentDetails['response']['message']);
+                $message = $paymentDetails['response']['message'] ?? null;
+                session()->put('payment_msg', is_string($message) ? $message : __(ErrorMessage::PAYMENT));
 
                 return redirect(self::redirect_if_payment_faild());
             }

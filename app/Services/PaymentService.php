@@ -213,24 +213,22 @@ class PaymentService
         }
 
         try {
-            $plan = $state->plan;
-            $user = $state->user;
-
-            if (! $plan && ! $state->planId || ! $state->paymentType) {
+            // Contrato escalar (spec-session-serialization-json-fase5):
+            // el plan se rehidrata por ID; payment_type desconocido se
+            // rechaza (antes: sesión crafteda llegaba a Success vacío).
+            if (! $state->planId || ! $state->paymentType) {
                 return PaymentOutcome::InvalidCredentials;
             }
 
-            if ($state->planId && ! $plan) {
-                $plan = match ($state->paymentType) {
-                    'security_deposit' => SecurityDeposit::findOrFail($state->planId),
-                    'rent_payment' => RentPayment::findOrFail($state->planId),
-                    'subscription' => Plan::findOrFail($state->planId),
-                    default => null,
-                };
-            }
+            $plan = match ($state->paymentType) {
+                'security_deposit' => SecurityDeposit::findOrFail($state->planId),
+                'rent_payment' => RentPayment::findOrFail($state->planId),
+                'subscription' => Plan::findOrFail($state->planId),
+                default => null,
+            };
 
-            if ($state->userId && ! $user) {
-                $user = User::findOrFail($state->userId);
+            if (! $plan) {
+                return PaymentOutcome::InvalidCredentials;
             }
 
             if (! $state->gatewayId) {
@@ -255,11 +253,10 @@ class PaymentService
                 return PaymentOutcome::InvalidCredentials;
             }
 
-            // Sesión sin payer resuelto: antes ErrorException dentro de
-            // la rama ($user->id) → catch.
-            if (! $user instanceof User) {
-                throw new \RuntimeException('Payment session user is missing.');
-            }
+            // Payer resuelto por ID escalar — userId ausente lanza
+            // ModelNotFoundException, que cae en el catch → SomethingWrong
+            // (observable idéntico al RuntimeException anterior).
+            $user = User::findOrFail($state->userId);
 
             // Verificación de pago completada: la transacción envuelve
             // únicamente las escrituras DB (Fase 4 / 4.8).

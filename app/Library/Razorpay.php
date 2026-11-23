@@ -102,7 +102,7 @@ class Razorpay
         return $expectsJson ? route('razorpay.view') : redirect()->route('razorpay.view');
     }
 
-    public static function get_response()
+    public static function get_response(): array
     {
         $array = Session::get('razorpay_credentials');
         $amount = $array['amount'];

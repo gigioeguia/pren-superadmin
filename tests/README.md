@@ -7,11 +7,11 @@ La amplían los tests del trait `HasTableActions` (G1–G8/H1–H4, con 2
 caracterizaciones nuevas): spec del trait de la Fase 0 (Fase 0 / 0.3, DT-C3 —
 índice en `.agents/README.md`).
 
-> **Nota (2026-11-21):** la suite creció con las fases 1–5 y hoy totaliza
-> **371 casos** (Fases 0–5; 254 al cierre de Fase 4 + 5 del spec 5.2 + 3 del
-> spec 5.3 + 4 del spec 5.4 + 7 del spec 5.5 + 10 del spec 5.6 + 18 del spec
-> 5.7 + 24 del spec 5.8 + 6 del spec 5.9 + 3 del spec 5.10 + 37 del spec
-> 5.11). Este README documenta el origen smoke de Fase 0
+> **Nota (2026-11-23):** la suite creció con las fases 1–5 y hoy totaliza
+> **569 casos** (371 al cierre de 5.11 + specs 5.12–5.20 — upgrade L13,
+> controladores residuales, tx legadas, PHP 8.4 — + 8 del spec 5.21;
+> conteo verificado contra salida real de `php artisan test`). Este README
+> documenta el origen smoke de Fase 0
 > y las convenciones; los dominios añadidos se listan abajo.
 
 ## Cómo correr la suite
@@ -87,16 +87,18 @@ tests/
 ├── Concerns/CreatesUsers.php     # helpers landlord/admin/tenant/superadmin (+ rol Spatie)
 ├── Stubs/StubGateway.php         # stub de gateway (Gateway->namespace), sin HTTP real
 ├── Unit/                         # unitarios: modelos (User, Plan), PropertyService,
-│   ├── Support/                  # CacheKeysTest (4.9) + OtpTest (4.6) + OptionsTest U1–U9 (5.7)
-│   ├── Config/                   # SessionConfigTest U1–U5 (5.5) + ForceHttpsConfigTest U1–U6 (5.6) + LoggingArchTest U1–U2 (5.9)
+│   ├── Support/                  # CacheKeysTest (4.9) + OtpTest (4.6) + OptionsTest U1–U9 (5.7) + PaymentStateTest U2–U3 (5.21)
+│   ├── Config/                   # SessionConfigTest U1–U5 (5.5) + ForceHttpsConfigTest U1–U6 (5.6) + LoggingArchTest U1–U2 (5.9) + SessionSerializationConfigTest U1 (5.21)
+│   ├── Session/                  # SessionWritersArchTest U4 (5.21): allowlist congelada de 15 escritores
 │   ├── Views/                    # arch-tests U10–U11: 0 get_option()[...] sin guard, 0 logo_setting (5.7)
 │   ├── Models/                   # UserFillableTest U1–U5 (5.11): allowlist + fill/forceFill
 │   ├── Hygiene/                  # arch-tests U6: 0 $request->except( en los 4 User writers (5.11)
+│   ├── Console/                  # VerifyDeployPhpFloorTest U20–U21 (5.20) + VerifyDeploySessionTest U22–U23 (5.21)
 │   └── Seeders/                  # arch-tests U1–U3 + demoReset U4 (spec 4.10)
 └── Feature/
     ├── Auth/                     # L (login web), S (signup+OTP), R (reset), A (API)
     │   └── *MassAssignmentTest    # S1–S6 + A1–A4 (5.11): inyección cerrada + forceFill
-    ├── Payment/                  # P (flujos de pago + whitelist de namespace)
+    ├── Payment/                  # P (flujos de pago + whitelist de namespace); sesión escalar P1–P9 (5.21)
     │   └── BalanceForceFillTest   # P1–P3 (5.11): balance vía forceFill
     ├── Public/                   # Pub (CMS frontal)
     ├── Admin/                    # G (guard admin + denegación de permisos 3.8)
@@ -113,7 +115,7 @@ tests/
     ├── Security/                # TrustHosts (5.4) + Session (5.5) + ForceHttps redirect/proxies (Fase 5 / 5.6)
     ├── Options/                 # Pub1 + F1–F4 (render sin options) + G1–G2 (version sidebar) (Fase 5 / 5.7)
     ├── Routes/                  # guards de higiene de la tabla de rutas F14–F18 (Fase 5 / 5.8)
-    ├── Console/                 # ops:verify-deploy F1–F4 (patrón de evidencia, Fase 5 / 5.9)
+    ├── Console/                 # ops:verify-deploy F1–F6 (patrón de evidencia, Fase 5 / 5.9 + F5 5.20 + F6 5.21)
     ├── Notification/            # contrato HTTP de notifications G1–G5 / H1–H5 / A1–A4 (Fase 5 / 5.8)
     └── HandlerGenericErrorSmokeTest.php  # Handler genérico sin fuga de mensaje (3.4)
 ```
@@ -126,7 +128,8 @@ Mocks obligatorios (ver `.agents/skills/testing-conventions.md`):
 ## Cobertura de endpoints críticos
 
 > Snapshot del catálogo smoke de **Fase 0** (52 endpoints críticos); la suite
-> total creció con las fases 1–5 (331 casos) sin renovar este conteo.
+> total creció con las fases 1–5 (569 casos al cierre de 5.21) sin renovar
+> este conteo.
 
 Criterio del spec: rutas de auth (web + API), pagos, status de gateways,
 CMS público, entradas de guards y maintenance.
@@ -185,6 +188,24 @@ a `login`, autenticado sin plan a `landlord.subscriptions.index` vía
 `ExpiredMiddleware`). Archivo feature:
 `tests/Feature/Security/SessionSmokeTest.php` — spec
 `spec-session-database-secure-fase5`.
+
+## Session serialization (Fase 5 / 5.21)
+
+Flip `session.serialization` a `json` con contrato escalar: la suite
+entera corre ya bajo json (sin test round-trip del framework — Q8).
+`U1` (`tests/Unit/Config/SessionSerializationConfigTest.php`) evalúa el
+archivo fresco y aserta el literal sin válvula `env()`; `U2`–`U3`
+(`tests/Unit/Support/PaymentStateTest.php`) fijan el contrato escalar
+de `PaymentState::fromSession` (basura en sesión → tratada como
+ausente, sin crash); `U4` (`tests/Unit/Session/SessionWritersArchTest.php`)
+congela la allowlist de 15 archivos escritores — el guard mismo atrapó
+a `RespondsJson` (forma `session()->flash()`), omitido por el inventario
+del spec; `U22`–`U23` (`tests/Unit/Console/VerifyDeploySessionTest.php`)
+cubren el helper puro del 7º check HARD y `F6` su fila en la tabla de
+`ops:verify-deploy`. Los casos `P1`–`P9` migran los 6 bloques
+`withSession` con modelos a IDs scalares y añaden `rent_payment`
+rehidratado (P4, sin cobertura previa) — spec
+`spec-session-serialization-json-fase5`.
 
 ## Force HTTPS (Fase 5 / 5.6)
 
