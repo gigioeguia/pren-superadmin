@@ -3,7 +3,7 @@ services:
     name: codeconnect-condominos-demo
     runtime: docker
     plan: free
-    healthCheckPath: /
+    healthCheckPath: /up
     envVars:
       - key: APP_NAME
         value: codeconnect-condominos-demo
