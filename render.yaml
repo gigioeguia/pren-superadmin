@@ -1,12 +1,12 @@
 services:
   - type: web
-    name: propertyrent-demo
+    name: codeconnect-condominos-demo
     runtime: docker
     plan: free
     healthCheckPath: /
     envVars:
       - key: APP_NAME
-        value: PropertyRent Demo
+        value: codeconnect-condominos-demo
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
