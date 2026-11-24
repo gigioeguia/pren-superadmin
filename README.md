@@ -65,3 +65,5 @@ Precondiciones, mocks obligatorios y cobertura de endpoints: ver [`tests/README.
 - [`AGENTS.md`](AGENTS.md) — convenciones para agentes: rutas, middleware, arquitectura de pagos, gotchas
 - [`.agents/`](.agents/) — specs, skills operacionales y decisiones (ADRs)
 - [`tests/README.md`](tests/README.md) — suite de tests smoke y caracterización
+
+# Como ejecutarlo local
