@@ -39,4 +39,4 @@ RUN chown -R www-data:www-data storage bootstrap/cache \
 EXPOSE 80
 
 # Runtime: migrate + cache + seed (idempotent) + serve
-CMD ["sh", "-c", "php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan db:seed --force && apache2-foreground"]
+CMD ["sh", "-c", "php artisan migrate --force && php artisan config:cache && php artisan view:cache && php artisan db:seed --force && apache2-foreground"]
