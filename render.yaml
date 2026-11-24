@@ -24,11 +24,11 @@ services:
       - key: DB_PORT
         value: "22681"
       - key: DB_DATABASE
-        sync: false
+        value: railway
       - key: DB_USERNAME
-        sync: false
+        value: root
       - key: DB_PASSWORD
-        sync: false
+        value: PSJeyplMQNyqRBgYFtrVwvFzXNhpYSYO
       - key: SESSION_DRIVER
         value: database
       - key: CACHE_DRIVER
