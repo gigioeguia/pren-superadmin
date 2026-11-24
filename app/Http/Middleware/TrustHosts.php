@@ -14,10 +14,22 @@ class TrustHosts extends Middleware
      */
     public function hosts(): array
     {
-        return [
-            $this->allSubdomainsOfApplicationUrl(),
-            ...($this->app->environment('local', 'testing') ? ['localhost', '127.0.0.1', '::1'] : []),
-        ];
+        $hosts = [$this->allSubdomainsOfApplicationUrl()];
+
+        // Detrás de un proxy confiable (p. ej. Render LB) aceptamos el host
+        // reenviado cuando TRUSTED_PROXIES está configurado; evita 400 por
+        // desalineación de APP_URL en entornos de prueba/demo.
+        if (env('TRUSTED_PROXIES')) {
+            $hosts[] = '*';
+        }
+
+        if ($this->app->environment('local', 'testing')) {
+            $hosts[] = 'localhost';
+            $hosts[] = '127.0.0.1';
+            $hosts[] = '::1';
+        }
+
+        return $hosts;
     }
 
     /**
