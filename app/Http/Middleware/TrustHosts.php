@@ -14,10 +14,30 @@ class TrustHosts extends Middleware
      */
     public function hosts(): array
     {
-        return [
-            $this->allSubdomainsOfApplicationUrl(),
-            ...($this->app->environment('local', 'testing') ? ['localhost', '127.0.0.1', '::1'] : []),
-        ];
+        $hosts = [$this->allSubdomainsOfApplicationUrl()];
+
+        // Detrás de un proxy confiable (p. ej. Render LB) confiamos en el host
+        // reenviado por el proxy (X-Forwarded-Host) para evitar 400 por
+        // desalineación de APP_URL en entornos de prueba/demo. No usar '*',
+        // porque Symfony valida los patrones con preg_match y '*' no es válido.
+        if (env('TRUSTED_PROXIES')) {
+            try {
+                $forwardedHost = $this->app->make('request')->getHost();
+                if (is_string($forwardedHost) && $forwardedHost !== '') {
+                    $hosts[] = $forwardedHost;
+                }
+            } catch (\Throwable $e) {
+                // Ignorar: caerá al patrón de APP_URL.
+            }
+        }
+
+        if ($this->app->environment('local', 'testing')) {
+            $hosts[] = 'localhost';
+            $hosts[] = '127.0.0.1';
+            $hosts[] = '::1';
+        }
+
+        return $hosts;
     }
 
     /**
