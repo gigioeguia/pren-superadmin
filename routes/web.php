@@ -3,6 +3,9 @@
 use App\Http\Controllers as Web;
 use Illuminate\Support\Facades\Route;
 
+// Health check para Render (healthCheckPath: /up en render.yaml)
+Route::get('/up', fn () => response('OK', 200))->name('health.up');
+
 Route::get('/', [Web\WebController::class, 'index'])->name('home');
 Route::resource('blogs', Web\BlogController::class)->only('index', 'show');
 Route::post('/blogs', [Web\BlogController::class, 'store'])->name('blogs.store')->middleware('throttle:5,1');
